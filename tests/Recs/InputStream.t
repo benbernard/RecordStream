@@ -3,6 +3,7 @@ use IO::String;
 use Data::Dumper;
 
 my $base_dir = $ENV{'BASE_TEST_DIR'} . '/Recs';
+my $files_dir = $ENV{'BASE_TEST_DIR'} . '/files';
 
 BEGIN { use_ok( 'Recs::InputStream' ) };
 
@@ -38,8 +39,8 @@ ok(my $multiple_stream = Recs::InputStream->new(STRING => $multiple), "Multple S
 is_deeply($multiple_stream->get_record(), $hash, 'Multiple string input');
 is_deeply($multiple_stream->get_record(), $hash, 'Multiple string input');
 
-my $file  = $base_dir . '/file1';
-my $file2 = $base_dir . '/file2';
+my $file  = $files_dir . '/file1';
+my $file2 = $files_dir . '/file2';
 
 ok(my $file_stream = Recs::InputStream->new(FILE => $file), "File Initialize");
 is_deeply($file_stream->get_record(), $hash, 'File input');
