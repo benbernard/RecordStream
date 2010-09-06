@@ -100,7 +100,7 @@ sub test_output {
    my $args           = shift;
    my $input          = shift;
    my $output         = shift;
-  
+
    my $operation_class = "Recs::Operation::$operation_name";
    my $op = $operation_class->new($args);
 

@@ -40,7 +40,7 @@ sub run_operation {
    my $record_delim = $this->{'RECORD_DELIM'};
 
    while (my $line = read_until($record_delim)) {
-      { 
+      {
          local $/ = $record_delim;
          chomp $line;
       }
@@ -78,12 +78,12 @@ Usage : recs-fromkv <args> [<files>]
   Records are generated from charactr input with the form "<record><record-delim><record>...".
   Records have the form "<entry><entry-delim><entry>...".  Entries are pairs of the form
   "<key><kv-delim><value>".
-  
+
 Arguments:
   --record-delim|r <delim>   Delimiter to for separating records (defaults to "END\\n").
   --entry-delim|e  <delim>   Delimiter to for separating entries within records (defaults to "\\n").
   --kv-delim|f   <delim>     Delimiter to for separating key/value pairs within an entry (defaults to " ").
-  --help                     Bail and output this help screen. 
+  --help                     Bail and output this help screen.
 
 Examples:
   Parse memcached stat metrics into records

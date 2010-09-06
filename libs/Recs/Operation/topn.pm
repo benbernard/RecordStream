@@ -36,7 +36,7 @@ sub accept_record {
    my $record = shift;
 
    my $current_key_values = "";
-   foreach my $k ( @{$this->{'KEYS'}} ) { 
+   foreach my $k ( @{$this->{'KEYS'}} ) {
      $current_key_values .= ${$record->guess_key_from_spec( $k )} . $this->{'DELIM'};
    }
 
@@ -51,19 +51,19 @@ sub usage
 {
    return <<USAGE;
 Usage: recs-topn <args> [<files>]
-   Outputs the top n records from input stream or from <files>.  You may 
-   segment the input stream based on a list of keys such that unique values 
+   Outputs the top n records from input stream or from <files>.  You may
+   segment the input stream based on a list of keys such that unique values
    of keys are treated as distinct input streams.  This enables
-   top n listings per value groupings.  The key values need not be contiguous 
-   in the input record stream.  
+   top n listings per value groupings.  The key values need not be contiguous
+   in the input record stream.
 
    --key <keyspec>       - Comma separated list of fields.  May be specified multiple times.
                            May be a key spec, see 'man recs' for more
    --topn | -n <number>  - Number of records to output.  Default is 10.
    --delimiter <string>  - String used internally to delimit values when performing a topn
-                           on a keyspec that inlcudeds multiple keys.  This value defaults 
-                           to "9t%7Oz%]" which may - under unusual and bizarre corner 
-                           cases - cause false positive key matches if your values contain 
+                           on a keyspec that inlcudeds multiple keys.  This value defaults
+                           to "9t%7Oz%]" which may - under unusual and bizarre corner
+                           cases - cause false positive key matches if your values contain
                            this value.  You can set this to any string.
    --help                - Bail and output this help screen.
 

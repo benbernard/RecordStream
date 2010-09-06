@@ -329,7 +329,7 @@ Lets take this stream, which is a portion of my recs-fromps:
 {"priority":19,"pid":28171,"rss":405504,"state":"run"}
 
 Ok, Now lets get a table out of this, first we'll collate into some useful information:
-\$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count 
+\$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count
 {"priority":0,"count":4,"state":"sleep"}
 {"priority":19,"count":1,"state":"sleep"}
 {"priority":0,"count":1,"state":"run"}
@@ -353,7 +353,7 @@ rows.  So that there is 1 process in state 'run' and priority 0, and 4 in state
 
 The --cube option on recs-collate also interacts very well with toptable:
 
-\$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube | recs-toptable --x priority --y state 
+\$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube | recs-toptable --x priority --y state
 +-----+--------+-+--+---+
 |     |priority|0|19|ALL|
 +-----+--------+-+--+---+
@@ -373,7 +373,7 @@ in the table (the ALL, ALL intersection)
 Now lets see what happens when we have more than 1 left over field.  Lets also
 sum up the rss usage of the processes with -a sum,rss on recs-collate:
 
-\$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube -a sum,rss 
+\$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube -a sum,rss
 {"priority":0,"count":4,"state":"sleep","sum_rss":471040}
 {"priority":"ALL","count":5,"state":"sleep","sum_rss":471040}
 {"priority":19,"count":1,"state":"sleep","sum_rss":0}
@@ -444,7 +444,7 @@ column) are provided by the --cube functionality of recs-collate
 Now, say you want to pin value, lets just look at processes in state run for
 instance:
 
-\$ cat /var/tmp/psrecs | recs-collate --perfect --cube --key priority,state -a count -a sum,rss | recs-toptable --x priority,FIELD --y state -v sum_rss,count --pin state=run 
+\$ cat /var/tmp/psrecs | recs-collate --perfect --cube --key priority,state -a count -a sum,rss | recs-toptable --x priority,FIELD --y state -v sum_rss,count --pin state=run
 +-----+--------+-----+-------+-----+-------+-----+--------+
 |     |priority|0    |       |19   |       |ALL  |        |
 +-----+--------+-----+-------+-----+-------+-----+--------+

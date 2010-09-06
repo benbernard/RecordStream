@@ -201,11 +201,11 @@ Arguments:
                                   --using '3:2' would plot avg vs. date.  May be
                                   specified multiple times
    --plot <plot spec>             May be specified multiple times, may be comma separated.
-                                  A directive passed directly to plot, 
+                                  A directive passed directly to plot,
                                   e.g. --plot '5 title "threshold"'
    --precommand <gnuplot spec>    May be specified multiple times, may be comma separated.
                                   A command executed by gnuplot before executing plot,
-                                  e.g. --precommand 'set xlabel "foo"' 
+                                  e.g. --precommand 'set xlabel "foo"'
    --title <title>                Specify a title for the entire graph
    --label <label>                Labels each --using line with the indicated label
    --file <filename>              Name of output png file.  Will append .png if not

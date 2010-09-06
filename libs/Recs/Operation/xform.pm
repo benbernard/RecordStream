@@ -16,7 +16,7 @@ sub init {
    }
 
    my $expression = shift @{$this->_get_extra_args()};
-   my $executor = Recs::Executor->new($expression); 
+   my $executor = Recs::Executor->new($expression);
    $this->{'EXECUTOR'} = $executor;
 }
 
@@ -33,7 +33,7 @@ sub accept_record {
      foreach my $new_record (@$value) {
        if ( ref($new_record) eq 'HASH' ) {
          $this->push_record(Recs::Record->new($new_record));
-       }                                                                                                                                                                                                       
+       }
        else {
          $this->push_record($new_record);
        }

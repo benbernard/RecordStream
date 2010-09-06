@@ -165,9 +165,9 @@ Usage: recs-join <args> <inputkey> <dbkey> <dbfile> [<files>]
    Each record from input may match 0, 1, or more records from <dbfile>. Each
    pair of matches will be combined to form a larger record, with fields from
    the dbfile overwriting fields from the input stream. If the join is a left
-   join or inner join, any inputs that do not match a dbfile record are 
+   join or inner join, any inputs that do not match a dbfile record are
    discarded. If the join is a right join or inner join, any db records that do
-   not match an input record are discarded. 
+   not match an input record are discarded.
 
    dbkey and inputkey may be key specs, see 'man recs' for more information
 
@@ -204,24 +204,24 @@ Arguments:
    --right             Do a right join
    --inner             Do an inner join (This is the default)
    --outer             Do an outer join
-   --operation         An perl expression to evaluate for merging two records 
-                       together, in place of the default behavior of db fields 
+   --operation         An perl expression to evaluate for merging two records
+                       together, in place of the default behavior of db fields
                        overwriting input fields. See "Operation" below.
    --accumulate-right  Accumulate all input records with the same key onto each
-                       db record matching that key. See "Accumulate Right" 
+                       db record matching that key. See "Accumulate Right"
                        below.
 
 Operation:
    The expression provided is evaluated for every pair of db record and input
-   record that have matching keys, in place of the default operation to 
-   overwrite input fields with db fields. The variable \$d is set to a 
-   Recs::Record object for the db record, and \$i is set to a Recs::Record 
-   object for the input record. The \$d record is used for the result. Thus, if 
+   record that have matching keys, in place of the default operation to
+   overwrite input fields with db fields. The variable \$d is set to a
+   Recs::Record object for the db record, and \$i is set to a Recs::Record
+   object for the input record. The \$d record is used for the result. Thus, if
    you provide an empty operation, the result will contain only fields from the
-   db record. 
+   db record.
 
 Accumulate Right:
-   Accumulate all input records with the same key onto each db record matching 
+   Accumulate all input records with the same key onto each db record matching
    that key. This means that a db record can have multiple input records merged
    into it. If no operation is provided, any fields in second or later records
    will be lost due to them being discarded. This option is most useful with a
@@ -240,7 +240,7 @@ Accumulate Right:
 Examples:
    Join type from STDIN and typeName from dbfile
       cat recs | recs-join type typeName dbfile
-   
+
    Join host name from a mapping file to machines to get IPs
       recs-join host host hostIpMapping machines
 USAGE

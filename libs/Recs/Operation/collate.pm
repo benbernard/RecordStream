@@ -22,7 +22,7 @@ sub init {
    my $incremental = 0;
    my $list_aggregators = 0;
    my $aggregator = 0;
-   
+
    my $spec = {
       "key|k=s"           => sub { push @keys, split(/,/, $_[1]); },
       "aggregator|a=s"    => sub { push @aggregators, split(/:/, $_[1]); },
@@ -47,7 +47,7 @@ sub init {
    }
 
    die "Must specify --key or --aggregator\n" unless ( @keys || @aggregators );
-   
+
    my $aggregator_objects = Recs::Aggregator::make_aggregators(@aggregators);
    my $lru_sheriff = Recs::LRUSheriff->new();
 
@@ -130,7 +130,7 @@ sub put {
       $this->output(@$value);
    }
 
-   
+
    if ( defined($this->{'SIZE'}) ) {
       $this->purge();
    }

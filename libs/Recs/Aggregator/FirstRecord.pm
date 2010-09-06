@@ -36,7 +36,7 @@ sub long_usage
    exit 1;
 }
 
-sub argct 
+sub argct
 {
    return 0;
 }

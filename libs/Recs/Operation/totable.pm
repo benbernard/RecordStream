@@ -53,7 +53,7 @@ sub stream_done {
       if ( scalar @fields == 0 ) {
          @fields = keys %$record;
       }
-     
+
       foreach my $field (@fields) {
          if(%fields_hash && !exists($fields_hash{$field})) {
             next;
@@ -81,9 +81,9 @@ sub stream_done {
    if(!$no_header) {
       $this->print_value(
          $this->format_row(
-            $fields, 
-            \%widths, 
-            sub { return $_[1]; }, 
+            $fields,
+            \%widths,
+            sub { return $_[1]; },
             ""
          ) . "\n"
       );
@@ -91,9 +91,9 @@ sub stream_done {
       if ( ! $this->{'SPREADSHEET'} ) {
          $this->print_value(
             $this->format_row(
-               $fields, 
-               \%widths, 
-               sub { return ("-" x $widths{$_[1]}); }, 
+               $fields,
+               \%widths,
+               sub { return ("-" x $widths{$_[1]}); },
                ""
             ) . "\n"
          );
@@ -104,8 +104,8 @@ sub stream_done {
    foreach my $record (@$records) {
       $this->print_value(
          $this->format_row(
-            $fields, 
-            \%widths, 
+            $fields,
+            \%widths,
             \&format_field,
             [$record, \%last]
          ) . "\n"
@@ -223,15 +223,15 @@ sub usage {
 Usage: recs-totable <args> [<files>]
    Pretty prints a table of records to the screen.  Will read in the entire
    record stream to determine column size, and number of columns
-   
+
    --no-header|n           Do not print column headers
    --field|f <field name>  May be comma separated, may be specified multiple
                            times.  Specifies the fields to put in the table.
    --spreadsheet           Print out in a format suitable for excel.
                            1. Does not print line of -s after header
-                           2. Separates by single character rather than series 
+                           2. Separates by single character rather than series
                                of spaces
-   --delimiter <string>    Only useful with --spreadsheet, delimit with 
+   --delimiter <string>    Only useful with --spreadsheet, delimit with
                            <string> rather than the default of a tab
    --clear                 Put blanks in cells where all of the row so far
                            matches the row above.

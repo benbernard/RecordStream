@@ -162,14 +162,14 @@ sub cmp_nat
    return ($this <=> $that);
 }
 
-sub get_comparators 
+sub get_comparators
 {
    return [map { get_comparator($_) } @_];
 }
 
 {
    my %parsed_comparators;
-   sub get_comparator 
+   sub get_comparator
    {
       my $spec = shift;
 
@@ -178,11 +178,11 @@ sub get_comparators
 
       my ($field, $direction, $comparator);
 
-      if ( $spec =~ m/=/ ) 
+      if ( $spec =~ m/=/ )
       {
          ($field, $direction, $comparator) = $spec =~ /^(.*)=([-+])?(.*)$/;
       }
-      else 
+      else
       {
          ($field, $direction, $comparator) = ($spec, undef, 'lexical');
       }
@@ -196,7 +196,7 @@ sub get_comparators
          my ($this, $that) = @_;
          my $val = $func->(${$this->guess_key_from_spec($field)}, ${$that->guess_key_from_spec($field)});
 
-         if ( $direction eq '-' ) 
+         if ( $direction eq '-' )
          {
             return -$val;
          }
@@ -206,7 +206,7 @@ sub get_comparators
    }
 }
 
-sub sort 
+sub sort
 {
    my $records = shift;
    my @specs   = @_;

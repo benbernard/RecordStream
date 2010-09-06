@@ -16,7 +16,7 @@ sub init {
       die "Missing expression\n";
    }
    my $expression = shift @{$this->_get_extra_args()};
-   my $executor = Recs::Executor->new($expression); 
+   my $executor = Recs::Executor->new($expression);
    $this->{'EXECUTOR'} = $executor;
 }
 

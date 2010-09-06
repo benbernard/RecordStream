@@ -13,7 +13,7 @@ use Getopt::Long;
 sub new {
   my $class = shift;
   my $code = shift;
-  
+
   my $this = {};
 
   bless $this, $class;
@@ -38,7 +38,7 @@ sub execute_code  {
 
    $__MY__this->increment_line();
    $__MY__this->reset_error();
-   
+
    my $__MY__value;
 
    {
@@ -98,15 +98,15 @@ Code Snippets:
     Recs code snippets are perl code, with one exception.  There a couple of
     variables predefined for you, and one piece of special syntax to assist in
     modifying hashes.
-    
+
     \$r    - the current record object.  This may be used exactly like a hash, or you
     can use some of the special record functions, see Recs::Record for more
     information
-    
+
     \$line - This is the number of records run through the code snippet, starting
     at 1.  For most scripts this corresponds to the line number of the input to the
     script.
-    
+
     Use {{search_string}} to look for a string in the keys of a record, use /
     to nest keys.  You can nest into arrays by using an index.  If you are
     vivifying arrays (if the array doesn't exist, prefix your key with # so
@@ -115,14 +115,14 @@ Code Snippets:
 
     This is exactly the same as a key spec that is always prefaced with a @,
     see 'man recs' for more info on key specs
-    
-    For example: A record that looks like: 
+
+    For example: A record that looks like:
     { "foo" : { "bar 1" : 1 }, "zoo" : 2}
     Could be accessed like this:
-    
+
     # value of zoo  # value of \$r->{foo}->{bar 1}: (comma separate nested keys)
     {{zoo}}         {{foo/ar 1}}
-    
+
     # Even assign to values (set the foo key to the value 1)
     {{fo}} = 1
 
@@ -131,7 +131,7 @@ Code Snippets:
 
     # Index into an array
     {{array_key/#3}} # The value of index 3 of the array ref under the 'array_key' hash key.
-    
+
     Matching works like this in order, first key to match wins
     1. Exact match ( eq )
     2. Prefix match ( m/^/ )
