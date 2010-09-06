@@ -2,11 +2,9 @@ use Test::More qw(no_plan);
 use IO::String;
 use Data::Dumper;
 
-my $base_dir = $ENV{'BASE_TEST_DIR'} . '/Recs';
-
 BEGIN { use_ok( 'Recs::DBHandle' ) };
 
-my $db_file = $base_dir . '/testDb';
+my $db_file = $ENV{'BASE_TEST_DIR'} . '/files/testDb';
 
 @ARGV = ('--type', 'sqlite', '--dbfile', $db_file, 'foo');
 
