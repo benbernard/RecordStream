@@ -1,0 +1,3 @@
+#!/bin/sh
+
+pod2man -c 'Record Stream System' recs.pod > recs.1
