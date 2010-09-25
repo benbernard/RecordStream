@@ -81,7 +81,7 @@ sub usage {
 Usage: recs-fromps <args>
    Prints out an html table for the records from input or from <files>.
 
-   --fields <fields> - Fields to output.  May be specified multiple 
+   --fields <fields> - Fields to output.  May be specified multiple
                        times, may be comma separated.  Default to all fields
    --help            - Bail and output this help screen.
 

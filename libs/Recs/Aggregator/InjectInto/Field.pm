@@ -40,7 +40,7 @@ sub combine
    }
 }
 
-sub get_field 
+sub get_field
 {
     my $this = shift;
     return $this->{'field'};

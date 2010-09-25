@@ -27,7 +27,7 @@ sub init {
    unless ( $this->is_recs_operation($extra_args->[0]) ) {
      die "First chained command must be standard recs command not shell command!\n";
    }
-   
+
    $this->{'SAVED_ARGS'} = [@$extra_args] if ( $show_chain );
 
    if ( $dry_run ) {
@@ -159,7 +159,7 @@ sub add_operation {
 
    if ( $this->is_recs_operation($single_command->[0]) ) {
       push @$operations, Recs::Operation->create_operation(@$single_command);
-   } 
+   }
    else {
       push @$operations, [@$single_command];
    }
@@ -238,7 +238,7 @@ sub finish {
 
 sub get_exit_value {
    my $this = shift;
-   
+
    if ( my $tail = $this->{'CHAIN_TAIL'} ) {
       return $tail->get_exit_value();
    }

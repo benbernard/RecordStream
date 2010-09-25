@@ -24,7 +24,7 @@ sub init {
    $this->{'ANTI_MATCH'} = $anti_match;
 
    my $expression = shift @{$this->_get_extra_args()};
-   my $executor = Recs::Executor->new($expression); 
+   my $executor = Recs::Executor->new($expression);
    $this->{'EXECUTOR'} = $executor;
 }
 

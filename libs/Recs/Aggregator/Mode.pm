@@ -54,7 +54,7 @@ sub long_usage
 {
    print <<USAGE;
 Usage: mode,<field>
-   Finds the most common value for a field and returns it.  
+   Finds the most common value for a field and returns it.
    Will load all values into memory.
 USAGE
 

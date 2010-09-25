@@ -70,7 +70,7 @@ Arguments:
 
 Examples:
    Parse csv separated fields x and y.
-      recs-fromcsv --field x,y 
+      recs-fromcsv --field x,y
    Parse data with a header line specifying fields
       recs-fromcsv --header
 USAGE

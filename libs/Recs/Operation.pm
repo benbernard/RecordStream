@@ -103,7 +103,7 @@ sub set_input_stream {
 sub run_operation {
    my $this = shift;
 
-   my $input = $this->get_input_stream(); 
+   my $input = $this->get_input_stream();
 
    while ( my $record = $input->get_record() ) {
       $this->accept_record($record);

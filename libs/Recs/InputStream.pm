@@ -22,7 +22,7 @@ This module will generate an stream of Recs::Record objects for given inputs.
     ... do stuff ...
   }
 
-=head1 CONSTRUCTOR 
+=head1 CONSTRUCTOR
 
 =over 4
 

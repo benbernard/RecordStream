@@ -39,7 +39,7 @@ sub returns_record
    return 1;
 }
 
-sub argct 
+sub argct
 {
    return 0;
 }

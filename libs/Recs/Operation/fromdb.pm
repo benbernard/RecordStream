@@ -56,7 +56,7 @@ sub usage {
    and create a record stream from the results.  The keys of the record will be
    the column names and the values the row values.
 
-   --table - Name of the table to dump, this is a shortcut for 
+   --table - Name of the table to dump, this is a shortcut for
              --sql 'SELECT * from tableName'
    --sql   - SQL select statement to run
 

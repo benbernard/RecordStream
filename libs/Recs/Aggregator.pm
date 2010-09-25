@@ -190,7 +190,7 @@ sub map_squish
             ${$return_record->guess_key_from_spec("$name\_$key")} = $value->{$key};
          }
       }
-      else 
+      else
       {
          ${$return_record->guess_key_from_spec($name)} = $value;
       }

@@ -94,7 +94,7 @@ sub add_row {
    my $values = '';
 
    foreach my $key (@keys) {
-      my $value = ${$record->guess_key_from_spec($key)};                                                                                                                                                                                           
+      my $value = ${$record->guess_key_from_spec($key)};
       $value = '' if !defined($value);
       $value = substr($value, 0, 255) if ( ! $fields->{$key} );
       $values .= $dbh->quote($value) . ",";
@@ -147,7 +147,7 @@ sub usage {
    --table  - Name of the table to work with defaults to 'recs'
    --debug  - Print all the executed SQL
    --fields - Can either be a name value pair or just a name.  Name value pairs
-              should be fieldName=SQL Type.  If any fields are specified, they 
+              should be fieldName=SQL Type.  If any fields are specified, they
               will be the only fields put into the db.  May be specified
               multiple times, may also be comma separated.  Type defaults to
               VARCHAR(255)
@@ -171,7 +171,7 @@ sub add_field {
    my $hash  = shift;
    my $arg  = shift;
 
-   my @specs; 
+   my @specs;
 
    push @specs, split(',', $arg);
 
@@ -188,7 +188,7 @@ sub dbh_do {
 
    if ( $this->{'DEBUG'} ) {
      print "Running: $sql\n";
-   }                                                                                                                                                                                                                                               
+   }
 
    $dbh->do($sql);
 }

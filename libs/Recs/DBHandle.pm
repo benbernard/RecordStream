@@ -97,7 +97,7 @@ sub get_option_spec {
 
 sub mysql_dbh {
    my $args = shift;
-   
+
    my $database = $args->{'dbname'};
    my $host     = $args->{'host'};
    my $user     = $args->{'user'};
@@ -105,25 +105,25 @@ sub mysql_dbh {
 
    my $dbh = DBI->connect("DBI:mysql:database=$database;host=$host",
                           $user,
-                          $password, 
+                          $password,
                           { RaiseError => 1, PrintError => 0 });
-  
+
    return $dbh;
 }
 
 
 sub sqlite_dbh {
    my $args = shift;
-   
+
    my $db_file  = $args->{'dbfile'};
    my $user     = $args->{'user'};
    my $password = $args->{'password'};
 
    my $dbh = DBI->connect("dbi:SQLite:dbname=$db_file",
                           $user,
-                          $password, 
+                          $password,
                           { RaiseError => 1, PrintError => 0 });
-  
+
    return $dbh;
 }
 
@@ -136,9 +136,9 @@ sub oracle_dbh {
 
 
     my $dbh = DBI->connect("dbi:Oracle:$database",
-		       $user,
-		       $password,
-		       { RaiseError => 1, PrintError => 1 });
+        $user,
+        $password,
+        { RaiseError => 1, PrintError => 1 });
     return $dbh;
 }
 

@@ -29,7 +29,7 @@ sub init {
    die('Must specify --threshold') unless ( $threshold );
 
    # if threshold is not a number, assume its a parsable string
-   if ( not ($threshold =~ m/^[0-9.]+$/) ) 
+   if ( not ($threshold =~ m/^[0-9.]+$/) )
    {
       my $delta = ParseDateDelta($threshold);
       $threshold = Delta_Format($delta, 0, '%st');
@@ -73,7 +73,7 @@ sub accept_record {
    my $normalized_time_prior_period = $normalized_time_cur_period - $threshold;
 
    my $normalized_time;
-   if( !$strict && defined( $prior_normalized_value ) && $prior_normalized_value == $normalized_time_prior_period ) { 
+   if( !$strict && defined( $prior_normalized_value ) && $prior_normalized_value == $normalized_time_prior_period ) {
      $normalized_time = $prior_normalized_value;
    } else {
      $normalized_time = $normalized_time_cur_period;
@@ -91,12 +91,12 @@ sub full_help {
 
 Full Help
 
-This recs processor will generate normalized versions of date/time values and 
-add this value as another attribute to the record stream.  Used in conjunction 
+This recs processor will generate normalized versions of date/time values and
+add this value as another attribute to the record stream.  Used in conjunction
 with recs-collate you can aggregate information over the normalized time.  For
-example if you use 
-   recs-normalized -k date --n 1 | recs-collate -k n_date -a firstrec 
-then this picks a single record from a stream to serve in placement of lots of 
+example if you use
+   recs-normalized -k date --n 1 | recs-collate -k n_date -a firstrec
+then this picks a single record from a stream to serve in placement of lots of
 records which are close to each other in time.
 
 The normalized time value generated depends on whether or not you are using
@@ -108,8 +108,8 @@ an invocation (due to avoiding the expensive perl Date:Manip executions) and is
 required for correctness when the values are epoch seconds.
 
 1.  When using strict normalization then time is chunked up into fixed segments
-of --threshold seconds in each segment with the first segment occurring on 
-January 1st 1970 at 0:00.  So if the threshold is 60 seconds then the following 
+of --threshold seconds in each segment with the first segment occurring on
+January 1st 1970 at 0:00.  So if the threshold is 60 seconds then the following
 record stream would be produced
 
   date      n_date
@@ -127,9 +127,9 @@ segement chunk seen in the prior record.
 
 The logic used is the following:
   - a time is distilled down to a representative sample where the precision is
-    defined by the --threshold.  For example if you said that the threshold is 
+    defined by the --threshold.  For example if you said that the threshold is
     10 (seconds) then 10:22:01 and 10:22:09 would both become 10:22:00.  10:22:10
-    would be 10:22:10.  
+    would be 10:22:10.
   - as you can tell the representative values is the first second within the range
     that you define, with one exception
   - if the representative value of the prior record is in the prior range to the
@@ -150,30 +150,30 @@ So if the threshold is 60 seconds then the following record stream would be prod
 
 Basically a 60 second threshold will match the current minute and the next minute unless
 the prior minute was seen and then the 60 second threshold matches the current minute and
-the prior minute.  
+the prior minute.
 
 
-Example usage: if you have log records for "out of memory" exceptions which may occur multiple 
-times because of exception catching and logging then you can distill them all down to a 
+Example usage: if you have log records for "out of memory" exceptions which may occur multiple
+times because of exception catching and logging then you can distill them all down to a
 single logical event and then count the number of occurrences for a host via:
 
    grep "OutOfMemory" logs |\
       recs-frommultire --re 'host=@([^:]*):' --re 'date=^[A-Za-z]* (.*) GMT ' |\
       recs-normalizetime --key date --threshold 300 | \
       recs-collate --perfect --key n_date -a firstrec | \
-      recs-collate --perfect --key firstrec_host -a count=count 
+      recs-collate --perfect --key firstrec_host -a count=count
 
 FULL_HELP
 
    exit 1;
 }
 
-sub usage { 
+sub usage {
    return <<USAGE;
 Usage: recs-normalizetime <args> [<files>]
    Given a single key field containing a date/time value this recs processor
    will construct a normalized version of the value and place this new value
-   into a field named "n_<key>" (where <key> is the key field appearing in 
+   into a field named "n_<key>" (where <key> is the key field appearing in
    the args).
 
 Arguments:
