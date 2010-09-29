@@ -106,9 +106,22 @@ sub run_operation {
    my $input = $this->get_input_stream();
 
    while ( my $record = $input->get_record() ) {
+      set_current_filename($input->get_filename());
       $this->accept_record($record);
       last if ( $this->should_stop() );
    }
+}
+
+{
+  my $filename;
+  sub get_current_filename {
+    return $filename || 'NONE';
+  }
+
+  sub set_current_filename {
+    my $name = shift;
+    $filename = $name;
+  }
 }
 
 sub should_stop {

@@ -54,7 +54,7 @@ sub init {
 
 
    if ( $operation ) {
-      $this->{'OPERATION'} = Recs::Executor->new($operation);
+      $this->{'OPERATION'} = Recs::Executor->transform_code($operation);
    }
 
    $this->create_db($dbfile, $dbkey);
@@ -140,7 +140,11 @@ sub run_expression {
 
    no strict;
    no warnings;
-   eval $__MY__this->{'OPERATION'}->{'CODE'};
+   eval $__MY__this->{'OPERATION'};
+
+   if ( $@ ) {
+     warn "Code died with $@\n";
+   }
 }
 
 sub stream_done {

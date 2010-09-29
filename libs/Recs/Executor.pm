@@ -8,6 +8,8 @@ package Recs::Executor;
 use strict;
 use warnings;
 
+use Recs::Operation;
+
 use Getopt::Long;
 
 sub new {
@@ -18,8 +20,27 @@ sub new {
 
   bless $this, $class;
 
-  $this->{'CODE'} = $this->transform_code($code);
+  $this->{'CODE'} = create_code_ref($this->transform_code($code));
+  if ( $@ ) {
+     die "Could not compile code '$code':\n$@"
+  }
+
   return $this;
+}
+
+sub create_code_ref {
+   my $__MY__code = shift;
+
+   return eval <<CODE;
+no strict;
+no warnings;
+package __MY__SafeCompartment;
+
+sub { 
+  my (\$r, \$line, \$filename) = \@_;
+  $__MY__code;
+}
+CODE
 }
 
 sub increment_line {
@@ -33,34 +54,24 @@ sub line_count {
 }
 
 sub execute_code  {
-   my $__MY__this   = shift;
-   my $__MY__record = shift;
+   my $this   = shift;
+   my $record = shift;
 
-   $__MY__this->increment_line();
-   $__MY__this->reset_error();
+   $this->increment_line();
+   $this->reset_error();
 
-   my $__MY__value;
+   my $line = $this->line_count();
 
-   {
-      no strict;
-      no warnings;
+   my $value = eval { $this->{'CODE'}->($record, $line, Recs::Operation::get_current_filename()); };
 
-      my $r = $__MY__record;
-      my $line = $__MY__this->line_count();
-
-      $__MY__value = eval $__MY__this->{'CODE'};
-   }
-
-   if(my $error = $@)
-   {
+   if(my $error = $@) {
       undef $@;
-      $__MY__this->set_error($error);
+      $this->set_error($error);
       chomp $error;
       warn "Code threw: " . $error . "\n";
    }
-   else
-   {
-      return $__MY__value;
+   else {
+      return $value;
    }
 }
 
@@ -106,6 +117,11 @@ Code Snippets:
     \$line - This is the number of records run through the code snippet, starting
     at 1.  For most scripts this corresponds to the line number of the input to the
     script.
+
+    \$filename - The filename of the originating record.  Note: This is only
+    useful if you're passing filenames directly to the recs script, piping from
+    other recs scripts or from cat, for instance, will not have a useful
+    filename.
 
     Use {{search_string}} to look for a string in the keys of a record, use /
     to nest keys.  You can nest into arrays by using an index.  If you are
