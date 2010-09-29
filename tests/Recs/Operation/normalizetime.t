@@ -4,21 +4,21 @@ use Recs::Test::OperationHelper;
 BEGIN { use_ok( 'Recs::Operation::normalizetime' ) };
 
 my $stream = <<STREAM;
-{"date":"2009 Jun 12 1:00:00"}
-{"date":"2009 Jun 12 1:00:14"}
-{"date":"2009 Jun 12 1:00:59"}
-{"date":"2009 Jun 12 1:02:05"}
-{"date":"2009 Jun 12 1:02:55"}
-{"date":"2009 Jun 12 1:03:15"}
+{"date":"2009 Jun 12 1:00:00 UTC"}
+{"date":"2009 Jun 12 1:00:14 UTC"}
+{"date":"2009 Jun 12 1:00:59 UTC"}
+{"date":"2009 Jun 12 1:02:05 UTC"}
+{"date":"2009 Jun 12 1:02:55 UTC"}
+{"date":"2009 Jun 12 1:03:15 UTC"}
 STREAM
 
 my $solution = <<SOLUTION;
-{"n_date":1244793600,"date":"2009 Jun 12 1:00:00"}
-{"n_date":1244793600,"date":"2009 Jun 12 1:00:14"}
-{"n_date":1244793600,"date":"2009 Jun 12 1:00:59"}
-{"n_date":1244793720,"date":"2009 Jun 12 1:02:05"}
-{"n_date":1244793720,"date":"2009 Jun 12 1:02:55"}
-{"n_date":1244793780,"date":"2009 Jun 12 1:03:15"}
+{"n_date":1244768400,"date":"2009 Jun 12 1:00:00 UTC"}
+{"n_date":1244768400,"date":"2009 Jun 12 1:00:14 UTC"}
+{"n_date":1244768400,"date":"2009 Jun 12 1:00:59 UTC"}
+{"n_date":1244768520,"date":"2009 Jun 12 1:02:05 UTC"}
+{"n_date":1244768520,"date":"2009 Jun 12 1:02:55 UTC"}
+{"n_date":1244768580,"date":"2009 Jun 12 1:03:15 UTC"}
 SOLUTION
 
 Recs::Test::OperationHelper->do_match(
@@ -29,12 +29,12 @@ Recs::Test::OperationHelper->do_match(
 );
 
 $solution = <<SOLUTION;
-{"n_date":1244793600,"date":"2009 Jun 12 1:00:00"}
-{"n_date":1244793600,"date":"2009 Jun 12 1:00:14"}
-{"n_date":1244793600,"date":"2009 Jun 12 1:00:59"}
-{"n_date":1244793720,"date":"2009 Jun 12 1:02:05"}
-{"n_date":1244793720,"date":"2009 Jun 12 1:02:55"}
-{"n_date":1244793720,"date":"2009 Jun 12 1:03:15"}
+{"n_date":1244768400,"date":"2009 Jun 12 1:00:00 UTC"}
+{"n_date":1244768400,"date":"2009 Jun 12 1:00:14 UTC"}
+{"n_date":1244768400,"date":"2009 Jun 12 1:00:59 UTC"}
+{"n_date":1244768520,"date":"2009 Jun 12 1:02:05 UTC"}
+{"n_date":1244768520,"date":"2009 Jun 12 1:02:55 UTC"}
+{"n_date":1244768520,"date":"2009 Jun 12 1:03:15 UTC"}
 SOLUTION
 
 Recs::Test::OperationHelper->do_match(
