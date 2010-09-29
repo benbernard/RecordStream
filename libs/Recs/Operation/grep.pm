@@ -11,8 +11,14 @@ sub init {
    my $args = shift;
 
    my $anti_match;
+   my $context = 0;
+   my $after   = 0;
+   my $before  = 0;
    my $spec = {
-      "-v" => \$anti_match,
+      "-v"  => \$anti_match,
+      "C=s" => \$context,
+      "A=s" => \$after,
+      "B=s" => \$before,
    };
 
    $this->parse_options($args, $spec);
@@ -22,6 +28,15 @@ sub init {
    }
 
    $this->{'ANTI_MATCH'} = $anti_match;
+
+   if ( $context ) {
+     $after = $before = $context;
+   }
+
+   $this->{'AFTER'}  = $after;
+   $this->{'BEFORE'} = $before;
+
+   $this->{'ACCUMULATOR'} = [];
 
    my $expression = shift @{$this->_get_extra_args()};
    my $executor = Recs::Executor->new($expression);
@@ -36,10 +51,34 @@ sub accept_record {
    my $result = $executor->execute_code($record);
 
    $result = not $result if ( $this->{'ANTI_MATCH'} );
+   my $pushed_record = 0;
 
    if ( $result && ! $executor->last_error() ) {
+     if ( $this->{'BEFORE'} ) {
+       while(my $record = shift @{$this->{'ACCUMULATOR'}}) {
+         $this->push_record($record);
+       }
+     }
+
      $this->push_record($record);
+     $pushed_record = 1;
      $this->{'SEEN_RECORD'} = 1;
+
+     if ( $this->{AFTER} > 0 ) {
+       $this->{'FORCED_OUTPUT'} = $this->{'AFTER'};
+     }
+   }
+   elsif ( $this->{'BEFORE'} > 0 ) {
+     push @{$this->{'ACCUMULATOR'}}, $record;
+
+     if ( (scalar @{$this->{'ACCUMULATOR'}}) > $this->{'BEFORE'} ) {
+       shift @{$this->{'ACCUMULATOR'}};
+     }
+   }
+
+   if ( $this->{'FORCED_OUTPUT'} && (! $pushed_record) )  {
+     $this->push_record($record);
+     $this->{'FORCED_OUTPUT'}--;
    }
 }
 
@@ -58,6 +97,10 @@ Usage: recs-grep <args> <expr> [<files>]
 
 Arguments:
    -v       Anti-match.  Records NOT matching <expr> will be returned
+   -C NUM   Provide NUM records of context around matches, 
+            equivalent to -A NUM and -B NUM
+   -A NUM   Print out NUM following records after a match
+   -B NUM   Print out the previous NUM records on a match
    --help   Bail and output this help screen.
 
 USAGE
