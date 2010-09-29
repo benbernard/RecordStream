@@ -224,6 +224,21 @@ sub call_next_record {
    return $next->get_record();
 }
 
+sub get_filename {
+  my $this = shift;
+
+  if ( ! $this->is_done() ) {
+    return $this->get_file() if ( $this->get_file() );
+    return 'STRING_INPUT' if ( $this->get_string() );
+    return 'STREAM_INPUT' if ( $this->get_fh() );
+    return 'UNKNOWN';
+  }
+  elsif ( $this->get_next() ) {
+      return $this->get_next()->get_filename();
+  }
+
+}
+
 sub get_next {
    my $this = shift;
    return $this->{'NEXT'};
