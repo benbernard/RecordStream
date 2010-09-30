@@ -68,7 +68,7 @@ Examples:
    Rename field a to b
       recs-xform '\$r->rename("a", "n")'
    Delete field a
-      recs-xform '\$r->delete("a")'
+      recs-xform '\$r->remove("a")'
    Remove fields which are not "a", "b", or "c"
       recs-xform '\$r->prune("a", "b", "c")'
    Double records
