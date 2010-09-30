@@ -40,4 +40,4 @@ my $hash = {
    }
 };
 
-is($output_string, $out->hashref_string($rec), "String output agrees with printed output");
+is($output_string, $out->hashref_string($hash), "String output (hashref) agrees with printed output");
