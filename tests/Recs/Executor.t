@@ -28,3 +28,26 @@ use Recs::Record;
    my $executor4 = Recs::Executor->new('{{0}}');
    is($executor4->execute_code($rec2), "zero", "test number only in special lookup");
 }
+
+use Recs::Test::OperationHelper;
+
+my $output = <<OUTPUT;
+{"foo":1,"zap":"blah1","fn":"tests/files/testFile2"}
+{"foo":2,"zap":"blah2","fn":"tests/files/testFile2"}
+{"foo":3,"zap":"blah3","fn":"tests/files/testFile2"}
+{"value":"10.0.0.101","foo":"bar","element":"address","fn":"tests/files/testFile3"}
+{"value":"10.0.1.101","foo":"bar3","element":"address","fn":"tests/files/testFile3"}
+{"value":"10.0.0.102","foo":"bar3","element":"address2","fn":"tests/files/testFile3"}
+{"value":"10.0.0.103","foo":"bar","element":"address2","fn":"tests/files/testFile3"}
+{"value":"10.0.1.103","foo":"bar","element":"address2","fn":"tests/files/testFile3"}
+OUTPUT
+
+# Probably shouldn't use xform here, but I need a full context to test
+# $filename substition
+use Recs::Operation::xform;
+Recs::Test::OperationHelper->do_match(
+  'xform',
+  ['{{fn}} = $filename', 'tests/files/testFile2', 'tests/files/testFile3'],
+  '',
+  $output
+);
