@@ -277,7 +277,7 @@ Examples:
       recs-chain recs-frommultire 'data,time=(\\S+) (\\S+)' \\| recs-sort --key time=n \\| recs-collate --a perc,90,data
    Use shell commands in your recs stream
       recs-chain recs-frommultire 'data,time=(\\S+) (\\S+)' \\| recs-sort --key time=n \\| grep foo \\| recs-collate --a perc,90,data
-   Many shell comamnds should be split into real pipes
+   Many shell commands should be split into real pipes
       recs-chain recs-frommultire 'data,time=(\\S+) (\\S+)' \\| recs-xform '\$r->{now} = time();' \
         | grep foo | sort | uniq | recs-chain recs-collate --a perc,90,data \\| recs-totable
 USAGE

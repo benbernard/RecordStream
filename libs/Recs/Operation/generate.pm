@@ -46,26 +46,26 @@ sub accept_record {
 
    my $interpolated_command = $this->{'EXECUTOR'}->execute_code($record);
 
-    if ($@) {
-        chomp $@;
-        warn "# $0 interpolating command threw: " . $@ . "\n";
-        next;
-    }
+   if ($@) {
+      chomp $@;
+      warn "# $0 interpolating command threw: " . $@ . "\n";
+      next;
+   }
 
-    my $pid = open(my $pipe, "-|", $interpolated_command);
+   my $pid = open(my $pipe, "-|", $interpolated_command);
 
-    if (!$pid) {
-        warn "# $0 open(..., \"$interpolated_command |\") failed: $!\n";
-        next;
-    }
+   if (!$pid) {
+      warn "# $0 open(..., \"$interpolated_command |\") failed: $!\n";
+      next;
+   }
 
-    my $generator_stream = Recs::InputStream->new(FH => $pipe);
+   my $generator_stream = Recs::InputStream->new(FH => $pipe);
 
-    while(my $generated_record = $generator_stream->get_record()) {
-        ${$generated_record->guess_key_from_spec($this->{'KEYCHAIN'})} = $record->as_hashref();
-        $this->push_record($generated_record);
-    }
-    # Recs::InputStream closes the file handle for us
+   while(my $generated_record = $generator_stream->get_record()) {
+      ${$generated_record->guess_key_from_spec($this->{'KEYCHAIN'})} = $record->as_hashref();
+      $this->push_record($generated_record);
+   }
+   # Recs::InputStream closes the file handle for us
 }
 
 sub add_help_types {

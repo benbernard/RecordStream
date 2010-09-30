@@ -118,7 +118,7 @@ sub test_output {
 
    $helper->matches();
 
-   is(join ('', @collected_output), $output, "Output matches excepted");
+   is(join ('', @collected_output), $output, "Output matches expected");
 }
 
 
