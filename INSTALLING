@@ -1,0 +1,15 @@
+To use this package, put bin on your path and libs in your PERL5LIB env
+variable.  Also install the dependencies listed below.  ./tester.pl should run
+with no errors if everything is working.
+
+This is an informal list of dependencies.  Eventually I hope to make
+auto-make/conf and distribution bundles, but for now, this will serve
+
+Ubuntu packages: 
+  libyaml-syck-perl
+  libdbd-sqlite3-perl
+  sqlite3
+  libxml-simple-perl
+  libproc-processtable-perl
+  libdate-manip-perl
+  libtext-csv-perl
