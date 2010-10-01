@@ -51,7 +51,7 @@ SOLUTION
 
 Recs::Test::OperationHelper->do_match(
    'collate',
-   ['--key', 'element,foo', qw(--cube --perfect --a count)],
+   ['--key', 'element,foo', qw(--cube --a count)],
    $stream,
    $solution3,
 );

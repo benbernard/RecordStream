@@ -16,7 +16,7 @@ sub init {
 
    my @keys;
    my @aggregators;
-   my $size = 1;
+   my $size = undef;
    my $cube = 0;
    my $cube_default = "ALL";
    my $incremental = 0;
@@ -28,12 +28,15 @@ sub init {
       "aggregator|a=s"    => sub { push @aggregators, split(/:/, $_[1]); },
       "size|sz|n=i"       => \$size,
       "adjacent|1"        => sub { $size = 1; },
-      "perfect|p"         => sub { $size = undef; },
       "cube|c"            => \$cube,
       "cube-default=s"    => \$cube_default,
+      "perfect"           => sub { $size = undef},
       "incremental|i"     => \$incremental,
       "list-aggregators"  => \$list_aggregators,
       "show-aggregator=s" => \$aggregator,
+
+      #Perfect kept for cli backwards compatability (it is default now)
+      "perfect|p"         => sub { $size = undef; },
    };
 
    $this->parse_options($args, $spec);
@@ -209,8 +212,7 @@ Arguments:
    --aggregator|-a <aggregators> Colon separated list of aggregate field specifiers.
                                  See "Aggregates" section below.
    --size|--sz|-n <number>       Number of running clumps to keep.
-   --adjacent|-a|-1              Keep exactly one running clump.
-   --perfect                     Never purge clumps until the end.
+   --adjacent|-1                 Keep exactly one running clump.
    --cube                        See "Cubing" section below.
    --cube-default                See "Cubing" section below.
    --incremental                 Output a record every time an input record is added
@@ -234,23 +236,23 @@ Cubing:
    Instead of added one entry for each input record, we add 2 ** (number of key
    fields), with every possible combination of fields replaced with the default
    (which defaults to "ALL" but can be specified with --cube-default).  This is
-   really supposed to be used with --perfect.  If our key fields were x and y
-   then we'd get output records for {x = 1, y = 2}, {x = 1, y = ALL}, {x = ALL,
-   y = 2} and {x = ALL, y = ALL}.
+   not meant to be used with --adjacent or --size.  If our key fields were x
+   and y then we'd get output records for {x = 1, y = 2}, {x = 1, y = ALL}, {x
+   = ALL, y = 2} and {x = ALL, y = ALL}.
 
 Examples:
    Count clumps of adjacent lines with matching x fields.
       recs-collate --adjacent --key x --aggregator count
    Count number of each x field in the entire file.
-      recs-collate --perfect --key x --aggregator count
+      recs-collate --key x --aggregator count
    Count number of each x field in the entire file, including an "ALL" line.
-      recs-collate --perfect --key x --aggregator count --cube
+      recs-collate --key x --aggregator count --cube
    Produce a cummulative sum of field profit up to each date
-      recs-collate --key date --incremental --aggregator profit_to_date=sum,profit
+      recs-collate --key date --adjcent --incremental --aggregator profit_to_date=sum,profit
    Produce record count for each date, hour pair
-      recs-collate --key date,hour --perfect --aggregator count
+      recs-collate --key date,hour --aggregator count
     Finds the maximum latency for each date, hour pair
-      recs-collate --perfect --key date,hour --aggregator worst_latency=max,latency
+      recs-collate --key date,hour --aggregator worst_latency=max,latency
 USAGE
 }
 
