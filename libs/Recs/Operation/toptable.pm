@@ -31,9 +31,6 @@ sub init {
 
    $this->parse_options($args, $spec);
 
-   my %xfields = map { $_ => 1 } @xfields;
-   my %yfields = map { $_ => 1 } @yfields;
-   my %vfields;
    my $do_vfields = scalar(@vfields) ? 0 : 1;
 
 
@@ -42,9 +39,6 @@ sub init {
    $this->{'PINS_HASH'}     = \%pins;
    $this->{'VFIELDS_ARRAY'} = \@vfields;
    $this->{'HEADERS'}       = $headers;
-   $this->{'XFIELDS_HASH'}  = \%xfields;
-   $this->{'YFIELDS_HASH'}  = \%yfields;
-   $this->{'VFIELDS_HASH'}  = \%vfields;
    $this->{'DO_VFIELDS'}    = $do_vfields;
    $this->{'FULL'}          = $full;
 }
@@ -57,21 +51,24 @@ sub stream_done {
    my %pins       = %{$this->{'PINS_HASH'}};
    my @vfields    = @{$this->{'VFIELDS_ARRAY'}};
    my $headers    = $this->{'HEADERS'};
-   my %xfields    = %{$this->{'XFIELDS_HASH'}};
-   my %yfields    = %{$this->{'YFIELDS_HASH'}};
-   my %vfields    = %{$this->{'VFIELDS_HASH'}};
    my $do_vfields = $this->{'DO_VFIELDS'};
+
+   my %xfields = map { $_ => 1 } @xfields;
+   my %yfields = map { $_ => 1 } @yfields;
+   my %vfields;
 
    # TODO: fix this for key specs (nested keys)
    # change the record no vivify option to throw an exception
    # change recs-delta to handle that
    # invert this inner loop so you go looking for each key as it comes up...
    my $records = $this->get_records();
-   my @r = @$records;
-   for my $r (@r) {
-      if($do_vfields) {
-         for my $field (keys(%$r)) {
-            if(!exists($xfields{$field}) && !exists($yfields{$field}) && !exists($pins{$field}) && !exists($vfields{$field})) {
+   if($do_vfields) {
+      for my $record (@$records) {
+         foreach my $field (keys(%$record)) {
+            if ( !exists($xfields{$field}) && 
+                 !exists($yfields{$field}) && 
+                 !exists($pins{$field}) && 
+                 !exists($vfields{$field})) {
                push @vfields, $field;
                $vfields{$field} = 1;
             }
@@ -84,30 +81,30 @@ sub stream_done {
    my @r2;
    my %xvs;
    my %yvs;
-   for my $r (@r) {
+   foreach my $record (@$records) {
       # make sure records matches appropriate pins
-      my $ko = 0;
-      for my $pfield (keys(%pins)) {
+      my $kickout = 0;
+      foreach my $pfield (keys(%pins)) {
          if($pfield eq "FIELD") {
             next;
          }
 
          my $v = "";
-         if(exists($r->{$pfield})) {
-            $v = $r->{$pfield};
+         if(exists($record->{$pfield})) {
+            $v = $record->{$pfield};
          }
          if($pins{$pfield} ne $v) {
-            $ko = 1;
+            $kickout = 1;
             last;
          }
       }
-      if($ko) {
+      if($kickout) {
          next;
       }
 
       for my $vfield (@vfields) {
          # nothing to see here
-         if(!exists($r->{$vfield})) {
+         if(!exists($record->{$vfield})) {
             next;
          }
 
@@ -122,8 +119,8 @@ sub stream_done {
             if($xfield eq "FIELD") {
                $v = $vfield;
             }
-            elsif(exists($r->{$xfield})) {
-               $v = $r->{$xfield}
+            elsif(exists($record->{$xfield})) {
+               $v = $record->{$xfield}
             }
             push @xv, $v;
          }
@@ -134,15 +131,15 @@ sub stream_done {
             if($yfield eq "FIELD") {
                $v = $vfield;
             }
-            elsif(exists($r->{$yfield})) {
-               $v = $r->{$yfield}
+            elsif(exists($record->{$yfield})) {
+               $v = $record->{$yfield}
             }
             push @yv, $v;
          }
 
          my $v = "";
-         if(exists($r->{$vfield})) {
-            $v = $r->{$vfield};
+         if(exists($record->{$vfield})) {
+            $v = $record->{$vfield};
          }
 
          _put_deep(\%xvs, @xv);
@@ -263,32 +260,30 @@ sub _format_row {
 }
 
 sub _put_deep {
-    my $hr = shift;
+    my ($hash, @keys) = @_;
 
-    while(@_) {
-        my $k = shift;
+    foreach my $key (@keys) {
+       if(!exists($hash->{$key})) {
+          $hash->{$key} = { };
+       }
 
-        if(!exists($hr->{$k})) {
-            $hr->{$k} = { };
-        }
-
-        $hr = $hr->{$k};
+       $hash = $hash->{$key};
     }
 
-    $hr->{"_"} = -1;
+    $hash->{"_"} = -1;
 }
 
 sub _dump_deep {
-    my ($hr, $ar, $depth, @xv) = @_;
+    my ($hash, $array, $depth, @xv) = @_;
 
     if(!$depth) {
-        $hr->{"_"} = scalar(@$ar);
-        push @$ar, \@xv;
+        $hash->{"_"} = scalar(@$array);
+        push @$array, \@xv;
         return;
     }
 
-    for my $k (sort(keys(%$hr))) {
-        _dump_deep($hr->{$k}, $ar, $depth - 1, @xv, $k);
+    foreach my $key (sort(keys(%$hash))) {
+        _dump_deep($hash->{$key}, $array, $depth - 1, @xv, $key);
     }
 }
 
