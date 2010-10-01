@@ -30,7 +30,6 @@ sub init {
       "adjacent|1"        => sub { $size = 1; },
       "cube|c"            => \$cube,
       "cube-default=s"    => \$cube_default,
-      "perfect"           => sub { $size = undef},
       "incremental|i"     => \$incremental,
       "list-aggregators"  => \$list_aggregators,
       "show-aggregator=s" => \$aggregator,
