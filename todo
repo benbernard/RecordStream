@@ -13,3 +13,4 @@ perf test
 recs-frommultire - allow dynamic field names, allow dropped fields
 ExpressionHolder -
    needs to set local variables like line, and arbitrary others
+recs-fromcsv - needs to accept newlines in field names
