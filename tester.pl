@@ -31,4 +31,4 @@ if ( $file ) {
 my @files = `find $dir/tests -name '*.t'`;
 chomp @files;
 
-runtests(@files);
+runtests(sort @files);
