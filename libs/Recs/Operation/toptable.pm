@@ -135,7 +135,7 @@ sub stream_done {
                $v = ${$record->guess_key_from_spec($yfield)};
             }
             push @yv, $v;
-         }};
+         }
 
          my $v = "";
          if($record->has_key_spec($vfield)) {
