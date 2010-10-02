@@ -90,7 +90,7 @@ Compare this record to another, using comparators derived from @keys (see
 get_comparators).  Returns -1, 0, or 1 for $this before $that, $this same as
 $that, and $this after $that, respectively.
 
-=item $value_ref = $this->guess_key_from_spec($keyspec)
+=item $value_ref = $this->guess_key_from_spec($keyspec, $no_vivify = 0, $throw_error = 0)
 
 Get the reference for a key spec.  Commonly used like:
 
@@ -99,7 +99,15 @@ ${$r->guess_key_from_spec('foo/bar')} = 'boo'
 
 (the assign back gets back into the record)
 
+no_vivify and no_error are optional, and control behavior in the absence of the
+specified key.  throw_error will cause a 'NoSuchKey' exception to be thrown.
+
 See 'man recs' for more info on key specs
+
+=item $boolean = $this->has_key_spec($spec)
+
+Returns a boolean indicating the presence of the key spec in the record.  Will
+not have side effects in the record.
 
 =item $comparators_ref = Recs::Record::get_comparators(@specs)
 
@@ -381,8 +389,23 @@ sub _guess_key_name_raw {
 
 my $spec_parsed = {};
 
+sub has_key_spec {
+   my ($this, $spec) = @_;
+   eval { $this->guess_key_from_spec($spec, 0, 1) };
+
+   if ( $@ eq 'NoSuchKey' ) {
+      return 0;
+   }
+   elsif ( $@ ) {
+      #Rethrow if a different error
+      die $@;
+   }
+
+   return 1;
+}
+
 sub guess_key_from_spec {
-   my ($this, $spec, $no_vivify) = @_;
+   my ($this, $spec, $no_vivify, $throw_error) = @_;
 
    my $fuzzy = 0;
 
@@ -423,22 +446,18 @@ sub guess_key_from_spec {
       $spec_parsed->{$spec} = $keys;
    }
 
-   return $this->guess_key($fuzzy, $no_vivify, @{$spec_parsed->{$spec}});
+   return $this->guess_key($fuzzy, $no_vivify, $throw_error, @{$spec_parsed->{$spec}});
 }
 
 sub guess_key {
-   my ($this, $fuzzy_match, $no_vivify, @args) = @_;
-   return $this->_guess_key_recurse($this, '', $fuzzy_match, $no_vivify, @args);
+   my ($this, $fuzzy_match, $no_vivify, $throw_error, @args) = @_;
+   return $this->_guess_key_recurse($this, '', $fuzzy_match, $no_vivify, $throw_error, @args);
 }
 
 sub _guess_key_recurse {
-   my $this           = shift;
-   my $data           = shift;
-   my $key_chain      = shift;
-   my $fuzzy_matching = shift;
-   my $no_vivify      = shift;
-   my $search_string  = shift;
-   my @next_strings   = @_;
+   my ($this, $data, $key_chain, $fuzzy_matching, $no_vivify, $throw_error,
+       $search_string, @next_strings)  = @_;
+
    my $found_key;
 
    if ( UNIVERSAL::isa($data, 'SCALAR') || UNIVERSAL::isa(\$data, 'SCALAR') ) {
@@ -459,7 +478,12 @@ sub _guess_key_recurse {
    if ( scalar @next_strings > 0 ) {
       if ( ! defined $$value ) {
          if ( $no_vivify ) {
-            return '';
+            if ( $throw_error ) {
+               die "NoSuchKey";
+            }
+            else {
+               return '';
+            }
          }
 
          if ( substr($next_strings[0], 0, 1) eq '#' ) {
@@ -470,7 +494,7 @@ sub _guess_key_recurse {
          }
       }
 
-      return $this->_guess_key_recurse($$value, $key_chain . "-$key", $fuzzy_matching, $no_vivify, @next_strings);
+      return $this->_guess_key_recurse($$value, $key_chain . "-$key", $fuzzy_matching, $no_vivify, $throw_error, @next_strings);
    }
 
    return $value;

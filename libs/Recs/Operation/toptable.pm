@@ -57,10 +57,8 @@ sub stream_done {
    my %yfields = map { $_ => 1 } @yfields;
    my %vfields;
 
-   # TODO: fix this for key specs (nested keys)
-   # change the record no vivify option to throw an exception
-   # change recs-delta to handle that
-   # invert this inner loop so you go looking for each key as it comes up...
+   # FIXME: this loop can add to the vfields group fields that are keyspecs in
+   # x,y,or pin
    my $records = $this->get_records();
    if($do_vfields) {
       for my $record (@$records) {
@@ -89,10 +87,12 @@ sub stream_done {
             next;
          }
 
-         my $v = "";
-         if(exists($record->{$pfield})) {
-            $v = $record->{$pfield};
+         my $v = '';
+
+         if ( $record->has_key_spec($pfield) ) {
+            $v = ${$record->guess_key_from_spec($pfield)};
          }
+
          if($pins{$pfield} ne $v) {
             $kickout = 1;
             last;
@@ -104,7 +104,7 @@ sub stream_done {
 
       for my $vfield (@vfields) {
          # nothing to see here
-         if(!exists($record->{$vfield})) {
+         if(!$record->has_key_spec($vfield)) {
             next;
          }
 
@@ -119,8 +119,8 @@ sub stream_done {
             if($xfield eq "FIELD") {
                $v = $vfield;
             }
-            elsif(exists($record->{$xfield})) {
-               $v = $record->{$xfield}
+            elsif($record->has_key_spec($xfield)) {
+               $v = ${$record->guess_key_from_spec($xfield)};
             }
             push @xv, $v;
          }
@@ -131,15 +131,15 @@ sub stream_done {
             if($yfield eq "FIELD") {
                $v = $vfield;
             }
-            elsif(exists($record->{$yfield})) {
-               $v = $record->{$yfield}
+            elsif($record->has_key_spec($yfield)) {
+               $v = ${$record->guess_key_from_spec($yfield)};
             }
             push @yv, $v;
          }
 
          my $v = "";
-         if(exists($record->{$vfield})) {
-            $v = $record->{$vfield};
+         if($record->has_key_spec($vfield)) {
+            $v = ${$record->guess_key_from_spec($vfield)};
          }
 
          _put_deep(\%xvs, @xv);
@@ -396,7 +396,7 @@ happens to our table now:
 +-----+--------+-------+-------+--------+
 
 We now have sum_rss values in this field.  What if we want the other field
-(count) displayed?  We just use --value-field to specify what value field to
+(count) displayed?  We just use --v-field to specify what value field to
 use:
 
 \$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube -a sum,rss | recs-toptable --x priority --y state --v count
@@ -467,21 +467,20 @@ Usage: recs-toptable <args> [<files>]
    X and Y fields can take the special value 'FIELD' which uses unused field
    names as values for the FIELD dimension
 
-   NOTE: This script does not support key specs (nested or guessed keys), all
-   field arguments must be first level actual keys
-
    --help       Bail and print this usage
    --x-field|x  Add a x field, values of the specified field will become
-                columns in the table
+                columns in the table, may be a keyspec.
    --y-field|y  Add a y field, values of the specified field will become
-                rows in the table
+                rows in the table, may be a keyspec.
    --v-field|v  Specify the value to display in the table, if multiple value
                 fields are specified and FIELD is not placed in the x or y
-                axes, then the last one wins
+                axes, then the last one wins, may be a keyspec.
    --pin        Pin a field to a certain value, only display records matching
                 that value, very similar to doing a recs-grep befor toptable.
-                Takes value of the form: field=pinnedValue
-   --full       Print full help documentation, including example and bail
+                Takes value of the form: field=pinnedValue, field may be a
+                keyspec
+   --full       Print full help documentation, including example and bail.
+                This provides many more examples than this help page.
    --noheaders  Do not print row and column headers (removes blank rows and
                 columns)
 
