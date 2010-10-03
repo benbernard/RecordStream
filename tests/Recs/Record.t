@@ -186,8 +186,9 @@ BEGIN { use_ok("Recs::Record"); }
   ${$rec->guess_key_from_spec("fifth_key")} = 3;
   ok($rec->{"fifth_key"} == 3, "First level vivification");
 
-  ${$rec->guess_key_from_spec("sixth_key")} = [qw(a b c)];
+  ${$rec->guess_key_from_spec("sixth_key")} = [qw(a b c), {foo=>'bar'}];
   is(${$rec->guess_key_from_spec("sixth_key/#2")}, 'c', "Index into an array, with sharp");
+  is(${$rec->guess_key_from_spec("sixth_key/#3/foo")}, 'bar', "Descend into hash after array");
 
   ${$rec->guess_key_from_spec('seventh_key\\/after_slash')} = 10;
   is($rec->{'seventh_key/after_slash'}, 10, "Escape forward slash");
@@ -199,4 +200,28 @@ BEGIN { use_ok("Recs::Record"); }
   my $rec3 = Recs::Record->new();
   $rec3->guess_key_from_spec('foo/bar', 0);
   is_deeply({$rec2->as_hash()}, {}, "No Autovivification");
-}          
+
+  my $rec4 = Recs::Record->new("biz"=>'zap');
+  eval { $rec4->guess_key_from_spec('foo/bar', 0, 1); };
+  is_deeply($@ =~ m/NoSuchKey/, 1, 'Throw error non nonexistent key');
+
+  is($rec4->has_key_spec('foo/bar'), 0, 'Has keyspec reports failure');
+  is($rec4->has_key_spec('@b'), 1, 'Has keyspec returns true for fuzzy matching');
+
+  is(${$rec4->guess_key_from_spec('biz', 0, 1)}, 'zap', 'Do not throw error on existing key');
+
+  #TODO: write key list test
+  is_deeply($rec4->get_key_list_for_spec('@b'), ['biz'], "Keylist returns top level key");
+
+  $rec4->{'roo'}->{'foo'} = [{one=>1}, {two=>2}, {three=>3}];
+
+  is_deeply($rec4->get_key_list_for_spec('@r/f'), [qw(roo foo)], "Key list nesting with hashes");
+  is_deeply($rec4->get_key_list_for_spec('@r/f/#1/tw'), ['roo', 'foo', '#1', 'two'], "Key list nesting with arrays");
+  is_deeply($rec4->get_key_list_for_spec('not_here'), [], "Key list returns empty array on not present");
+
+  my $rec5 = Recs::Record->new('foo'=>'bar');
+  $rec5->get_key_list_for_spec('not_here');
+  is_deeply({$rec5->as_hash()}, {foo => 'bar'}, "get_key_list_for_spec doesn't auto-vivify");
+  $rec5->get_key_list_for_spec('not_here/zap');
+  is_deeply({$rec5->as_hash()}, {foo => 'bar'}, "get_key_list_for_spec doesn't auto-vivify, nested spec");
+}

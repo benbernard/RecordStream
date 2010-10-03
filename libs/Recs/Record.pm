@@ -109,6 +109,11 @@ See 'man recs' for more info on key specs
 Returns a boolean indicating the presence of the key spec in the record.  Will
 not have side effects in the record.
 
+=item $ARRAY_REF = $this->get_key_list_for_spec($spec)
+
+Returns a list of keys that the spec expanded out to.  Arrrays will still be
+#NUM, hash keys will be fully expanded to the keys present in the record.
+
 =item $comparators_ref = Recs::Record::get_comparators(@specs)
 
 Calls get_comparator for each element of @specs and returns the results
@@ -133,7 +138,7 @@ records.
 =cut
 
 use strict;
-use lib;
+use warnings;
 
 use Data::Dumper;
 
@@ -322,7 +327,7 @@ sub _search_string_to_key {
    my $key_chain = shift;
    my $string    = shift;
 
-   return $guessed_keys->{$key_chain}->{$string};
+   return $guessed_keys->{join('-', @$key_chain)}->{$string};
 }
 
 sub _add_string_key_mapping {
@@ -330,7 +335,7 @@ sub _add_string_key_mapping {
    my $string    = shift;
    my $key       = shift;
 
-   $guessed_keys->{$key_chain}->{$string} = $key;
+   $guessed_keys->{join('-', @$key_chain)}->{$string} = $key;
 }
 
 sub _guess_key_name_raw {
@@ -393,7 +398,7 @@ sub has_key_spec {
    my ($this, $spec) = @_;
    eval { $this->guess_key_from_spec($spec, 0, 1) };
 
-   if ( $@ eq 'NoSuchKey' ) {
+   if ( $@ =~ m/^NoSuchKey/ ) {
       return 0;
    }
    elsif ( $@ ) {
@@ -407,6 +412,22 @@ sub has_key_spec {
 sub guess_key_from_spec {
    my ($this, $spec, $no_vivify, $throw_error) = @_;
 
+   my ($parsed_spec, $fuzzy) = $this->_get_parsed_key_spec($spec);
+
+   return $this->guess_key($fuzzy, $no_vivify, $throw_error, @$parsed_spec);
+}
+
+sub get_key_list_for_spec {
+   my ($this, $spec) = @_;
+
+   my ($parsed_spec, $fuzzy) = $this->_get_parsed_key_spec($spec);
+
+   return $this->_guess_key_recurse($this, [], $fuzzy, 1, 0, 1, @$parsed_spec);
+}
+
+sub _get_parsed_key_spec {
+   my ($this, $spec) = @_;
+
    my $fuzzy = 0;
 
    if ( substr($spec, 0, 1) eq '@' ) {
@@ -414,51 +435,48 @@ sub guess_key_from_spec {
       $spec = substr($spec, 1);
    }
 
-   if ( ! (defined $spec_parsed->{$spec}) ) {
-      my $keys = [];
-      my $current_key = '';
-      my $last_char = '';
+   return ($spec_parsed->{$spec}, $fuzzy) if ( defined $spec_parsed->{$spec} );
 
-      for (my $index = 0; $index < length($spec); $index++) {
-         my $current_char = substr($spec, $index, 1);
+   my $keys = [];
+   my $current_key = '';
+   my $last_char = '';
 
-         if ( $current_char eq '/' && $last_char ne '\\' ) {
-            push @$keys, $current_key;
-            $current_key = '';
-            $last_char   = '';
-            next;
-         }
-         else {
-            if ( $current_char eq '/' ) {
-               chop $current_key;
-            }
+   for (my $index = 0; $index < length($spec); $index++) {
+      my $current_char = substr($spec, $index, 1);
 
-            $current_key .= $current_char;
-            $last_char    = $current_char;
-            next;
-         }
-      }
-
-      if ( $current_key ne '' ) {
+      if ( $current_char eq '/' && $last_char ne '\\' ) {
          push @$keys, $current_key;
+         $current_key = '';
+         $last_char   = '';
+         next;
       }
+      else {
+         if ( $current_char eq '/' ) {
+            chop $current_key;
+         }
 
-      $spec_parsed->{$spec} = $keys;
+         $current_key .= $current_char;
+         $last_char    = $current_char;
+         next;
+      }
    }
 
-   return $this->guess_key($fuzzy, $no_vivify, $throw_error, @{$spec_parsed->{$spec}});
+   if ( $current_key ne '' ) {
+      push @$keys, $current_key;
+   }
+
+   $spec_parsed->{$spec} = $keys;
+   return ($keys, $fuzzy);
 }
 
 sub guess_key {
    my ($this, $fuzzy_match, $no_vivify, $throw_error, @args) = @_;
-   return $this->_guess_key_recurse($this, '', $fuzzy_match, $no_vivify, $throw_error, @args);
+   return $this->_guess_key_recurse($this, [], $fuzzy_match, $no_vivify, $throw_error, 0, @args);
 }
 
 sub _guess_key_recurse {
    my ($this, $data, $key_chain, $fuzzy_matching, $no_vivify, $throw_error,
-       $search_string, @next_strings)  = @_;
-
-   my $found_key;
+       $return_key_chain, $search_string, @next_strings)  = @_;
 
    if ( UNIVERSAL::isa($data, 'SCALAR') || UNIVERSAL::isa(\$data, 'SCALAR') ) {
       die "Cannot look for $search_string in scalar: " . Dumper($data);
@@ -470,20 +488,22 @@ sub _guess_key_recurse {
 
    if ( UNIVERSAL::isa($data, 'ARRAY') ) {
       $value = \($data->[$key]);
+      $key = "#$key";
    }
    else {
+      if ( $no_vivify && (!exists $data->{$key}) ) {
+         return $return_key_chain ? [] : '';
+      }
+
       $value = \($data->{$key})
    }
 
    if ( scalar @next_strings > 0 ) {
       if ( ! defined $$value ) {
+         die "NoSuchKey" if ( $throw_error );
+
          if ( $no_vivify ) {
-            if ( $throw_error ) {
-               die "NoSuchKey";
-            }
-            else {
-               return '';
-            }
+            return $return_key_chain ? [] : '';
          }
 
          if ( substr($next_strings[0], 0, 1) eq '#' ) {
@@ -494,10 +514,16 @@ sub _guess_key_recurse {
          }
       }
 
-      return $this->_guess_key_recurse($$value, $key_chain . "-$key", $fuzzy_matching, $no_vivify, $throw_error, @next_strings);
+      return $this->_guess_key_recurse($$value, 
+                                       [@$key_chain, $key], 
+                                       $fuzzy_matching, 
+                                       $no_vivify, 
+                                       $throw_error, 
+                                       $return_key_chain, 
+                                       @next_strings);
    }
 
-   return $value;
+   return $return_key_chain ? [@$key_chain, $key] : $value;
 }
 
 sub cmp
