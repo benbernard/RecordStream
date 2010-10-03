@@ -53,20 +53,25 @@ sub stream_done {
    my $headers    = $this->{'HEADERS'};
    my $do_vfields = $this->{'DO_VFIELDS'};
 
-   my %xfields = map { $_ => 1 } @xfields;
-   my %yfields = map { $_ => 1 } @yfields;
-   my %vfields;
-
-   # FIXME: this loop can add to the vfields group fields that are keyspecs in
-   # x,y,or pin
    my $records = $this->get_records();
+
    if($do_vfields) {
+      my %xfields = map { $_ => 1 } @xfields;
+      my %yfields = map { $_ => 1 } @yfields;
+      my %vfields;
+      my %used_first_level_keys;
+
       for my $record (@$records) {
+         foreach my $spec (@xfields, @yfields, keys %pins) {
+            my $key_list = $record->get_key_list_for_spec($spec);
+            if (scalar @$key_list > 0) {
+               $used_first_level_keys{$key_list->[0]} = 1;
+            }
+         }
+
          foreach my $field (keys(%$record)) {
-            if ( !exists($xfields{$field}) && 
-                 !exists($yfields{$field}) && 
-                 !exists($pins{$field}) && 
-                 !exists($vfields{$field})) {
+            if ( !exists($used_first_level_keys{$field}) && 
+                 !exists($vfields{$field}) ) {
                push @vfields, $field;
                $vfields{$field} = 1;
             }
