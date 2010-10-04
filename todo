@@ -3,7 +3,6 @@ perldocs for modules
 more aggregators
    powersum
    threshct
-   percmap
    ord2univariatemap
    ord2bivariatemap
    linreg
@@ -11,10 +10,7 @@ perf test
    recs-collate lru size 1 v. optimized adjacent recs collate
    JSON v. old recs v. other serialization (Data::Dumper, Storable, ?)
 recs-frommultire - allow dynamic field names, allow dropped fields
-ExpressionHolder -
-   needs to set local variables like line, and arbitrary others
 recs-fromcsv - needs to accept newlines in field names
-Recs::Record - key list function - need to fix pmet vfield collection
 
 Key groups:
   !REGEX!opt1!opt2!...
