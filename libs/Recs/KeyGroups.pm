@@ -48,7 +48,32 @@ sub get_keyspecs_for_record {
    return \@specs;
 }
 
-sub help {
+sub usage {
+   return <<HELP;
+KEY GROUPS
+   SYNTAX: !regex!opt1!opt2...
+   Key groups are a way of specifying multiple fields to a recs command with a
+   single argument or function.  They are generally regexes, and have several
+   options to control what fields they match.  By default you give a regex, and
+   it will be matched against all first level keys of a record to come up with
+   the record list.  For instance, in a record like this:
+
+   { 'zip': 1, 'zap': 2, 'foo': { 'bar': 3 } }
+
+   Key group: !z! would get the keys 'zip' and 'zap'
+
+   Normally, key groups will only match keys who's values are scalars.  This
+   can be changed with the 'returnrefs' or rr flag.
+
+   With the above record !f! would match no fields, but !f!rr would match foo
+   (which has a value of a hash ref)
+
+   Options on KeyGroups:
+      returnrefs, rr  - Return keys that have reference values (default:off)
+      full, f         - Regex should match against full keys (recurse fully)
+      depth=NUM,d=NUM - Only match keys at NUM depth (regex will match against
+                        full keyspec)
+HELP
 }
 
 1;
@@ -82,12 +107,16 @@ sub get_fields {
 package Recs::KeyGroups::Group;
 
 my $VALID_OPTIONS = {
-   d      => 'depth',
-   depth  => 'depth',
-   s      => 'sort',
-   'sort' => 'sort',
-   f      => 'full_match',
-   full   => 'full_match',
+   d          => 'depth',
+   depth      => 'depth',
+
+   #s          => 'sort',
+   #'sort'     => 'sort',
+
+   f          => 'full_match',
+   full       => 'full_match',
+   rr         => 'return_refs',
+   returnrefs => 'return_refs'
 };
 
 sub new {
@@ -126,12 +155,12 @@ sub get_specs {
    my $min_depth = 1;
    my $max_depth = 1;
 
-   if ( exists $this->{'OPTIONS'}->{'full_match'} ) {
+   if ( $this->has_option('full_match') ) {
       $max_depth = -1;
 
    }
-   elsif ( exists $this->{'OPTIONS'}->{'depth'} ) {
-      my $depth = $this->{'OPTIONS'}->{'depth'};
+   elsif ( $this->has_option('depth') ) {
+      my $depth = $this->option_value('depth');
       $min_depth = $depth;
       $max_depth = $depth;
    }
@@ -150,13 +179,12 @@ sub _get_paths {
    my $current_keys  = shift;
    my $found_paths   = shift;
 
-   $DB::single=1;
-
-   if ( ref($data) eq '' ) {
-      if ( $current_depth >= $min_depth ) {
+   if ( $current_depth >= $min_depth ) {
+      if ( ref($data) eq '' || $this->has_option('return_refs') ) {
          push @$found_paths, [@$current_keys];
       }
    }
+
    if ( ref($data) eq 'ARRAY' ) {
       my $index = -1;
       foreach my $value ( @$data ) {
@@ -240,6 +268,20 @@ sub parse_group {
 
    $this->{'REGEX'}   = $regex;
    $this->{'OPTIONS'} = $options;
+}
+
+sub has_option {
+   my $this   = shift;
+   my $option = shift;
+
+   return exists $this->{'OPTIONS'}->{$option};
+}
+
+sub option_value {
+   my $this   = shift;
+   my $option = shift;
+
+   return $this->{'OPTIONS'}->{$option};
 }
 
 1;

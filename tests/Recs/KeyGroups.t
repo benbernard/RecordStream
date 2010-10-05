@@ -41,6 +41,12 @@ is_deeply([sort @{$group->get_fields($rec2)}], [qw(zip/foo zip_foo)], "Find seco
 $group->parse_group('!foo!d=2');
 is_deeply([sort @{$group->get_fields($rec2)}], [qw(zip/foo zip_foo)], "Find only second level key");
 
+$group->parse_group('!zip!rr');
+is_deeply([sort @{$group->get_fields($rec2)}], [qw(zip zip_bar zip_foo)], "return refs");
+
+$group->parse_group('!zip!rr!f');
+is_deeply([sort @{$group->get_fields($rec2)}], [qw(zip zip/foo zip_bar zip_foo)], "return refs");
+
 eval { $group->parse_group('!foo') };
 ok($@ =~ m/Malformed group spec/, "error on missing ending !");
 
@@ -73,3 +79,7 @@ is_deeply([sort @{$key_groups->get_keyspecs_for_record($g_rec1)}], [qw(zip_bar z
 
 my $kg2 = Recs::KeyGroups->new('@zip/f', '!bar!f');
 is_deeply([sort @{$kg2->get_keyspecs_for_record($g_rec1)}], [qw(zip/foo zip_bar)], "Find with 2 keygroups, one a keyspec");
+
+
+my $kg3 = Recs::KeyGroups->new('!foo!,!bar!f');
+is_deeply($key_groups, $expected, "Basic Keygroup specification");
