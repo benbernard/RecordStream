@@ -105,18 +105,18 @@ sub transform_code {
 
 sub usage {
    return <<USAGE;
-Code Snippets:
+CODE SNIPPETS:
     Recs code snippets are perl code, with one exception.  There a couple of
     variables predefined for you, and one piece of special syntax to assist in
     modifying hashes.
 
-    \$r    - the current record object.  This may be used exactly like a hash, or you
-    can use some of the special record functions, see Recs::Record for more
-    information
+    \$r    - the current record object.  This may be used exactly like a hash,
+    or you can use some of the special record functions, see Recs::Record for
+    more information
 
-    \$line - This is the number of records run through the code snippet, starting
-    at 1.  For most scripts this corresponds to the line number of the input to the
-    script.
+    \$line - This is the number of records run through the code snippet,
+    starting at 1.  For most scripts this corresponds to the line number of the
+    input to the script.
 
     \$filename - The filename of the originating record.  Note: This is only
     useful if you're passing filenames directly to the recs script, piping from
@@ -146,12 +146,11 @@ Code Snippets:
     {{new_key/array_key/#0}} = 3 # creates an array within a hash within a hash
 
     # Index into an array
-    {{array_key/#3}} # The value of index 3 of the array ref under the 'array_key' hash key.
+    {{array_key/#3}} # The value of index 3 of the array ref under the
+                       'array_key' hash key.
 
-    Matching works like this in order, first key to match wins
-    1. Exact match ( eq )
-    2. Prefix match ( m/^/ )
-    3. Match anywehre in the key (m//)
+    This matching is a fuzzy keyspec matching, see --help-keyspecs for more
+    details.
 USAGE
 }
 

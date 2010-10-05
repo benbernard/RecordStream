@@ -9,6 +9,17 @@ use Getopt::Long;
 use Recs::InputStream;
 use Recs::Site;
 
+use Recs::KeyGroups;
+use Recs::Executor;
+
+my $HELP_TYPES = {
+   all       => \&all_help,
+   snippet   => \&snippet_help,
+   keygroups => \&keygroups_help,
+   keyspecs  => \&keyspecs_help,
+   basic     => \&basic_help,
+};
+
 sub accept_record {
    subclass_should_implement(shift);
 }
@@ -35,7 +46,12 @@ sub parse_options {
    my $args         = shift || [];
    my $options_spec = shift || {};
 
-   $options_spec->{'help'} ||= sub { $this->_set_wants_help(1); };
+   foreach my $help_type (keys %$HELP_TYPES) {
+      next if ( $help_type eq 'basic' );
+      $options_spec->{'help-' . $help_type} ||= sub { $HELP_TYPES->{$help_type}->($this); exit 1; };
+   }
+
+   $options_spec->{'help'} ||= sub { $this->_set_wants_help('basic'); };
 
    local @ARGV = @$args;
    GetOptions(%$options_spec);
@@ -76,7 +92,6 @@ sub print_usage {
    }
 
    print $this->usage();
-   exit 1;
 }
 
 sub init {
@@ -214,12 +229,43 @@ sub create_operation {
    eval {
       $op = $module->new(\@args);
    };
-
+   
    if ( $@ || $op->get_wants_help() ) {
       ($op || $module)->print_usage($@);
+      exit 1;
    }
 
    return $op;
+}
+
+sub basic_help {
+   my $this = shift;
+   $this->print_usage($@);
+}
+
+sub all_help {
+   my $this = shift;
+
+   foreach my $type (sort keys %$HELP_TYPES) {
+      next if ( $type eq 'all' );
+      $HELP_TYPES->{$type}->($this);
+      print "\n"
+   }
+}
+
+sub snippet_help {
+   my $this = shift;
+   print Recs::Executor::usage();
+}
+
+sub keyspecs_help {
+   my $this = shift;
+   print Recs::Record::keyspec_help();
+}
+
+sub keygroups_help {
+   my $this = shift;
+   print Recs::KeyGroups::usage();
 }
 
 sub _set_next_operation {
