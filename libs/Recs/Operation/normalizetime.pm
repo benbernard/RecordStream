@@ -20,7 +20,6 @@ sub init {
       "strict|s"      => \$strict,
       "epoch|e"       => \$epoch,
       "threshold|n=s" => \$threshold,
-      'full'          => \&full_help,
    };
 
    $this->parse_options($args, $spec);
@@ -85,10 +84,19 @@ sub accept_record {
    $this->push_record($record);
 }
 
-sub full_help {
-   print usage();
-   print <<FULL_HELP;
+sub add_help_types {
+   my $this = shift;
 
+   $this->use_help_type('keyspecs');
+   $this->add_help_type(
+      'full',
+      \&full_help,
+      'Indepth description of normalization alogrithm'
+   );
+}
+
+sub full_help {
+   print <<FULL_HELP;
 Full Help
 
 This recs processor will generate normalized versions of date/time values and
@@ -164,8 +172,6 @@ single logical event and then count the number of occurrences for a host via:
       recs-collate --perfect --key firstrec_host -a count=count
 
 FULL_HELP
-
-   exit 1;
 }
 
 sub usage {
@@ -178,15 +184,13 @@ Usage: recs-normalizetime <args> [<files>]
 
 Arguments:
    --key|-k <key>                Single Key field containing the date/time
-                                 may be a key spec, see 'man recs' for more info
+                                 may be a key spec, see '--help-keyspecs' for more info
    --epoch|-e                    Assumes date/time field is expressed in epoch seconds
                                  (optional, defaults to non-epoch)
    --threshold|-n <time range>   Number of seconds in the range.  May also be a
                                  duration string like '1 week' or '5 minutes',
                                  parsable by Date::Manip
    --strict|-s                   Apply strict normalization (defaults to non-strict)
-   --help                        Bail and output this help screen.
-   --full                        Print out full help
 
 Examples:
    # Tag records with normalized time in 5 minute buckets from the date field

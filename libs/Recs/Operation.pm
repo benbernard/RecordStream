@@ -12,14 +12,6 @@ use Recs::Site;
 use Recs::KeyGroups;
 use Recs::Executor;
 
-my $HELP_TYPES = {
-   all       => \&all_help,
-   snippet   => \&snippet_help,
-   keygroups => \&keygroups_help,
-   keyspecs  => \&keyspecs_help,
-   basic     => \&basic_help,
-};
-
 sub accept_record {
    subclass_should_implement(shift);
 }
@@ -29,16 +21,92 @@ sub usage {
 }
 
 sub new {
-   my $class = shift;
-   my $args  = shift;
+   my $class    = shift;
+   my $run_init = shift;
+   my $args     = shift;
 
    my $this = {
    };
 
    bless $this, $class;
 
-   $this->init($args);
+   $this->init_help();
+   $this->init($args) if ( $run_init );
    return $this;
+}
+
+sub init_help {
+   my $this        = shift;
+   $this->{'HELP_TYPES'} = {
+      all       => { 
+         USE         => 0,
+         SKIP_IN_ALL => 1,
+         CODE        => \&all_help,
+         DESCRIPTION => 'Output all help for this script',
+      },
+      snippet   => { 
+         USE         => 0,
+         SKIP_IN_ALL => 0,
+         CODE        => \&snippet_help,
+         DESCRIPTION => 'Help on code snippets',
+      },
+      keygroups => { 
+         USE         => 0,
+         SKIP_IN_ALL => 0,
+         CODE        => \&keygroups_help,
+         DESCRIPTION => 'Help on keygroups, a way of specifying multiple keys',
+      },
+      keyspecs  => { 
+         USE         => 0,
+         SKIP_IN_ALL => 0,
+         CODE        => \&keyspecs_help,
+         DESCRIPTION => 'Help on keyspecs, a way to index deeply and with regexes',
+      },
+      basic     => { 
+         USE         => 1,
+         SKIP_IN_ALL => 0,
+         CODE        => \&basic_help,
+         OPTION_NAME => 'help',
+         DESCRIPTION => 'This help screen',
+      },
+      'keys'    => { 
+         USE         => 0,
+         SKIP_IN_ALL => 1,
+         CODE        => \&keys_help,
+         DESCRIPTION => 'Help on keygroups and keyspecs',
+      },
+   };
+
+   $this->add_help_types();
+}
+
+# this is a hook for subclasses
+sub add_help_types {
+}
+
+sub use_help_type {
+   my $this = shift;
+   my $type = shift;
+
+   $this->{'HELP_TYPES'}->{$type}->{'USE'} = 1;
+   $this->{'HELP_TYPES'}->{'all'}->{'USE'} = 1;
+}
+
+sub add_help_type {
+   my $this        = shift;
+   my $type        = shift;
+   my $action      = shift;
+   my $description = shift;
+   my $skip_in_all = shift;
+   my $option_name = shift || 0;
+
+   $this->{'HELP_TYPES'}->{$type} = {
+      USE         => 1,
+      SKIP_IN_ALL => $skip_in_all,
+      CODE        => $action,
+      OPTION_NAME => $option_name,
+      DESCRIPTION => $description,
+   };
 }
 
 sub parse_options {
@@ -46,12 +114,17 @@ sub parse_options {
    my $args         = shift || [];
    my $options_spec = shift || {};
 
-   foreach my $help_type (keys %$HELP_TYPES) {
-      next if ( $help_type eq 'basic' );
-      $options_spec->{'help-' . $help_type} ||= sub { $HELP_TYPES->{$help_type}->($this); exit 1; };
-   }
+   foreach my $help_type (keys %{$this->{'HELP_TYPES'}}) {
+      my $type_info = $this->{'HELP_TYPES'}->{$help_type};
+      next unless ( $type_info->{'USE'} );
 
-   $options_spec->{'help'} ||= sub { $this->_set_wants_help('basic'); };
+      my $help_option = $type_info->{'OPTION_NAME'} || 'help-' . $help_type;
+
+      $options_spec->{$help_option} ||= sub { 
+         $type_info->{'CODE'}->($this); 
+         exit 1; 
+      };
+   }
 
    local @ARGV = @$args;
    GetOptions(%$options_spec);
@@ -91,7 +164,21 @@ sub print_usage {
       print "$message\n";
    }
 
-   print $this->usage();
+   my $usage = $this->usage();
+
+   #Remove all trailing newlines
+   while (chomp $usage > 0) {}
+
+   print $usage . "\n\n";
+   print "Help Options:\n";
+   foreach my $type (sort keys %{$this->{'HELP_TYPES'}}) {
+      my $info = $this->{'HELP_TYPES'}->{$type};
+      next unless ( $info->{'USE'} );
+
+      my $option_name = $info->{'OPTION_NAME'} || "help-$type";
+      my $description = $info->{'DESCRIPTION'};
+      print "   --$option_name - $description\n";
+   }
 }
 
 sub init {
@@ -163,7 +250,9 @@ sub _get_next_operation {
 
    unless ( $this->{'NEXT'} ) {
       require Recs::Operation::Printer;
-      $this->{'NEXT'} = Recs::Operation::Printer->new();
+      my $printer = Recs::Operation::Printer->new();
+      $printer->init();
+      $this->{'NEXT'} = $printer;
    }
 
    return $this->{'NEXT'};
@@ -227,7 +316,8 @@ sub create_operation {
 
    my $op;
    eval {
-      $op = $module->new(\@args);
+      $op = $module->new();
+      $op->init(\@args);
    };
    
    if ( $@ || $op->get_wants_help() ) {
@@ -246,11 +336,21 @@ sub basic_help {
 sub all_help {
    my $this = shift;
 
-   foreach my $type (sort keys %$HELP_TYPES) {
-      next if ( $type eq 'all' );
-      $HELP_TYPES->{$type}->($this);
+   foreach my $type (sort keys %{$this->{'HELP_TYPES'}}) {
+      my $info = $this->{'HELP_TYPES'}->{$type};
+      next if ( $info->{'SKIP_IN_ALL'} );
+      next if ( !$info->{'USE'} );
+
+      $info->{'CODE'}->($this);
       print "\n"
    }
+}
+
+sub keys_help {
+   my $this = shift;
+   $this->keyspecs_help();
+   print "\n";
+   $this->keygroups_help();
 }
 
 sub snippet_help {

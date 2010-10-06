@@ -83,7 +83,6 @@ Arguments:
   --record-delim|r <delim>   Delimiter to for separating records (defaults to "END\\n").
   --entry-delim|e  <delim>   Delimiter to for separating entries within records (defaults to "\\n").
   --kv-delim|f   <delim>     Delimiter to for separating key/value pairs within an entry (defaults to " ").
-  --help                     Bail and output this help screen.
 
 Examples:
   Parse memcached stat metrics into records

@@ -47,6 +47,14 @@ Recs::Test::OperationHelper->test_output(
    $solution,
 );
 
+# KeyGroup test
+Recs::Test::OperationHelper->test_output(
+   'tohtml',
+   ['--key', '!.!'],
+   $stream,
+   $solution,
+);
+
 my $solution2 = <<SOLUTION;
 <table>
   <tr >

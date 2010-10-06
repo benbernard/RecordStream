@@ -10,12 +10,12 @@ sub init {
    my $args = shift;
 
 
-   my @keys;
    my $top = 10;
    my $value_delimiter = "9t%7Oz%]";
+   my $key_groups = Recs::KeyGroups->new();
 
    my $spec = {
-      "key|k=s"     => sub { push @keys, split(/,/, $_[1]); },
+      "key|k=s"     => sub { $key_groups->add_groups($_[1]); },
       "topn|n=i"    => \$top,
       "delimiter=s" => \$value_delimiter,
    };
@@ -24,16 +24,27 @@ sub init {
 
    die "Must at least specify --topn <value>" unless $top;
 
-   $this->{'KEYS'}  = \@keys;
-   $this->{'NUM'}   = $top;
-   $this->{'DELIM'} = $value_delimiter,
+   $this->{'KEY_GROUPS'} = $key_groups;
+   $this->{'NUM'}        = $top;
+   $this->{'DELIM'}      = $value_delimiter,
 
    $this->{'PRIOR_KEY_VALUES'} = "";
+}
+
+sub init_keys {
+   my $this   = shift;
+   my $record = shift;
+
+   $this->{'KEYS'} = $this->{'KEY_GROUPS'}->get_keyspecs($record);
 }
 
 sub accept_record {
    my $this   = shift;
    my $record = shift;
+
+   if ( ! $this->{'KEYS'} ) {
+      $this->init_keys($record);
+   }
 
    my $current_key_values = "";
    foreach my $k ( @{$this->{'KEYS'}} ) {
@@ -46,6 +57,12 @@ sub accept_record {
    }
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+   $this->use_help_type('keygroups');
+   $this->use_help_type('keys');
+}
 
 sub usage
 {
@@ -58,14 +75,13 @@ Usage: recs-topn <args> [<files>]
    in the input record stream.
 
    --key <keyspec>       - Comma separated list of fields.  May be specified multiple times.
-                           May be a key spec, see 'man recs' for more
+                           May be a keyspec or keygroup, see '--help-keys' for more
    --topn | -n <number>  - Number of records to output.  Default is 10.
    --delimiter <string>  - String used internally to delimit values when performing a topn
                            on a keyspec that inlcudeds multiple keys.  This value defaults
                            to "9t%7Oz%]" which may - under unusual and bizarre corner
                            cases - cause false positive key matches if your values contain
                            this value.  You can set this to any string.
-   --help                - Bail and output this help screen.
 
 Examples:
    Output just the top 5 records

@@ -87,8 +87,14 @@ sub stream_done {
    $this->_set_exit_value(1) unless ( $this->{'SEEN_RECORD'} );
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+   $this->use_help_type('snippet');
+}
+
 sub usage {
-   my $usage =  <<USAGE;
+   return <<USAGE;
 Usage: recs-grep <args> <expr> [<files>]
    <expr> is evaluated as perl on each record of input (or records from
    <files>) with \$r set to a Recs::Record object and \$line set to the current
@@ -101,18 +107,13 @@ Arguments:
             equivalent to -A NUM and -B NUM
    -A NUM   Print out NUM following records after a match
    -B NUM   Print out the previous NUM records on a match
-   --help   Bail and output this help screen.
-
-USAGE
-
-   return $usage . Recs::Executor->usage() . <<EXAMPLES
 
 Examples:
    Filter to records with field 'name' equal to 'John'
       recs-grep '\$r->{name} eq "John"'
    Find fields without ppid = 3456
      recs-grep -v '{{ppid}} == 3456'
-EXAMPLES
+USAGE
 }
 
 1;

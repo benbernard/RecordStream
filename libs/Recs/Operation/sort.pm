@@ -37,6 +37,11 @@ sub stream_done {
    }
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+}
+
 sub usage {
    return <<USAGE;
 Usage: recs-sort <args> [<files>]
@@ -51,9 +56,9 @@ Usage: recs-sort <args> [<files>]
                      the sort type may be prefixed with '-' to indicate a
                      decreasing sort order.  (See perldoc for Recs::Record for
                      more on sort specs).
-                     Maybe be a key spec, see 'man recs' for more
+                     Maybe be a key spec, see '--help-keyspecs' for more
+                     Cannot be a keygroup.
     --reverse      - Reverses the sort order
-    --help         - Bail and output this help screen.
 
 Examples:
    Sort on the id field, a numeric

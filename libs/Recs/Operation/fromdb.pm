@@ -69,7 +69,6 @@ Examples:
 
    # Run a select statement
    recs-fromdb --dbfile testDb --sql 'SELECT * FROM recs WHERE id > 9'
-
 EXAMPLES
 }
 

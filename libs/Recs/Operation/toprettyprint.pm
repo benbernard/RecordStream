@@ -11,14 +11,22 @@ sub init {
    my $this = shift;
    my $args = shift;
 
-   my $only_one = 0;
+   my $only_one   = 0;
+   my $key_groups = Recs::KeyGroups->new();
    my $spec = {
-      "1"    => \$only_one,
-      "one"  => \$only_one,
+      "1"        => \$only_one,
+      "one"      => \$only_one,
+      'keys|k=s' => sub { $key_groups->add_groups($_[1]); },
    };
 
    $this->parse_options($args, $spec);
+
+   if ( ! $key_groups->has_any_group() ) {
+      $key_groups->add_groups('!.!returnrefs');
+   }
+
    $this->{'ONLY_ONE'}      = $only_one;
+   $this->{'KEY_GROUPS'}    = $key_groups;
    $this->{'OUTPUT_STREAM'} = Recs::OutputStream->new();
 };
 
@@ -26,9 +34,11 @@ sub accept_record {
    my $this   = shift;
    my $record = shift;
 
+   my $specs = $this->{'KEY_GROUPS'}->get_keyspecs_for_record($record);
+
    $this->print_value('-' x 70 . "\n");
-   foreach my $key (sort keys %$record) {
-      my $value = $this->{'OUTPUT_STREAM'}->hashref_string($record->{$key});
+   foreach my $key (sort @$specs) {
+      my $value = $this->{'OUTPUT_STREAM'}->hashref_string(${$record->guess_key_from_spec($key)});
       $this->print_value("$key = $value\n");
    }
 }
@@ -36,6 +46,13 @@ sub accept_record {
 sub should_stop {
    my $this = shift;
    return $this->{'ONLY_ONE'};
+}
+
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+   $this->use_help_type('keygroups');
+   $this->use_help_type('keys');
 }
 
 sub usage {
@@ -46,8 +63,9 @@ Usage: recs-toprettyprint [files]
   keys
 
 Arguments:
-   -1, --one Only print the first record
-   --help    Bail and output this help screen.
+   -1, --one  Only print the first record
+   --keys     Only print out specified keys, Maybe keyspecs may be keygroups,
+              see --help-keys for more information
 
 Examples
   # Pretty print records

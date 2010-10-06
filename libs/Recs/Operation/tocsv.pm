@@ -11,15 +11,15 @@ sub init {
    my $this = shift;
    my $args = shift;
 
-   my @keys;
    my $header = 1;
+   my $key_groups = Recs::KeyGroups->new();
    my $spec = {
-      "key|k=s"     => sub { push @keys, split(/,/, $_[1]); },
+      "key|k=s"     => sub { $key_groups->add_groups($_[1]); },
       "noheader|nh" => sub { $header = 0 },
    };
 
    $this->parse_options($args, $spec);
-   $this->{'KEYS'}    = \@keys;
+   $this->{'KEY_GROUPS'} = $key_groups;
 
    # Extra arguments are to handle new lines in field values
    $this->{'CSV'}     = Text::CSV->new({ binary => 1, eol => $/ });
@@ -35,7 +35,10 @@ sub accept_record {
    if ( $this->{'FIRST'} ) {
       $this->{'FIRST'} = 0;
 
-      if ( scalar @{$this->{'KEYS'}} == 0 ) {
+      if ( $this->{'KEY_GROUPS'}->has_any_group() ) {
+         $this->{'KEYS'} = $this->{'KEY_GROUPS'}->get_keyspecs($record);
+      }
+      else {
          $this->{'KEYS'} = [keys %$record];
       }
 
@@ -61,6 +64,13 @@ sub output_values {
    $this->print_value($csv->string());
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+   $this->use_help_type('keygroups');
+   $this->use_help_type('keys');
+}
+
 sub usage {
    return <<USAGE;
 Usage: recs-tocsv <options> [files]
@@ -68,9 +78,9 @@ Usage: recs-tocsv <options> [files]
 
 Arguments:
    --noheader|--nh    Do not output headers on the first line
-   --key|-k <keyspec> Comma separated key specs to output.  Defaults to all
-                      fields in first record.
-   --help             Bail and output this help screen.
+   --key|-k <keyspec> Comma separated keys to output.  Defaults to all
+                      fields in first record.  May be a keyspec, may be a
+                      keyspec group
 
 Examples
   # Print records to csv format with headers

@@ -11,12 +11,10 @@ perf test
    JSON v. old recs v. other serialization (Data::Dumper, Storable, ?)
 recs-frommultire - allow dynamic field names, allow dropped fields
 recs-fromcsv - needs to accept newlines in field names
+recs-join - Join in sqlite for larger db streams
+recs-sort, recs-todb - need value options for keyspec groups
+recs-tognuplot - write tests, by comparing gnuplot scripts
+Add support for keygroups in Recs::Record methods
 
 Key groups:
-  !REGEX!opt1!opt2!...
-  needed options: depth (how many levels deep will the regex match against, default to 1, max with $ or soemthing)
-  sort: (l:n:l) or l=2:n=4:l - depth defaults to 1-$, but with multiple options you get
-                  1,2,3-$ with the last always being current to end.  Always part-wise.
-                  Shorter truncations come first.  each sort operator can have a level option.
   rerun field group for each record - may have an issue with recs-collate
-  

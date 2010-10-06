@@ -18,6 +18,11 @@ sub new {
    return $this;
 };
 
+sub has_any_group {
+   my $this   = shift;
+   return (scalar @{$this->{'KEY_GROUPS'}}) > 0;
+}
+
 sub add_groups {
    my $this   = shift;
    my $groups = shift;
@@ -48,6 +53,18 @@ sub get_keyspecs_for_record {
    return \@specs;
 }
 
+# This is a cached version
+sub get_keyspecs {
+   my $this   = shift;
+   my $record = shift;
+
+   if ( !$this->{'KEY_SPECS'} ) {
+      $this->{'KEY_SPECS'} = $this->get_keyspecs_for_record($record);
+   }
+
+   return $this->{'KEY_SPECS'};
+}
+
 sub usage {
    return <<HELP;
 KEY GROUPS
@@ -73,6 +90,7 @@ KEY GROUPS
       full, f         - Regex should match against full keys (recurse fully)
       depth=NUM,d=NUM - Only match keys at NUM depth (regex will match against
                         full keyspec)
+      sort            - sort keyspecs lexically
 HELP
 }
 
@@ -109,10 +127,8 @@ package Recs::KeyGroups::Group;
 my $VALID_OPTIONS = {
    d          => 'depth',
    depth      => 'depth',
-
-   #s          => 'sort',
-   #'sort'     => 'sort',
-
+   s          => 'sort',
+   'sort'     => 'sort',
    f          => 'full_match',
    full       => 'full_match',
    rr         => 'return_refs',
@@ -145,6 +161,9 @@ sub get_fields {
    }
 
    #TODO: deal with sorts
+   if ( $this->has_option('sort') ) {
+      @specs = sort @specs;
+   }
    return \@specs;
 }
 

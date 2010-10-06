@@ -98,7 +98,6 @@ Usage: recs-fromatomfeed <args> [<uris>]
 
 
 Help / Usage Options:
-   --help                         Bail and output this help screen.
    --[no]follow                   Follow atom feed next links (or not).  Defaults on.
    --max=<n>                      Print at most <n> entries and then exit.
 

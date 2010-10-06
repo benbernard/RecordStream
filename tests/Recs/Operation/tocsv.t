@@ -30,6 +30,13 @@ Recs::Test::OperationHelper->test_output(
    $solution,
 );
 
+Recs::Test::OperationHelper->test_output(
+   'tocsv',
+   ['--key', '!oo!'],
+   $stream,
+   $solution,
+);
+
 $solution = <<SOLUTION;
 1,biz1
 2,biz2

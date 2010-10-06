@@ -9,21 +9,22 @@ sub init {
    my $this = shift;
    my $args = shift;
 
-   my @fields;
    my $no_header;
    my $row_attributes = '';
    my $cell_attributes = '';
 
+   my $key_groups = Recs::KeyGroups->new();
+
    my $spec = {
-      'fields|f=s'       => sub { push @fields, split(',', $_[1]) },
-      'noheader'         => \$no_header,
-      'rowattributes=s'  => \$row_attributes,
-      'cellattributes=s' => \$cell_attributes,
+      'keys|k|fields|f=s' => sub { $key_groups->add_groups($_[1]); },
+      'noheader'          => \$no_header,
+      'rowattributes=s'   => \$row_attributes,
+      'cellattributes=s'  => \$cell_attributes,
    };
 
    $this->parse_options($args, $spec);
 
-   $this->{'FIELDS'}          = \@fields;
+   $this->{'KEY_GROUPS'}      = $key_groups;
    $this->{'NO_HEADER'}       = $no_header;
    $this->{'ROW_ATTRIBUTES'}  = $row_attributes;
    $this->{'CELL_ATTRIBUTES'} = $cell_attributes;
@@ -58,10 +59,13 @@ sub print_start {
 
    $this->print_value("<table>\n");
 
-   my $fields = $this->{'FIELDS'};
-
-   if ( scalar @$fields == 0 ) {
-      @$fields = keys %$record;
+   my $groups = $this->{'KEY_GROUPS'};
+   if ( $groups->has_any_group() ) {
+      my $specs = $this->{'KEY_GROUPS'}->get_keyspecs($record);
+      $this->{'FIELDS'} = $specs;
+   }
+   else {
+      $this->{'FIELDS'} = [keys %$record];
    }
 
    return if ( $this->{'NO_HEADER'} );
@@ -91,19 +95,25 @@ sub stream_done {
    $this->print_value("</table>\n");
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+   $this->use_help_type('keygroups');
+   $this->use_help_type('keys');
+}
+
 sub usage {
    return <<USAGE;
 Usage: recs-totable <args> [<files>]
    Prints out an html table for the records from input or from <files>.
 
-   --fields <fields> - Fields to print in the table.  May be specified multiple
+   --keys <keys>     - Keys to print in the table.  May be specified multiple
                        times, may be comma separated.  Default to all fields in
-                       the first record.  May be a key spec, see 'man recs' for
-                       more information
+                       the first record.  May be a keyspec or a keygroup, see
+                       '--help-keys' for more information
    --noheader        - Do not print the header row
    --rowattributes   - HTML attributes to put on the tr tags
    --cellattributes  - HTML attributes to put on the td and th tag
-   --help            - Bail and output this help screen.
 
 Examples:
    Print all fields

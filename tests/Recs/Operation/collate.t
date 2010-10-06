@@ -56,3 +56,10 @@ Recs::Test::OperationHelper->do_match(
    $solution3,
 );
 
+# Test KeySpecs
+Recs::Test::OperationHelper->do_match(
+   'collate',
+   ['--key', '!element|foo!s', qw(--cube --a count)],
+   $stream,
+   $solution3,
+);

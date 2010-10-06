@@ -44,6 +44,11 @@ sub accept_record {
    }
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('snippet');
+}
+
 sub usage {
    return <<USAGE;
 Usage: recs-xform <args> <expr> [<files>]
@@ -56,9 +61,6 @@ Usage: recs-xform <args> <expr> [<files>]
    will be treated as records and outputed one to a line.  The values of the
    array may either be a hash ref or a Recs::Record object.  The original
    record will not be outputted in this case.
-
-Arguments:
-   --help               Bail and output this help screen.
 
 Examples:
    Add line number to records

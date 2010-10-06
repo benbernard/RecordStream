@@ -17,7 +17,7 @@ Chain Starts with:
     Passed through a pipe to Shell command: bar
 SOLUTION
 
-my $op = Recs::Operation::chain->new([ '--n', 'recs-xform', '$r->rename("foo", "zoo");', $test_file, qw(| recs-sort --key zoo=-n  | recs-totable | recs-grep | bar) ]);
+my $op = Recs::Operation::chain->new(1,[ '--n', 'recs-xform', '$r->rename("foo", "zoo");', $test_file, qw(| recs-sort --key zoo=-n  | recs-totable | recs-grep | bar) ]);
 
 ok($op, "Chain initialized");
 

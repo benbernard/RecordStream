@@ -131,6 +131,11 @@ sub flush_record {
    return $record2;
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+}
+
 sub usage {
    return <<USAGE;
 Usage: recs-frommultire <args> [<files>]
@@ -159,9 +164,10 @@ Arguments:
    --keep-all                              Do not clear any fields on a flush.
    --keep <fields>                         Do not clear this comma separated
                                            list of fields on a flush.
-   --help                                  Bail and output this help screen.
 
-   The field names may be key specs, see 'man recs' for more
+   <regex> - Syntax is: '<KEY1>,<KEY2>=REGEX'.  KEY field names are optional.
+   The key names may be key specs, see '--help-keyspecs' for more.  Field
+   names may not be keygroups
 
 Examples:
    Typical use case one: parse several fields on separate lines

@@ -27,11 +27,21 @@ $output = <<OUTPUT;
 OUTPUT
 test1(['--header'], $input, $output);
 
+$input = <<INPUT;
+foo,bar,baz
+"foo loo","bar loo", baz
+INPUT
+$output = <<OUTPUT;
+{"zip":["foo", "bar", "baz"]}
+{"zip":["foo loo","bar loo"," baz"]}
+OUTPUT
+test1(['--key', 'zip/#0,zip/#1,zip/#2'], $input, $output);
+
 sub test1
 {
    my ($args, $input, $output) = @_;
 
    open(STDIN, "-|", "echo", "-n", $input) || ok(0, "Cannot open echo?!");
-   my $fromre = Recs::Operation::fromcsv->new($args);
+   my $fromre = Recs::Operation::fromcsv->new(1, $args);
    Recs::Test::OperationHelper->new("operation" => $fromre, "input" => undef, "output" => $output)->matches();
 }

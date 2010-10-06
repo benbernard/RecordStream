@@ -28,6 +28,13 @@ Recs::Test::OperationHelper->test_output(
    $solution,
 );
 
+Recs::Test::OperationHelper->test_output(
+   'totable',
+   ['--key', '!oo!'],
+   $stream,
+   $solution,
+);
+
 my $solution2 = <<SOLUTION;
 1   biz1
 2   biz2
@@ -55,7 +62,7 @@ SOLUTION
 
 Recs::Test::OperationHelper->test_output(
    'totable',
-   [qw(--f foo)],
+   [qw(--k !foo!)],
    $stream,
    $solution3,
 );

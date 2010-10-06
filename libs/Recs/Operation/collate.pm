@@ -14,7 +14,6 @@ sub init {
 
    Recs::Aggregator::load_aggregators();
 
-   my @keys;
    my @aggregators;
    my $size = undef;
    my $cube = 0;
@@ -23,8 +22,10 @@ sub init {
    my $list_aggregators = 0;
    my $aggregator = 0;
 
+   my $key_groups = Recs::KeyGroups->new();
+
    my $spec = {
-      "key|k=s"           => sub { push @keys, split(/,/, $_[1]); },
+      "key|k=s"           => sub { $key_groups->add_groups($_[1]); },
       "aggregator|a=s"    => sub { push @aggregators, split(/:/, $_[1]); },
       "size|sz|n=i"       => \$size,
       "adjacent|1"        => sub { $size = 1; },
@@ -48,23 +49,29 @@ sub init {
       die sub { Recs::Aggregator::show_aggregator($aggregator) };
    }
 
-   die "Must specify --key or --aggregator\n" unless ( @keys || @aggregators );
+   die "Must specify --key or --aggregator\n" unless ( $key_groups->has_any_group() || @aggregators );
 
    my $aggregator_objects = Recs::Aggregator::make_aggregators(@aggregators);
    my $lru_sheriff = Recs::LRUSheriff->new();
 
-   $this->{'KEYS'}               = \@keys;
+   $this->{'KEY_GROUPS'}         = $key_groups;
    $this->{'AGGREGATORS'}        = $aggregator_objects;
    $this->{'SIZE'}               = $size;
    $this->{'CUBE'}               = $cube;
    $this->{'INCREMENTAL'}        = $incremental;
    $this->{'LRU_SHERIFF'}        = $lru_sheriff;
    $this->{'CUBE_DEFAULT'}       = $cube_default;
+   $this->{'SEEN_RECORD'}        = 0;
 }
 
 sub accept_record {
    my $this   = shift;
    my $record = shift;
+
+   if ( !$this->{'SEEN_RECORD'} ) {
+     $this->{'SEEN_RECORD'} = 1;
+     $this->{'KEYS'} = $this->{'KEY_GROUPS'}->get_keyspecs($record);
+   }
 
    my $record_keys = $this->get_keys($record);
 
@@ -190,8 +197,6 @@ sub print_usage {
    my $this    = shift;
    my $message = shift;
 
-   $DB::single=1;
-
    if ( $message && UNIVERSAL::isa($message, 'CODE') ) {
       $message->();
       exit 1;
@@ -200,14 +205,26 @@ sub print_usage {
    $this->SUPER::print_usage($message);
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+   $this->use_help_type('keygroups');
+   $this->use_help_type('keys');
+   $this->add_help_type(
+     'aggregators',
+     sub { Recs::Aggregator::list_aggregators(); },
+     'List the aggregators'
+   );
+}
+
 sub usage {
    return <<USAGE;
 Usage: recs-collate <args> [<files>]
    Collate records of input (or records from <files>) into output records.
 
 Arguments:
-   --key|-k <keys>               Comma separated list of key fields.
-                                 may be a key spec, see 'man recs' for more information
+   --key|-k <keys>               Comma separated list of key fields.  may be a
+                                 key spec or key group
    --aggregator|-a <aggregators> Colon separated list of aggregate field specifiers.
                                  See "Aggregates" section below.
    --size|--sz|-n <number>       Number of running clumps to keep.
@@ -218,7 +235,6 @@ Arguments:
                                  to a clump (instead of everytime a clump is flushed).
 
 Help / Usage Options:
-   --help                         Bail and output this help screen.
    --list-aggregators             Bail and output a list of aggregators.
    --show-aggregator <aggregator> Bail and output this aggregator's detailed usage.
 
@@ -227,9 +243,9 @@ Aggregates:
    default field name is aggregator and arguments joined by underscores.  See
    --list-aggregators for a list of available aggregators.
 
-   fieldname maybe a key spec. (i.e. foo/bar=sum,field).  Additionally, all key
-   name arguments to aggregators maybe be key specs
-   (i.e. foo=max,latency/url)
+   Fieldname maybe a key spec. (i.e. foo/bar=sum,field).  Additionally, all key
+   name arguments to aggregators maybe be key specs (i.e.
+   foo=max,latency/url), but not key groups
 
 Cubing:
    Instead of added one entry for each input record, we add 2 ** (number of key

@@ -79,7 +79,7 @@ sub do_match {
    my $output         = shift;
 
    my $operation_class = "Recs::Operation::$operation_name";
-   my $op = $operation_class->new($args);
+   my $op = $operation_class->new(1,$args);
 
    ok($op, "Operation initialization");
 
@@ -102,7 +102,8 @@ sub test_output {
    my $output         = shift;
 
    my $operation_class = "Recs::Operation::$operation_name";
-   my $op = $operation_class->new($args);
+   my $op = $operation_class->new();
+   $op->init($args);
 
    ok($op, "Object initialization");
 

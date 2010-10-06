@@ -156,7 +156,6 @@ Usage: recs-fromxml <args> [<URIs>]
                            times.  Sets the elements to print records for
    --nested              - search for elements at all levels of the xml
                            document
-   --help                - Bail and output this help screen.
 
 Examples:
    Create records for the bar element at the top level of myXMLDoc

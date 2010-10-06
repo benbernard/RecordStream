@@ -27,7 +27,7 @@ sub init {
       'drop'     => \$drop_table,
       'table=s'  => \$table_name,
       'debug'    => \$debug,
-      'fields=s' => sub { shift; add_field($fields, shift) },
+      'key|k|fields|f=s' => sub { shift; add_field($fields, shift) },
    };
 
    Getopt::Long::Configure("pass_through");
@@ -135,6 +135,11 @@ sub create_table {
    };
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+}
+
 sub usage {
    my $usage =  <<USAGE;
    Recs to DB will dump a stream of input records into a database you specify.
@@ -146,24 +151,24 @@ sub usage {
    --drop   - Drop the table before running create / insert commands.
    --table  - Name of the table to work with defaults to 'recs'
    --debug  - Print all the executed SQL
-   --fields - Can either be a name value pair or just a name.  Name value pairs
+   --key    - Can either be a name value pair or just a name.  Name value pairs
               should be fieldName=SQL Type.  If any fields are specified, they
               will be the only fields put into the db.  May be specified
               multiple times, may also be comma separated.  Type defaults to
               VARCHAR(255)
-              Keys may be key specs, see 'man recs' for more
+              Keys may be key specs, see '--help-keyspecs' for more
 
 USAGE
 
    return $usage . Recs::DBHandle::usage() .  <<EXAMPLES;
+
 Examples:
    # Just put all the records into the recs table
    recs-todb --type sqlite --dbfile testDb --table recs
 
    # Just put description, status, and user into the table, make the records
    # the only thing in the DB
-   recs-todb --dbfile testDb --drop --fields status,description=TEXT --fields user
-
+   recs-todb --dbfile testDb --drop --key status,description=TEXT --key user
 EXAMPLES
 }
 

@@ -24,3 +24,11 @@ Recs::Test::OperationHelper->do_match(
    $stream,
    $solution,
 );
+
+# Test keyspec
+Recs::Test::OperationHelper->do_match(
+   'delta',
+   [ '--key', '!fo!' ],
+   $stream,
+   $solution,
+);

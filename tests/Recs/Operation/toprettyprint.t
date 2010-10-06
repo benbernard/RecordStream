@@ -48,3 +48,15 @@ Recs::Test::OperationHelper->test_output(
    $stream,
    $solution2,
 );
+
+my $solution3 = <<SOLUTION;
+----------------------------------------------------------------------
+zoo = "biz1"
+SOLUTION
+
+Recs::Test::OperationHelper->test_output(
+   'toprettyprint',
+   [qw(--one --key), '!zoo!'],
+   $stream,
+   $solution3,
+);

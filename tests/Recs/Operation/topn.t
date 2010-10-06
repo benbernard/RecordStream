@@ -38,3 +38,10 @@ Recs::Test::OperationHelper->do_match(
    $stream,
    $solution,
 );
+
+Recs::Test::OperationHelper->do_match(
+   'topn',
+   [ '--key', '!fo!', '-n', 2 ],
+   $stream,
+   $solution,
+);

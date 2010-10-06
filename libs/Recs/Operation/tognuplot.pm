@@ -13,7 +13,6 @@ sub init {
 
    my $png_file = 'tognuplot.png';
    my $title;
-   my @fields;
    my @labels;
    my @plots;
    my @precommands;
@@ -21,8 +20,10 @@ sub init {
    my $bar_graph;
    my $lines;
 
+   my $key_groups = Recs::KeyGroups->new();
+
    my $spec = {
-      "fields|f=s"       => sub { push @fields, split(/,/, $_[1]); },
+      "key|k|fields|f=s" => sub { $key_groups->add_groups($_[1]); },
       "file=s"           => \$png_file,
       "label=s"          => sub { push @labels, split(/,/, $_[1]); },
       "plot=s"           => sub { push @plots, split(/,/, $_[1]); },
@@ -36,58 +37,82 @@ sub init {
 
    $this->parse_options($args, $spec);
 
-   die 'Must specify at least one field' unless ( scalar @fields > 0 );
-
-   if ( ! $bar_graph && !$lines ) {
-      die 'Must specify using if more than 2 fields' if ( scalar @fields > 2 ) && (! scalar @using > 0);
-   }
+   die 'Must specify at least one field' unless ( $key_groups->has_any_group() );
 
    if ( $bar_graph && $lines ) {
       die 'Must specify one of --bargraph or --lines';
-   }
-
-   if ( ! $title ) {
-      $title = join(', ', @fields);
-   }
-
-   if ( scalar @using == 0 ) {
-      if ( $bar_graph || $lines ) {
-         my $using = "1 title \"$fields[0]\"";
-
-         foreach my $idx (2..@fields) {
-            my $title = $fields[$idx-1];
-            $using .= ", '' using $idx title \"$title\"";
-         }
-
-         push @using, $using;
-      }
-      elsif ( scalar @fields == 1 ) {
-         push @using, "1";
-      }
-      elsif ( scalar @fields == 2 ) {
-         push @using, "1:2";
-      }
    }
 
    $png_file .= '.png' unless ( $png_file =~ m/\.png$/ );
 
    my ($tempfh, $tempfile) = tempfile();
 
-   $this->{'TEMPFILE'}    = $tempfile;
-   $this->{'FIELDS'}      = \@fields;
-   $this->{'TEMPFH'}      = $tempfh;
-   $this->{'PNG_FILE'}    = $png_file;
-   $this->{'TITLE'}       = $title;
-   $this->{'BAR_GRAPH'}   = $bar_graph;
-   $this->{'LINES'}       = $lines;
-   $this->{'PRECOMMANDS'} = \@precommands;
-   $this->{'USING'}       = \@using;
-   $this->{'LABELS'}      = \@labels;
-   $this->{'PLOTS'}       = \@plots;
+   $this->{'TEMPFILE'}     = $tempfile;
+   $this->{'KEY_GROUPS'}   = $key_groups;
+   $this->{'TEMPFH'}       = $tempfh;
+   $this->{'PNG_FILE'}     = $png_file;
+   $this->{'TITLE'}        = $title;
+   $this->{'BAR_GRAPH'}    = $bar_graph;
+   $this->{'LINES'}        = $lines;
+   $this->{'PRECOMMANDS'}  = \@precommands;
+   $this->{'USING'}        = \@using;
+   $this->{'LABELS'}       = \@labels;
+   $this->{'PLOTS'}        = \@plots;
+   $this->{'FIRST_RECORD'} = 1;
+}
+
+sub init_fields {
+   my $this   = shift;
+   my $record = shift;
+
+   my $specs     = $this->{'KEY_GROUPS'}->get_keyspecs($record);
+   my $using     = $this->{'USING'};
+   my $bar_graph = $this->{'BAR_GRAPH'};
+   my $lines     = $this->{'LINES'};
+   my $title     = $this->{'TITLE'};
+
+   if ( ! $bar_graph && !$lines ) {
+      die 'Must specify using if more than 2 fields' if ( scalar @$specs > 2 ) && (! scalar @$using > 0);
+   }
+
+   if ( ! $title ) {
+      $title = join(', ', @$specs);
+   }
+
+   if ( scalar @$using == 0 ) {
+      if ( $bar_graph || $lines ) {
+         my $using = "1 title \"$specs->[0]\"";
+
+         foreach my $idx (2..@$specs) {
+            my $title = $specs->[$idx-1];
+            $using .= ", '' using $idx title \"$title\"";
+         }
+
+         push @$using, $using;
+      }
+      elsif ( scalar @$specs == 1 ) {
+         push @$using, "1";
+      }
+      elsif ( scalar @$specs == 2 ) {
+         push @$using, "1:2";
+      }
+   }
+
+   $this->{'FIELDS'} = $specs;
+   $this->{'TITLE'}  = $title;
+}
+
+# hook for additional args
+sub site_args {
 }
 
 sub accept_record {
    my ($this, $record) = @_;
+
+   if ( $this->{'FIRST_RECORD'} ) {
+      $this->{'FIRST_RECORD'} = 0;
+      $this->init_fields($record);
+   }
 
    my $line = '';
    foreach my $key (@{$this->{'FIELDS'}}) {
@@ -178,26 +203,34 @@ sub DESTROY {
    }
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+   $this->use_help_type('keygroups');
+   $this->use_help_type('keys');
+}
+
 sub usage {
    return <<USAGE;
 Usage: recs-tognuplot <args> [<files>]
    Create a graph of points from a record stream using GNU Plot. Defaults to
    creatinga scatterplot of points, can also create a bar or line graph
 
-   For the --using and --plot fields, you may want to reference a GNU Plot
+   For the --using and --plot arguments, you may want to reference a GNU Plot
    tutorial, though it can get quite complex, here is one example:
 
    http://www.gnuplot.info/docs/node100.html
 
 Arguments:
-   --fields|-f <fields>           May be specified multiple times, may be
+   --key|-k <keys>                May be specified multiple times, may be
                                   comma separated.  These are the keys to graph.  If you
                                   have more than 2 keys, you must specify a --using
                                   statement or use --bargraph or --lines
-                                  May be a key spec, see 'man recs' for more
+                                  May be a keyspec or keygroup, see
+                                  '--help-keys' for more information
    --using <using spec>           A 'using' string passed directly to gnuplot,
-                                  you can use fields specified with --fields in the order
-                                  specified.  For instance --fields count,date,avg with
+                                  you can use keys specified with --key in the order
+                                  specified.  For instance --key count,date,avg with
                                   --using '3:2' would plot avg vs. date.  May be
                                   specified multiple times
    --plot <plot spec>             May be specified multiple times, may be comma separated.
@@ -211,10 +244,9 @@ Arguments:
    --file <filename>              Name of output png file.  Will append .png if not
                                   present Defaults to tognuplot.png
    --lines                        Draw lines between points, may specify more
-                                  than 2 fields, each field is a line
+                                  than 2 key, each field is a line
    --bargraph                     Draw a bar graph, each field is a bar, may specify
-                                  than 2 fields, each field is a bar
-   --help                         Bail and output this help screen.
+                                  than 2 key, each field is a bar
 
    Graph the count field
       recs-tognuplot --field count

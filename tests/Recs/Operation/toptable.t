@@ -193,3 +193,11 @@ Recs::Test::OperationHelper->test_output(
    $stream2,
    $table2,
 );
+
+# Test Keygroups
+Recs::Test::OperationHelper->test_output(
+   'toptable',
+   ['--x', '!b!,FIELD', '--y', '!^(a|c)$!', '--v', '!avg_d|ct!'],
+   $stream2,
+   $table2,
+);

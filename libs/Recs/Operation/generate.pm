@@ -68,6 +68,11 @@ sub accept_record {
     # Recs::InputStream closes the file handle for us
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+}
+
 sub usage
 {
    my $usage = <<USAGE;
@@ -106,20 +111,12 @@ Usage: recs-generate <args> <command> [<files>]
 Arguments:
    --passthrough     - Emit input record in addition to generated records
    --keychain <name> - Use 'name' as the chain key (default is '_chain')
-                       may be a key spec, see 'man recs' for more
-   --help            - Bail and output this help screen.
-
-USAGE
-
-   $usage .= Recs::Executor::usage();
-
-   $usage .=  <<USAGE2;
+                       may be a key spec, see '--help-keyspecs' for more info
 
 Examples:
-
    Chain recs from a feed to recs from a second feed and the print the titles.
       recs-fromatomfeed "http://..." | recs-generate "recs-fromatomfeed http://...?key=\$r->{title}" | recs-eval 'join("\t", \$r->{title}, \$r->{chain}->{title})'
-USAGE2
+USAGE
 
    return $usage;
 }

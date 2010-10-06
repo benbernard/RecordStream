@@ -16,7 +16,7 @@ sub init {
    my @fields;
 
    my $spec = {
-      'fields|f=s' => sub { push @fields, split(',', $_[1]) },
+      'key|k|field|f=s' => sub { push @fields, split(',', $_[1]) },
    };
 
    $this->parse_options($args, $spec);
@@ -81,15 +81,16 @@ sub usage {
 Usage: recs-fromps <args>
    Prints out an html table for the records from input or from <files>.
 
-   --fields <fields> - Fields to output.  May be specified multiple
-                       times, may be comma separated.  Default to all fields
-   --help            - Bail and output this help screen.
+   --keys <fields> - Fields to output.  May be specified multiple
+                     times, may be comma separated.  Default to all fields
+                     These are Proc::ProcessTable keys, and thus may not be
+                     keyspecs or groups
 
 Default fields:
    $all_fields
 
 Examples:
-   Get records
+   Get records for the process table
       recs-fromps
    Only get uid and pid
       recs-fromps --fields uid,pid

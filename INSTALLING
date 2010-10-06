@@ -13,6 +13,7 @@ Ubuntu packages:
   libproc-processtable-perl
   libdate-manip-perl
   libtext-csv-perl
+  gnuplot
 
 ----
 

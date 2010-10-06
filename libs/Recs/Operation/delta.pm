@@ -9,27 +9,25 @@ sub init
    my $this = shift;
    my $args = shift;
 
-   my @keys;
+   my $key_groups = Recs::KeyGroups->new();
    my $spec = {
-      "key|k=s" => sub { push @keys, split(/,/, $_[1]); },
+      "key|k=s" => sub { $key_groups->add_groups($_[1]); },
    };
 
    $this->parse_options($args, $spec);
 
-   usage('Must specify --key') unless @keys;
+   usage('Must specify --key') unless $key_groups->has_any_group();
 
-   $this->{'KEYS'} = \@keys;
+   $this->{'KEY_GROUPS'} = $key_groups;
 }
 
 sub accept_record
 {
    my $this   = shift;
    my $record = shift;
-
-   my $last_record = $this->{'LAST_RECORD'};
-
+my $last_record = $this->{'LAST_RECORD'}; 
    if ( $last_record ) {
-      foreach my $key (@{$this->{'KEYS'}})
+      foreach my $key (@{$this->{'KEY_GROUPS'}->get_keyspecs($last_record)})
       {
          if ( ${$record->guess_key_from_spec($key)} and ${$last_record->guess_key_from_spec($key)} )
          {
@@ -46,6 +44,13 @@ sub accept_record
    $this->{'LAST_RECORD'} = $record;
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+   $this->use_help_type('keygroups');
+   $this->use_help_type('keys');
+}
+
 sub usage
 {
    return <<USAGE;
@@ -53,13 +58,11 @@ Usage: recs-delta <args> [<files>]
    Transforms absolute values into deltas between adjacent records.
 
 Arguments:
-   --key|-k <keys>               Comma separated list of the fields that should be transformed.
-                                 Fields not in this list will be passed through unchanged, using
-                                 the *first* record of each delta pair.
-                                 This may be a key spec, see 'man recs' for more information
-
-Help / Usage Options:
-   --help                         Bail and output this help screen.
+   --key|-k <keys>  Comma separated list of the fields that should be
+                    transformed.  Fields not in this list will be passed
+                    through unchanged, using the *first* record of each delta
+                    pair.  This may be a keyspec or a keygroup, see
+                    '--help-keyspecs' for more information
 
 Examples:
    Transforms a cumulative counter of errors into a count of errors per record.

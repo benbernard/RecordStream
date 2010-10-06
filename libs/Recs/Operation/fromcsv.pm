@@ -14,8 +14,8 @@ sub init {
    my $header_line = undef;
 
    my $spec = {
-      "field|f=s" => sub { push @fields, split(/,/, $_[1]); },
-      "header"    => \$header_line,
+      "keys|k|field|f=s" => sub { push @fields, split(/,/, $_[1]); },
+      "header"           => \$header_line,
    };
 
    $this->parse_options($args, $spec);
@@ -45,14 +45,19 @@ sub run_operation {
       my @a = $parser->parse($_);
       @a = $parser->fields();
 
-      my %h;
+      my $record = Recs::Record->new();
       for(my $i = 0; $i < @a; ++$i)
       {
-         $h{$this->{'FIELDS'}->[$i] || $i} = $a[$i];
+         my $key = $this->{'FIELDS'}->[$i] || $i;
+         ${$record->guess_key_from_spec($key)} = $a[$i];
       }
-      my $r = Recs::Record->new(%h);
-      $this->push_record($r);
+      $this->push_record($record);
    }
+}
+
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
 }
 
 sub usage
@@ -64,9 +69,9 @@ Usage: recs-fromcsv <args> [<files>]
    given by --field.
 
 Arguments:
-   --field|-f <fields>   Comma separated list of field names.  May be specified multiple times.
-   --header              Take field names from the first line of input.
-   --help                Bail and output this help screen.
+   --key|-k <keys> Comma separated list of field names.  May be specified
+                   multiple times, may be key specs
+   --header        Take field names from the first line of input.
 
 Examples:
    Parse csv separated fields x and y.

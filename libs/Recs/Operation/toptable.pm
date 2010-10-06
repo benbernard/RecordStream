@@ -13,17 +13,18 @@ sub init {
    my $this = shift;
    my $args = shift;
 
-   my @xfields;
-   my @yfields;
    my %pins;
-   my @vfields;
    my $headers = 1;
    my $full = 0;
 
+   my $xgroup = Recs::KeyGroups->new();
+   my $ygroup = Recs::KeyGroups->new();
+   my $vgroup = Recs::KeyGroups->new();
+
    my $spec = {
-      "x-field|x=s"     => sub { push @xfields, split(/,/, $_[1]); },
-      "y-field|y=s"     => sub { push @yfields, split(/,/, $_[1]); },
-      "v-field|v=s"     => sub { push @vfields, split(/,/, $_[1]); },
+      "x-field|x=s"     => sub { $xgroup->add_groups($_[1]); },
+      "y-field|y=s"     => sub { $ygroup->add_groups($_[1]); },
+      "v-field|v=s"     => sub { $vgroup->add_groups($_[1]); },
       "pin=s"           => sub { for(split(/,/, $_[1])) { if(/^(.*)=(.*)$/) { $pins{$1} = $2; } } },
       'noheaders'       => sub { $headers = 0; },
       'full'            => \$full,
@@ -31,13 +32,13 @@ sub init {
 
    $this->parse_options($args, $spec);
 
-   my $do_vfields = scalar(@vfields) ? 0 : 1;
+   my $do_vfields = !$vgroup->has_any_group();
 
+   $this->{'XGROUP'} = $xgroup;
+   $this->{'YGROUP'} = $ygroup;
+   $this->{'VGROUP'} = $vgroup;
 
-   $this->{'XFIELDS_ARRAY'} = \@xfields;
-   $this->{'YFIELDS_ARRAY'} = \@yfields;
    $this->{'PINS_HASH'}     = \%pins;
-   $this->{'VFIELDS_ARRAY'} = \@vfields;
    $this->{'HEADERS'}       = $headers;
    $this->{'DO_VFIELDS'}    = $do_vfields;
    $this->{'FULL'}          = $full;
@@ -46,18 +47,39 @@ sub init {
 sub stream_done {
    my $this = shift;
 
-   my @xfields    = @{$this->{'XFIELDS_ARRAY'}};
-   my @yfields    = @{$this->{'YFIELDS_ARRAY'}};
    my %pins       = %{$this->{'PINS_HASH'}};
-   my @vfields    = @{$this->{'VFIELDS_ARRAY'}};
    my $headers    = $this->{'HEADERS'};
    my $do_vfields = $this->{'DO_VFIELDS'};
 
+   my $xgroup     = $this->{'XGROUP'};
+   my $ygroup     = $this->{'YGROUP'};
+   my $vgroup     = $this->{'VGROUP'};
+
+   my $xfields_hash = {};
+   my $yfields_hash = {};
+   my $vfields_hash = {};
+
    my $records = $this->get_records();
 
+   my (@xfields, @yfields, @vfields);
+   # Prep x and y fields
+   foreach my $record (@$records) {
+      foreach my $spec ( @{$xgroup->get_keyspecs_for_record($record)} ) {
+         if ( !$xfields_hash->{$spec} ) {
+            $xfields_hash->{$spec} = 1;
+            push @xfields, $spec;
+         }
+      }
+      foreach my $spec ( @{$ygroup->get_keyspecs_for_record($record)} ) {
+         if ( !$yfields_hash->{$spec} ) {
+            $yfields_hash->{$spec} = 1;
+            push @yfields, $spec;
+         }
+      }
+   }
+
+   # Prep v fields
    if($do_vfields) {
-      my %xfields = map { $_ => 1 } @xfields;
-      my %yfields = map { $_ => 1 } @yfields;
       my %vfields;
       my %used_first_level_keys;
 
@@ -74,6 +96,17 @@ sub stream_done {
                  !exists($vfields{$field}) ) {
                push @vfields, $field;
                $vfields{$field} = 1;
+            }
+         }
+      }
+   }
+   else {
+      my $vfields_hash = {};
+      foreach my $record (@$records) {
+         foreach my $spec ( @{$vgroup->get_keyspecs_for_record($record)} ) {
+            if ( !$vfields_hash->{$spec} ) {
+               $vfields_hash->{$spec} = 1;
+               push @vfields, $spec;
             }
          }
       }
@@ -308,11 +341,20 @@ sub _find_deep {
     return $hr->{"_"};
 }
 
-sub usage {
+sub add_help_types {
    my $this = shift;
+   $this->use_help_type('keyspecs');
+   $this->use_help_type('keygroups');
+   $this->use_help_type('keys');
+   $this->add_help_type(
+      'full',
+      \&full_help,
+      'Tutorial on toptable, with many examples'
+   );
+}
 
-   if(ref $this && $this->{'FULL'}) {
-      return <<FULL_HELP
+sub full_help {
+   print <<FULL_EXAMPLES;
 Full Help
 
 Lets first take a look at some examples:
@@ -460,8 +502,12 @@ As you can see, this is basically short hand for doing a recs-grep, the transfor
 \$ cat /var/tmp/psrecs | recs-collate --perfect --cube --key priority,state -a count -a sum,rss | recs-grep '\$r->{state} eq "run"' | recs-toptable --x priority,FIELD --y state -v sum_rss,count
 
 (which produces the same table as above).
-FULL_HELP
-   }
+FULL_EXAMPLES
+}
+
+sub usage {
+   my $this = shift;
+
    return <<USAGE;
 Usage: recs-toptable <args> [<files>]
    Creates a multi-dimensional pivot table with any number of x and y axises.
@@ -474,18 +520,16 @@ Usage: recs-toptable <args> [<files>]
 
    --help       Bail and print this usage
    --x-field|x  Add a x field, values of the specified field will become
-                columns in the table, may be a keyspec.
+                columns in the table, may be a keyspec or a keygroup
    --y-field|y  Add a y field, values of the specified field will become
-                rows in the table, may be a keyspec.
+                rows in the table, may be a keyspec or a keygroup
    --v-field|v  Specify the value to display in the table, if multiple value
                 fields are specified and FIELD is not placed in the x or y
-                axes, then the last one wins, may be a keyspec.
+                axes, then the last one wins, may be a keyspec or a keygroup
    --pin        Pin a field to a certain value, only display records matching
                 that value, very similar to doing a recs-grep befor toptable.
                 Takes value of the form: field=pinnedValue, field may be a
-                keyspec
-   --full       Print full help documentation, including example and bail.
-                This provides many more examples than this help page.
+                keyspec (not a keygroup)
    --noheaders  Do not print row and column headers (removes blank rows and
                 columns)
 

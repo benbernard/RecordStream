@@ -17,8 +17,7 @@ $group->parse_group('!foo!');
 is_deeply($group, {REGEX=>'foo', OPTIONS=>{}}, "Correctly parsed regex, nooption");
 
 $group->parse_group('!foo!d=3');
-is_deeply($group, {REGEX=>'foo', OPTIONS=>{ depth => 3}}, "Correctly parsed regex, option with value");
-
+is_deeply($group, {REGEX=>'foo', OPTIONS=>{ depth => 3}}, "Correctly parsed regex, option with value"); 
 $group->parse_group('!foo!d=3!f');
 is_deeply($group, {REGEX=>'foo', OPTIONS=>{ depth => 3, 'full_match'=>undef}}, "Correctly parsed regex, multiple options");
 
@@ -80,6 +79,9 @@ is_deeply([sort @{$key_groups->get_keyspecs_for_record($g_rec1)}], [qw(zip_bar z
 my $kg2 = Recs::KeyGroups->new('@zip/f', '!bar!f');
 is_deeply([sort @{$kg2->get_keyspecs_for_record($g_rec1)}], [qw(zip/foo zip_bar)], "Find with 2 keygroups, one a keyspec");
 
-
 my $kg3 = Recs::KeyGroups->new('!foo!,!bar!f');
-is_deeply($key_groups, $expected, "Basic Keygroup specification");
+is_deeply($key_groups, $expected, "Multiple keygroups in one string");
+ok($kg3->has_any_group(), "Test has_any_group with groups");
+
+my $kg4 = Recs::KeyGroups->new();
+ok(! $kg4->has_any_group(), "Test has_any_group with no groups");

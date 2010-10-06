@@ -10,9 +10,9 @@ sub init {
 
    my $headers = 0;
    my %options = (
-      "delim|d=s" => sub { $this->_set_delimiter($_[1]); },
-      "field|f=s" => sub { $this->add_field(split(/,/, $_[1])); },
-      "header"    => \$headers,
+      "delim|d=s"       => sub { $this->_set_delimiter($_[1]); },
+      "key|k|field|f=s" => sub { $this->add_field(split(/,/, $_[1])); },
+      "header"          => \$headers,
    );
 
    $this->parse_options($args, \%options);
@@ -94,24 +94,29 @@ sub split2 {
    return @sub_strings;
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+}
+
 sub usage {
    return <<USAGE;
 Usage: recs-fromsplit <args> [<files>]
    Each line of input (or lines of <files>) is split on provided delimiter to
-   produce an output record.  Fields are named numerically (0, 1, etc.) or as
-   given by --field.
+   produce an output record.  Keys are named numerically (0, 1, etc.) or as
+   given by --key.
 
 Arguments:
-   --delim|-d <delim>    Delimiter to use for splitting input lines (default ',').
-   --field|-f <fields>   Comma separated list of field names.  May be specified multiple times.
-   --header              Take field names from the first line of input.
-   --help                Bail and output this help screen.
+   --delim|-d <delim> Delimiter to use for splitting input lines (default ',').
+   --key|-k <key>     Comma separated list of key names.  May be specified
+                      multiple times, may be key specs
+   --header           Take key names from the first line of input.
 
 Examples:
-   Parse space separated fields x and y.
-      recs-fromsplit --field x,y --delim ' '
-   Parse comma separated fields a, b, and c.
-      recs-fromsplit --field a,b,c
+   Parse space separated keys x and y.
+      recs-fromsplit --key x,y --delim ' '
+   Parse comma separated keys a, b, and c.
+      recs-fromsplit --key a,b,c
 USAGE
 }
 

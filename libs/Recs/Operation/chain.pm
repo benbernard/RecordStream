@@ -246,6 +246,11 @@ sub get_exit_value {
    return 0;
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+}
+
 sub usage {
    return <<USAGE;
 Usage: recs-chain <command> | <command> | ...
@@ -263,7 +268,6 @@ Usage: recs-chain <command> | <command> | ...
    shells, you will need to escape the pipe character to avoid having the shell
    interpret the pipe as a shell pipe.
 
-   --help       - Bail and print this output.
    --show-chain - Before running the commands, print out what will happen
                   in the chain
    -n           - Do not run commands, implies --show-chain

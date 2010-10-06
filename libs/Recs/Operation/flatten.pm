@@ -23,10 +23,10 @@ sub init {
 
    my $spec = {
       (map { ($_ . "=s") => $add_field } (1..9)),
-      "depth=i"     => \$default_depth,
-      "field=s"     => sub { $add_field->($default_depth, $_[1]); },
-      "deep=s"      => sub { $add_field->(-1, $_[1]); },
-      "separator=s" => \$separator,
+      "depth=i"          => \$default_depth,
+      "key|k|field|f=s"  => sub { $add_field->($default_depth, $_[1]); },
+      "deep=s"           => sub { $add_field->(-1, $_[1]); },
+      "separator=s"      => \$separator,
    };
 
    $this->parse_options($args, $spec);
@@ -83,20 +83,19 @@ sub usage {
 Usage: recs-flatten <args> [<files>]
    Flatten nested structues in records.
 
-   NOTE: This script does not support key specs
+   NOTE: This script does not support keyspecs or keygroups
 
 Arguments:
    -<n> <fields>          For this comma-separated list of fields flatten to
                           depth n (1-9).
    --depth <nbr>          Change the default depth, negative being arbitrary
                           depth (defaults to 1).
-   --field <fields>       For this comma-separated list of fields flatten to the
+   --key <fields>         For this comma-separated list of fields flatten to the
                           default depth (may NOT be a a key spec).
    --deep <fields>        For this comma-separated list of fields flatten to
                           arbitrary depth.
    --separator <string>   Use this string to separate joined field names
                           (defaults to "-").
-   --help                 Bail and output this help screen.
 
 Examples:
    Under

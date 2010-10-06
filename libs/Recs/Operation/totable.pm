@@ -15,20 +15,25 @@ sub init {
    my $delimiter   = "\t";
    my $spreadsheet = 0;
    my $clear       = 0;
-   my @fields;
+
+   my $key_groups  = Recs::KeyGroups->new();
 
    my $spec = {
-      "no-header|n"   => \$no_header,
-      "field|f=s"     => sub { push @fields, split(/,/, $_[1]); },
-      "delim|d=s"     => \$delimiter,
-      "clear"         => \$clear,
-      "spreadsheet|s" => \$spreadsheet,
+      "no-header|n"     => \$no_header,
+      "key|k|field|f=s" => sub { $key_groups->add_groups($_[1]); },
+      "delim|d=s"       => \$delimiter,
+      "clear"           => \$clear,
+      "spreadsheet|s"   => \$spreadsheet,
    };
 
    $this->parse_options($args, $spec);
 
+   if ( ! $key_groups->has_any_group() ) {
+      $key_groups->add_groups('!.!returnrefs');
+   }
+
    $this->{'NO_HEADER'}     = $no_header;
-   $this->{'FIELDS'}        = \@fields;
+   $this->{'KEY_GROUPS'}    = $key_groups;
    $this->{'DELIMITER'}     = $delimiter;
    $this->{'SPREADSHEET'}   = $spreadsheet;
    $this->{'CLEAR'}         = $clear;
@@ -38,27 +43,14 @@ sub init {
 sub stream_done {
    my $this = shift;
 
-   my $records = $this->get_records();
-   my $fields  = $this->{'FIELDS'};
-
-   my %fields_hash;
-   foreach(@$fields) {
-      $fields_hash{$_} = "";
-   }
-
+   my $records   = $this->get_records();
+   my $key_group = $this->{'KEY_GROUPS'};
    my %widths;
 
    foreach my $record (@$records) {
-      my @fields = keys %fields_hash;
-      if ( scalar @fields == 0 ) {
-         @fields = keys %$record;
-      }
+      my $specs = $key_group->get_keyspecs_for_record($record);
 
-      foreach my $field (@fields) {
-         if(%fields_hash && !exists($fields_hash{$field})) {
-            next;
-         }
-
+      foreach my $field (@$specs) {
          if(!exists($widths{$field})) {
             $widths{$field} = 0;
          }
@@ -74,9 +66,8 @@ sub stream_done {
       }
    }
 
-   if(!@$fields) {
-      $fields = [ sort keys %widths ];
-   }
+   my $fields = [ sort keys %widths ];
+   $this->{'FIELDS'} = $fields;
 
    if(!$no_header) {
       $this->print_value(
@@ -218,6 +209,13 @@ sub extract_field {
    return $value;
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+   $this->use_help_type('keygroups');
+   $this->use_help_type('keys');
+}
+
 sub usage {
    return <<USAGE;
 Usage: recs-totable <args> [<files>]
@@ -225,8 +223,9 @@ Usage: recs-totable <args> [<files>]
    record stream to determine column size, and number of columns
 
    --no-header|n           Do not print column headers
-   --field|f <field name>  May be comma separated, may be specified multiple
+   --key|k <field name>    May be comma separated, may be specified multiple
                            times.  Specifies the fields to put in the table.
+                           May be a keyspec or a keygroup, see --help-keys
    --spreadsheet           Print out in a format suitable for excel.
                            1. Does not print line of -s after header
                            2. Separates by single character rather than series
@@ -235,7 +234,6 @@ Usage: recs-totable <args> [<files>]
                            <string> rather than the default of a tab
    --clear                 Put blanks in cells where all of the row so far
                            matches the row above.
-   --help                  Bail and print this usage
 
 Examples:
    Display a table

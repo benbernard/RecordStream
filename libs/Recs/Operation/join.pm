@@ -161,20 +161,20 @@ sub stream_done {
    }
 }
 
-sub usage {
-   return <<USAGE;
-Usage: recs-join <args> <inputkey> <dbkey> <dbfile> [<files>]
-   Records of input (or records from <files>) are joined against records in
-   <dbfile>, using field <inputkey> from input and field <dbkey> from <dbfile>.
-   Each record from input may match 0, 1, or more records from <dbfile>. Each
-   pair of matches will be combined to form a larger record, with fields from
-   the dbfile overwriting fields from the input stream. If the join is a left
-   join or inner join, any inputs that do not match a dbfile record are
-   discarded. If the join is a right join or inner join, any db records that do
-   not match an input record are discarded.
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+   $this->use_help_type('snippet');
+   $this->add_help_type(
+      'full',
+      \&full_help,
+      'Help on join types and accumulate-right'
+   );
+}
 
-   dbkey and inputkey may be key specs, see 'man recs' for more information
-
+sub full_help {
+   print <<HELP_FULL;
+Join Types
    For instance, if you did:
    recs-join type typeName dbfile fromfile
 
@@ -186,7 +186,7 @@ Usage: recs-join <args> <inputkey> <dbkey> <dbfile> [<files>]
    { 'name': 'something', 'type': 'foo'}
    { 'name': 'blarg', 'type': 'hip'}
 
-   for an inner join, you would get
+   for an inner (default) join, you would get
    { 'name': 'something', 'type': 'foo', 'typeName': 'foo', 'hasSetting': 1}
 
    for an outer join, you would get
@@ -201,28 +201,6 @@ Usage: recs-join <args> <inputkey> <dbkey> <dbfile> [<files>]
    for a right join, you would get
    { 'name': 'something', 'type': 'foo', 'typeName': 'foo', 'hasSetting': 1}
    { 'name': 'blarg', 'type': 'hip'}
-
-Arguments:
-   --help              Bail and output this help screen.
-   --left              Do a left join
-   --right             Do a right join
-   --inner             Do an inner join (This is the default)
-   --outer             Do an outer join
-   --operation         An perl expression to evaluate for merging two records
-                       together, in place of the default behavior of db fields
-                       overwriting input fields. See "Operation" below.
-   --accumulate-right  Accumulate all input records with the same key onto each
-                       db record matching that key. See "Accumulate Right"
-                       below.
-
-Operation:
-   The expression provided is evaluated for every pair of db record and input
-   record that have matching keys, in place of the default operation to
-   overwrite input fields with db fields. The variable \$d is set to a
-   Recs::Record object for the db record, and \$i is set to a Recs::Record
-   object for the input record. The \$d record is used for the result. Thus, if
-   you provide an empty operation, the result will contain only fields from the
-   db record.
 
 Accumulate Right:
    Accumulate all input records with the same key onto each db record matching
@@ -240,6 +218,45 @@ Accumulate Right:
          \$d->{\$k} = \$i->{\$k};
        }
      }' --accumulate-right name name dbfile inputfile
+HELP_FULL
+}
+
+sub usage {
+   return <<USAGE;
+Usage: recs-join <args> <inputkey> <dbkey> <dbfile> [<files>]
+   Records of input (or records from <files>) are joined against records in
+   <dbfile>, using field <inputkey> from input and field <dbkey> from <dbfile>.
+   Each record from input may match 0, 1, or more records from <dbfile>. Each
+   pair of matches will be combined to form a larger record, with fields from
+   the dbfile overwriting fields from the input stream. If the join is a left
+   join or inner join, any inputs that do not match a dbfile record are
+   discarded. If the join is a right join or inner join, any db records that do
+   not match an input record are discarded.
+
+   dbkey and inputkey may be key specs, see '--help-keyspecs' for more
+   information
+
+Arguments:
+   --left              Do a left join
+   --right             Do a right join
+   --inner             Do an inner join (This is the default)
+   --outer             Do an outer join
+   --operation         An perl expression to evaluate for merging two records
+                       together, in place of the default behavior of db fields
+                       overwriting input fields. See "Operation" below.
+   --accumulate-right  Accumulate all input records with the same key onto each
+                       db record matching that key. See "Accumulate Right"
+                       below.
+   --help-full         Full help output
+
+Operation:
+   The expression provided is evaluated for every pair of db record and input
+   record that have matching keys, in place of the default operation to
+   overwrite input fields with db fields. The variable \$d is set to a
+   Recs::Record object for the db record, and \$i is set to a Recs::Record
+   object for the input record. The \$d record is used for the result. Thus, if
+   you provide an empty operation, the result will contain only fields from the
+   db record.
 
 Examples:
    Join type from STDIN and typeName from dbfile

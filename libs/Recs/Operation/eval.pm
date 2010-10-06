@@ -32,6 +32,12 @@ sub accept_record {
    $this->print_value($value . "\n");
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('snippet');
+   $this->use_help_type('keyspecs');
+}
+
 sub usage {
    my $usage =  <<USAGE;
 Usage: recs-eval <args> <expr> [<files>]
@@ -39,14 +45,8 @@ Usage: recs-eval <args> <expr> [<files>]
    <files>) with \$r set to a Recs::Record object and \$line set to the current
    line number (starting at 1).  The result of each evaluation is printed on a
    line by itself (this is not a recs stream).  See Recs::Record for help on
-   what the \$r object can do.
-
-Arguments:
-   --help   Bail and output this help screen.
-
-USAGE
-
-   return $usage . Recs::Executor->usage() . <<EXAMPLES
+   what the \$r object can do.  See --help-snippets for more information on
+   code snippets
 
 Examples:
    Print the host field from each record.
@@ -55,8 +55,7 @@ Examples:
       recs-eval '\$r->{x} . " " . \$r->{y}'
    Set up a script (this would be presumably piped to sh)
       recs-eval '"./myscript --value \$r->{foo}"'
-
-EXAMPLES
+USAGE
 }
 
 1;
