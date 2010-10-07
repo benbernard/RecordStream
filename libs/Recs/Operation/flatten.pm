@@ -85,6 +85,11 @@ Usage: recs-flatten <args> [<files>]
 
    NOTE: This script does not support keyspecs or keygroups
 
+   WARNING:  This script implements a strategy for dealing with nested
+   structures that is almost always better handled by using keyspecs or
+   keygroups.  It should, in general, be as easy or easier to use those
+   concepts with the data manipulations you actually want to accomplish.
+
 Arguments:
    -<n> <fields>          For this comma-separated list of fields flatten to
                           depth n (1-9).
