@@ -121,10 +121,10 @@ sub usage {
 Usage: recs-flatten <args> [<files>]
    Flatten nested structues in records.
 
-   WARNING:  This script implements a strategy for dealing with nested
-   structures that is almost always better handled by using keyspecs or
-   keygroups.  It should, in general, be as easy or easier to use those
-   concepts with the data manipulations you actually want to accomplish.
+   NOTE:  This script implements a strategy for dealing with nested structures
+   that is almost always better handled by using keyspecs or keygroups.  It
+   should, in general, be as easy or easier to use those concepts with the data
+   manipulations you actually want to accomplish.
 
 Arguments:
    -<n> <fields>          For this comma-separated list of fields flatten to
@@ -138,7 +138,8 @@ Arguments:
    --separator <string>   Use this string to separate joined field names
                           (defaults to "-").
 
-    All field values may be keyspecs or keygroups
+    All field values may be keyspecs or keygroups, value of keyspec must not be
+    an array element
 
 Examples:
    Under
