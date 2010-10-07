@@ -171,13 +171,29 @@ sub print_usage {
 
    print $usage . "\n\n";
    print "Help Options:\n";
+   my $max_length = 0;
+   foreach my $type (sort keys %{$this->{'HELP_TYPES'}}) {
+      my $info = $this->{'HELP_TYPES'}->{$type};
+      next unless ( $info->{'USE'} );
+      my $option_name = $info->{'OPTION_NAME'} || "help-$type";
+      my $length      = length($option_name);
+      $max_length     = $length if ( $max_length < $length );
+    }
+
+    $max_length += 2;
+
    foreach my $type (sort keys %{$this->{'HELP_TYPES'}}) {
       my $info = $this->{'HELP_TYPES'}->{$type};
       next unless ( $info->{'USE'} );
 
       my $option_name = $info->{'OPTION_NAME'} || "help-$type";
       my $description = $info->{'DESCRIPTION'};
-      print "   --$option_name - $description\n";
+
+      my $length       = length($option_name);
+      my $spaces_count = $max_length - $length;
+      my $padding      = ' ' x $spaces_count;
+
+      print "   --$option_name$padding$description\n";
    }
 }
 
