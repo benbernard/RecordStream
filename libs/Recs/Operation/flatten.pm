@@ -4,6 +4,19 @@ use strict;
 
 use base qw(Recs::Operation);
 
+my $INVALID_REF_TYPES = [qw(
+   SCALAR
+   ARRAY
+   CODE
+   REF
+   GLOB
+   LVALUE
+   FORMAT
+   IO
+   VSTRING
+   Regexp
+)];
+
 sub init {
    my $this = shift;
    my $args = shift;
@@ -52,7 +65,8 @@ sub accept_record {
             my $value = $this->remove_spec($record, $spec);
             $this->split_field($record, $spec, $depth, $value);
          };
-         if ( $@ =~ m/Cannot flatten into array/ ) {
+
+         if ( $@ =~ m/Cannot flatten into/ ) {
             warn $@;
             undef $@;
             next;
@@ -78,11 +92,12 @@ sub remove_spec {
       $data = ${$record->guess_key_from_spec($new_spec, 1)};
    }
 
-   if ( ref ($data) eq 'ARRAY' ) {
-      die "Cannot flatten into array, skipping spec $spec!\n";
+   my $ref_type = ref($data);
+   if ( ! grep { $_ eq $ref_type } @$INVALID_REF_TYPES ) {
+      return delete $data->{$last_key};
    }
    else {
-      return delete $data->{$last_key};
+      die "Cannot flatten into ref type: '$ref_type', must be a hash! skipping spec $spec!\n";
    }
 }
 
