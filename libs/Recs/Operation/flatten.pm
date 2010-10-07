@@ -9,16 +9,18 @@ sub init {
    my $args = shift;
 
 
-   my %fields;
+   my @fields;
    my $default_depth = 1;
    my $separator     = '-';
+
 
    my $add_field = sub {
       my ($depth, $field_names) = @_;
 
-      for my $field (split(/,/, $field_names)) {
-         $fields{$field} = $depth;
-      }
+      my $key_groups = Recs::KeyGroups->new();
+      $key_groups->add_groups($field_names);
+
+      push @fields, [$depth, $key_groups];
    };
 
    my $spec = {
@@ -31,7 +33,7 @@ sub init {
 
    $this->parse_options($args, $spec);
 
-   $this->{'FIELDS'}        = \%fields;
+   $this->{'FIELDS'}        = \@fields;
    $this->{'SEPARATOR'}     = $separator;
    $this->{'DEFAULT_DEPTH'} = $default_depth;
 }
@@ -40,17 +42,48 @@ sub accept_record {
    my $this   = shift;
    my $record = shift;
 
-   my $fields = $this->{'FIELDS'};
+   my $fields    = $this->{'FIELDS'};
+   my $separator = $this->{'SEPARATOR'};
 
-   foreach my $field (keys %$fields) {
-      if(!exists($fields->{$field})) {
-         next;
+   foreach my $pair (@$fields) {
+      my ($depth, $key_groups) = @$pair;
+      foreach my $spec (@{$key_groups->get_keyspecs($record)}) {
+         eval {
+            my $value = $this->remove_spec($record, $spec);
+            $this->split_field($record, $spec, $depth, $value);
+         };
+         if ( $@ =~ m/Cannot flatten into array/ ) {
+            warn $@;
+            undef $@;
+            next;
+         }
+         elsif ( $@ ) {
+            die $@;
+         }
       }
-      my $value = $record->remove($field);
-      $this->split_field($record, $field, $fields->{$field}, $value);
    }
 
    $this->push_record($record);
+}
+
+sub remove_spec {
+   my ($this, $record, $spec) = @_;
+   my $key_list = $record->get_key_list_for_spec($spec);
+
+   my $last_key = pop @$key_list;
+   my $new_spec = join('/', @$key_list);
+
+   my $data = $record;
+   if ($new_spec) {
+      $data = ${$record->guess_key_from_spec($new_spec, 1)};
+   }
+
+   if ( ref ($data) eq 'ARRAY' ) {
+      die "Cannot flatten into array, skipping spec $spec!\n";
+   }
+   else {
+      return delete $data->{$last_key};
+   }
 }
 
 sub split_field {
@@ -73,17 +106,20 @@ sub split_field {
    }
 
    # either depth is 0 or it wasn't expandable anyway
-
-   $record->set($name, $value);
+   ${$record->guess_key_from_spec($name)} = $value;
 }
 
+sub add_help_types {
+   my $this = shift;
+   $this->use_help_type('keyspecs');
+   $this->use_help_type('keygroups');
+   $this->use_help_type('keys');
+}
 
 sub usage {
    return <<USAGE;
 Usage: recs-flatten <args> [<files>]
    Flatten nested structues in records.
-
-   NOTE: This script does not support keyspecs or keygroups
 
    WARNING:  This script implements a strategy for dealing with nested
    structures that is almost always better handled by using keyspecs or
@@ -101,6 +137,8 @@ Arguments:
                           arbitrary depth.
    --separator <string>   Use this string to separate joined field names
                           (defaults to "-").
+
+    All field values may be keyspecs or keygroups
 
 Examples:
    Under
