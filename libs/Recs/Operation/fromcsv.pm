@@ -12,17 +12,30 @@ sub init {
 
    my @fields;
    my $header_line = undef;
+   my $strict = 0;
 
    my $spec = {
       "keys|k|field|f=s" => sub { push @fields, split(/,/, $_[1]); },
       "header"           => \$header_line,
+      "strict"           => \$strict,
    };
 
    $this->parse_options($args, $spec);
 
+   my $csv_args = {
+      binary => 1,
+      eol    => $/,
+   };
+
+   if ( !$strict ) {
+      $csv_args->{'allow_whitespace'}    = 1;
+      $csv_args->{'allow_loose_quotes'}  = 1;
+      $csv_args->{'allow_loose_escapes'} = 1;
+   }
+
    $this->{'FIELDS'}      = \@fields;
    $this->{'HEADER_LINE'} = $header_line;
-   $this->{'PARSER'}      = new Text::CSV();
+   $this->{'PARSER'}      = new Text::CSV($csv_args);
 }
 
 sub run_operation {
@@ -32,24 +45,21 @@ sub run_operation {
 
    local @ARGV = @{$this->_get_extra_args()};
 
-   if ( $this->{'HEADER_LINE'} ) {
-      my $line = <>;
-      chomp $line;
-      $parser->parse($line);
-      push @{$this->{'FIELDS'}}, $parser->fields();
-   }
+   my $do_headers = $this->{'HEADER_LINE'};
+   while(my $row = $parser->getline(*ARGV)) {
+      if ( $do_headers ) {
+         push @{$this->{'FIELDS'}}, @$row;
+         $do_headers = 0;
+         next;
+      }
 
-   while(<>)
-   {
-      chomp;
-      my @a = $parser->parse($_);
-      @a = $parser->fields();
+      my @values = @$row;
 
       my $record = Recs::Record->new();
-      for(my $i = 0; $i < @a; ++$i)
+      for(my $i = 0; $i < @values; ++$i)
       {
          my $key = $this->{'FIELDS'}->[$i] || $i;
-         ${$record->guess_key_from_spec($key)} = $a[$i];
+         ${$record->guess_key_from_spec($key)} = $values[$i];
       }
       $this->push_record($record);
    }
@@ -72,6 +82,9 @@ Arguments:
    --key|-k <keys> Comma separated list of field names.  May be specified
                    multiple times, may be key specs
    --header        Take field names from the first line of input.
+   --strict        Do not trim whitespaces, allow loose quoting (quotes inside
+                   qutoes), or allow the use of escape characters when not
+                   strictly needed.  (not recommended, for most cases)
 
 Examples:
    Parse csv separated fields x and y.
