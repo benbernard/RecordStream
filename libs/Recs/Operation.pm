@@ -127,7 +127,10 @@ sub parse_options {
    }
 
    local @ARGV = @$args;
-   GetOptions(%$options_spec);
+   unless (GetOptions(%$options_spec)) {
+      # output usage if there was a problem with option parsing
+      $this->_set_wants_help(1);
+   }
 
    $this->_set_extra_args(\@ARGV);
 }
