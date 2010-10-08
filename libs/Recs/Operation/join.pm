@@ -247,7 +247,6 @@ Arguments:
    --accumulate-right  Accumulate all input records with the same key onto each
                        db record matching that key. See "Accumulate Right"
                        below.
-   --help-full         Full help output
 
 Operation:
    The expression provided is evaluated for every pair of db record and input
