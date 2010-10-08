@@ -20,6 +20,7 @@ sub init {
    my $xgroup = Recs::KeyGroups->new();
    my $ygroup = Recs::KeyGroups->new();
    my $vgroup = Recs::KeyGroups->new();
+   my $output_records = 0;
 
    my $spec = {
       "x-field|x=s"     => sub { $xgroup->add_groups($_[1]); },
@@ -27,7 +28,7 @@ sub init {
       "v-field|v=s"     => sub { $vgroup->add_groups($_[1]); },
       "pin=s"           => sub { for(split(/,/, $_[1])) { if(/^(.*)=(.*)$/) { $pins{$1} = $2; } } },
       'noheaders'       => sub { $headers = 0; },
-      'full'            => \$full,
+      'records|recs'    => \$output_records,
    };
 
    $this->parse_options($args, $spec);
@@ -38,10 +39,10 @@ sub init {
    $this->{'YGROUP'} = $ygroup;
    $this->{'VGROUP'} = $vgroup;
 
-   $this->{'PINS_HASH'}     = \%pins;
-   $this->{'HEADERS'}       = $headers;
-   $this->{'DO_VFIELDS'}    = $do_vfields;
-   $this->{'FULL'}          = $full;
+   $this->{'PINS_HASH'}      = \%pins;
+   $this->{'HEADERS'}        = $headers;
+   $this->{'DO_VFIELDS'}     = $do_vfields;
+   $this->{'OUTPUT_RECORDS'} = $output_records;
 }
 
 sub stream_done {
@@ -187,6 +188,13 @@ sub stream_done {
       }
    }
 
+   # Collected the data, if we're only outputing records, stop here.
+   if ( $this->{'OUTPUT_RECORDS'} ) {
+      $this->output_records(\@xfields, \@yfields, \@r2);
+      return;
+   }
+
+   # Start constructing the ASCII table
    my @xvs;
    _dump_deep(\%xvs, \@xvs, scalar(@xfields));
    my @yvs;
@@ -280,6 +288,45 @@ sub stream_done {
       $this->print_value(_format_row(\@w, sub { if($_[0] < @$row) { return $row->[$_[0]]; } return ""; }, "|") . "\n");
    }
    $this->print_value(_format_row(\@w, sub { return ("-" x $_[1]); }, "+") . "\n");
+}
+
+sub output_records {
+   my ($this, $xfields, $yfields, $values) = @_;
+
+   my $records = {};
+
+   foreach my $vector (@$values) {
+      my ($xvalues, $yvalues, $value) = @$vector;
+      my $record_key = join('-', @$yvalues);
+      my $record_hash = ($records->{$record_key} ||= {});
+
+      my $index = -1;
+      foreach my $yfield (@$yfields) {
+         $index++;
+         $record_hash->{$yfield} = $yvalues->[$index];
+      }
+
+      my $data = $record_hash;
+      $index = -1;
+      my $last_hash;
+      my $last_xvalue;
+      foreach my $xfield (@$xfields) {
+         $index++;
+         my $xvalue = $xvalues->[$index];
+
+         $data->{$xfield}->{$xvalue} ||= {};
+         $last_hash = $data->{$xfield};
+         $last_xvalue = $xvalue;
+
+         $data = $data->{$xfield}->{$xvalue};
+      }
+
+      $last_hash->{$last_xvalue} = $value;
+   }
+
+   foreach my $hash (values %$records) {
+      $this->push_record(Recs::Record->new($hash));
+   }
 }
 
 sub _format_row {
@@ -518,20 +565,21 @@ Usage: recs-toptable <args> [<files>]
    X and Y fields can take the special value 'FIELD' which uses unused field
    names as values for the FIELD dimension
 
-   --help       Bail and print this usage
-   --x-field|x  Add a x field, values of the specified field will become
-                columns in the table, may be a keyspec or a keygroup
-   --y-field|y  Add a y field, values of the specified field will become
-                rows in the table, may be a keyspec or a keygroup
-   --v-field|v  Specify the value to display in the table, if multiple value
-                fields are specified and FIELD is not placed in the x or y
-                axes, then the last one wins, may be a keyspec or a keygroup
-   --pin        Pin a field to a certain value, only display records matching
-                that value, very similar to doing a recs-grep befor toptable.
-                Takes value of the form: field=pinnedValue, field may be a
-                keyspec (not a keygroup)
-   --noheaders  Do not print row and column headers (removes blank rows and
-                columns)
+   --x-field|x     Add a x field, values of the specified field will become
+                   columns in the table, may be a keyspec or a keygroup
+   --y-field|y     Add a y field, values of the specified field will become
+                   rows in the table, may be a keyspec or a keygroup
+   --v-field|v     Specify the value to display in the table, if multiple value
+                   fields are specified and FIELD is not placed in the x or y
+                   axes, then the last one wins, may be a keyspec or a keygroup
+   --pin           Pin a field to a certain value, only display records matching
+                   that value, very similar to doing a recs-grep befor toptable.
+                   Takes value of the form: field=pinnedValue, field may be a
+                   keyspec (not a keygroup)
+   --noheaders     Do not print row and column headers (removes blank rows and
+                   columns)
+   --records|recs  Instead of printing table, output records, one per row of
+                   the table.
 
 Simple Examples (see --full for more detailed descriptions)
 
