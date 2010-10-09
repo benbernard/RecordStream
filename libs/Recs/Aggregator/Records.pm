@@ -54,7 +54,7 @@ sub long_usage
 
 sub returns_record
 {
-   return 1;
+   return 0;
 }
 
 Recs::Aggregator::register_aggregator('records', __PACKAGE__);
