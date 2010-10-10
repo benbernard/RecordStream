@@ -591,6 +591,11 @@ KEY SPECS
    would be the index into the array, so all records would have the value of 'c'
    
    Simiarly, \@f/b would have values 1, 2, and 3
+
+   You can escape / with a \\.  For example, if you have a record:
+   {"foo/bar":2}
+
+   You can address that key with foo\\/bar
 KEYSPECS_HELP
 }
 
