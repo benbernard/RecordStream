@@ -78,6 +78,8 @@ sub check_keep {
 sub run_operation {
    my ($this) = @_;
 
+   $DB::single = 1;
+
    my $record = Recs::Record->new();
 
    local @ARGV = @{$this->_get_extra_args()};
@@ -87,12 +89,14 @@ sub run_operation {
       my $regex_index = 0;
       for my $regex (@{$this->_get_regexes()}) {
          my ($string, $fields, $pre_flush, $post_flush) = @$regex;
+         my $field_prefix = "$regex_index-";
 
          if(my @groups = ($line =~ $string)) {
+            my $pairs = $this->get_field_value_pairs(\@groups, $fields, $field_prefix);
             if(!$this->get_clobber()) {
-               for(my $index = 0; $index < @groups; ++$index) {
-                  my $field_name = ($index < @$fields) ? $fields->[$index] : ($regex_index . "-" . $index);
-                  if(defined ${$record->guess_key_from_spec($field_name)}) {
+               foreach my $pair ( @$pairs ) {
+                  my ($name, $value) = @$pair;
+                  if(defined ${$record->guess_key_from_spec($name)}) {
                      $pre_flush = 1;
                   }
                }
@@ -102,9 +106,9 @@ sub run_operation {
                $record = $this->flush_record($record);
             }
 
-            for(my $index = 0; $index < @groups; ++$index) {
-               my $field_name = ($index < @$fields) ? $fields->[$index] : ($regex_index . "-" . $index);
-               ${$record->guess_key_from_spec($field_name)} = $groups[$index];
+            foreach my $pair ( @$pairs ) {
+               my ($name, $value) = @$pair;
+               ${$record->guess_key_from_spec($name)} = $value;
             }
 
             if($post_flush) {
@@ -117,6 +121,37 @@ sub run_operation {
    if(!$this->get_clobber() && scalar($record->keys())) {
       $record = $this->flush_record($record);
    }
+}
+
+sub get_field_value_pairs {
+   my ($this, $groups, $fields, $prefix) = @_;
+
+   #Check for $NUM for field name
+   my @real_fields;
+   my $values_to_remove = {};
+
+   my $index = -1;
+   foreach my $field ( @$fields ) {
+      $index++;
+      my $real_field = $field;
+      if ( $field =~ m/^\$(\d+)$/ ) {
+         my $index = $1 - 1;
+         $real_field = $groups->[$index];
+         $values_to_remove->{$real_field} = 1;
+      }
+      push @real_fields, $real_field;
+   }
+
+   my @values = grep { ! exists $values_to_remove->{$_} } @$groups;
+
+   my @pairs;
+   for(my $index = 0; $index < @values; ++$index) {
+      my $field_name = ($index < @real_fields) ? $real_fields[$index] : ($prefix . $index);
+      my $value = $values[$index];
+      push @pairs, [$field_name, $value];
+   }
+
+   return \@pairs;
 }
 
 sub flush_record {
@@ -167,7 +202,8 @@ Arguments:
 
    <regex> - Syntax is: '<KEY1>,<KEY2>=REGEX'.  KEY field names are optional.
    The key names may be key specs, see '--help-keyspecs' for more.  Field
-   names may not be keygroups
+   names may not be keygroups.  If field matches \$NUM, then that match number
+   in the regex will be used as the field name
 
 Examples:
    Typical use case one: parse several fields on separate lines

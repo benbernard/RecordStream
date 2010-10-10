@@ -13,7 +13,6 @@ recs-frommultire - allow dynamic field names, allow dropped fields
 recs-join - Join in sqlite for larger db streams
 recs-sort, recs-todb - need value options for keyspec groups
 recs-tognuplot - write tests, by comparing gnuplot scripts
-Add support for keygroups in Recs::Record methods
 
 Key groups:
   rerun field group for each record - may have an issue with recs-collate

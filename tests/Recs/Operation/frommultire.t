@@ -23,6 +23,31 @@ $output = <<OUTPUT;
 {"fname":"David","lname":"Cohen"}
 OUTPUT
 test1(['--re', 'fname,lname=^Name: (.*) (.*)$'], $input, $output);
+
+$input2 = <<INPUT;
+Team: Recs
+Location: 521 S Weller
+Name: Keith Amling
+Team: Futurama
+Location: Omicron Persei 8
+Name: Matt Groening
+INPUT
+$output = <<OUTPUT;
+{"Team":"Recs","Location":"521 S Weller","Name":"Keith Amling"}
+{"Team":"Futurama","Location":"Omicron Persei 8","Name":"Matt Groening"}
+OUTPUT
+test1(['--re', '$1=(.*): (.*)'], $input2, $output);
+
+$input2 = <<INPUT;
+foo,bar=biz,zap ZOO
+foo,bar=ready,run ZAP
+INPUT
+$output = <<OUTPUT;
+{"foo":"biz","bar":"zap","0-2":"ZOO"}
+{"foo":"ready","bar":"run","0-2":"ZAP"}
+OUTPUT
+test1(['--re', '$1,$2=(.*),(.*)=(.*),(.*) ([A-Z]*)'], $input2, $output);
+
 $output = <<OUTPUT;
 {"team":"Recs","loc":"521 S Weller","fname":"Keith","lname":"Amling"}
 {"team":"Recs","loc":"521 S Weller","fname":"Benjamin","lname":"Bernard"}
@@ -30,6 +55,7 @@ $output = <<OUTPUT;
 {"team":"Futurama","loc":"Omicron Persei 8","fname":"David","lname":"Cohen"}
 OUTPUT
 test1(['--re', 'team=^Team: (.*)$', '--re', 'loc=^Location: (.*)$', '--post', 'fname,lname=^Name: (.*) (.*)$', '--clobber', '--keep-all'], $input, $output);
+
 $output = <<OUTPUT;
 {"team":"Recs","loc":"521 S Weller","fname":"Keith","lname":"Amling"}
 {"team":"Recs","fname":"Benjamin","lname":"Bernard"}
@@ -37,6 +63,7 @@ $output = <<OUTPUT;
 {"team":"Futurama","fname":"David","lname":"Cohen"}
 OUTPUT
 test1(['--re', 'team=^Team: (.*)$', '--re', 'loc=^Location: (.*)$', '--post', 'fname,lname=^Name: (.*) (.*)$', '--clobber', '--keep', 'team'], $input, $output);
+
 $input = <<INPUT;
 A:A1 A2
 B:B1 B2 B3
