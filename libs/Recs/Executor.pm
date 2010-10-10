@@ -20,12 +20,37 @@ sub new {
 
   bless $this, $class;
 
-  $this->{'CODE'} = create_code_ref($this->transform_code($code));
-  if ( $@ ) {
-     die "Could not compile code '$code':\n$@"
-  }
+  $this->init($code);
 
   return $this;
+}
+
+sub init {
+   my $this = shift;
+   my $code = shift;
+
+   if ( -e $code ) {
+      $code = $this->slurp($code);
+   }
+
+   $this->{'CODE'} = create_code_ref($this->transform_code($code));
+   if ( $@ ) {
+      die "Could not compile code '$code':\n$@"
+   }
+}
+
+sub slurp {
+   my $this = shift;
+   my $file = shift;
+
+   local $/;
+   undef $/;
+
+   open (my $fh, '<', $file) or die "Could not open code snippet file: $file: $!";
+   my $code = <$fh>;
+   close $fh;
+
+   return $code;
 }
 
 sub create_code_ref {
@@ -110,6 +135,7 @@ CODE SNIPPETS:
     variables predefined for you, and one piece of special syntax to assist in
     modifying hashes.
 
+Special Variables:
     \$r    - the current record object.  This may be used exactly like a hash,
     or you can use some of the special record functions, see Recs::Record for
     more information
@@ -123,6 +149,7 @@ CODE SNIPPETS:
     other recs scripts or from cat, for instance, will not have a useful
     filename.
 
+Special Syntax
     Use {{search_string}} to look for a string in the keys of a record, use /
     to nest keys.  You can nest into arrays by using an index.  If you are
     vivifying arrays (if the array doesn't exist, prefix your key with # so
@@ -142,7 +169,7 @@ CODE SNIPPETS:
     # Even assign to values (set the foo key to the value 1)
     {{fo}} = 1
 
-    # And auto, vivify
+   # And auto, vivify
     {{new_key/array_key/#0}} = 3 # creates an array within a hash within a hash
 
     # Index into an array
@@ -151,6 +178,11 @@ CODE SNIPPETS:
 
     This matching is a fuzzy keyspec matching, see --help-keyspecs for more
     details.
+
+Code In Files
+    Instead of putting the code snippet on the command line, if the code
+    argument is a filename instead, that file will be read and used as the 
+    snippet.
 USAGE
 }
 

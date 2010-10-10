@@ -27,27 +27,37 @@ use Recs::Record;
    my $rec2 = Recs::Record->new('0' => "zero");
    my $executor4 = Recs::Executor->new('{{0}}');
    is($executor4->execute_code($rec2), "zero", "test number only in special lookup");
+
+   my $executor5 = Recs::Executor->new('$global += 2; $global');
+   is($executor5->execute_code($rec), 2, "Test Global variables 1");
+   is($executor5->execute_code($rec2), 4, "Test Global variables 4");
+
+   my $executor6 = Recs::Executor->new('tests/files/executorCode');
+   $executor6->execute_code($rec);
+   $executor6->execute_code($rec2);
+   is($rec->{'foo'}, 'bar', "Test file execution 1");
+   is($rec2->{'foo'}, 'bar', "Test file execution 2");
 }
 
 use Recs::Test::OperationHelper;
 
 my $output = <<OUTPUT;
-{"foo":1,"zap":"blah1","fn":"tests/files/testFile2"}
-{"foo":2,"zap":"blah2","fn":"tests/files/testFile2"}
-{"foo":3,"zap":"blah3","fn":"tests/files/testFile2"}
-{"value":"10.0.0.101","foo":"bar","element":"address","fn":"tests/files/testFile3"}
-{"value":"10.0.1.101","foo":"bar3","element":"address","fn":"tests/files/testFile3"}
-{"value":"10.0.0.102","foo":"bar3","element":"address2","fn":"tests/files/testFile3"}
-{"value":"10.0.0.103","foo":"bar","element":"address2","fn":"tests/files/testFile3"}
-{"value":"10.0.1.103","foo":"bar","element":"address2","fn":"tests/files/testFile3"}
+{"line":1,"foo":1,"zap":"blah1","fn":"tests/files/testFile2"}
+{"line":2,"foo":2,"zap":"blah2","fn":"tests/files/testFile2"}
+{"line":3,"foo":3,"zap":"blah3","fn":"tests/files/testFile2"}
+{"line":4,"value":"10.0.0.101","foo":"bar","element":"address","fn":"tests/files/testFile3"}
+{"line":5,"value":"10.0.1.101","foo":"bar3","element":"address","fn":"tests/files/testFile3"}
+{"line":6,"value":"10.0.0.102","foo":"bar3","element":"address2","fn":"tests/files/testFile3"}
+{"line":7,"value":"10.0.0.103","foo":"bar","element":"address2","fn":"tests/files/testFile3"}
+{"line":8,"value":"10.0.1.103","foo":"bar","element":"address2","fn":"tests/files/testFile3"}
 OUTPUT
 
 # Probably shouldn't use xform here, but I need a full context to test
-# $filename substition
+# $filename and line substition
 use Recs::Operation::xform;
 Recs::Test::OperationHelper->do_match(
   'xform',
-  ['{{fn}} = $filename', 'tests/files/testFile2', 'tests/files/testFile3'],
+  ['{{fn}} = $filename; {{line}} = $line;', 'tests/files/testFile2', 'tests/files/testFile3'],
   '',
   $output
 );
