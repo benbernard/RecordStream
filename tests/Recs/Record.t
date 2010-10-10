@@ -224,4 +224,13 @@ BEGIN { use_ok("Recs::Record"); }
   is_deeply({$rec5->as_hash()}, {foo => 'bar'}, "get_key_list_for_spec doesn't auto-vivify");
   $rec5->get_key_list_for_spec('not_here/zap');
   is_deeply({$rec5->as_hash()}, {foo => 'bar'}, "get_key_list_for_spec doesn't auto-vivify, nested spec");
+
+
+  my $rec6 = Recs::Record->new('foo'=>'bar', zoo=>'zap');
+  is_deeply($rec6->get_keys_for_group('!oo!s'), [qw(foo zoo)], "Groups from record");
+
+  my $rec7 = Recs::Record->new('foo'=>'bar', zoo=>'zap', 'coo'=>'cap');
+  is_deeply($rec7->get_keys_for_group('!oo!s'), [qw(foo zoo)], "Groups from record, no re-run");
+  is_deeply($rec7->get_keys_for_group('!oo!s', 1), [qw(coo foo zoo)], "Groups from record, with re-run");
+  is_deeply($rec7->get_group_values('!oo!s', 1), [qw(cap bar zap)], "Groups from record, with re-run");
 }

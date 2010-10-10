@@ -114,6 +114,19 @@ not have side effects in the record.
 Returns a list of keys that the spec expanded out to.  Arrrays will still be
 #NUM, hash keys will be fully expanded to the keys present in the record.
 
+=item $keyspecs_array_ref = $this->get_keys_for_group($key_group, $rerun)
+
+Will create a Recs::KeyGroups (if necessary) and return the keyspecs that match
+the given group.  See --help-keyspecs or Recs::KeyGroups for more information.
+
+Setting rerun to true will cause every record this is called on to re-do
+keygroup calculation
+
+=item $values_array_ref = $this->get_group_values($key_group, $rerun)
+
+Returns the values in this record for a key group.  Will rerun keygroup parsing
+if $rerun is passed
+
 =item $comparators_ref = Recs::Record::get_comparators(@specs)
 
 Calls get_comparator for each element of @specs and returns the results
@@ -139,6 +152,8 @@ records.
 
 use strict;
 use warnings;
+
+use Recs::KeyGroups;
 
 use Data::Dumper;
 
@@ -524,6 +539,40 @@ sub _guess_key_recurse {
    }
 
    return $return_key_chain ? [@$key_chain, $key] : $value;
+}
+
+{
+   my $key_groups = {};
+   sub get_keys_for_group {
+      my ($this, $group_string, $rerun) = @_;
+
+      my $group = $key_groups->{$group_string};
+      if ( ! $group ) {
+         my $new_group                = Recs::KeyGroups->new($group_string);
+         $key_groups->{$group_string} = $new_group;
+         $group                       = $new_group;
+      }
+
+      if ( $rerun ) {
+         return $group->get_keyspecs_for_record($this);
+      }
+      else {
+         return $group->get_keyspecs($this);
+      }
+   }
+}
+
+sub get_group_values {
+   my ($this, $group, $rerun) = @_;
+
+   my $specs  = $this->get_keys_for_group($group, $rerun);
+   my $values = [];
+
+   foreach my $spec (@$specs) {
+      push @$values, ${$this->guess_key_from_spec($spec)};
+   }
+
+   return $values;
 }
 
 sub cmp
