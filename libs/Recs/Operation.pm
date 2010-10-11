@@ -22,7 +22,6 @@ sub usage {
 
 sub new {
    my $class    = shift;
-   my $run_init = shift;
    my $args     = shift;
 
    my $this = {
@@ -31,7 +30,7 @@ sub new {
    bless $this, $class;
 
    $this->init_help();
-   $this->init($args) if ( $run_init );
+   $this->init($args);
    return $this;
 }
 
@@ -335,7 +334,7 @@ sub create_operation {
 
    my $op;
    eval {
-      $op = $module->new(1, \@args);
+      $op = $module->new(\@args);
    };
    
    if ( $@ || $op->get_wants_help() ) {

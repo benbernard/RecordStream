@@ -11,21 +11,21 @@ INPUT
 my $xform;
 my $output;
 
-$xform = Recs::Operation::xform->new(1,['$r->{a} = "a0";']),
+$xform = Recs::Operation::xform->new(['$r->{a} = "a0";']),
 $output = <<OUTPUT;
 {"a":"a0","b":"b1"}
 {"a":"a0","b":"b2"}
 OUTPUT
 Recs::Test::OperationHelper->new("operation" => $xform, "input" => $input, "output" => $output)->matches();
 
-$xform = Recs::Operation::xform->new(1,['$r->{a} = "a0"; [{}]']);
+$xform = Recs::Operation::xform->new(['$r->{a} = "a0"; [{}]']);
 $output = <<OUTPUT;
 {}
 {}
 OUTPUT
 Recs::Test::OperationHelper->new("operation" => $xform, "input" => $input, "output" => $output)->matches();
 
-$xform = Recs::Operation::xform->new(1,['[map { {%$r, "a" => $_} } split(/,/, delete($r->{"a"}))]']);
+$xform = Recs::Operation::xform->new(['[map { {%$r, "a" => $_} } split(/,/, delete($r->{"a"}))]']);
 $output = <<OUTPUT;
 {"a":"a1","b":"b1"}
 {"a":"a2","b":"b1"}
