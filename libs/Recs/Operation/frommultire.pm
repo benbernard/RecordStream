@@ -78,8 +78,6 @@ sub check_keep {
 sub run_operation {
    my ($this) = @_;
 
-   $DB::single = 1;
-
    my $record = Recs::Record->new();
 
    local @ARGV = @{$this->_get_extra_args()};

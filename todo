@@ -9,7 +9,6 @@ more aggregators
 perf test
    recs-collate lru size 1 v. optimized adjacent recs collate
    JSON v. old recs v. other serialization (Data::Dumper, Storable, ?)
-recs-frommultire - allow dynamic field names, allow dropped fields
 recs-join - Join in sqlite for larger db streams
 recs-sort, recs-todb - need value options for keyspec groups
 recs-tognuplot - write tests, by comparing gnuplot scripts
