@@ -63,6 +63,6 @@ sub test1
    my ($args, $input, $output) = @_;
 
    open(STDIN, "-|", "echo", "-n", $input) || ok(0, "Cannot open echo?!");
-   my $fromre = Recs::Operation::fromcsv->new(1, $args);
+   my $fromre = Recs::Operation::fromcsv->new($args);
    Recs::Test::OperationHelper->new("operation" => $fromre, "input" => undef, "output" => $output)->matches();
 }

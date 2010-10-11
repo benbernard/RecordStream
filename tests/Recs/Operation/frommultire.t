@@ -78,6 +78,6 @@ sub test1
    my ($args, $input, $output) = @_;
 
    open(STDIN, "-|", "echo", "-n", $input) || ok(0, "Cannot open echo?!");
-   my $frommultire = Recs::Operation::frommultire->new(1,$args);
+   my $frommultire = Recs::Operation::frommultire->new($args);
    Recs::Test::OperationHelper->new("operation" => $frommultire, "input" => undef, "output" => $output)->matches();
 }
