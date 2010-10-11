@@ -335,8 +335,7 @@ sub create_operation {
 
    my $op;
    eval {
-      $op = $module->new();
-      $op->init(\@args);
+      $op = $module->new(1, \@args);
    };
    
    if ( $@ || $op->get_wants_help() ) {
