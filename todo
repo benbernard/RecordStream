@@ -15,3 +15,7 @@ recs-tognuplot - write tests, by comparing gnuplot scripts
 
 Key groups:
   rerun field group for each record - may have an issue with recs-collate
+  'Value attribute' ideas:
+      !REGEX!v=numeric
+      '!perc-(\d+)!v=Percentile: $1'
+      '!perc-!v-eval=Percentile {{field}}'
