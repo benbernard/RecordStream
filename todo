@@ -13,6 +13,7 @@ recs-join - Join in sqlite for larger db streams
 recs-sort, recs-todb - need value options for keyspec groups
 recs-tognuplot - write tests, by comparing gnuplot scripts
 recs-xform - warning on failure if converting an array result to multiple records or just change it back to assign to $r
+recs-split - argument to use regex (builtin split) rather than custom split
 
 Key groups:
   rerun field group for each record - may have an issue with recs-collate
