@@ -26,8 +26,23 @@ OUTPUT
 
 test1(['--header', qw(tests/files/splitfile)], $output);
 
-sub test1
-{
+$input = <<INPUT;
+foo bar  baz
+foo bar biz
+INPUT
+$output = <<OUTPUT;
+{"1":"bar","0":"foo","2":"","3":"baz"}
+{"1":"bar","0":"foo","2":"biz"}
+OUTPUT
+test_inline_input(['--strict', '--delim', ' '], $input, $output);
+
+$output = <<OUTPUT;
+{"1":"bar","0":"foo","2":"baz"}
+{"1":"bar","0":"foo","2":"biz"}
+OUTPUT
+test_inline_input(['--delim', '\s+'], $input, $output);
+
+sub test1 {
    my ($args, $output) = @_;
 
    Recs::Test::OperationHelper->do_match(
@@ -36,4 +51,12 @@ sub test1
       undef,
       $output,
    );
+}
+
+sub test_inline_input {
+   my ($args, $input, $output) = @_;
+
+   open(STDIN, "-|", "echo", "-n", $input) || ok(0, "Cannot open echo?!");
+   my $fromre = Recs::Operation::fromsplit->new($args);
+   Recs::Test::OperationHelper->new("operation" => $fromre, "input" => undef, "output" => $output)->matches();
 }

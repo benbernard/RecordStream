@@ -9,15 +9,18 @@ sub init {
    my $args = shift;
 
    my $headers = 0;
+   my $strict  = 0;
    my %options = (
       "delim|d=s"       => sub { $this->_set_delimiter($_[1]); },
       "key|k|field|f=s" => sub { $this->add_field(split(/,/, $_[1])); },
       "header"          => \$headers,
+      "strict"          => \$strict,
    );
 
    $this->parse_options($args, \%options);
 
    $this->{'HEADER'} = $headers;
+   $this->{'STRICT'} = $strict;
 }
 
 sub _set_delimiter {
@@ -60,7 +63,7 @@ sub run_operation {
       my $line = <>;
       chomp $line;
       my $delim = $this->get_delimiter();
-      $this->add_field($_) for split2($this->get_delimiter(), $line);
+      $this->add_field($_) for @{$this->get_values_for_line($line)};
    }
 
    while(my $line = <>) {
@@ -69,7 +72,7 @@ sub run_operation {
       my $record = Recs::Record->new();
       my $index = 0;
 
-      foreach my $value (split2($this->get_delimiter(), $line)) {
+      foreach my $value (@{$this->get_values_for_line($line)}) {
          ${$record->guess_key_from_spec($this->get_field($index))} = $value;
          ++$index;
       }
@@ -78,20 +81,20 @@ sub run_operation {
    }
 }
 
-sub split2 {
-   my ($delimiter, $string) = @_;
+sub get_values_for_line {
+   my $this = shift;
+   my $line = shift;
 
-   my @sub_strings;
-
-   my $index;
-   my $start = 0;
-   while(($index = index($string, $delimiter, $start)) != -1) {
-      push @sub_strings, substr($string, $start, $index - $start);
-      $start = $index + length($delimiter);
+   my @values;
+   my $delim = $this->get_delimiter();
+   if ( $this->{'STRICT'} ) {
+      @values = split(/\Q$delim\E/, $line);
    }
-   push @sub_strings, substr($string, $start);
+   else {
+      @values = split(/$delim/, $line);
+   }
 
-   return @sub_strings;
+   return \@values;
 }
 
 sub add_help_types {
@@ -111,6 +114,7 @@ Arguments:
    --key|-k <key>     Comma separated list of key names.  May be specified
                       multiple times, may be key specs
    --header           Take key names from the first line of input.
+   --strict           Delimiter is not treated as a regex
 
 Examples:
    Parse space separated keys x and y.
