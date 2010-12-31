@@ -14,6 +14,7 @@ recs-sort, recs-todb - need value options for keyspec groups
 recs-tognuplot - write tests, by comparing gnuplot scripts
 recs-xform - warning on failure if converting an array result to multiple records or just change it back to assign to $r
 recs-split - argument to use regex (builtin split) rather than custom split
+recs-fromtcpdump - parse dump files, options for splitting out only connections, parsed flags, etc
 
 Key groups:
   rerun field group for each record - may have an issue with recs-collate
