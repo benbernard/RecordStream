@@ -1,10 +1,12 @@
 use Test::More qw(no_plan);
-use Recs::Test::OperationHelper;
+use Recs::Test::Tester;
 
 BEGIN { use_ok( 'Recs::Operation::fromre' ) };
 
 my $input;
 my $output;
+
+my $tester = Recs::Test::Tester->new('fromre');
 
 $input = <<INPUT;
 Team: Recs
@@ -22,24 +24,15 @@ $output = <<OUTPUT;
 {"fname":"Matt","lname":"Groening"}
 {"fname":"David","lname":"Cohen"}
 OUTPUT
-test1(['-f', 'fname,lname', '^Name: (.*) (.*)$'], $input, $output);
+$tester->test_stdin(['-f', 'fname,lname', '^Name: (.*) (.*)$'], $input, $output);
 $input = <<INPUT;
 A:A1 A2 A3
 INPUT
 $output = <<OUTPUT;
 {"a1":"A1","1":"A2","2":"A3"}
 OUTPUT
-test1(['-f', 'a1', '^A:([^ ]*) ([^ ]*) ([^ ]*)$'], $input, $output);
+$tester->test_stdin(['-f', 'a1', '^A:([^ ]*) ([^ ]*) ([^ ]*)$'], $input, $output);
 $output = <<OUTPUT;
 {"0":"A1","1":"A2","2":"A3"}
 OUTPUT
-test1(['^A:([^ ]*) ([^ ]*) ([^ ]*)$'], $input, $output);
-
-sub test1
-{
-   my ($args, $input, $output) = @_;
-
-   open(STDIN, "-|", "echo", "-n", $input) || ok(0, "Cannot open echo?!");
-   my $fromre = Recs::Operation::fromre->new($args);
-   Recs::Test::OperationHelper->new("operation" => $fromre, "input" => undef, "output" => $output)->matches();
-}
+$tester->test_stdin(['^A:([^ ]*) ([^ ]*) ([^ ]*)$'], $input, $output);

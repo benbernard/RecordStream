@@ -1,5 +1,5 @@
 use Test::More 'no_plan';
-use Recs::Test::OperationHelper;
+use Recs::Test::Tester;
 
 BEGIN { use_ok( 'Recs::Operation::fromatomfeed' ) };
 
@@ -25,22 +25,11 @@ my $output4 = <<OUTPUT;
 {"dc:creator":"author4","updated":"2007-06-06T07:00:00Z","id":"http://localhost/entry4","author":{"name":"author4"},"title":"Entry 4"}
 OUTPUT
 
-test1([                            'file:tests/files/testFeed1'], $output4);
-test1([              '--nofollow', 'file:tests/files/testFeed1'], $output2);
-test1(['--max', '1',               'file:tests/files/testFeed1'], $output1);
-test1(['--max', '1', '--nofollow', 'file:tests/files/testFeed1'], $output1);
-test1(['--max', '2',               'file:tests/files/testFeed1'], $output2);
-test1(['--max', '3',               'file:tests/files/testFeed1'], $output3);
-test1(['--max', '3', '--nofollow', 'file:tests/files/testFeed1'], $output2);
-
-sub test1
-{
-   my ($args, $output) = @_;
-
-   Recs::Test::OperationHelper->do_match(
-      'fromatomfeed',
-      $args,
-      undef,
-      $output,
-   );
-}
+my $tester = Recs::Test::Tester->new('fromatomfeed');
+$tester->no_input_test([                            'file:tests/files/testFeed1'], $output4);
+$tester->no_input_test([              '--nofollow', 'file:tests/files/testFeed1'], $output2);
+$tester->no_input_test(['--max', '1',               'file:tests/files/testFeed1'], $output1);
+$tester->no_input_test(['--max', '1', '--nofollow', 'file:tests/files/testFeed1'], $output1);
+$tester->no_input_test(['--max', '2',               'file:tests/files/testFeed1'], $output2);
+$tester->no_input_test(['--max', '3',               'file:tests/files/testFeed1'], $output3);
+$tester->no_input_test(['--max', '3', '--nofollow', 'file:tests/files/testFeed1'], $output2);

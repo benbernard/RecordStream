@@ -1,10 +1,12 @@
 use Test::More qw(no_plan);
-use Recs::Test::OperationHelper;
+use Recs::Test::Tester;
 
 BEGIN { use_ok( 'Recs::Operation::generate' ) };
 
 my $input;
 my $output;
+
+my $tester = Recs::Test::Tester->new('generate');
 
 $input = <<INPUT;
 {"title":"ernie"}
@@ -16,7 +18,7 @@ $output = <<OUTPUT;
 {"backpointer":{"title":"bert"},"title2":"bert"}
 OUTPUT
 
-test1([qw(--keychain backpointer), q(echo {\"title2\":\"$r->{title}\"})], $input, $output);
+$tester->test_stdin([qw(--keychain backpointer), q(echo {\"title2\":\"$r->{title}\"})], $input, $output);
 
 $output = <<OUTPUT;
 {"title":"ernie"}
@@ -25,13 +27,4 @@ $output = <<OUTPUT;
 {"backpointer":{"title":"bert"},"title2":"bert"}
 OUTPUT
 
-test1([qw(--passthrough --keychain backpointer), q(echo {\"title2\":\"$r->{title}\"})], $input, $output);
-
-sub test1
-{
-   my ($args, $input, $output) = @_;
-
-   open(STDIN, "-|", "echo", "-n", $input) || ok(0, "Cannot open echo?!");
-   my $fromre = Recs::Operation::generate->new($args);
-   Recs::Test::OperationHelper->new("operation" => $fromre, "input" => undef, "output" => $output)->matches();
-}
+$tester->test_stdin([qw(--passthrough --keychain backpointer), q(echo {\"title2\":\"$r->{title}\"})], $input, $output);

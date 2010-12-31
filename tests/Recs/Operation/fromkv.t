@@ -1,10 +1,12 @@
 use Test::More qw(no_plan);
-use Recs::Test::OperationHelper;
+use Recs::Test::Tester;
 
 BEGIN { use_ok( 'Recs::Operation::fromkv' ) };
 
 my $input;
 my $output;
+
+my $tester = Recs::Test::Tester->new('fromkv');
 
 $input = <<INPUT;
 
@@ -23,7 +25,7 @@ $output = <<OUTPUT;
 {"d":"4","e":"5","f":"6"}
 OUTPUT
 
-test1(['--kv-delim', '=', '--record-delim', "%\n"], $input, $output);
+$tester->test_stdin(['--kv-delim', '=', '--record-delim', "%\n"], $input, $output);
 
 $input = <<INPUT;
 a=1|b=2|c=3%
@@ -35,7 +37,7 @@ $output = <<OUTPUT;
 {"d":"4","e":"5","f":"6"}
 OUTPUT
 
-test1(['--kv-delim', '=', '--entry-delim', '|', '--record-delim', "%\n"], $input, $output);
+$tester->test_stdin(['--kv-delim', '=', '--entry-delim', '|', '--record-delim', "%\n"], $input, $output);
 
 $input = <<INPUT;
 a=1|b=2|c=3\%d=4|e=5|f=6
@@ -46,13 +48,4 @@ $output = <<OUTPUT;
 {"d":"4","e":"5","f":"6"}
 OUTPUT
 
-test1(['--kv-delim', '=', '--entry-delim', '|', '--record-delim', "%"], $input, $output);
-
-sub test1
-{
-   my ($args, $input, $output) = @_;
-
-   open(STDIN, "-|", "echo", "-n", $input) || ok(0, "Cannot open echo?!");
-   my $fromre = Recs::Operation::fromkv->new($args);
-   Recs::Test::OperationHelper->new("operation" => $fromre, "input" => undef, "output" => $output)->matches();
-}
+$tester->test_stdin(['--kv-delim', '=', '--entry-delim', '|', '--record-delim', "%"], $input, $output);
