@@ -5,6 +5,7 @@ use warnings;
 
 use Test::More;
 use Recs::InputStream;
+use Recs::OutputStream;
 
 sub new {
    my $class = shift;
@@ -62,13 +63,24 @@ sub matches {
       }
    }
 
+   my $is_ok = 1;
    for my $record (@$results) {
-      ok(UNIVERSAL::isa($record, 'Recs::Record'), "Record is a Recs::Record");
+      $is_ok = 0 if ( ! ok(UNIVERSAL::isa($record, 'Recs::Record'), "Record is a Recs::Record") );
    }
 
-   is_deeply($results, \@output_records, "Records match: $name");
+   $is_ok = 0 if ( ! is_deeply($results, \@output_records, "Records match: $name") );
 
-   ok($keeper->has_called_finish(), "Has called finish: $name");
+   $is_ok = 0 if ( ! ok($keeper->has_called_finish(), "Has called finish: $name") );
+
+   if ( ! $is_ok ) {
+      my $out = Recs::OutputStream->new(\*STDERR);
+      warn "Input and expected differed!\nInput:\n";
+      $out->put_record($_) for @output_records;
+      warn "Output from module:\n";
+      $out->put_record($_) for @$results;
+   }
+
+   return $is_ok;
 }
 
 sub do_match {
