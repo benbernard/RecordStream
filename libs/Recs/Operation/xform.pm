@@ -16,7 +16,7 @@ sub init {
    }
 
    my $expression = shift @{$this->_get_extra_args()};
-   my $executor = Recs::Executor->new($expression);
+   my $executor = Recs::Executor->new($expression, 1);
    $this->{'EXECUTOR'} = $executor;
 }
 
@@ -57,10 +57,10 @@ Usage: recs-xform <args> <expr> [<files>]
    line number (starting at 1).  All records are printed back out (changed as
    they may be).
 
-   If the return value of <expr> is an ARRAY ref, then the values of the array
-   will be treated as records and outputed one to a line.  The values of the
-   array may either be a hash ref or a Recs::Record object.  The original
-   record will not be outputted in this case.
+   If \$r is set to an ARRAY ref in the expr, then the values of the array will
+   be treated as records and outputed one to a line.  The values of the array
+   may either be a hash ref or a Recs::Record object.  The original record will
+   not be outputted in this case.
 
 Examples:
    Add line number to records
@@ -72,7 +72,7 @@ Examples:
    Remove fields which are not "a", "b", or "c"
       recs-xform '\$r->prune("a", "b", "c")'
    Double records
-      recs-xform --ret '[\$r, \$r]'
+      recs-xform --ret '\$r = [{\%\$r}, {\%\$r}]'
    Split the records on field a
       recs-xform --ret '[map { {%\$r, "a" => \$_} } split(/,/, delete(\$r->{"a"}))]'
 USAGE

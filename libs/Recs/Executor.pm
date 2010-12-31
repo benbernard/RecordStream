@@ -13,10 +13,14 @@ use Recs::Operation;
 use Getopt::Long;
 
 sub new {
-  my $class = shift;
-  my $code = shift;
+  my $class         = shift;
+  my $code          = shift;
+  my $output_record = shift;
 
-  my $this = {};
+
+  my $this = {
+     OUTPUT_RECORD => $output_record,
+  };
 
   bless $this, $class;
 
@@ -33,7 +37,12 @@ sub init {
       $code = $this->slurp($code);
    }
 
-   $this->{'CODE'} = create_code_ref($this->transform_code($code));
+   my $return_statement = '';
+   if ( $this->{'OUTPUT_RECORD'} ) {
+      $return_statement = '; $r;'
+   }
+
+   $this->{'CODE'} = create_code_ref($this->transform_code($code) . $return_statement);
    if ( $@ ) {
       die "Could not compile code '$code':\n$@"
    }
