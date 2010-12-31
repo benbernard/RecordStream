@@ -74,7 +74,7 @@ sub matches {
 
    if ( ! $is_ok ) {
       my $out = Recs::OutputStream->new(\*STDERR);
-      warn "Input and expected differed!\nInput:\n";
+      warn "Expected and output differed!\nExpected:\n";
       $out->put_record($_) for @output_records;
       warn "Output from module:\n";
       $out->put_record($_) for @$results;
