@@ -3,8 +3,7 @@ perldocs for modules
 more aggregators
    powersum
    threshct
-   ord2univariatemap
-   ord2bivariatemap
+   ord2univariatemap ord2bivariatemap
    linreg
 perf test
    recs-collate lru size 1 v. optimized adjacent recs collate
@@ -20,3 +19,56 @@ Key groups:
       !REGEX!v=numeric
       '!perc-(\d+)!v=Percentile: $1'
       '!perc-!v-eval=Percentile {{field}}'
+
+RecordShell idea:
+  14:34 <ben_bernard> my idea is basically you have like status files in a history tree
+  14:34 <ben_bernard> and you have some sort of interactive way of selecting where you are in history
+  14:34 <ben_bernard> and also merging up your history into a preivous branch
+  14:34 <ben_bernard> and you could move back and forth between commands...
+  14:34 <ben_bernard> maybe this doesn't make sense
+  14:35 <ben_bernard> its definitely the sort of script you would never use
+  14:35 <amling> :)
+  14:35 <amling> sounds like you might have to do the brunt work of the design then
+  14:35 <ben_bernard> but I think it would be cool
+  14:35 <amling> with my only contribution being in the form of mockery :P
+  14:35 <amling> since I could obviously never help build something I wouldn't use
+  14:35 <amling> anyway, the history tree idea is cool but it definitely increases the depth of the learning curve
+  14:36 <ben_bernard> ?
+  14:36 <amling> the idea of having a "history" of your progress on changing your data into what you want
+  14:36 <ben_bernard> I mean the only reason to use this shell is the history / stream management, I thin
+  14:36 <amling> it's cool, but I wonder if it will make the shell more difficult to sapproach
+  14:36 <amling> well
+  14:36 <amling> the tree part anyway
+  14:37 <amling> I guess if you never do anything you just get a boring linear history
+  14:37 <amling> maybe you don't even have to know it could have been a tree
+  14:37 <ben_bernard> yeah, I'm thinking like explicit branching
+  14:37 <ben_bernard> sorta like git
+  14:37 <ben_bernard> like you jump back in time
+  14:37 <ben_bernard> add a command, it inserts into the linear history
+  14:38 <ben_bernard> only if you 'branch' it there do you get a sub tree that doesn't apply to the current sets...
+  14:38 <ben_bernard> or this is one thought for approaching the complexity
+  14:39 <ben_bernard> I was also thinking of maybe instead just having a recs-chain command that captures the intermediate output...
+  14:39 <ben_bernard> do you think that would be interesting?
+  14:39 <ben_bernard> I think the shell is more interesting
+  14:39 <amling> I think the shell is better
+  14:39 <amling> I actually sort of liked the idea of having the current data pager'd into your face
+  14:40 <amling> and then having options like 'step back', 'apply another command', etc.
+  14:40 <amling> 'inspect previous steps'
+  14:40 <ben_bernard> the issue is that it isn't the shell, right
+  14:40 <ben_bernard> I'm concerned that that will make it useless
+  14:40 <ben_bernard> perhaps have a ! prefix that will operate on the current set of files or something
+  14:41 <ben_bernard> also I was thinking that you could just run commands
+  14:41 <ben_bernard> and it would auto-pipe the current stream and create an output file
+  14:41 <ben_bernard> doesn't have to be recs
+  14:42 <ben_bernard> hmmm
+  14:42 <ben_bernard> now I'm thinking: you have a set of streams you're working with
+  14:42 <ben_bernard> you have a history tree for each stream
+  14:43 <ben_bernard> you can use '!' or a command like 'shell' to dump into a shell with all the streams available, the RecordShell detects new files or changes
+  14:43 <ben_bernard> (new files are new streams, changes mean an un-editable history jump, though you can still jump to before it, it just can't update after it...)
+  14:44 <amling> it could have the shell your dumped into log history somewhere special and try to make sense of it
+  14:44 <ben_bernard> so my thought
+  14:44 <amling> in very limited cases it might mean ability to understand what happened (not just treat the shell session as a black box)
+  14:44 <ben_bernard> is that in general you can run shell commands (with |s) and it will work just like recs commands
+  14:45 <ben_bernard> so you only use ! or shell when you have to do the black magic
+  14:49 <ben_bernard> what I would really like is sort of a programmatic shell
+  14:49 <ben_bernard> like if I could get an interface that was like run this, but tell me the command name and what files were written to, oh and also here is your input stream
