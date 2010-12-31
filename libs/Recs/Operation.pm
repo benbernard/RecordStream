@@ -180,9 +180,9 @@ sub print_usage {
       my $option_name = $info->{'OPTION_NAME'} || "help-$type";
       my $length      = length($option_name);
       $max_length     = $length if ( $max_length < $length );
-    }
+   }
 
-    $max_length += 2;
+   $max_length += 2;
 
    foreach my $type (sort keys %{$this->{'HELP_TYPES'}}) {
       my $info = $this->{'HELP_TYPES'}->{$type};
@@ -338,7 +338,11 @@ sub create_operation {
    };
    
    if ( $@ || $op->get_wants_help() ) {
-      ($op || $module)->print_usage($@);
+      if ( ! $op ) {
+         $op = bless {}, $module;
+         $op->init_help();
+      }
+      $op->print_usage($@);
       exit 1;
    }
 
