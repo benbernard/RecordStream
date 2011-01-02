@@ -49,14 +49,35 @@ Recs::Test::OperationHelper->test_output(
    $solution2,
 );
 
-my $solution3 = <<SOLUTION;
+$stream = <<NESTED;
+{"foo":5,"zoo":"biz5","zap":{"bar":3}}
+NESTED
+
+my $solution4 = <<SOLUTION;
 ----------------------------------------------------------------------
-zoo = "biz1"
+foo = 5
+zap =
+   bar = 3
+zoo = "biz5"
 SOLUTION
 
 Recs::Test::OperationHelper->test_output(
    'toprettyprint',
-   [qw(--one --key), '!zoo!'],
+   ['--one'],
    $stream,
-   $solution3,
+   $solution4,
+);
+
+my $solution5 = <<SOLUTION;
+----------------------------------------------------------------------
+foo = 5
+zap = {"bar":3}
+zoo = "biz5"
+SOLUTION
+
+Recs::Test::OperationHelper->test_output(
+   'toprettyprint',
+   ['--one', '--nonested'],
+   $stream,
+   $solution5,
 );
