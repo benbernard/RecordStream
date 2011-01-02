@@ -14,6 +14,9 @@ Ubuntu packages:
   libdate-manip-perl
   libtext-csv-perl
   gnuplot
+  libnetpacket-perl
+  libnet-pcap-perl
+  libnet-dns-perl
 
 ----
 
@@ -32,17 +35,16 @@ export PATH=$PATH:`pwd`/bin && export PERL5LIB=$PERL5LIB:`pwd`/libs
 EXAMPLE 1:
 How many processes are each of the users on my system running?
 
-recs-fromps | recs-collate --key uid -a count --perfect | recs-sort --key count=n | recs-totable
+recs-fromps | recs-collate --key uid -a count | recs-sort --key count=n | recs-totable
 
 Broken down this is:
 1. recs-fromps - First get the records of all the prcesses currently running
-2. recs-collate --key uid -a count --perfect
-     Grouping by the uid field, count how many records fall into the group and
-     do it perfectly (across the whole stream rather than adjacent)
+2. recs-collate --key uid -a count
+     Grouping by the uid field, count how many records fall into the group
 3. recs-sort --key count=n 
      Sort the resulting records by the count key
      numerical (rather than lexically)
-4. recs-toable - Print the output in a nicely formatted table.
+4. recs-totable - Print the output in a nicely formatted table.
 
 EXAMPLE 2:
 How many processes are each user on the system running at each priority level?
@@ -51,10 +53,9 @@ recs-fromps | recs-collate --key uid,priority -a count | recs-toptable --x prior
 
 Broken down:
 1. recs-fromps - First get the records of all the prcesses currently running
-2. recs-collate --key uid,priority -a count --perfect
+2. recs-collate --key uid,priority -a count
      Grouping by the uid and the priority field, count how many records fall
-     into the group and do it perfectly (across the whole stream rather than
-     adjacent)
+     into the group
 3. recs-toptable --x priority --y uid -v count
      Create a 2 dimensional table, across the top put the priority values, down
      the side put the uid.  In the game use as the value the count field.
@@ -64,13 +65,13 @@ What Xorg modules put information in my Xorg.log at startup, and what log level
 are they logged at?  I need this in csv format for importing into a spreadsheet
 program.
 
-recs-frommultire --re 'type,module=\((\S*)\) ([^:]+):' /var/tmp/Xorg.0.log | recs-collate --key type,module -a ct --perfect | recs-sort --key ct=n | recs-totable --spreadsheet --delim ','
+recs-frommultire --re 'type,module=\((\S*)\) ([^:]+):' /var/log/Xorg.0.log | recs-collate --key type,module -a ct | recs-sort --key ct=n | recs-tocsv --header
 
-1. recs-frommultire --re 'type,module=\((\S*)\) ([^:]+):' /var/tmp/Xorg.0.log 
+1. recs-frommultire --re 'type,module=\((\S*)\) ([^:]+):' /var/log/Xorg.0.log 
      Parse out the type and module from the Xorg log file.  That regex reads
      capture text inside literal '()', then capture text after a space up to the
      first ':'.
-2. recs-collate --key type,module -a ct --perfect 
+2. recs-collate --key type,module -a ct
      Collate records into groups of type-modules.  Count how many in each group
      across all records.
 3. recs-sort --key ct=n 
