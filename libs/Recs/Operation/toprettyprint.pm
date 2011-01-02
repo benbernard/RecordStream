@@ -58,7 +58,7 @@ sub output_hash {
    my $prefix = shift;
    my $hash   = shift;
 
-   foreach my $key (keys %$hash) {
+   foreach my $key (sort keys %$hash) {
       my $value = $hash->{$key};
       if ( ref($value) eq 'HASH' ) {
          $this->print_value($prefix . "$key =\n");
