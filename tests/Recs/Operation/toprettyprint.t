@@ -56,7 +56,7 @@ NESTED
 my $solution4 = <<SOLUTION;
 ----------------------------------------------------------------------
 foo = 5
-zap =
+zap = HASH:
    bar = 3
 zoo = "biz5"
 SOLUTION
@@ -80,4 +80,25 @@ Recs::Test::OperationHelper->test_output(
    ['--one', '--nonested'],
    $stream,
    $solution5,
+);
+
+$stream = <<NESTED;
+{"foo":{},"zoo":"biz5","zap":["bar",{"one":1}]}
+NESTED
+
+my $solution6 = <<SOLUTION;
+----------------------------------------------------------------------
+foo = EMPTY HASH
+zap = ARRAY:
+   0 = HASH:
+      one = 1
+   1 = "bar"
+zoo = "biz5"
+SOLUTION
+
+Recs::Test::OperationHelper->test_output(
+   'toprettyprint',
+   ['--one'],
+   $stream,
+   $solution6,
 );

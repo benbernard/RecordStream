@@ -42,14 +42,49 @@ sub accept_record {
    $this->print_value('-' x 70 . "\n");
    foreach my $key (sort @$specs) {
       my $value = ${$record->guess_key_from_spec($key)};
-      if ( (ref($value) eq 'HASH') &&  $this->{'NESTED_OUTPUT'} ) {
-         $this->print_value("$key =\n");
-         $this->output_hash('   ', $value);
+      $this->output_value('', $key, $value);
+   }
+}
+
+sub output_value {
+   my $this   = shift;
+   my $prefix = shift;
+   my $key    = shift;
+   my $value  = shift;
+
+   if ( (ref($value) eq 'HASH') &&  $this->{'NESTED_OUTPUT'} ) {
+      if ( scalar keys %$value > 0 ) {
+         $this->print_value($prefix . "$key = HASH:\n");
+         $this->output_hash($prefix . '   ', $value);
       }
       else {
-         my $value_string = $this->{'OUTPUT_STREAM'}->hashref_string($value);
-         $this->print_value("$key = $value_string\n");
+         $this->print_value($prefix . "$key = EMPTY HASH\n");
       }
+   }
+   elsif ( ref($value) eq 'ARRAY' ) {
+      if ( scalar @$value > 0 ) {
+         $this->print_value($prefix . "$key = ARRAY:\n");
+         $this->output_array($prefix . '   ', $value);
+      }
+      else {
+         $this->print_value($prefix . "$key = EMPTY ARAY\n");
+      }
+   }
+   else {
+      my $value_string = $this->{'OUTPUT_STREAM'}->hashref_string($value);
+      $this->print_value($prefix . "$key = $value_string\n");
+   }
+}
+
+sub output_array {
+   my $this   = shift;
+   my $prefix = shift;
+   my $array  = shift;
+
+   my $index = 0;
+   foreach my $value (sort @$array) {
+      $this->output_value($prefix, $index, $value);
+      $index++;
    }
 }
 
@@ -60,14 +95,7 @@ sub output_hash {
 
    foreach my $key (sort keys %$hash) {
       my $value = $hash->{$key};
-      if ( ref($value) eq 'HASH' ) {
-         $this->print_value($prefix . "$key =\n");
-         $this->output_hash('   ' . $prefix, $value);
-      }
-      else {
-         my $value_string = $this->{'OUTPUT_STREAM'}->hashref_string($value);
-         $this->print_value($prefix . "$key = $value_string\n");
-      }
+      $this->output_value($prefix, $key, $value);
    }
 }
 
