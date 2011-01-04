@@ -197,18 +197,18 @@ sub get_flag_list {
    my $flags      = shift;
    my $flags_hash = shift;
 
-   my $flags = {};
+   my $to_return = {};
    foreach my $name ( keys %$flags_hash ) {
       if ( $flags & $flags_hash->{$name} ) {
-         $flags->{$name} = 1;
+         $to_return->{$name} = 1;
       }
    }
 
-   return $flags;
+   return $to_return;
 }
 
 
-sub propogate_fields {
+sub propagate_fields {
    my $this             = shift;
    my $dest_key         = shift;
    my $src              = shift;
