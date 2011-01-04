@@ -58,19 +58,19 @@ sub init {
       die "Missing capture file\n";
    }
 
-   my $file = shift @{$this->_get_extra_args()};
+   my $files = $this->_get_extra_args();
 
-   $this->{'FILE'} = $file;
-   $this->{'DATA'} = $data;
+   $this->{'FILES'} = $files;
+   $this->{'DATA'}  = $data;
 }
 
 sub run_operation {
    my $this = shift;
 
-   my $filename = $this->{'FILE'};
-
-   # TODO: have a connections output rather than packets
-   $this->dump_packets($filename);
+   foreach my $filename ( @{$this->{'FILES'}} ) {
+      # TODO: have a connections output rather than packets
+      $this->dump_packets($filename);
+   }
 }
 
 sub dump_packets {
@@ -88,6 +88,7 @@ sub dump_packets {
       my $record = {
          'length' => $header{'len'},
          'caplen' => $header{'caplen'},
+         'file'   => $file,
       };
 
       if ( $header{'tv_sec'} ) {
@@ -229,9 +230,10 @@ sub usage {
    my $arp_opcodes    = join(', ', values %$ARP_OPCODES);
 
    return <<USAGE;
-Usage: recs-fromtcpdump <file>
-   Runs tcpdump and puts out records, one for each packet.  Expects a pcap
-   file.
+Usage: recs-fromtcpdump <file1> <file2> ...
+   Runs tcpdump and puts out records, one for each packet.  Expects pcap
+   files.  Will put the name of the originating capture file in the 'file'
+   field.
 
    Will parse packet types: ethernet, ip, udp, arp, tcp
    The type key will indicate the highest level parsed.  DNS information will
