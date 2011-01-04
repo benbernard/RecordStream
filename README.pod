@@ -90,6 +90,10 @@ Produces records for an XML document.
 
 Produces records from input streams containing loosely formed key/value pairs
 
+=item recs-fromtcpdump
+
+Produces records from packet capture files (.pcap) as made by tcpdump
+
 =back
 
 =head2 Stream Manipulation
@@ -157,6 +161,10 @@ then output with a chain link back to the original record.
 
 Inserts records into a DBI supported SQL database.  Will crate a local sqlite
 database by default
+
+=item recs-tocsv
+
+Generates correctly quoted CSV files from record streams.
 
 =item recs-tognuplot
 

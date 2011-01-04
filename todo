@@ -11,7 +11,6 @@ perf test
 recs-join - Join in sqlite for larger db streams
 recs-sort, recs-todb - need value options for keyspec groups
 recs-tognuplot - write tests, by comparing gnuplot scripts
-recs-fromtcpdump - add to README.pod, regenerate man file, merge cr changes
 
 Key groups:
   rerun field group for each record - may have an issue with recs-collate

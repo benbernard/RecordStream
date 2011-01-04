@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "README 1"
-.TH README 1 "2010-09-25" "perl v5.10.1" "Record Stream System"
+.TH README 1 "2011-01-03" "perl v5.10.1" "Record Stream System"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -207,6 +207,9 @@ Produces records for an \s-1XML\s0 document.
 .IP "recs-fromkv" 4
 .IX Item "recs-fromkv"
 Produces records from input streams containing loosely formed key/value pairs
+.IP "recs-fromtcpdump" 4
+.IX Item "recs-fromtcpdump"
+Produces records from packet capture files (.pcap) as made by tcpdump
 .SS "Stream Manipulation"
 .IX Subsection "Stream Manipulation"
 .IP "recs-collate" 4
@@ -255,6 +258,9 @@ then output with a chain link back to the original record.
 .IX Item "recs-todb"
 Inserts records into a \s-1DBI\s0 supported \s-1SQL\s0 database.  Will crate a local sqlite
 database by default
+.IP "recs-tocsv" 4
+.IX Item "recs-tocsv"
+Generates correctly quoted \s-1CSV\s0 files from record streams.
 .IP "recs-tognuplot" 4
 .IX Item "recs-tognuplot"
 Create a graph of field values in a record using \s-1GNU\s0 Plot.
