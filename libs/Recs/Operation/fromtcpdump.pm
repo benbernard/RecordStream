@@ -14,12 +14,14 @@ use Net::Pcap qw(pcap_open_offline pcap_loop pcap_next_ex);
 use Net::DNS::Packet;
 use Data::Dumper;
 
+# From NetPacket::IP
 my $IP_FLAGS = {
   'more_fragments' => IP_FLAG_MOREFRAGS,
   'dont_fragment'  => IP_FLAG_DONTFRAG,
   'congestion'     => IP_FLAG_CONGESTION,
 };
 
+# From NetPacket::TCP
 my $TCP_FLAGS = {
   FIN => FIN,
   SYN => SYN,
@@ -31,12 +33,15 @@ my $TCP_FLAGS = {
   CWR => CWR,
 };
 
+# From NetPacket::ARP_OPCODES
 my $ARP_OPCODES = {
    +ARP_OPCODE_REQUEST  , 'ARP_REQUEST',
    +ARP_OPCODE_REPLY    , 'ARP_REPLY',
    +RARP_OPCODE_REQUEST , 'RARP_REQUEST',
    +RARP_OPCODE_REPLY   , 'RARP_REPLY',
 };
+
+my $DEFAULT_SUPPRESSED_FIELDS = [qw(data _frame _parent type)];
 
 sub init {
    my $this = shift;
@@ -101,13 +106,13 @@ sub create_packet_record {
 
    my ($eth_obj) = NetPacket::Ethernet->decode($packet);
 
-   $this->propogate_fields('ethernet', $eth_obj, $record);
+   $this->propagate_fields('ethernet', $eth_obj, $record);
    my $type = 'ethernet';
    my $data = $eth_obj->{'data'};
 
    if ($eth_obj->{type} == ETH_TYPE_IP) {
       my $ip_obj = NetPacket::IP->decode($eth_obj->{data});
-      $this->propogate_fields('ip', $ip_obj, $record, [qw(flags)]);
+      $this->propagate_fields('ip', $ip_obj, $record, [qw(flags)]);
       $type = 'ip';
       $data = $ip_obj->{'data'};
 
@@ -122,11 +127,12 @@ sub create_packet_record {
          #  packet.
          my $ip_data_len = $ip_obj->{len} - $ip_obj->{hlen} * 4;
          if ($ip_data_len < length($ip_obj->{data})) {
-            substr ($ip_obj->{data}, $ip_data_len) = '';
+            my $truncated_data = substr($ip_obj->{'data'}, 0, $ip_data_len);
+            $ip_obj->{'data'} = $truncated_data;
          }
 
          my $tcp_obj = NetPacket::TCP->decode($ip_obj->{data});
-         $this->propogate_fields('tcp', $tcp_obj, $record);
+         $this->propagate_fields('tcp', $tcp_obj, $record);
          $type = 'tcp';
          $data = $tcp_obj->{'data'};
 
@@ -139,7 +145,7 @@ sub create_packet_record {
       }
       elsif ( $ip_obj->{'proto'} == IP_PROTO_UDP ) {
          my $udp_obj = NetPacket::UDP->decode ($ip_obj->{data});
-         $this->propogate_fields('udp', $udp_obj, $record);
+         $this->propagate_fields('udp', $udp_obj, $record);
          $type = 'udp';
          $data = $udp_obj->{'data'};
 
@@ -149,7 +155,7 @@ sub create_packet_record {
    elsif ( $eth_obj->{'type'} == ETH_TYPE_ARP ) {
       $type = 'arp';
       my $arp_obj = NetPacket::ARP->decode($eth_obj->{data});
-      $this->propogate_fields('arp', $arp_obj, $record, [qw(opcode)]);
+      $this->propagate_fields('arp', $arp_obj, $record, [qw(opcode)]);
 
       my $opcode = $arp_obj->{'opcode'};
       $record->{'arp'}->{'opcode'} = $ARP_OPCODES->{$opcode};
@@ -191,17 +197,16 @@ sub get_flag_list {
    my $flags      = shift;
    my $flags_hash = shift;
 
-   my @list;
+   my $flags = {};
    foreach my $name ( keys %$flags_hash ) {
       if ( $flags & $flags_hash->{$name} ) {
-         push @list, $name;
+         $flags->{$name} = 1;
       }
    }
 
-   return \@list;
+   return $flags;
 }
 
-my $DEFAULT_SUPPRESSED_FIELDS = [qw(data _frame _parent type)];
 
 sub propogate_fields {
    my $this             = shift;
@@ -238,7 +243,7 @@ Usage: recs-fromtcpdump <file>
    By default, data output is surpressed due to poor interaction with terminal
    programs.
 
-   Flags will be parsed into arrays of strings
+   Flags will be parsed into hash of strings
    Possible IP flags: $ip_flag_names
    Poassible TCP flags: $tcp_flag_names
 
