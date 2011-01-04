@@ -214,4 +214,4 @@ detailed information on the operation of each of the scripts
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 2007 by Benjamin Bernard and Keith Amling
-This software is released under the Public Domain
+This software is released under the MIT license
