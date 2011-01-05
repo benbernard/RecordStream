@@ -188,17 +188,18 @@ sub stream_done {
       }
    }
 
-   # Collected the data, if we're only outputing records, stop here.
-   if ( $this->{'OUTPUT_RECORDS'} ) {
-      $this->output_records(\@xfields, \@yfields, \@r2);
-      return;
-   }
-
    # Start constructing the ASCII table
    my @xvs;
    _dump_deep(\%xvs, \@xvs, scalar(@xfields));
    my @yvs;
    _dump_deep(\%yvs, \@yvs, scalar(@yfields));
+
+   # Collected the data, if we're only outputing records, stop here.
+   if ( $this->{'OUTPUT_RECORDS'} ) {
+      $this->output_records(\@xfields, \@yfields, \@r2, \@xvs, \@yvs);
+      return;
+   }
+
 
    my $width_offset  = scalar @yfields;
    my $height_offset = scalar @xfields;
@@ -291,9 +292,33 @@ sub stream_done {
 }
 
 sub output_records {
-   my ($this, $xfields, $yfields, $values) = @_;
+   my ($this, $xfields, $yfields, $values, $ordered_x_values, $ordered_y_values) = @_;
 
    my $records = {};
+
+   #fill in hashes
+   foreach my $y_values (@$ordered_y_values) {
+      my $key = join('-', @$y_values);
+
+      # Fill in empties
+      foreach my $x_values (@$ordered_x_values) {
+
+         my $hash = $records->{$key} ||= {};
+         my $last_hash = $hash;
+         my $last_x_value;
+
+         my $index = -1;
+         foreach my $x_value (@$x_values) {
+            $index++;
+            my $x_name = $xfields->[$index];
+            $hash->{$x_name}->{$x_value}  ||= {};
+            $last_hash = $hash->{$x_name};
+            $last_x_value = $x_value;
+            $hash =  $hash->{$x_name}->{$x_value};
+         }
+         $last_hash->{$last_x_value} = '';
+      }
+   }
 
    foreach my $vector (@$values) {
       my ($xvalues, $yvalues, $value) = @$vector;
@@ -324,8 +349,9 @@ sub output_records {
       $last_hash->{$last_xvalue} = $value;
    }
 
-   foreach my $hash (values %$records) {
-      $this->push_record(Recs::Record->new($hash));
+   foreach my $y_values (@$ordered_y_values) {
+      my $key = join('-', @$y_values);
+      $this->push_record(Recs::Record->new($records->{$key}));
    }
 }
 
