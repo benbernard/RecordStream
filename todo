@@ -11,7 +11,7 @@ perf test
 recs-join - Join in sqlite for larger db streams
 recs-sort, recs-todb - need value options for keyspec groups
 recs-tognuplot - write tests, by comparing gnuplot scripts
-recs-toptable - --recs output should be in the same order as table, with default '' values in unused columns
+recs-fromhtmltable - parse an html file, extract data from a table
 
 Key groups:
   rerun field group for each record - may have an issue with recs-collate
