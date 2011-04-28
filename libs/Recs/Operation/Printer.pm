@@ -12,10 +12,7 @@ sub init {
 }
 
 sub accept_record {
-   my $this   = shift;
-   my $record = shift;
-
-   $this->{'OUT'}->put_record($record);
+   $_[0]->{'OUT'}->put_record($_[1]);
 }
 
 sub finish {

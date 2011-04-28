@@ -64,7 +64,7 @@ String representation of a hash ref, what would be printed from put_hashref
 use strict;
 use lib;
 
-use JSON::Syck;
+use JSON qw(encode_json);
 
 our $AUTOLOAD;
 
@@ -85,12 +85,18 @@ sub new
    return $this;
 }
 
+sub create_json {
+  my ($this, $hash) = @_;
+  return encode_json($hash);
+}
+
 sub put_record
 {
    my ($this, $rec) = @_;
 
    my $fh = $this->{'fh'};
-   print $fh JSON::Syck::Dump($rec->as_hashref()) . "\n";
+   #print $fh $this->create_json($rec->as_hashref()) . "\n";
+   print $fh $this->create_json($rec) . "\n";
 }
 
 sub put_hashref
@@ -98,17 +104,17 @@ sub put_hashref
    my ($this, $hr) = @_;
 
    my $fh = $this->{'fh'};
-   print $fh JSON::Syck::Dump($hr) . "\n";
+   print $fh $this->create_json($hr) . "\n";
 }
 
 sub record_string {
   my ($this, $rec) = @_;
-  return JSON::Syck::Dump($rec->as_hashref());
+  return $this->create_json($rec->as_hashref());
 }
 
 sub hashref_string {
   my ($this, $hr) = @_;
-  return JSON::Syck::Dump($hr);
+  return $this->create_json($hr);
 }
 
 1;

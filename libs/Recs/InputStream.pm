@@ -76,7 +76,7 @@ use strict;
 use lib;
 
 use IO::String;
-use JSON::Syck;
+use JSON qw(decode_json);
 
 use Recs::Record;
 
@@ -180,8 +180,9 @@ sub get_string {
 }
 
 sub get_fh {
-   my $this = shift;
-   return $this->{'FH'};
+   return $_[0]->{'FH'};
+   #my $this = shift;
+   #return $this->{'FH'};
 }
 
 sub get_record {
@@ -201,7 +202,9 @@ sub get_record {
       return $this->call_next_record();
    }
 
-   my $record = Recs::Record->new(JSON::Syck::Load($line));
+   #my $record = Recs::Record->new(decode_json($line));
+   my $record = decode_json($line);
+   #my $record = { bar => 'foo'};
 
    return $record;
 }
@@ -245,8 +248,9 @@ sub get_next {
 }
 
 sub is_done {
-   my $this = shift;
-   return $this->{'DONE'};
+  return $_[0]->{'DONE'};
+  #my $this = shift;
+  #return $this->{'DONE'};
 }
 
 sub set_done {

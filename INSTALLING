@@ -18,6 +18,10 @@ Ubuntu packages:
   libnet-pcap-perl
   libnet-dns-perl
 
+Perl modules:
+JSON
+JSON::XS
+
 ----
 
 Once that is done, you might want to check out aRecordStreamStory in this

@@ -78,13 +78,15 @@ CODE
 }
 
 sub increment_line {
-   my $this = shift;
-   $this->{'LINE_COUNT'}++;
+   $_[0]->{'LINE_COUNT'}++;
+   #my $this = shift;
+   #$this->{'LINE_COUNT'}++;
 }
 
 sub line_count {
-   my $this = shift;
-   return $this->{'LINE_COUNT'};
+   return $_[0]->{'LINE_COUNT'};
+   #my $this = shift;
+   #return $this->{'LINE_COUNT'};
 }
 
 sub execute_code  {
@@ -92,36 +94,35 @@ sub execute_code  {
    my $record = shift;
 
    $this->increment_line();
-   $this->reset_error();
+   #$this->reset_error();
 
    my $line = $this->line_count();
 
-   my $value = eval { $this->{'CODE'}->($record, $line, Recs::Operation::get_current_filename()); };
+   #my $value = eval { $this->{'CODE'}->($record, $line, Recs::Operation::get_current_filename()); };
+   #return $this->{'CODE'}->($record, $line, Recs::Operation::get_current_filename());
+   return $this->{'CODE'}->($record, $line, 'foo');
 
-   if(my $error = $@) {
-      undef $@;
-      $this->set_error($error);
-      chomp $error;
-      warn "Code threw: " . $error . "\n";
-   }
-   else {
-      return $value;
-   }
+#   if(my $error = $@) {
+#      undef $@;
+#      $this->set_error($error);
+#      chomp $error;
+#      warn "Code threw: " . $error . "\n";
+#   }
+#   else {
+#      return $value;
+#   }
 }
 
 sub last_error {
-   my $this = shift;
-   return $this->{'LAST_ERROR'};
+   $_[0]->{'LAST_ERROR'};
 }
 
 sub set_error {
-   my $this = shift;
-   $this->{'LAST_ERROR'} = shift;
+   $_[0]->{'LAST_ERROR'} = $_[1];
 }
 
 sub reset_error {
-   my $this = shift;
-   $this->{'LAST_ERROR'} = '';
+   $_[0]->{'LAST_ERROR'} = '';
 }
 
 sub transform_code {
