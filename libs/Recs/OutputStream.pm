@@ -86,17 +86,17 @@ sub new
 }
 
 sub create_json {
-  my ($this, $hash) = @_;
-  return encode_json($hash);
+  return encode_json($_[1]);
 }
 
-sub put_record
-{
+sub put_record {
    my ($this, $rec) = @_;
 
-   my $fh = $this->{'fh'};
+   my $fh   = $this->{'fh'};
+
+   my $hash = { %$rec };
    #print $fh $this->create_json($rec->as_hashref()) . "\n";
-   print $fh $this->create_json($rec) . "\n";
+   print $fh $this->create_json($hash) . "\n";
 }
 
 sub put_hashref

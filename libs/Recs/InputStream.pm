@@ -202,8 +202,10 @@ sub get_record {
       return $this->call_next_record();
    }
 
-   #my $record = Recs::Record->new(decode_json($line));
    my $record = decode_json($line);
+   bless $record, 'Recs::Record';
+   #my $record = Recs::Record->new(decode_json($line));
+   #my $record = decode_json($line);
    #my $record = { bar => 'foo'};
 
    return $record;
