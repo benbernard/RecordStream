@@ -70,58 +70,19 @@ no strict;
 no warnings;
 package __MY__SafeCompartment;
 
+my \$line = 0;
+
 sub { 
-  my (\$r, \$line, \$filename) = \@_;
+  my (\$r, \$filename) = \@_;
+  \$line++;
+
   $__MY__code;
 }
 CODE
 }
 
-sub increment_line {
-   my $this = shift;
-   $this->{'LINE_COUNT'}++;
-}
-
-sub line_count {
-   my $this = shift;
-   return $this->{'LINE_COUNT'};
-}
-
 sub execute_code  {
-   my $this   = shift;
-   my $record = shift;
-
-   $this->increment_line();
-   $this->reset_error();
-
-   my $line = $this->line_count();
-
-   my $value = eval { $this->{'CODE'}->($record, $line, Recs::Operation::get_current_filename()); };
-
-   if(my $error = $@) {
-      undef $@;
-      $this->set_error($error);
-      chomp $error;
-      warn "Code threw: " . $error . "\n";
-   }
-   else {
-      return $value;
-   }
-}
-
-sub last_error {
-   my $this = shift;
-   return $this->{'LAST_ERROR'};
-}
-
-sub set_error {
-   my $this = shift;
-   $this->{'LAST_ERROR'} = shift;
-}
-
-sub reset_error {
-   my $this = shift;
-   $this->{'LAST_ERROR'} = '';
+   return $_[0]->{'CODE'}->($_[1], Recs::Operation::get_current_filename());
 }
 
 sub transform_code {

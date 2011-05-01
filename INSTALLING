@@ -6,7 +6,6 @@ This is an informal list of dependencies.  Eventually I hope to make
 auto-make/conf and distribution bundles, but for now, this will serve
 
 Ubuntu packages: 
-  libyaml-syck-perl
   libdbd-sqlite3-perl
   sqlite3
   libxml-simple-perl
@@ -17,6 +16,7 @@ Ubuntu packages:
   libnetpacket-perl
   libnet-pcap-perl
   libnet-dns-perl
+  libjson-perl
 
 ----
 

@@ -11,11 +11,12 @@ sub init {
    $this->{'OUT'} = $args->[0] || Recs::OutputStream->new();
 }
 
-sub accept_record {
-   my $this   = shift;
-   my $record = shift;
+sub create_default_next {
+   return '';
+}
 
-   $this->{'OUT'}->put_record($record);
+sub accept_record {
+   $_[0]->{'OUT'}->put_record($_[1]);
 }
 
 sub finish {

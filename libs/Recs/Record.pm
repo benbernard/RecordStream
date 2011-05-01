@@ -354,11 +354,7 @@ sub _add_string_key_mapping {
 }
 
 sub _guess_key_name_raw {
-   my $this           = shift;
-   my $data           = shift;
-   my $key_chain      = shift;
-   my $fuzzy_matching = shift;
-   my $search_string  = shift;
+   my ($this, $data, $key_chain, $fuzzy_matching, $search_string) = @_;
 
    if ( UNIVERSAL::isa($data, 'ARRAY') ) {
       if ( $search_string =~ m/^#(\d+)$/ ) {
@@ -374,10 +370,11 @@ sub _guess_key_name_raw {
    my $found_key;
 
    if ( my $key = _search_string_to_key($key_chain, $search_string) ) {
-      $found_key = $key;
+      return $key;
    }
+
    # First check exact match
-   elsif ( defined $data->{$search_string} ) {
+   if ( defined $data->{$search_string} ) {
       $found_key = $search_string;
    }
    else {
@@ -443,14 +440,15 @@ sub get_key_list_for_spec {
 sub _get_parsed_key_spec {
    my ($this, $spec) = @_;
 
-   my $fuzzy = 0;
+   return (@{$spec_parsed->{$spec}}) if ( defined $spec_parsed->{$spec} );
+
+   my $fuzzy     = 0;
+   my $spec_name = $spec;
 
    if ( substr($spec, 0, 1) eq '@' ) {
       $fuzzy = 1;
       $spec = substr($spec, 1);
    }
-
-   return ($spec_parsed->{$spec}, $fuzzy) if ( defined $spec_parsed->{$spec} );
 
    my $keys = [];
    my $current_key = '';
@@ -480,20 +478,94 @@ sub _get_parsed_key_spec {
       push @$keys, $current_key;
    }
 
-   $spec_parsed->{$spec} = $keys;
+   $spec_parsed->{$spec_name} = [$keys, $fuzzy];
    return ($keys, $fuzzy);
 }
 
-sub guess_key {
-   my ($this, $fuzzy_match, $no_vivify, $throw_error, @args) = @_;
-   return $this->_guess_key_recurse($this, [], $fuzzy_match, $no_vivify, $throw_error, 0, @args);
+{
+   my $keylookup_hash = {};
+
+   sub guess_key {
+      my ($this, $fuzzy_match, $no_vivify, $throw_error, @args) = @_;
+
+      $no_vivify   ||= 0;
+      $throw_error ||= 0;
+      my $args_string = join('-', @args, $no_vivify, $throw_error);
+
+      if ( my $code = $keylookup_hash->{$args_string} ) {
+         return $code->($this);
+      }
+
+      my $keys = $this->_guess_key_recurse($this, [], $fuzzy_match, $no_vivify, $throw_error, 1, @args);
+
+      my $code = $this->_generate_keylookup_sub($keys, $no_vivify);
+      $keylookup_hash->{$args_string} = $code;
+
+      return $code->($this);
+   }
+}
+
+# Performance! Oh god, performance.  Generate a lookup subroutine that will
+# lookup the passed keys, for execution later
+sub _generate_keylookup_sub {
+   my $this        = shift;
+   my $keys        = shift;
+   my $no_vivify   = shift;
+   my $throw_error = shift;
+
+   if ( scalar @$keys  == 0 ) {
+      return eval 'sub { if ( \$throw_error ) { die "NoSuchKey"; } return ""; }';
+   }
+
+   my $code_string = 'sub { my $record = shift;';
+
+   my $key_accessor = '$record';
+
+   my $action = "return ''";
+   $action = "die 'NoSuchKey'" if ( $throw_error );
+
+   my $check_actions = '';
+
+   foreach my $key (@$keys) {
+      if ( $key =~ m/^#(\d+)$/ ) {
+         my $index = $1;
+         $key_accessor .= "->[$index]";
+      }
+      else {
+         my @hex_bytes = unpack('C*', $key);
+         my $hex_string = '';
+
+         foreach my $byte (@hex_bytes) {
+            $hex_string .= "\\x" . sprintf ("%lx", $byte);
+         }
+
+         $key_accessor .= "->{\"$hex_string\"}";
+      }
+
+      $check_actions  .= "$action if ( ! exists $key_accessor );";
+   }
+
+   if ( $no_vivify || $throw_error ) {
+      $code_string .= $check_actions;
+   }
+
+   $code_string .= "return \\($key_accessor)}";
+
+   my $sub_ref = eval $code_string;
+   if ( $@ ) {
+      warn "Unexpected error in creating key lookup!\n";
+      die $@;
+   }
+   return $sub_ref;
 }
 
 sub _guess_key_recurse {
    my ($this, $data, $key_chain, $fuzzy_matching, $no_vivify, $throw_error,
        $return_key_chain, $search_string, @next_strings)  = @_;
 
-   if ( UNIVERSAL::isa($data, 'SCALAR') || UNIVERSAL::isa(\$data, 'SCALAR') ) {
+   my $type = ref($data);
+
+   if ( $type eq 'SCALAR' || UNIVERSAL::isa(\$data, 'SCALAR') ) {
       die "Cannot look for $search_string in scalar: " . Dumper($data);
    }
 
@@ -501,7 +573,7 @@ sub _guess_key_recurse {
 
    my $value;
 
-   if ( UNIVERSAL::isa($data, 'ARRAY') ) {
+   if ( $type eq 'ARRAY' ) {
       $value = \($data->[$key]);
       $key = "#$key";
    }
@@ -589,6 +661,9 @@ sub cmp
    return 0;
 }
 
+sub DESTROY {
+}
+
 sub AUTOLOAD
 {
    my $this = shift;
@@ -599,13 +674,10 @@ sub AUTOLOAD
    {
       return get($this, $1, @_);
    }
+
    if($AUTOLOAD =~ /^set_(.*)$/)
    {
       return set($this, $1, @_);
-   }
-   if($AUTOLOAD eq "DESTROY")
-   {
-      return;
    }
 
    die "No such method " . $AUTOLOAD . " for " . ref($this) . "\n";

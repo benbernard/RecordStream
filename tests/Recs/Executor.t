@@ -14,7 +14,6 @@ use Recs::Record;
 
    ok($executor, "Executor initialized");
    is($executor->execute_code($rec), "b", "Test special lookup");
-   is($executor->line_count(), 1, "Test line count");
 
    my $executor2 = Recs::Executor->new('{{a}} = 3 . $line');
    is($executor2->execute_code($rec), "31", "test special assign return");

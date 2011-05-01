@@ -33,6 +33,23 @@ sub init {
    $this->{'NESTED_OUTPUT'} = not $do_not_nest;
 };
 
+sub run_operation {
+   my $this = shift;
+
+   my $input = $this->get_input_stream();
+
+   # This means that ONLY_ONE doens't work in recs-chain
+   if ( $this->{'ONLY_ONE'} ) {
+      $this->accept_record($input->get_record());
+      return;
+   }
+
+   while ( my $record = $input->get_record() ) {
+      $this->accept_record($record);
+   }
+}
+
+
 sub accept_record {
    my $this   = shift;
    my $record = shift;

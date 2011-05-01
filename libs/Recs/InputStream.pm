@@ -76,9 +76,10 @@ use strict;
 use lib;
 
 use IO::String;
-use JSON::Syck;
+use JSON qw(decode_json);
 
 use Recs::Record;
+require Recs::Operation;
 
 my $ONE_OF = [qw(FH STRING FILE)];
 
@@ -179,9 +180,9 @@ sub get_string {
    return $this->{'STRING'};
 }
 
+# Performance! :(
 sub get_fh {
-   my $this = shift;
-   return $this->{'FH'};
+   return $_[0]->{'FH'};
 }
 
 sub get_record {
@@ -198,10 +199,16 @@ sub get_record {
    if ( ! $line ) {
       close $fh;
       $this->set_done();
+
+      # This is ugly, reaching into the other class
+      Recs::Operation::set_current_filename($this->get_filename());
+
       return $this->call_next_record();
    }
 
-   my $record = Recs::Record->new(JSON::Syck::Load($line));
+   # Direct bless done in the name of performance
+   my $record = decode_json($line);
+   bless $record, 'Recs::Record';
 
    return $record;
 }
@@ -245,8 +252,7 @@ sub get_next {
 }
 
 sub is_done {
-   my $this = shift;
-   return $this->{'DONE'};
+  return $_[0]->{'DONE'};
 }
 
 sub set_done {
