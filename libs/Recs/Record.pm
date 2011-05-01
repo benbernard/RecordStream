@@ -595,7 +595,6 @@ sub DESTROY {
 sub AUTOLOAD
 {
    my $this = shift;
-   warn "Trying for: $AUTOLOAD\n";
 
    $AUTOLOAD =~ s/^.*://;
 
