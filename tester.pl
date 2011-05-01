@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::Harness;
+use Cwd ('abs_path');
 
 my $debug = shift;
 
@@ -14,10 +15,12 @@ if ( $debug ) {
 
 
 # my $dir = shift || '.';
-my $dir = '.';
+my $dir = abs_path('.');
 
-push @INC, "$dir/libs";
-push @INC, "$dir/tests";
+unshift @INC, "$dir/libs";
+unshift @INC, "$dir/tests";
+$ENV{'PATH'} = "$dir/bin:" . $ENV{'PATH'};
+$ENV{'PERLLIB'} = "$dir/libs:" . $ENV{'PERLLIB'};
 
 $ENV{'BASE_TEST_DIR'} = "$dir/tests";
 
