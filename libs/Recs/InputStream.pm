@@ -180,10 +180,9 @@ sub get_string {
    return $this->{'STRING'};
 }
 
+# Performance! :(
 sub get_fh {
    return $_[0]->{'FH'};
-   #my $this = shift;
-   #return $this->{'FH'};
 }
 
 sub get_record {
@@ -207,6 +206,7 @@ sub get_record {
       return $this->call_next_record();
    }
 
+   # Direct bless done in the name of performance
    my $record = decode_json($line);
    bless $record, 'Recs::Record';
 
@@ -253,8 +253,6 @@ sub get_next {
 
 sub is_done {
   return $_[0]->{'DONE'};
-  #my $this = shift;
-  #return $this->{'DONE'};
 }
 
 sub set_done {

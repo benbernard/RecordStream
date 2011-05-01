@@ -249,7 +249,7 @@ sub run_operation {
   }
 
   sub set_current_filename {
-    my ($name) = @_;
+    my $name = shift;
     $filename = $name;
   }
 }

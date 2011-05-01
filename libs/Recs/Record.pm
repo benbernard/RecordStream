@@ -493,7 +493,6 @@ sub _get_parsed_key_spec {
       my $args_string = join('-', @args, $no_vivify, $throw_error);
 
       if ( my $code = $keylookup_hash->{$args_string} ) {
-         #if ( my $code = $keylookup_hash->{$args_string}->{$no_vivify}->{$throw_error} ) {
          return $code->($this);
       }
 
@@ -506,15 +505,16 @@ sub _get_parsed_key_spec {
    }
 }
 
+# Performance! Oh god, performance.  Generate a lookup subroutine that will
+# lookup the passed keys, for execution later
 sub _generate_keylookup_sub {
    my $this        = shift;
    my $keys        = shift;
    my $no_vivify   = shift;
    my $throw_error = shift;
 
-   #use Data::Dumper; warn Dumper $keys;
    if ( scalar @$keys  == 0 ) {
-      return 'sub { if ( \$throw_error ) { die "NoSuchKey; } return ""; }';
+      return eval 'sub { if ( \$throw_error ) { die "NoSuchKey"; } return ""; }';
    }
 
    my $code_string = 'sub { my $record = shift;';
@@ -543,7 +543,14 @@ sub _generate_keylookup_sub {
             $key_accessor .= "->[$index]";
          }
          else {
-            $key_accessor .= "->{'$key'}";
+            my @hex_bytes = unpack('C*', $key);
+            my $hex_string = '';
+
+            foreach my $byte (@hex_bytes) {
+               $hex_string .= "\%" . sprintf ("%lx", $byte);
+            }
+
+            $key_accessor .= "->{'$hex_string'}";
          }
 
          $code_string  .= "$action if ( ! exists $key_accessor );";
