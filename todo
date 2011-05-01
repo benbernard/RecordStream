@@ -13,6 +13,12 @@ recs-sort, recs-todb - need value options for keyspec groups
 recs-tognuplot - write tests, by comparing gnuplot scripts
 recs-fromhtmltable - parse an html file, extract data from a table
 
+Aribritation Collation clumps
+  - suportt week over week
+  - add new aggreators that expect 2 or some number of recs
+
+recs-autojoin - join stream against itself
+
 Key groups:
   rerun field group for each record - may have an issue with recs-collate
   'Value attribute' ideas:
