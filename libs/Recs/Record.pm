@@ -518,49 +518,39 @@ sub _generate_keylookup_sub {
    }
 
    my $code_string = 'sub { my $record = shift;';
-   if ( !$throw_error && !$no_vivify ) {
-      $code_string .= 'return \($record';
-      foreach my $key (@$keys) {
-         if ( $key =~ m/^#(\d+)$/ ) {
-            my $index = $1;
-            $code_string .= "->[$index]";
-         }
-         else {
-            $code_string .= "->{'$key'}";
-         }
+
+   my $key_accessor = '$record';
+
+   my $action = "return ''";
+   $action = "die 'NoSuchKey'" if ( $throw_error );
+
+   my $check_actions = '';
+
+   foreach my $key (@$keys) {
+      if ( $key =~ m/^#(\d+)$/ ) {
+         my $index = $1;
+         $key_accessor .= "->[$index]";
       }
-      $code_string .= ')';
-   }
-   else {
-      my $key_accessor = '$record';
+      else {
+         my @hex_bytes = unpack('C*', $key);
+         my $hex_string = '';
 
-      my $action = "return ''";
-      $action = "die 'NoSuchKey'" if ( $throw_error );
-
-      foreach my $key (@$keys) {
-         if ( $key =~ m/^#(\d+)$/ ) {
-            my $index = $1;
-            $key_accessor .= "->[$index]";
-         }
-         else {
-            my @hex_bytes = unpack('C*', $key);
-            my $hex_string = '';
-
-            foreach my $byte (@hex_bytes) {
-               $hex_string .= "\%" . sprintf ("%lx", $byte);
-            }
-
-            $key_accessor .= "->{'$hex_string'}";
+         foreach my $byte (@hex_bytes) {
+            $hex_string .= "\\x" . sprintf ("%lx", $byte);
          }
 
-         $code_string  .= "$action if ( ! exists $key_accessor );";
+         $key_accessor .= "->{\"$hex_string\"}";
       }
-      $code_string .= "return \($key_accessor)";
+
+      $check_actions  .= "$action if ( ! exists $key_accessor );";
    }
 
-   $code_string .= '}';
+   if ( $no_vivify || $throw_error ) {
+      $code_string .= $check_actions;
+   }
 
-   #warn "making code: $code_string\n";
+   $code_string .= "return \\($key_accessor)}";
+
    my $sub_ref = eval $code_string;
    if ( $@ ) {
       warn "Unexpected error in creating key lookup!\n";
