@@ -589,9 +589,13 @@ sub cmp
    return 0;
 }
 
+sub DESTROY {
+}
+
 sub AUTOLOAD
 {
    my $this = shift;
+   warn "Trying for: $AUTOLOAD\n";
 
    $AUTOLOAD =~ s/^.*://;
 
@@ -599,13 +603,10 @@ sub AUTOLOAD
    {
       return get($this, $1, @_);
    }
+
    if($AUTOLOAD =~ /^set_(.*)$/)
    {
       return set($this, $1, @_);
-   }
-   if($AUTOLOAD eq "DESTROY")
-   {
-      return;
    }
 
    die "No such method " . $AUTOLOAD . " for " . ref($this) . "\n";

@@ -75,10 +75,14 @@ sub new
 
    $fh ||= \*STDOUT;
 
+   my $json = JSON::XS->new();
+   $json->allow_nonref(1);
+   $json->allow_blessed(1);
+
    my $this =
    {
       'fh'   => $fh,
-      'json' => JSON::XS->new()->allow_nonref(),
+      'json' => $json,
    };
 
    bless $this, $class;
@@ -96,7 +100,6 @@ sub put_record {
    my $fh   = $this->{'fh'};
 
    my $hash = { %$rec };
-   #print $fh $this->create_json($rec->as_hashref()) . "\n";
    print $fh $this->create_json($hash) . "\n";
 }
 

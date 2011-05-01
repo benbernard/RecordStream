@@ -85,15 +85,13 @@ sub line_count {
    return $_[0]->{'LINE_COUNT'};
 }
 
-sub execute_code  {
-   my $this   = shift;
-   my $record = shift;
+{
+   my $line_count = 0;
+   sub execute_code  {
+      $line_count++;
 
-   $this->increment_line();
-
-   my $line = $this->line_count();
-
-   return $this->{'CODE'}->($record, $line, Recs::Operation::get_current_filename());
+      return $_[0]->{'CODE'}->($_[1], $line_count, Recs::Operation::get_current_filename());
+   }
 }
 
 sub last_error {
