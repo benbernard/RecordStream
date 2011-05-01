@@ -354,11 +354,7 @@ sub _add_string_key_mapping {
 }
 
 sub _guess_key_name_raw {
-   my $this           = shift;
-   my $data           = shift;
-   my $key_chain      = shift;
-   my $fuzzy_matching = shift;
-   my $search_string  = shift;
+   my ($this, $data, $key_chain, $fuzzy_matching, $search_string) = @_;
 
    if ( UNIVERSAL::isa($data, 'ARRAY') ) {
       if ( $search_string =~ m/^#(\d+)$/ ) {
@@ -374,10 +370,11 @@ sub _guess_key_name_raw {
    my $found_key;
 
    if ( my $key = _search_string_to_key($key_chain, $search_string) ) {
-      $found_key = $key;
+      return $key;
    }
+
    # First check exact match
-   elsif ( defined $data->{$search_string} ) {
+   if ( defined $data->{$search_string} ) {
       $found_key = $search_string;
    }
    else {
@@ -443,14 +440,15 @@ sub get_key_list_for_spec {
 sub _get_parsed_key_spec {
    my ($this, $spec) = @_;
 
-   my $fuzzy = 0;
+   return (@{$spec_parsed->{$spec}}) if ( defined $spec_parsed->{$spec} );
+
+   my $fuzzy     = 0;
+   my $spec_name = $spec;
 
    if ( substr($spec, 0, 1) eq '@' ) {
       $fuzzy = 1;
       $spec = substr($spec, 1);
    }
-
-   return ($spec_parsed->{$spec}, $fuzzy) if ( defined $spec_parsed->{$spec} );
 
    my $keys = [];
    my $current_key = '';
@@ -480,20 +478,97 @@ sub _get_parsed_key_spec {
       push @$keys, $current_key;
    }
 
-   $spec_parsed->{$spec} = $keys;
+   $spec_parsed->{$spec_name} = [$keys, $fuzzy];
    return ($keys, $fuzzy);
 }
 
-sub guess_key {
-   my ($this, $fuzzy_match, $no_vivify, $throw_error, @args) = @_;
-   return $this->_guess_key_recurse($this, [], $fuzzy_match, $no_vivify, $throw_error, 0, @args);
+{
+   my $keylookup_hash = {};
+
+   sub guess_key {
+      my ($this, $fuzzy_match, $no_vivify, $throw_error, @args) = @_;
+
+      $no_vivify   ||= 0;
+      $throw_error ||= 0;
+      my $args_string = join('-', @args, $no_vivify, $throw_error);
+
+      if ( my $code = $keylookup_hash->{$args_string} ) {
+         #if ( my $code = $keylookup_hash->{$args_string}->{$no_vivify}->{$throw_error} ) {
+         return $code->($this);
+      }
+
+      my $keys = $this->_guess_key_recurse($this, [], $fuzzy_match, $no_vivify, $throw_error, 1, @args);
+
+      my $code = $this->_generate_keylookup_sub($keys, $no_vivify);
+      $keylookup_hash->{$args_string} = $code;
+
+      return $code->($this);
+   }
+}
+
+sub _generate_keylookup_sub {
+   my $this        = shift;
+   my $keys        = shift;
+   my $no_vivify   = shift;
+   my $throw_error = shift;
+
+   #use Data::Dumper; warn Dumper $keys;
+   if ( scalar @$keys  == 0 ) {
+      return 'sub { if ( \$throw_error ) { die "NoSuchKey; } return ""; }';
+   }
+
+   my $code_string = 'sub { my $record = shift;';
+   if ( !$throw_error && !$no_vivify ) {
+      $code_string .= 'return \($record';
+      foreach my $key (@$keys) {
+         if ( $key =~ m/^#(\d+)$/ ) {
+            my $index = $1;
+            $code_string .= "->[$index]";
+         }
+         else {
+            $code_string .= "->{'$key'}";
+         }
+      }
+      $code_string .= ')';
+   }
+   else {
+      my $key_accessor = '$record';
+
+      my $action = "return ''";
+      $action = "die 'NoSuchKey'" if ( $throw_error );
+
+      foreach my $key (@$keys) {
+         if ( $key =~ m/^#(\d+)$/ ) {
+            my $index = $1;
+            $key_accessor .= "->[$index]";
+         }
+         else {
+            $key_accessor .= "->{'$key'}";
+         }
+
+         $code_string  .= "$action if ( ! exists $key_accessor );";
+      }
+      $code_string .= "return \($key_accessor)";
+   }
+
+   $code_string .= '}';
+
+   #warn "making code: $code_string\n";
+   my $sub_ref = eval $code_string;
+   if ( $@ ) {
+      warn "Unexpected error in creating key lookup!\n";
+      die $@;
+   }
+   return $sub_ref;
 }
 
 sub _guess_key_recurse {
    my ($this, $data, $key_chain, $fuzzy_matching, $no_vivify, $throw_error,
        $return_key_chain, $search_string, @next_strings)  = @_;
 
-   if ( UNIVERSAL::isa($data, 'SCALAR') || UNIVERSAL::isa(\$data, 'SCALAR') ) {
+   my $type = ref($data);
+
+   if ( $type eq 'SCALAR' || UNIVERSAL::isa(\$data, 'SCALAR') ) {
       die "Cannot look for $search_string in scalar: " . Dumper($data);
    }
 
@@ -501,7 +576,7 @@ sub _guess_key_recurse {
 
    my $value;
 
-   if ( UNIVERSAL::isa($data, 'ARRAY') ) {
+   if ( $type eq 'ARRAY' ) {
       $value = \($data->[$key]);
       $key = "#$key";
    }

@@ -12,6 +12,8 @@ use Recs::Site;
 use Recs::KeyGroups;
 use Recs::Executor;
 
+require Recs::Operation::Printer;
+
 sub accept_record {
    subclass_should_implement(shift);
 }
@@ -20,11 +22,20 @@ sub usage {
    subclass_should_implement(shift);
 }
 
+sub create_default_next {
+   my $printer = Recs::Operation::Printer->new();
+   $printer->init();
+   return $printer;
+}
+
 sub new {
    my $class    = shift;
    my $args     = shift;
 
+   my $default_next = $class->create_default_next();
+
    my $this = {
+      NEXT => $default_next,
    };
 
    bless $this, $class;
@@ -228,7 +239,6 @@ sub run_operation {
 
    while ( my $record = $input->get_record() ) {
       $this->accept_record($record);
-      last if ( $this->should_stop() );
    }
 }
 
@@ -244,10 +254,6 @@ sub run_operation {
   }
 }
 
-sub should_stop {
-  return 0;
-}
-
 sub subclass_should_implement {
    my $this = shift;
    croak "Subclass should implement: " . ref($this);
@@ -257,22 +263,12 @@ sub stream_done {
 }
 
 sub push_record {
-   my $this   = shift;
-   my $record = shift;
-
-   $this->_get_next_operation()->accept_record($record);
+   my ($this, $record) = @_;
+   $this->{'NEXT'}->accept_record($record);
 }
 
 sub _get_next_operation {
    my $this = shift;
-
-   unless ( $this->{'NEXT'} ) {
-      require Recs::Operation::Printer;
-      my $printer = Recs::Operation::Printer->new();
-      $printer->init();
-      $this->{'NEXT'} = $printer;
-   }
-
    return $this->{'NEXT'};
 }
 

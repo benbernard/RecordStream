@@ -19,8 +19,8 @@ my $dir = abs_path('.');
 
 unshift @INC, "$dir/libs";
 unshift @INC, "$dir/tests";
-$ENV{'PATH'} = "$dir/bin:" . $ENV{'PATH'};
-$ENV{'PERLLIB'} = "$dir/libs:" . $ENV{'PERLLIB'};
+$ENV{'PATH'} = "$dir/bin:" . ($ENV{'PATH'}||'');
+$ENV{'PERLLIB'} = "$dir/libs:" . ($ENV{'PERLLIB'}||'');
 
 $ENV{'BASE_TEST_DIR'} = "$dir/tests";
 

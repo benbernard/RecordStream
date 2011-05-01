@@ -27,8 +27,6 @@ sub accept_record {
    my $executor = $this->{'EXECUTOR'};
    my $value = $executor->execute_code($record);
 
-   #return if ( $executor->last_error() );
-
    if ( ref($value) eq 'ARRAY' ) {
      foreach my $new_record (@$value) {
        if ( ref($new_record) eq 'HASH' ) {

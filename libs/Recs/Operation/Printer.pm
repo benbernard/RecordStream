@@ -11,6 +11,10 @@ sub init {
    $this->{'OUT'} = $args->[0] || Recs::OutputStream->new();
 }
 
+sub create_default_next {
+   return '';
+}
+
 sub accept_record {
    $_[0]->{'OUT'}->put_record($_[1]);
 }
