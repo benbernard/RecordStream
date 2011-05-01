@@ -79,6 +79,7 @@ use IO::String;
 use JSON qw(decode_json);
 
 use Recs::Record;
+require Recs::Operation;
 
 my $ONE_OF = [qw(FH STRING FILE)];
 
@@ -199,14 +200,15 @@ sub get_record {
    if ( ! $line ) {
       close $fh;
       $this->set_done();
+
+      # This is ugly, reaching into the other class
+      Recs::Operation::set_current_filename($this->get_filename());
+
       return $this->call_next_record();
    }
 
    my $record = decode_json($line);
    bless $record, 'Recs::Record';
-   #my $record = Recs::Record->new(decode_json($line));
-   #my $record = decode_json($line);
-   #my $record = { bar => 'foo'};
 
    return $record;
 }

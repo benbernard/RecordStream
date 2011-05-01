@@ -77,7 +77,8 @@ sub new
 
    my $this =
    {
-      'fh' => $fh,
+      'fh'   => $fh,
+      'json' => JSON::XS->new()->allow_nonref(),
    };
 
    bless $this, $class;
@@ -86,7 +87,7 @@ sub new
 }
 
 sub create_json {
-  return encode_json($_[1]);
+  return $_[0]->{'json'}->encode($_[1]);
 }
 
 sub put_record {

@@ -224,17 +224,12 @@ sub run_operation {
    my $this = shift;
 
    my $input = $this->get_input_stream();
-   my $needs_filename = $this->needs_filename();
+   set_current_filename($input->get_filename());
 
    while ( my $record = $input->get_record() ) {
-      set_current_filename($input->get_filename()) if ( $needs_filename );
       $this->accept_record($record);
       last if ( $this->should_stop() );
    }
-}
-
-sub needs_filename {
-  return 0;
 }
 
 {

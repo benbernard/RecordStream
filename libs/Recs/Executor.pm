@@ -79,14 +79,10 @@ CODE
 
 sub increment_line {
    $_[0]->{'LINE_COUNT'}++;
-   #my $this = shift;
-   #$this->{'LINE_COUNT'}++;
 }
 
 sub line_count {
    return $_[0]->{'LINE_COUNT'};
-   #my $this = shift;
-   #return $this->{'LINE_COUNT'};
 }
 
 sub execute_code  {
@@ -94,23 +90,10 @@ sub execute_code  {
    my $record = shift;
 
    $this->increment_line();
-   #$this->reset_error();
 
    my $line = $this->line_count();
 
-   #my $value = eval { $this->{'CODE'}->($record, $line, Recs::Operation::get_current_filename()); };
-   #return $this->{'CODE'}->($record, $line, Recs::Operation::get_current_filename());
-   return $this->{'CODE'}->($record, $line, 'foo');
-
-#   if(my $error = $@) {
-#      undef $@;
-#      $this->set_error($error);
-#      chomp $error;
-#      warn "Code threw: " . $error . "\n";
-#   }
-#   else {
-#      return $value;
-#   }
+   return $this->{'CODE'}->($record, $line, Recs::Operation::get_current_filename());
 }
 
 sub last_error {
