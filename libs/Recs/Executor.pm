@@ -70,40 +70,19 @@ no strict;
 no warnings;
 package __MY__SafeCompartment;
 
+my \$line = 0;
+
 sub { 
-  my (\$r, \$line, \$filename) = \@_;
+  my (\$r, \$filename) = \@_;
+  \$line++;
+
   $__MY__code;
 }
 CODE
 }
 
-sub increment_line {
-   $_[0]->{'LINE_COUNT'}++;
-}
-
-sub line_count {
-   return $_[0]->{'LINE_COUNT'};
-}
-
-{
-   my $line_count = 0;
-   sub execute_code  {
-      $line_count++;
-
-      return $_[0]->{'CODE'}->($_[1], $line_count, Recs::Operation::get_current_filename());
-   }
-}
-
-sub last_error {
-   $_[0]->{'LAST_ERROR'};
-}
-
-sub set_error {
-   $_[0]->{'LAST_ERROR'} = $_[1];
-}
-
-sub reset_error {
-   $_[0]->{'LAST_ERROR'} = '';
+sub execute_code  {
+   return $_[0]->{'CODE'}->($_[1], Recs::Operation::get_current_filename());
 }
 
 sub transform_code {

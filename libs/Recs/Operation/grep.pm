@@ -53,7 +53,7 @@ sub accept_record {
    $result = not $result if ( $this->{'ANTI_MATCH'} );
    my $pushed_record = 0;
 
-   if ( $result && ! $executor->last_error() ) {
+   if ( $result ) {
      if ( $this->{'BEFORE'} ) {
        while(my $record = shift @{$this->{'ACCUMULATOR'}}) {
          $this->push_record($record);
