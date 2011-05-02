@@ -92,7 +92,7 @@ KEY GROUPS
       full, f         - Regex should match against full keys (recurse fully)
       depth=NUM,d=NUM - Only match keys at NUM depth (regex will match against
                         full keyspec)
-      sort            - sort keyspecs lexically
+      sort, s         - sort keyspecs lexically
 HELP
 }
 
