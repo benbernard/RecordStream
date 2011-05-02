@@ -54,6 +54,7 @@ URL:
       if (!$response->is_success)
       {
          warn "# $0 GET $url failed: " . $response->message;
+         $this->_set_exit_value(1);
          next;
       }
 
