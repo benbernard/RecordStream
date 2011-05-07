@@ -12,6 +12,7 @@ recs-join - Join in sqlite for larger db streams
 recs-sort, recs-todb - need value options for keyspec groups
 recs-tognuplot - write tests, by comparing gnuplot scripts
 recs-fromhtmltable - parse an html file, extract data from a table
+recs-eval - add option to not write out newline
 
 Aribritation Collation clumps
   - suportt week over week
