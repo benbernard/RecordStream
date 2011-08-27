@@ -28,3 +28,12 @@ Recs::Test::OperationHelper->test_output(
    $stream,
    $solution,
 );
+
+$solution = '1 biz12 biz23 biz34 biz45 biz5';
+
+Recs::Test::OperationHelper->test_output(
+   'eval',
+   [ '--no-newline', '$r->{foo} . " " . $r->{zoo}'],
+   $stream,
+   $solution,
+);

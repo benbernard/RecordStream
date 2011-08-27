@@ -11,13 +11,20 @@ sub init {
    my $this = shift;
    my $args = shift;
 
-   $this->parse_options($args);
+   my $no_newline = 0;
+   my $spec = {
+      "--no-newline"  => \$no_newline,
+   };
+
+   $this->parse_options($args, $spec);
    if(!@{$this->_get_extra_args()}) {
       die "Missing expression\n";
    }
    my $expression = shift @{$this->_get_extra_args()};
    my $executor = Recs::Executor->new($expression);
-   $this->{'EXECUTOR'} = $executor;
+
+   $this->{'EXECUTOR'}   = $executor;
+   $this->{'NO_NEWLINE'} = $no_newline;
 }
 
 sub accept_record {
@@ -27,7 +34,11 @@ sub accept_record {
    my $executor = $this->{'EXECUTOR'};
    my $value = $executor->execute_code($record);
 
-   $this->print_value($value . "\n");
+   my $output = $value . "\n";
+   if ( $this->{'NO_NEWLINE'} ) {
+      $output = $value;
+   }
+   $this->print_value($output);
 }
 
 sub add_help_types {
@@ -45,6 +56,8 @@ Usage: recs-eval <args> <expr> [<files>]
    line by itself (this is not a recs stream).  See Recs::Record for help on
    what the \$r object can do.  See --help-snippets for more information on
    code snippets
+
+   --no-newline - Do not put a newline after each record's output
 
 Examples:
    Print the host field from each record.
