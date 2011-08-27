@@ -20,6 +20,7 @@ sub init {
    my @using;
    my $bar_graph;
    my $lines;
+   my $dump_to_screen = 0;
 
    my $key_groups = Recs::KeyGroups->new();
 
@@ -34,6 +35,7 @@ sub init {
       'bargraph'          => \$bar_graph,
       'lines'             => \$lines,
       'gnuplot-command=s' => \$gnuplot_command,
+      'dump-to-screen'    => \$dump_to_screen,
       $this->site_args(),
    };
 
