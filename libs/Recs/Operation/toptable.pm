@@ -597,7 +597,9 @@ Usage: recs-toptable <args> [<files>]
                    rows in the table, may be a keyspec or a keygroup
    --v-field|v     Specify the value to display in the table, if multiple value
                    fields are specified and FIELD is not placed in the x or y
-                   axes, then the last one wins, may be a keyspec or a keygroup
+                   axes, then the last one wins, may be a keyspec or a keygroup.
+                   If FIELD is in an axis, then --v specifies the fields to be
+                   included in that expansion
    --pin           Pin a field to a certain value, only display records matching
                    that value, very similar to doing a recs-grep befor toptable.
                    Takes value of the form: field=pinnedValue, field may be a
