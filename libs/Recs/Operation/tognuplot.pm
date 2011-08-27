@@ -136,8 +136,13 @@ sub accept_record {
    }
 
    chop $line;
-   my $tempfh = $this->{'TEMPFH'};
-   print $tempfh $line . "\n";
+   if ( $this->{'DUMP_TO_SCREEN'} ) {
+      $this->print_value($line . "\n");
+   }
+   else {
+      my $tempfh = $this->{'TEMPFH'};
+      print $tempfh $line . "\n";
+   }
 }
 
 sub stream_done {
@@ -145,24 +150,24 @@ sub stream_done {
 
    close $this->{'TEMPFH'};
 
-   open(my $plot, '|-', $this->{'GNUPLOT_COMMAND'});
-   print $plot "set terminal png\n";
-   print $plot "set output '" . $this->{'PNG_FILE'} . "'\n";
-   print $plot "set title '" . $this->{'TITLE'} . "'\n";
+   my $plot_script = '';
+   $plot_script .= "set terminal png\n";
+   $plot_script .= "set output '" . $this->{'PNG_FILE'} . "'\n";
+   $plot_script .= "set title '" . $this->{'TITLE'} . "'\n";
 
    if ( $this->{'BAR_GRAPH'} ) {
-      print $plot <<CMDS;
+      $plot_script .= <<CMDS;
 set style data histogram
 set style histogram cluster gap 1
 set style fill solid border -1
 CMDS
    }
    elsif ( $this->{'LINES'} ) {
-      print $plot "set style data linespoints\n";
+      $plot_script .= "set style data linespoints\n";
    }
 
    foreach my $command (@{$this->{'PRECOMMANDS'}}) {
-      print $plot $command . "\n";
+      $plot_script .= $command . "\n";
    }
 
    my $plot_cmd = 'plot ';
@@ -171,7 +176,12 @@ CMDS
    my $default_label = join(', ', @{$this->{'FIELDS'}});
 
    foreach my $use_spec (@{$this->{'USING'}}) {
-      $plot_cmd .= "'" . $this->{'TEMPFILE'} . "' using $use_spec ";
+      if ( $this->{'DUMP_TO_SCREEN'} ) {
+         $plot_cmd .= "'screen' using $use_spec ";
+      }
+      else {
+         $plot_cmd .= "'" . $this->{'TEMPFILE'} . "' using $use_spec ";
+      }
 
       if ( not ($use_spec =~ m/title/) ) {
          my $label = $default_label;
@@ -194,8 +204,16 @@ CMDS
       $plot_cmd .= ', ' . join(', ', @{$this->{'PLOTS'}});
    }
 
-   print $plot $plot_cmd;
-   close $plot;
+   $plot_script .= $plot_cmd;
+
+   if ( $this->{'DUMP_TO_SCREEN'} ) {
+      $this->print_value($plot_script . "\n");
+   }
+   else {
+      open(my $plot, '|-', $this->{'GNUPLOT_COMMAND'});
+      print $plot $plot_script;
+      close $plot;
+   }
 
    if ( $? ) {
       warn "Gnuplot failed, bailing!\n";
