@@ -11,31 +11,31 @@ sub init {
    my $this = shift;
    my $args = shift;
 
-   my $png_file = 'tognuplot.png';
+   my $bar_graph;
+   my $dump_to_screen = 0;
    my $gnuplot_command = 'gnuplot';
+   my $lines;
+   my $png_file = 'tognuplot.png';
    my $title;
    my @labels;
    my @plots;
    my @precommands;
    my @using;
-   my $bar_graph;
-   my $lines;
-   my $dump_to_screen = 0;
 
    my $key_groups = Recs::KeyGroups->new();
 
    my $spec = {
-      "key|k|fields|f=s"  => sub { $key_groups->add_groups($_[1]); },
       "file=s"            => \$png_file,
+      "key|k|fields|f=s"  => sub { $key_groups->add_groups($_[1]); },
       "label=s"           => sub { push @labels, split(/,/, $_[1]); },
       "plot=s"            => sub { push @plots, split(/,/, $_[1]); },
+      "precommand=s"      => sub { push @precommands, split(/,/, $_[1]); },
       "title=s"           => \$title,
       "using=s"           => sub { push @using,  $_[1]; },
-      "precommand=s"      => sub { push @precommands, split(/,/, $_[1]); },
       'bargraph'          => \$bar_graph,
-      'lines'             => \$lines,
-      'gnuplot-command=s' => \$gnuplot_command,
       'dump-to-screen'    => \$dump_to_screen,
+      'gnuplot-command=s' => \$gnuplot_command,
+      'lines'             => \$lines,
       $this->site_args(),
    };
 
@@ -60,19 +60,20 @@ sub init {
 
    my ($tempfh, $tempfile) = tempfile();
 
-   $this->{'TEMPFILE'}        = $tempfile;
-   $this->{'KEY_GROUPS'}      = $key_groups;
-   $this->{'TEMPFH'}          = $tempfh;
-   $this->{'PNG_FILE'}        = $png_file;
-   $this->{'TITLE'}           = $title;
    $this->{'BAR_GRAPH'}       = $bar_graph;
-   $this->{'LINES'}           = $lines;
-   $this->{'PRECOMMANDS'}     = \@precommands;
-   $this->{'USING'}           = \@using;
-   $this->{'LABELS'}          = \@labels;
-   $this->{'PLOTS'}           = \@plots;
+   $this->{'DUMP_TO_SCREEN'}  = $dump_to_screen;
    $this->{'FIRST_RECORD'}    = 1;
    $this->{'GNUPLOT_COMMAND'} = $gnuplot_command;
+   $this->{'KEY_GROUPS'}      = $key_groups;
+   $this->{'LABELS'}          = \@labels;
+   $this->{'LINES'}           = $lines;
+   $this->{'PLOTS'}           = \@plots;
+   $this->{'PNG_FILE'}        = $png_file;
+   $this->{'PRECOMMANDS'}     = \@precommands;
+   $this->{'TEMPFH'}          = $tempfh;
+   $this->{'TEMPFILE'}        = $tempfile;
+   $this->{'TITLE'}           = $title;
+   $this->{'USING'}           = \@using;
 }
 
 sub init_fields {
