@@ -11,12 +11,10 @@ perf test
 recs-frommultire - allow dynamic field names, allow dropped fields
 recs-join - Join in sqlite for larger db streams
 recs-sort, recs-todb - need value options for keyspec groups
-recs-tognuplot - write tests, by comparing gnuplot scripts
 recs-fromhtmltable - parse an html file, extract data from a table
 recs-eval - add option to not write out newline
 recs-toptable - should take sort specs for the "partial records" that are it's X and Y labels, furthermore, sort should understand e.g.  "lex*" to mean "lex, but with 'ALL' at the end" and "*lex" for "ALL" at the beginning
    - toptable - fix help for --v, to clarify it's relation to FIELD in selecting the fields to appear
-recs-tognuplot - should check for gnuplot binary and fail with decent error message
 recs-xform - redo record replacement (right now it's value return of arrayref triggers, should probably do assignment back to $r triggers)
 
 Aribritation Collation clumps
