@@ -2,10 +2,14 @@
 
 recs - Record Stream Manipulation and output
 
-=head1 SYNOPSIS
+=head1 ABSTRACT
+
+App::RecordStream - System for commandline analysis of data
+
+=head1 SYNPOSIS
 
 A set of programs for creating, manipulating, and outputing a stream of
-Records, or hashes.  Inspired by Monad.
+Records, or JSON hashes.  Inspired by Monad.
 
 =head1 DESCRIPTION
 
