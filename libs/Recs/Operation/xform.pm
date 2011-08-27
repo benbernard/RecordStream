@@ -25,7 +25,9 @@ sub accept_record {
    my $record = shift;
 
    my $executor = $this->{'EXECUTOR'};
-   my $value = $executor->execute_code($record);
+   $executor->execute_code($record);
+
+   my $value = $executor->get_last_record();
 
    if ( ref($value) eq 'ARRAY' ) {
      foreach my $new_record (@$value) {
@@ -38,7 +40,7 @@ sub accept_record {
      }
    }
    else {
-     $this->push_record($record);
+     $this->push_record($value);
    }
 }
 

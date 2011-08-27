@@ -32,7 +32,7 @@ $output = <<OUTPUT;
 OUTPUT
 Recs::Test::OperationHelper->new("operation" => $xform, "input" => $input, "output" => $output)->matches();
 
-$xform = Recs::Operation::xform->new(['$r = [map { {%$r, "a" => $_} } split(/,/, delete($r->{"a"}))]']);
+$xform = Recs::Operation::xform->new(['$r = [map { {%$r, "a" => $_} } split(/,/, delete($r->{"a"}))]; 1;']);
 $output = <<OUTPUT;
 {"a":"a1","b":"b1"}
 {"a":"a2","b":"b1"}

@@ -71,18 +71,35 @@ no warnings;
 package __MY__SafeCompartment;
 
 my \$line = 0;
+my \$r;
 
-sub { 
-  my (\$r, \$filename) = \@_;
+sub __MY__get_record {
+   return \$r;
+}
+
+sub __MY__set_record {
+   (\$r) = (\@_);
+}
+
+sub __MY__run_record { 
+  my (\$filename) = \@_;
   \$line++;
 
   $__MY__code;
 }
+
+[\\\&__MY__get_record, \\\&__MY__set_record, \\\&__MY__run_record];
 CODE
 }
 
 sub execute_code  {
-   return $_[0]->{'CODE'}->($_[1], Recs::Operation::get_current_filename());
+   my ($get, $set, $run) = @{$_[0]->{'CODE'}};
+   $set->($_[1]);
+   return $run->(Recs::Operation::get_current_filename());
+}
+
+sub get_last_record {
+   return $_[0]->{'CODE'}->[0]->();
 }
 
 sub transform_code {
