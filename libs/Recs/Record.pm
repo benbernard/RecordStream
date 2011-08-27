@@ -150,6 +150,8 @@ records.
 
 =cut
 
+our $VERSION = '3.3';
+
 use strict;
 use warnings;
 
