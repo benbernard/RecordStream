@@ -12,6 +12,7 @@ sub init {
    my $args = shift;
 
    my $png_file = 'tognuplot.png';
+   my $gnuplot_command = 'gnuplot';
    my $title;
    my @labels;
    my @plots;
@@ -23,15 +24,16 @@ sub init {
    my $key_groups = Recs::KeyGroups->new();
 
    my $spec = {
-      "key|k|fields|f=s" => sub { $key_groups->add_groups($_[1]); },
-      "file=s"           => \$png_file,
-      "label=s"          => sub { push @labels, split(/,/, $_[1]); },
-      "plot=s"           => sub { push @plots, split(/,/, $_[1]); },
-      "title=s"          => \$title,
-      "using=s"          => sub { push @using,  $_[1]; },
-      "precommand=s"     => sub { push @precommands, split(/,/, $_[1]); },
-      'bargraph'         => \$bar_graph,
-      'lines'            => \$lines,
+      "key|k|fields|f=s"  => sub { $key_groups->add_groups($_[1]); },
+      "file=s"            => \$png_file,
+      "label=s"           => sub { push @labels, split(/,/, $_[1]); },
+      "plot=s"            => sub { push @plots, split(/,/, $_[1]); },
+      "title=s"           => \$title,
+      "using=s"           => sub { push @using,  $_[1]; },
+      "precommand=s"      => sub { push @precommands, split(/,/, $_[1]); },
+      'bargraph'          => \$bar_graph,
+      'lines'             => \$lines,
+      'gnuplot-command=s' => \$gnuplot_command,
       $this->site_args(),
    };
 
@@ -45,20 +47,30 @@ sub init {
 
    $png_file .= '.png' unless ( $png_file =~ m/\.png$/ );
 
+   if ( open(my $fh, '|-', $gnuplot_command) ) {
+      close $fh;
+   }
+   else {
+      warn "Could not run gnuplot command: $gnuplot_command: $!\n";
+      warn "May want to specify a binary with --gnuplot-command\n";
+      exit 0;
+   }
+
    my ($tempfh, $tempfile) = tempfile();
 
-   $this->{'TEMPFILE'}     = $tempfile;
-   $this->{'KEY_GROUPS'}   = $key_groups;
-   $this->{'TEMPFH'}       = $tempfh;
-   $this->{'PNG_FILE'}     = $png_file;
-   $this->{'TITLE'}        = $title;
-   $this->{'BAR_GRAPH'}    = $bar_graph;
-   $this->{'LINES'}        = $lines;
-   $this->{'PRECOMMANDS'}  = \@precommands;
-   $this->{'USING'}        = \@using;
-   $this->{'LABELS'}       = \@labels;
-   $this->{'PLOTS'}        = \@plots;
-   $this->{'FIRST_RECORD'} = 1;
+   $this->{'TEMPFILE'}        = $tempfile;
+   $this->{'KEY_GROUPS'}      = $key_groups;
+   $this->{'TEMPFH'}          = $tempfh;
+   $this->{'PNG_FILE'}        = $png_file;
+   $this->{'TITLE'}           = $title;
+   $this->{'BAR_GRAPH'}       = $bar_graph;
+   $this->{'LINES'}           = $lines;
+   $this->{'PRECOMMANDS'}     = \@precommands;
+   $this->{'USING'}           = \@using;
+   $this->{'LABELS'}          = \@labels;
+   $this->{'PLOTS'}           = \@plots;
+   $this->{'FIRST_RECORD'}    = 1;
+   $this->{'GNUPLOT_COMMAND'} = $gnuplot_command;
 }
 
 sub init_fields {
@@ -81,14 +93,14 @@ sub init_fields {
 
    if ( scalar @$using == 0 ) {
       if ( $bar_graph || $lines ) {
-         my $using = "1 title \"$specs->[0]\"";
+         my $using_spec = "1 title \"$specs->[0]\"";
 
          foreach my $idx (2..@$specs) {
             my $title = $specs->[$idx-1];
-            $using .= ", '' using $idx title \"$title\"";
+            $using_spec .= ", '' using $idx title \"$title\"";
          }
 
-         push @$using, $using;
+         push @$using, $using_spec;
       }
       elsif ( scalar @$specs == 1 ) {
          push @$using, "1";
@@ -130,7 +142,7 @@ sub stream_done {
 
    close $this->{'TEMPFH'};
 
-   open(my $plot, '|-', 'gnuplot');
+   open(my $plot, '|-', $this->{'GNUPLOT_COMMAND'});
    print $plot "set terminal png\n";
    print $plot "set output '" . $this->{'PNG_FILE'} . "'\n";
    print $plot "set title '" . $this->{'TITLE'} . "'\n";
@@ -247,6 +259,7 @@ Arguments:
                                   than 2 key, each field is a line
    --bargraph                     Draw a bar graph, each field is a bar, may specify
                                   than 2 key, each field is a bar
+   --gnuplot-command              Location of gnuplot binary if not on path
 
    Graph the count field
       recs-tognuplot --field count
