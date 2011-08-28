@@ -1,5 +1,7 @@
 package App::RecordStream::Operation::xform;
 
+our $VERSION = "3.4";
+
 use strict;
 
 use base qw(App::RecordStream::Operation);

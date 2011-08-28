@@ -1,5 +1,7 @@
 package App::RecordStream::Aggregator::Concatenate;
 
+our $VERSION = "3.4";
+
 use strict;
 use lib;
 

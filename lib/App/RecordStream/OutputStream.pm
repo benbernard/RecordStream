@@ -61,6 +61,8 @@ String representation of a hash ref, what would be printed from put_hashref
 
 =cut
 
+our $VERSION = "3.4";
+
 use strict;
 use lib;
 

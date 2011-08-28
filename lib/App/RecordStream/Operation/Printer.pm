@@ -1,5 +1,7 @@
 package App::RecordStream::Operation::Printer;
 
+our $VERSION = "3.4";
+
 use base qw(App::RecordStream::Operation);
 
 use App::RecordStream::OutputStream;
