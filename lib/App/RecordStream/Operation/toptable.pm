@@ -1,11 +1,11 @@
-package Recs::Operation::toptable;
+package App::RecordStream::Operation::toptable;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Accumulator Recs::Operation Recs::ScreenPrinter);
+use base qw(App::RecordStream::Accumulator App::RecordStream::Operation App::RecordStream::ScreenPrinter);
 
-use Recs::OutputStream;
+use App::RecordStream::OutputStream;
 
 # TODO: zOMG!  This format is so ugly it hurts.  Think of something better.
 
@@ -17,9 +17,9 @@ sub init {
    my $headers = 1;
    my $full = 0;
 
-   my $xgroup = Recs::KeyGroups->new();
-   my $ygroup = Recs::KeyGroups->new();
-   my $vgroup = Recs::KeyGroups->new();
+   my $xgroup = App::RecordStream::KeyGroups->new();
+   my $ygroup = App::RecordStream::KeyGroups->new();
+   my $vgroup = App::RecordStream::KeyGroups->new();
    my $output_records = 0;
 
    my $spec = {
@@ -351,7 +351,7 @@ sub output_records {
 
    foreach my $y_values (@$ordered_y_values) {
       my $key = join('-', @$y_values);
-      $this->push_record(Recs::Record->new($records->{$key}));
+      $this->push_record(App::RecordStream::Record->new($records->{$key}));
    }
 }
 

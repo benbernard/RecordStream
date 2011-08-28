@@ -1,8 +1,8 @@
-package Recs::Operation::normalizetime;
+package App::RecordStream::Operation::normalizetime;
 
 use strict;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 use Date::Manip qw (ParseDate UnixDate ParseDateDelta Delta_Format);
 

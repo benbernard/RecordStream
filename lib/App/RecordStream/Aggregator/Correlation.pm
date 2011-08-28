@@ -1,12 +1,12 @@
-package Recs::Aggregator::Correlation;
+package App::RecordStream::Aggregator::Correlation;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::Ord2Bivariate;
-use Recs::Aggregator;
+use App::RecordStream::Aggregator::Ord2Bivariate;
+use App::RecordStream::Aggregator;
 
-use base 'Recs::Aggregator::Ord2Bivariate';
+use base 'App::RecordStream::Aggregator::Ord2Bivariate';
 
 sub new
 {
@@ -37,8 +37,8 @@ sub short_usage
    return "find correlation of provided fields";
 }
 
-Recs::Aggregator::register_aggregator('corr', __PACKAGE__);
-Recs::Aggregator::register_aggregator('correlation', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('corr', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('correlation', __PACKAGE__);
 
 1;
 

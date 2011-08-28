@@ -1,12 +1,12 @@
-package Recs::Aggregator::Average;
+package App::RecordStream::Aggregator::Average;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::Ord2Univariate;
-use Recs::Aggregator;
+use App::RecordStream::Aggregator::Ord2Univariate;
+use App::RecordStream::Aggregator;
 
-use base 'Recs::Aggregator::Ord2Univariate';
+use base 'App::RecordStream::Aggregator::Ord2Univariate';
 
 sub new
 {
@@ -35,7 +35,7 @@ sub short_usage
    return "averages provided field";
 }
 
-Recs::Aggregator::register_aggregator('average', __PACKAGE__);
-Recs::Aggregator::register_aggregator('avg', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('average', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('avg', __PACKAGE__);
 
 1;

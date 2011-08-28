@@ -1,8 +1,8 @@
-package Recs::Operation::frommultire;
+package App::RecordStream::Operation::frommultire;
 
 use strict;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 sub init {
    my $this = shift;
@@ -78,7 +78,7 @@ sub check_keep {
 sub run_operation {
    my ($this) = @_;
 
-   my $record = Recs::Record->new();
+   my $record = App::RecordStream::Record->new();
 
    local @ARGV = @{$this->_get_extra_args()};
    while(my $line = <>) {
@@ -154,7 +154,7 @@ sub get_field_value_pairs {
 
 sub flush_record {
    my ($this, $record) = @_;
-   my $record2 = Recs::Record->new();
+   my $record2 = App::RecordStream::Record->new();
    for my $field ($record->keys()) {
       if($this->check_keep($field)) {
          $record2->set($field, $record->get($field));

@@ -1,11 +1,11 @@
-package Recs::Aggregator::MapReduce::FieldSet;
+package App::RecordStream::Aggregator::MapReduce::FieldSet;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::MapReduce;
+use App::RecordStream::Aggregator::MapReduce;
 
-use base 'Recs::Aggregator::MapReduce';
+use base 'App::RecordStream::Aggregator::MapReduce';
 
 sub new
 {

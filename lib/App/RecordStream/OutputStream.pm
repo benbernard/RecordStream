@@ -1,8 +1,8 @@
-package Recs::OutputStream;
+package App::RecordStream::OutputStream;
 
 =head1 NAME
 
-Recs::OutputStream
+App::RecordStream::OutputStream
 
 =head1 AUTHOR
 
@@ -11,15 +11,15 @@ Keith Amling <keith.amling@gmail.com>
 
 =head1 DESCRIPTION
 
-An output stream for Recs::Record objects
+An output stream for App::RecordStream::Record objects
 
 =head1 SYNOPSIS
 
-    use Recs::OutputStream;
+    use App::RecordStream::OutputStream;
 
-    my $out    = Recs::OutputStream->new();
+    my $out    = App::RecordStream::OutputStream->new();
 
-    my $record = Recs::Record->new("name" => "John Smith", "age" => 39);
+    my $record = App::RecordStream::Record->new("name" => "John Smith", "age" => 39);
     $out->put_record($record);
 
     my $hash = { foo => 'bar' };
@@ -30,7 +30,7 @@ An output stream for Recs::Record objects
 
 =over 4
 
-=item my $out = Recs::OutputStream->new(FH);
+=item my $out = App::RecordStream::OutputStream->new(FH);
 
 Takes an optional output file handle to print records to.  If none is
 specified, will output to STDOUT
@@ -43,7 +43,7 @@ specified, will output to STDOUT
 
 =item $out->put_record(RECORD);
 
-Takes a L<Recs::Record> object and puts it on the output file handle.
+Takes a L<App::RecordStream::Record> object and puts it on the output file handle.
 
 =item $out->put_hashref(HASH_REF);
 

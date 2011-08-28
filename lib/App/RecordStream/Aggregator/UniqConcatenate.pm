@@ -1,10 +1,10 @@
-package Recs::Aggregator::UniqConcatenate;
+package App::RecordStream::Aggregator::UniqConcatenate;
 
 use strict;
 use lib;
 
-use Recs::Aggregator;
-use base qw(Recs::Aggregator::Aggregation);
+use App::RecordStream::Aggregator;
+use base qw(App::RecordStream::Aggregator::Aggregation);
 
 sub new
 {
@@ -59,7 +59,7 @@ sub combine
    return $cookie;
 }
 
-Recs::Aggregator::register_aggregator('uconcatenate', __PACKAGE__);
-Recs::Aggregator::register_aggregator('uconcat', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('uconcatenate', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('uconcat', __PACKAGE__);
 
 1;

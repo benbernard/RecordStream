@@ -1,9 +1,9 @@
-package Recs::Aggregator::FirstRecord;
+package App::RecordStream::Aggregator::FirstRecord;
 
 use strict;
 use lib;
 
-use base qw(Recs::Aggregator::InjectInto);
+use base qw(App::RecordStream::Aggregator::InjectInto);
 
 sub new
 {
@@ -46,7 +46,7 @@ sub returns_record
    return 1;
 }
 
-Recs::Aggregator::register_aggregator('firstrecord', __PACKAGE__);
-Recs::Aggregator::register_aggregator('firstrec', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('firstrecord', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('firstrec', __PACKAGE__);
 
 1;

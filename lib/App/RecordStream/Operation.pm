@@ -1,4 +1,4 @@
-package Recs::Operation;
+package App::RecordStream::Operation;
 
 use strict;
 use warnings;
@@ -6,13 +6,13 @@ use warnings;
 use Carp;
 use FindBin qw($Script $RealScript);
 use Getopt::Long;
-use Recs::InputStream;
-use Recs::Site;
+use App::RecordStream::InputStream;
+use App::RecordStream::Site;
 
-use Recs::KeyGroups;
-use Recs::Executor;
+use App::RecordStream::KeyGroups;
+use App::RecordStream::Executor;
 
-require Recs::Operation::Printer;
+require App::RecordStream::Operation::Printer;
 
 sub accept_record {
    subclass_should_implement(shift);
@@ -23,7 +23,7 @@ sub usage {
 }
 
 sub create_default_next {
-   my $printer = Recs::Operation::Printer->new();
+   my $printer = App::RecordStream::Operation::Printer->new();
    $printer->init();
    return $printer;
 }
@@ -221,7 +221,7 @@ sub finish {
 
 sub get_input_stream {
    my $this = shift;
-   $this->{'INPUT_STREAM'} ||= Recs::InputStream->new_magic($this->_get_extra_args());
+   $this->{'INPUT_STREAM'} ||= App::RecordStream::InputStream->new_magic($this->_get_extra_args());
    return $this->{'INPUT_STREAM'};
 }
 
@@ -280,9 +280,9 @@ sub load_operation {
 
    die "Script not named recs-*: $script" unless ( $script =~ s/^recs-// );
 
-   my @modules = ("Recs::Operation::$script");
-   Recs::Site::bootstrap();
-   my @sites = sort { $a->{'priority'} <=> $b->{'priority'} } Recs::Site::list_sites();
+   my @modules = ("App::RecordStream::Operation::$script");
+   App::RecordStream::Site::bootstrap();
+   my @sites = sort { $a->{'priority'} <=> $b->{'priority'} } App::RecordStream::Site::list_sites();
    for my $site (@sites)
    {
       unshift @modules, $site->{'path'} . "::Operation::$script";
@@ -372,17 +372,17 @@ sub keys_help {
 
 sub snippet_help {
    my $this = shift;
-   print Recs::Executor::usage();
+   print App::RecordStream::Executor::usage();
 }
 
 sub keyspecs_help {
    my $this = shift;
-   print Recs::Record::keyspec_help();
+   print App::RecordStream::Record::keyspec_help();
 }
 
 sub keygroups_help {
    my $this = shift;
-   print Recs::KeyGroups::usage();
+   print App::RecordStream::KeyGroups::usage();
 }
 
 sub _set_next_operation {
@@ -406,7 +406,7 @@ sub _get_extra_args {
 
 # A static method for a single-line operation bootstrap.  Operation wrappers
 # can/should be a symlink to recs-operation itself or just this one line: use
-# Recs::Operation; Recs::Operation::main();
+# App::RecordStream::Operation; App::RecordStream::Operation::main();
 sub main {
   $| = 1;
 
@@ -416,7 +416,7 @@ WARNING!
 recs-operation invoked directly!
 
 recs-operation is a wrapper for all other recs commands.  You do not want to
-use this script.  It uses the Recs::Operation::* modules to performation
+use this script.  It uses the App::RecordStream::Operation::* modules to performation
 operations, like recs-grep.  If you are looking for implementation of those
 scripts, look in those modules.  Otherwise, use a different recs script like
 recs-grep or recs-collate directly.
@@ -429,7 +429,7 @@ MESSAGE
   my @args = @ARGV;
   @ARGV = ();
 
-  my $op = Recs::Operation->create_operation($Script, @args);
+  my $op = App::RecordStream::Operation->create_operation($Script, @args);
 
   $op->run_operation();
   $op->finish();

@@ -1,16 +1,16 @@
-package Recs::Operation::fromatomfeed;
+package App::RecordStream::Operation::fromatomfeed;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 use Data::Dumper;
 use Getopt::Long;
 use LWP::UserAgent;
 use XML::Simple;
 
-use Recs::Record;
+use App::RecordStream::Record;
 
 sub init
 {
@@ -65,7 +65,7 @@ URL:
       foreach my $entry (@{$xml->{entry}})
       {
          $count++;
-         my $record = Recs::Record->new(%$entry);
+         my $record = App::RecordStream::Record->new(%$entry);
          $this->push_record($record);
          if (defined $this->{'MAX'} && $count >= $this->{'MAX'})
          {

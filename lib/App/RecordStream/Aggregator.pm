@@ -1,6 +1,6 @@
-package Recs::Aggregator;
+package App::RecordStream::Aggregator;
 
-use Recs::Site;
+use App::RecordStream::Site;
 
 use strict;
 use lib;
@@ -9,12 +9,12 @@ sub load_aggregators
 {
    for my $inc (@INC)
    {
-      load_aggregators_aux($inc . "/Recs/Aggregator", "Recs/Aggregator");
+      load_aggregators_aux($inc . "/App/RecordStream/Aggregator", "App/RecordStream/Aggregator");
    }
 
    # Now load aggregators from sites, overriding lower priority with higher priority
-   Recs::Site::bootstrap();
-   my @sites = sort { $a->{'priority'} <=> $b->{'priority'} } Recs::Site::list_sites();
+   App::RecordStream::Site::bootstrap();
+   my @sites = sort { $a->{'priority'} <=> $b->{'priority'} } App::RecordStream::Site::list_sites();
    for my $site (@sites)
    {
       for my $inc (@INC)
@@ -178,7 +178,7 @@ sub map_squish
 {
    my ($aggrs, $cookies) = @_;
 
-   my $return_record = Recs::Record->new();
+   my $return_record = App::RecordStream::Record->new();
    for my $name (keys(%$aggrs))
    {
       my $aggregator = $aggrs->{$name};

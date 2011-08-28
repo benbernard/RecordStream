@@ -82,7 +82,7 @@ next stage in the pipeline:
 recs-xform '$r->{url} =~ s/(get\.cgi)\/.*/$1/;'
 
 recs-xform is both simple and powerful: it executes arbitrary, inline perl on
-each record. The record is represented as a Recs::Record object in the scalar
+each record. The record is represented as a App::RecordStream::Record object in the scalar
 $r, but all the fields can be accessed as if it were no more than a hashref. In
 this case we are using a substitution command to strip the key off of get.cgi
 requests. At this point our data is ready to be aggregated and made into

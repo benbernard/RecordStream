@@ -1,10 +1,10 @@
-package Recs::Aggregator::Minimum;
+package App::RecordStream::Aggregator::Minimum;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::InjectInto::Field;
-use base qw(Recs::Aggregator::InjectInto::Field);
+use App::RecordStream::Aggregator::InjectInto::Field;
+use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
 sub new
 {
@@ -42,7 +42,7 @@ sub long_usage
    exit 1;
 }
 
-Recs::Aggregator::register_aggregator('minimum', __PACKAGE__);
-Recs::Aggregator::register_aggregator('min', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('minimum', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('min', __PACKAGE__);
 
 1;

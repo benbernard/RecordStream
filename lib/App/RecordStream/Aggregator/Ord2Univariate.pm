@@ -1,12 +1,12 @@
-package Recs::Aggregator::Ord2Univariate;
+package App::RecordStream::Aggregator::Ord2Univariate;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::MapReduce::Field;
-use Recs::Aggregator;
+use App::RecordStream::Aggregator::MapReduce::Field;
+use App::RecordStream::Aggregator;
 
-use base 'Recs::Aggregator::MapReduce::Field';
+use base 'App::RecordStream::Aggregator::MapReduce::Field';
 
 sub new
 {

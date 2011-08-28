@@ -1,8 +1,8 @@
-package Recs::Operation::flatten;
+package App::RecordStream::Operation::flatten;
 
 use strict;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 my $INVALID_REF_TYPES = [qw(
    SCALAR
@@ -30,7 +30,7 @@ sub init {
    my $add_field = sub {
       my ($depth, $field_names) = @_;
 
-      my $key_groups = Recs::KeyGroups->new();
+      my $key_groups = App::RecordStream::KeyGroups->new();
       $key_groups->add_groups($field_names);
 
       push @fields, [$depth, $key_groups];

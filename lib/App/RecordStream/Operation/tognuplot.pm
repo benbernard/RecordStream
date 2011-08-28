@@ -1,9 +1,9 @@
-package Recs::Operation::tognuplot;
+package App::RecordStream::Operation::tognuplot;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Operation Recs::ScreenPrinter);
+use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);
 
 use File::Temp qw(tempfile);
 
@@ -22,7 +22,7 @@ sub init {
    my @precommands;
    my @using;
 
-   my $key_groups = Recs::KeyGroups->new();
+   my $key_groups = App::RecordStream::KeyGroups->new();
 
    my $spec = {
       "file=s"            => \$png_file,

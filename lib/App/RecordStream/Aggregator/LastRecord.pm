@@ -1,9 +1,9 @@
-package Recs::Aggregator::LastRecord;
+package App::RecordStream::Aggregator::LastRecord;
 
 use strict;
 use lib;
 
-use base qw(Recs::Aggregator::InjectInto);
+use base qw(App::RecordStream::Aggregator::InjectInto);
 
 sub new
 {
@@ -44,7 +44,7 @@ sub argct
    return 0;
 }
 
-Recs::Aggregator::register_aggregator('lastrecord', __PACKAGE__);
-Recs::Aggregator::register_aggregator('lastrec', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('lastrecord', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('lastrec', __PACKAGE__);
 
 1;

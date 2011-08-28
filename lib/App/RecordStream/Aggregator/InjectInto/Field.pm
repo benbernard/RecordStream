@@ -1,9 +1,9 @@
-package Recs::Aggregator::InjectInto::Field;
+package App::RecordStream::Aggregator::InjectInto::Field;
 
 use strict;
 use lib;
 
-use base qw(Recs::Aggregator::InjectInto);
+use base qw(App::RecordStream::Aggregator::InjectInto);
 
 sub new
 {

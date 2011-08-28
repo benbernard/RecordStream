@@ -1,14 +1,14 @@
-package Recs::Operation::Printer;
+package App::RecordStream::Operation::Printer;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
-use Recs::OutputStream;
+use App::RecordStream::OutputStream;
 
 sub init {
    my $this = shift;
    my $args = shift || [];
 
-   $this->{'OUT'} = $args->[0] || Recs::OutputStream->new();
+   $this->{'OUT'} = $args->[0] || App::RecordStream::OutputStream->new();
 }
 
 sub create_default_next {

@@ -1,12 +1,12 @@
-package Recs::Aggregator::Variance;
+package App::RecordStream::Aggregator::Variance;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::Ord2Univariate;
-use Recs::Aggregator;
+use App::RecordStream::Aggregator::Ord2Univariate;
+use App::RecordStream::Aggregator;
 
-use base 'Recs::Aggregator::Ord2Univariate';
+use base 'App::RecordStream::Aggregator::Ord2Univariate';
 
 sub new
 {
@@ -37,8 +37,8 @@ sub short_usage
    return "find variance of provided field";
 }
 
-Recs::Aggregator::register_aggregator('var', __PACKAGE__);
-Recs::Aggregator::register_aggregator('variance', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('var', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('variance', __PACKAGE__);
 
 1;
 

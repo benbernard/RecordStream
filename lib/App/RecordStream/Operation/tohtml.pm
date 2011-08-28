@@ -1,9 +1,9 @@
-package Recs::Operation::tohtml;
+package App::RecordStream::Operation::tohtml;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Operation Recs::ScreenPrinter);
+use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);
 
 sub init {
    my $this = shift;
@@ -13,7 +13,7 @@ sub init {
    my $row_attributes = '';
    my $cell_attributes = '';
 
-   my $key_groups = Recs::KeyGroups->new();
+   my $key_groups = App::RecordStream::KeyGroups->new();
 
    my $spec = {
       'keys|k|fields|f=s' => sub { $key_groups->add_groups($_[1]); },

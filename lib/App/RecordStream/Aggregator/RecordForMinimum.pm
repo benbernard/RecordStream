@@ -1,9 +1,9 @@
-package Recs::Aggregator::RecordForMinimum;
+package App::RecordStream::Aggregator::RecordForMinimum;
 
 use strict;
 use lib;
 
-use base 'Recs::Aggregator::MapReduce';
+use base 'App::RecordStream::Aggregator::MapReduce';
 
 sub new
 {
@@ -74,9 +74,9 @@ sub returns_record
    return 1;
 }
 
-Recs::Aggregator::register_aggregator('recformin', __PACKAGE__);
-Recs::Aggregator::register_aggregator('recforminimum', __PACKAGE__);
-Recs::Aggregator::register_aggregator('recordformin', __PACKAGE__);
-Recs::Aggregator::register_aggregator('recordforminimum', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('recformin', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('recforminimum', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('recordformin', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('recordforminimum', __PACKAGE__);
 
 1;

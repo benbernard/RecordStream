@@ -1,4 +1,4 @@
-package Recs::DBHandle;
+package App::RecordStream::DBHandle;
 
 use strict;
 use warnings;

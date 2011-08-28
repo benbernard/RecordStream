@@ -1,9 +1,9 @@
-package Recs::Operation::sort;
+package App::RecordStream::Operation::sort;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Accumulator Recs::Operation);
+use base qw(App::RecordStream::Accumulator App::RecordStream::Operation);
 
 sub init {
    my $this = shift;
@@ -26,7 +26,7 @@ sub init {
 sub stream_done {
    my $this = shift;
 
-   my @records = Recs::Record::sort($this->get_records(), @{$this->{'KEYS'}});
+   my @records = App::RecordStream::Record::sort($this->get_records(), @{$this->{'KEYS'}});
 
    if ( $this->{'REVERSE'} ) {
       @records = reverse @records;
@@ -54,7 +54,7 @@ Usage: recs-sort <args> [<files>]
                      be either lexical or numeric.  Default sort type is
                      lexical (can also use nat, lex, n, and l).  Additionallly,
                      the sort type may be prefixed with '-' to indicate a
-                     decreasing sort order.  (See perldoc for Recs::Record for
+                     decreasing sort order.  (See perldoc for App::RecordStream::Record for
                      more on sort specs).
                      Maybe be a key spec, see '--help-keyspecs' for more
                      Cannot be a keygroup.

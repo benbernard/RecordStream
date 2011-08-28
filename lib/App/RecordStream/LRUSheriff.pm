@@ -1,4 +1,4 @@
-package Recs::LRUSheriff;
+package App::RecordStream::LRUSheriff;
 
 use strict;
 use lib;

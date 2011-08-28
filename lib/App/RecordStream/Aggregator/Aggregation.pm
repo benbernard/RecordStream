@@ -1,4 +1,4 @@
-package Recs::Aggregator::Aggregation;
+package App::RecordStream::Aggregator::Aggregation;
 
 sub returns_record
 {

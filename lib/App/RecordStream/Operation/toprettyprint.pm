@@ -1,18 +1,18 @@
-package Recs::Operation::toprettyprint;
+package App::RecordStream::Operation::toprettyprint;
 
 use strict;
 
-use base qw(Recs::Operation Recs::ScreenPrinter);
+use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);
 
-use Recs::OutputStream;
-use Recs::Record;
+use App::RecordStream::OutputStream;
+use App::RecordStream::Record;
 
 sub init {
    my $this = shift;
    my $args = shift;
 
    my $only_one    = 0;
-   my $key_groups  = Recs::KeyGroups->new();
+   my $key_groups  = App::RecordStream::KeyGroups->new();
    my $do_not_nest = 0;
    my $spec = {
       "1"        => \$only_one,
@@ -29,7 +29,7 @@ sub init {
 
    $this->{'ONLY_ONE'}      = $only_one;
    $this->{'KEY_GROUPS'}    = $key_groups;
-   $this->{'OUTPUT_STREAM'} = Recs::OutputStream->new();
+   $this->{'OUTPUT_STREAM'} = App::RecordStream::OutputStream->new();
    $this->{'NESTED_OUTPUT'} = not $do_not_nest;
 };
 

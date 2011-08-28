@@ -1,10 +1,10 @@
-package Recs::Aggregator::Mode;
+package App::RecordStream::Aggregator::Mode;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::InjectInto::Field;
-use base qw(Recs::Aggregator::InjectInto::Field);
+use App::RecordStream::Aggregator::InjectInto::Field;
+use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
 sub new
 {
@@ -61,6 +61,6 @@ USAGE
    exit 1
 }
 
-Recs::Aggregator::register_aggregator('mode', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('mode', __PACKAGE__);
 
 1;

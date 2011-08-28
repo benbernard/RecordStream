@@ -1,9 +1,9 @@
-package Recs::Aggregator::MapReduce;
+package App::RecordStream::Aggregator::MapReduce;
 
 use strict;
 use lib;
 
-use base qw(Recs::Aggregator::Aggregation);
+use base qw(App::RecordStream::Aggregator::Aggregation);
 
 sub new
 {

@@ -1,9 +1,9 @@
-package Recs::Operation::fromps;
+package App::RecordStream::Operation::fromps;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 use Proc::ProcessTable;
 
@@ -59,7 +59,7 @@ sub run_operation {
    my $fields = $this->{'FIELDS'};
 
    foreach my $proc (@{$table->table()}) {
-      my $record = Recs::Record->new();
+      my $record = App::RecordStream::Record->new();
       foreach my $field (@$fields) {
          my $value = $proc->{$field};
 

@@ -1,9 +1,9 @@
-package Recs::Operation::topn;
+package App::RecordStream::Operation::topn;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 sub init {
    my $this = shift;
@@ -12,7 +12,7 @@ sub init {
 
    my $top = 10;
    my $value_delimiter = "9t%7Oz%]";
-   my $key_groups = Recs::KeyGroups->new();
+   my $key_groups = App::RecordStream::KeyGroups->new();
 
    my $spec = {
       "key|k=s"     => sub { $key_groups->add_groups($_[1]); },

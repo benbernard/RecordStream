@@ -1,10 +1,10 @@
-package Recs::Aggregator::Maximum;
+package App::RecordStream::Aggregator::Maximum;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::InjectInto::Field;
-use base qw(Recs::Aggregator::InjectInto::Field);
+use App::RecordStream::Aggregator::InjectInto::Field;
+use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
 sub new
 {
@@ -42,7 +42,7 @@ sub long_usage
    exit 1;
 }
 
-Recs::Aggregator::register_aggregator('maximum', __PACKAGE__);
-Recs::Aggregator::register_aggregator('max', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('maximum', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('max', __PACKAGE__);
 
 1;

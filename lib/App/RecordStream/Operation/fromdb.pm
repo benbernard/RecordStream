@@ -1,15 +1,15 @@
-package Recs::Operation::fromdb;
+package App::RecordStream::Operation::fromdb;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 use DBI;
 
-use Recs::DBHandle;
-use Recs::OutputStream;
-use Recs::Record;
+use App::RecordStream::DBHandle;
+use App::RecordStream::OutputStream;
+use App::RecordStream::Record;
 
 sub init {
    my $this = shift;
@@ -26,7 +26,7 @@ sub init {
 
    $this->{'TABLE_NAME'} = $table_name;
 
-   my $dbh = Recs::DBHandle::get_dbh($this->_get_extra_args());
+   my $dbh = App::RecordStream::DBHandle::get_dbh($this->_get_extra_args());
    $this->{'DBH'} = $dbh;
 
    die("Must define --table or --sql") unless ( $table_name || $sql );
@@ -45,7 +45,7 @@ sub run_operation {
   $sth->execute();
 
   while ( my $row = $sth->fetchrow_hashref() ) {
-    my $record = Recs::Record->new(%$row);
+    my $record = App::RecordStream::Record->new(%$row);
     $this->push_record($record);
   }
 }
@@ -62,7 +62,7 @@ sub usage {
 
 USAGE
 
-   return $usage . Recs::DBHandle::usage() .  <<EXAMPLES;
+   return $usage . App::RecordStream::DBHandle::usage() .  <<EXAMPLES;
 Examples:
    # Dump a table
    recs-fromdb --type sqlite --dbfile testDb --table recs

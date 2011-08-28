@@ -1,12 +1,12 @@
-package Recs::Aggregator::Concatenate;
+package App::RecordStream::Aggregator::Concatenate;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::MapReduce::Field;
-use Recs::Aggregator;
+use App::RecordStream::Aggregator::MapReduce::Field;
+use App::RecordStream::Aggregator;
 
-use base 'Recs::Aggregator::MapReduce::Field';
+use base 'App::RecordStream::Aggregator::MapReduce::Field';
 
 sub new
 {
@@ -59,7 +59,7 @@ sub argct
    return 2;
 }
 
-Recs::Aggregator::register_aggregator('concatenate', __PACKAGE__);
-Recs::Aggregator::register_aggregator('concat', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('concatenate', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('concat', __PACKAGE__);
 
 1;

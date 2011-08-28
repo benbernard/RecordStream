@@ -1,10 +1,10 @@
-package Recs::Aggregator::DistinctCount;
+package App::RecordStream::Aggregator::DistinctCount;
 
 use strict;
 use lib;
 
-use Recs::Aggregator;
-use base qw(Recs::Aggregator::Aggregation);
+use App::RecordStream::Aggregator;
+use base qw(App::RecordStream::Aggregator::Aggregation);
 
 sub new
 {
@@ -63,9 +63,9 @@ sub combine
    return $cookie;
 }
 
-Recs::Aggregator::register_aggregator('dcount', __PACKAGE__);
-Recs::Aggregator::register_aggregator('dct', __PACKAGE__);
-Recs::Aggregator::register_aggregator('distinctcount', __PACKAGE__);
-Recs::Aggregator::register_aggregator('distinctct', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('dcount', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('dct', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('distinctcount', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('distinctct', __PACKAGE__);
 
 1;

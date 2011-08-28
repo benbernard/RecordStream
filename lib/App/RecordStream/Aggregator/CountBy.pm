@@ -1,9 +1,9 @@
-package Recs::Aggregator::CountBy;
+package App::RecordStream::Aggregator::CountBy;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Aggregator::InjectInto::Field);
+use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
 sub new
 {
@@ -61,7 +61,7 @@ sub argct
    return 1;
 }
 
-Recs::Aggregator::register_aggregator('countby', __PACKAGE__);
-Recs::Aggregator::register_aggregator('cb', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('countby', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('cb', __PACKAGE__);
 
 1;

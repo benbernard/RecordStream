@@ -1,9 +1,9 @@
-package Recs::Aggregator::RecordForMaximum;
+package App::RecordStream::Aggregator::RecordForMaximum;
 
 use strict;
 use lib;
 
-use base 'Recs::Aggregator::MapReduce';
+use base 'App::RecordStream::Aggregator::MapReduce';
 
 sub new
 {
@@ -74,9 +74,9 @@ sub returns_record
    return 1;
 }
 
-Recs::Aggregator::register_aggregator('recformax', __PACKAGE__);
-Recs::Aggregator::register_aggregator('recformaximum', __PACKAGE__);
-Recs::Aggregator::register_aggregator('recordformax', __PACKAGE__);
-Recs::Aggregator::register_aggregator('recordformaximum', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('recformax', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('recformaximum', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('recordformax', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('recordformaximum', __PACKAGE__);
 
 1;

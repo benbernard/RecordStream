@@ -1,12 +1,12 @@
-package Recs::Aggregator::Records;
+package App::RecordStream::Aggregator::Records;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::MapReduce;
-use Recs::Aggregator;
+use App::RecordStream::Aggregator::MapReduce;
+use App::RecordStream::Aggregator;
 
-use base 'Recs::Aggregator::MapReduce';
+use base 'App::RecordStream::Aggregator::MapReduce';
 
 sub new
 {
@@ -57,7 +57,7 @@ sub returns_record
    return 0;
 }
 
-Recs::Aggregator::register_aggregator('records', __PACKAGE__);
-Recs::Aggregator::register_aggregator('recs', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('records', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('recs', __PACKAGE__);
 
 1;

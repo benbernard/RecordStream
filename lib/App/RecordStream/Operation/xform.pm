@@ -1,10 +1,10 @@
-package Recs::Operation::xform;
+package App::RecordStream::Operation::xform;
 
 use strict;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
-use Recs::Executor;
+use App::RecordStream::Executor;
 
 sub init {
    my $this = shift;
@@ -16,7 +16,7 @@ sub init {
    }
 
    my $expression = shift @{$this->_get_extra_args()};
-   my $executor = Recs::Executor->new($expression, 1);
+   my $executor = App::RecordStream::Executor->new($expression, 1);
    $this->{'EXECUTOR'} = $executor;
 }
 
@@ -32,7 +32,7 @@ sub accept_record {
    if ( ref($value) eq 'ARRAY' ) {
      foreach my $new_record (@$value) {
        if ( ref($new_record) eq 'HASH' ) {
-         $this->push_record(Recs::Record->new($new_record));
+         $this->push_record(App::RecordStream::Record->new($new_record));
        }
        else {
          $this->push_record($new_record);
@@ -53,13 +53,13 @@ sub usage {
    return <<USAGE;
 Usage: recs-xform <args> <expr> [<files>]
    <expr> is evaluated as perl on each record of input (or records from
-   <files>) with \$r set to a Recs::Record object and \$line set to the current
+   <files>) with \$r set to a App::RecordStream::Record object and \$line set to the current
    line number (starting at 1).  All records are printed back out (changed as
    they may be).
 
    If \$r is set to an ARRAY ref in the expr, then the values of the array will
    be treated as records and outputed one to a line.  The values of the array
-   may either be a hash ref or a Recs::Record object.  The original record will
+   may either be a hash ref or a App::RecordStream::Record object.  The original record will
    not be outputted in this case.
 
 Examples:

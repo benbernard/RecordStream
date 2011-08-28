@@ -1,9 +1,9 @@
-package Recs::Test::Tester;
+package App::RecordStream::Test::Tester;
 
 use strict;
 use warnings;
 
-use Recs::Test::OperationHelper;
+use App::RecordStream::Test::OperationHelper;
 
 sub new {
    my $class     = shift;
@@ -22,7 +22,7 @@ sub no_input_test {
    my $args   = shift;
    my $output = shift;
 
-   return Recs::Test::OperationHelper->do_match(
+   return App::RecordStream::Test::OperationHelper->do_match(
       $this->{'OPERATION'},
       $args,
       undef,
@@ -39,7 +39,7 @@ sub test_stdin {
    # Re open stdin to the given input
    open(STDIN, "-|", "echo", "-n", $input) || ok(0, "Cannot open echo?!");
 
-   return Recs::Test::OperationHelper->do_match(
+   return App::RecordStream::Test::OperationHelper->do_match(
       $this->{'OPERATION'},
       $args,
       undef,

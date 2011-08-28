@@ -1,10 +1,10 @@
-package Recs::Aggregator::Percentile;
+package App::RecordStream::Aggregator::Percentile;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::InjectInto::Field;
-use base qw(Recs::Aggregator::InjectInto::Field);
+use App::RecordStream::Aggregator::InjectInto::Field;
+use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
 sub new
 {
@@ -74,7 +74,7 @@ sub argct
    return 2;
 }
 
-Recs::Aggregator::register_aggregator('percentile', __PACKAGE__);
-Recs::Aggregator::register_aggregator('perc', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('percentile', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('perc', __PACKAGE__);
 
 1;

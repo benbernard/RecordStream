@@ -1,10 +1,10 @@
-package Recs::Aggregator::PercentileMap;
+package App::RecordStream::Aggregator::PercentileMap;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::InjectInto::Field;
-use base qw(Recs::Aggregator::InjectInto::Field);
+use App::RecordStream::Aggregator::InjectInto::Field;
+use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
 sub new
 {
@@ -85,7 +85,7 @@ sub argct
    return 2;
 }
 
-Recs::Aggregator::register_aggregator('percentilemap', __PACKAGE__);
-Recs::Aggregator::register_aggregator('percmap', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('percentilemap', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('percmap', __PACKAGE__);
 
 1;

@@ -1,9 +1,9 @@
-package Recs::Operation::chain;
+package App::RecordStream::Operation::chain;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Operation Recs::ScreenPrinter);
+use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);
 
 use Data::Dumper;
 
@@ -158,7 +158,7 @@ sub add_operation {
    my $operations     = shift;
 
    if ( $this->is_recs_operation($single_command->[0]) ) {
-      push @$operations, Recs::Operation->create_operation(@$single_command);
+      push @$operations, App::RecordStream::Operation->create_operation(@$single_command);
    }
    else {
       push @$operations, [@$single_command];

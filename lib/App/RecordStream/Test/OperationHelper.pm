@@ -1,11 +1,11 @@
-package Recs::Test::OperationHelper;
+package App::RecordStream::Test::OperationHelper;
 
 use strict;
 use warnings;
 
 use Test::More;
-use Recs::InputStream;
-use Recs::OutputStream;
+use App::RecordStream::InputStream;
+use App::RecordStream::OutputStream;
 
 sub new {
    my $class = shift;
@@ -27,15 +27,15 @@ sub create_stream {
 
    return undef unless ( $input );
 
-   if ( UNIVERSAL::isa($input, 'Recs::InputStream') ) {
+   if ( UNIVERSAL::isa($input, 'App::RecordStream::InputStream') ) {
       return $input;
    }
 
    if ( (not ($input =~ m/\n/m))  && -e $input ) {
-      return Recs::InputStream->new(FILE => $input);
+      return App::RecordStream::InputStream->new(FILE => $input);
    }
 
-   return Recs::InputStream->new(STRING => $input);
+   return App::RecordStream::InputStream->new(STRING => $input);
 }
 
 sub matches {
@@ -65,7 +65,7 @@ sub matches {
 
    my $is_ok = 1;
    for my $record (@$results) {
-      $is_ok = 0 if ( ! ok(UNIVERSAL::isa($record, 'Recs::Record'), "Record is a Recs::Record") );
+      $is_ok = 0 if ( ! ok(UNIVERSAL::isa($record, 'App::RecordStream::Record'), "Record is a App::RecordStream::Record") );
    }
 
    $is_ok = 0 if ( ! is_deeply($results, \@output_records, "Records match: $name") );
@@ -73,7 +73,7 @@ sub matches {
    $is_ok = 0 if ( ! ok($keeper->has_called_finish(), "Has called finish: $name") );
 
    if ( ! $is_ok ) {
-      my $out = Recs::OutputStream->new(\*STDERR);
+      my $out = App::RecordStream::OutputStream->new(\*STDERR);
       warn "Expected and output differed!\nExpected:\n";
       $out->put_record($_) for @output_records;
       warn "Output from module:\n";
@@ -90,7 +90,7 @@ sub do_match {
    my $input          = shift;
    my $output         = shift;
 
-   my $operation_class = "Recs::Operation::$operation_name";
+   my $operation_class = "App::RecordStream::Operation::$operation_name";
    my $op = $operation_class->new($args);
 
    ok($op, "Operation initialization");
@@ -113,7 +113,7 @@ sub test_output {
    my $input          = shift;
    my $output         = shift;
 
-   my $operation_class = "Recs::Operation::$operation_name";
+   my $operation_class = "App::RecordStream::Operation::$operation_name";
    my $op = $operation_class->new($args);
 
    ok($op, "Object initialization");
@@ -135,7 +135,7 @@ sub test_output {
 
 package Keeper;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 sub new {
    my $class = shift;

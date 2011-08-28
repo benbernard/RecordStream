@@ -1,10 +1,10 @@
-package Recs::Aggregator::ValuesToKeys;
+package App::RecordStream::Aggregator::ValuesToKeys;
 
 use strict;
 use lib;
 
-use Recs::Aggregator;
-use base qw(Recs::Aggregator::MapReduce::FieldSet);
+use App::RecordStream::Aggregator;
+use base qw(App::RecordStream::Aggregator::MapReduce::FieldSet);
 
 sub map_fields {
   my ($this, $key, $value) = @_;
@@ -51,7 +51,7 @@ sub argct
    return 2;
 }
 
-Recs::Aggregator::register_aggregator('valuestokeys', __PACKAGE__);
-Recs::Aggregator::register_aggregator('vk', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('valuestokeys', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('vk', __PACKAGE__);
 
 1;

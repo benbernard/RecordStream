@@ -3,12 +3,12 @@
 # This class handles the execution of "perl" code from the commandline on a
 # record.  Handles magic of variable hiding and also special syntax issues.
 
-package Recs::Executor;
+package App::RecordStream::Executor;
 
 use strict;
 use warnings;
 
-use Recs::Operation;
+use App::RecordStream::Operation;
 
 use Getopt::Long;
 
@@ -95,7 +95,7 @@ CODE
 sub execute_code  {
    my ($get, $set, $run) = @{$_[0]->{'CODE'}};
    $set->($_[1]);
-   return $run->(Recs::Operation::get_current_filename());
+   return $run->(App::RecordStream::Operation::get_current_filename());
 }
 
 sub get_last_record {
@@ -124,7 +124,7 @@ CODE SNIPPETS:
 
 Special Variables:
     \$r    - the current record object.  This may be used exactly like a hash,
-    or you can use some of the special record functions, see Recs::Record for
+    or you can use some of the special record functions, see App::RecordStream::Record for
     more information
 
     \$line - This is the number of records run through the code snippet,

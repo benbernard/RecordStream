@@ -1,10 +1,10 @@
-package Recs::Operation::grep;
+package App::RecordStream::Operation::grep;
 
 use strict;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
-use Recs::Executor;
+use App::RecordStream::Executor;
 
 sub init {
    my $this = shift;
@@ -39,7 +39,7 @@ sub init {
    $this->{'ACCUMULATOR'} = [];
 
    my $expression = shift @{$this->_get_extra_args()};
-   my $executor = Recs::Executor->new($expression);
+   my $executor = App::RecordStream::Executor->new($expression);
    $this->{'EXECUTOR'} = $executor;
 }
 
@@ -97,7 +97,7 @@ sub usage {
    return <<USAGE;
 Usage: recs-grep <args> <expr> [<files>]
    <expr> is evaluated as perl on each record of input (or records from
-   <files>) with \$r set to a Recs::Record object and \$line set to the current
+   <files>) with \$r set to a App::RecordStream::Record object and \$line set to the current
    line number (starting at 1).  Records for which the evaluation is a perl
    true are printed back out.
 

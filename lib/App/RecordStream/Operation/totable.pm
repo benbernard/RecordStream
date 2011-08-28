@@ -1,11 +1,11 @@
-package Recs::Operation::totable;
+package App::RecordStream::Operation::totable;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Accumulator Recs::Operation Recs::ScreenPrinter);
+use base qw(App::RecordStream::Accumulator App::RecordStream::Operation App::RecordStream::ScreenPrinter);
 
-use Recs::OutputStream;
+use App::RecordStream::OutputStream;
 
 sub init {
    my $this = shift;
@@ -16,7 +16,7 @@ sub init {
    my $spreadsheet = 0;
    my $clear       = 0;
 
-   my $key_groups  = Recs::KeyGroups->new();
+   my $key_groups  = App::RecordStream::KeyGroups->new();
 
    my $spec = {
       "no-header|n"     => \$no_header,
@@ -37,7 +37,7 @@ sub init {
    $this->{'DELIMITER'}     = $delimiter;
    $this->{'SPREADSHEET'}   = $spreadsheet;
    $this->{'CLEAR'}         = $clear;
-   $this->{'OUTPUT_STREAM'} = Recs::OutputStream->new();
+   $this->{'OUTPUT_STREAM'} = App::RecordStream::OutputStream->new();
 }
 
 sub stream_done {

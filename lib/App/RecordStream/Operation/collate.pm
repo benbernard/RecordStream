@@ -1,18 +1,18 @@
-package Recs::Operation::collate;
+package App::RecordStream::Operation::collate;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
-use Recs::Aggregator;
-use Recs::LRUSheriff;
+use App::RecordStream::Aggregator;
+use App::RecordStream::LRUSheriff;
 
 sub init {
    my $this = shift;
    my $args = shift;
 
-   Recs::Aggregator::load_aggregators();
+   App::RecordStream::Aggregator::load_aggregators();
 
    my @aggregators;
    my $size = undef;
@@ -22,7 +22,7 @@ sub init {
    my $list_aggregators = 0;
    my $aggregator = 0;
 
-   my $key_groups = Recs::KeyGroups->new();
+   my $key_groups = App::RecordStream::KeyGroups->new();
 
    my $spec = {
       "key|k=s"           => sub { $key_groups->add_groups($_[1]); },
@@ -42,17 +42,17 @@ sub init {
    $this->parse_options($args, $spec);
 
    if ( $list_aggregators ) {
-      die sub { Recs::Aggregator::list_aggregators(); };
+      die sub { App::RecordStream::Aggregator::list_aggregators(); };
    }
 
    if ( $aggregator ) {
-      die sub { Recs::Aggregator::show_aggregator($aggregator) };
+      die sub { App::RecordStream::Aggregator::show_aggregator($aggregator) };
    }
 
    die "Must specify --key or --aggregator\n" unless ( $key_groups->has_any_group() || @aggregators );
 
-   my $aggregator_objects = Recs::Aggregator::make_aggregators(@aggregators);
-   my $lru_sheriff = Recs::LRUSheriff->new();
+   my $aggregator_objects = App::RecordStream::Aggregator::make_aggregators(@aggregators);
+   my $lru_sheriff = App::RecordStream::LRUSheriff->new();
 
    $this->{'KEY_GROUPS'}         = $key_groups;
    $this->{'AGGREGATORS'}        = $aggregator_objects;
@@ -124,7 +124,7 @@ sub put {
    my $aggregator_values;
 
    if ( !$value ) {
-      $aggregator_values = Recs::Aggregator::map_initial($aggregators);
+      $aggregator_values = App::RecordStream::Aggregator::map_initial($aggregators);
       $value             = [$aggregator_values, $record_keys];
 
       $lru_sheriff->put($key, $value);
@@ -133,7 +133,7 @@ sub put {
       $aggregator_values = $value->[0];
    }
 
-   $value->[0] = Recs::Aggregator::map_combine($aggregators, $aggregator_values, $record);
+   $value->[0] = App::RecordStream::Aggregator::map_combine($aggregators, $aggregator_values, $record);
 
    if ( $this->{'INCREMENTAL'} ) {
       $this->output(@$value);
@@ -173,7 +173,7 @@ sub output {
 
    my $aggregators  = $this->{'AGGREGATORS'};
 
-   my $record = Recs::Aggregator::map_squish($aggregators, $aggregaotr_values);
+   my $record = App::RecordStream::Aggregator::map_squish($aggregators, $aggregaotr_values);
 
    my $keys = $this->{'KEYS'};
    for(my $i = 0; $i < @$keys; ++$i) {
@@ -212,7 +212,7 @@ sub add_help_types {
    $this->use_help_type('keys');
    $this->add_help_type(
      'aggregators',
-     sub { Recs::Aggregator::list_aggregators(); },
+     sub { App::RecordStream::Aggregator::list_aggregators(); },
      'List the aggregators'
    );
 }

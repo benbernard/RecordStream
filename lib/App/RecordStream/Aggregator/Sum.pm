@@ -1,12 +1,12 @@
-package Recs::Aggregator::Sum;
+package App::RecordStream::Aggregator::Sum;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::MapReduce::Field;
-use Recs::Aggregator;
+use App::RecordStream::Aggregator::MapReduce::Field;
+use App::RecordStream::Aggregator;
 
-use base 'Recs::Aggregator::MapReduce::Field';
+use base 'App::RecordStream::Aggregator::MapReduce::Field';
 
 sub new
 {
@@ -33,6 +33,6 @@ sub short_usage
    return "sums provided field";
 }
 
-Recs::Aggregator::register_aggregator('sum', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('sum', __PACKAGE__);
 
 1;

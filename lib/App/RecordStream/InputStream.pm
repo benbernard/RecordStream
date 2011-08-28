@@ -1,8 +1,8 @@
-package Recs::InputStream;
+package App::RecordStream::InputStream;
 
 =head1 NAME
 
-Recs::InputStream
+App::RecordStream::InputStream
 
 =head1 AUTHOR
 
@@ -11,12 +11,12 @@ Keith Amling <keith.amling@gmail.com>
 
 =head1 DESCRIPTION
 
-This module will generate an stream of Recs::Record objects for given inputs.
+This module will generate an stream of App::RecordStream::Record objects for given inputs.
 
 =head1 SYNOPSIS
 
-  use Recs::InputStream;
-  my $stream = Recs::InputStream(STRING => $recs_string);
+  use App::RecordStream::InputStream;
+  my $stream = App::RecordStream::InputStream(STRING => $recs_string);
 
   while ( my $record = $stream->get_record() ) {
     ... do stuff ...
@@ -26,7 +26,7 @@ This module will generate an stream of Recs::Record objects for given inputs.
 
 =over 4
 
-=item my $in = Recs::InputStream->new(OPTIONS);
+=item my $in = App::RecordStream::InputStream->new(OPTIONS);
 
 The input stream takes named paramters, it will take one of: FILE, STRING, or FH
 (a file handle).
@@ -37,19 +37,19 @@ The input stream takes named paramters, it will take one of: FILE, STRING, or FH
 
 Optionally, it wil take a NEXT argument.  The NEXT argument should be another
 InputStream object.  Once the returned object reaches the end of its string, it
-will get records from the NEXT Recs::InputStream.  In this manner, InputStream
+will get records from the NEXT App::RecordStream::InputStream.  In this manner, InputStream
 objects can be chained
 
 returns an instance of InputStream
 
-=item my $in = Recs::InputStream->new_magic()
+=item my $in = App::RecordStream::InputStream->new_magic()
 
 Provides GNU-style input semantics for scripts.  If there are arguments left in
 @ARGV, it will assume those are file names and make a set of chained streams
 for those files, returning the first stream.  If no files are specified, will
 open an InputStream on STDIN
 
-=item my $in = Recs::InpustStream->new_from_files(FILES)
+=item my $in = App::RecordStream::InpustStream->new_from_files(FILES)
 
 Takes an array of FILES and constructs a set of chained streams for those
 files.  Returns the first stream
@@ -63,7 +63,7 @@ files.  Returns the first stream
 
 =item my $record = $this->get_record();
 
-Retrieve the next L<Recs::Record> from the stream.  Will return a false value
+Retrieve the next L<App::RecordStream::Record> from the stream.  Will return a false value
 if no records are available.  If this stream has a NEXT stream specified in the
 constructor, this will continue to return Record objects until all chained
 streams are exhausted
@@ -78,8 +78,8 @@ use lib;
 use IO::String;
 use JSON qw(decode_json);
 
-use Recs::Record;
-require Recs::Operation;
+use App::RecordStream::Record;
+require App::RecordStream::Operation;
 
 my $ONE_OF = [qw(FH STRING FILE)];
 
@@ -201,14 +201,14 @@ sub get_record {
       $this->set_done();
 
       # This is ugly, reaching into the other class
-      Recs::Operation::set_current_filename($this->get_filename());
+      App::RecordStream::Operation::set_current_filename($this->get_filename());
 
       return $this->call_next_record();
    }
 
    # Direct bless done in the name of performance
    my $record = decode_json($line);
-   bless $record, 'Recs::Record';
+   bless $record, 'App::RecordStream::Record';
 
    return $record;
 }

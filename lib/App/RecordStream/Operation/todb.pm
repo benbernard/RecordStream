@@ -1,16 +1,16 @@
-package Recs::Operation::todb;
+package App::RecordStream::Operation::todb;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 use DBI;
 use Data::Dumper;
 use Tie::IxHash;
 
-use Recs::DBHandle;
-use Recs::Record;
+use App::RecordStream::DBHandle;
+use App::RecordStream::Record;
 
 sub init {
    my $this = shift;
@@ -39,7 +39,7 @@ sub init {
    $this->{'DEBUG'}      = $debug;
    $this->{'FIELDS'}     = $fields;
 
-   $this->{'DBH'} = Recs::DBHandle::get_dbh($this->_get_extra_args());
+   $this->{'DBH'} = App::RecordStream::DBHandle::get_dbh($this->_get_extra_args());
 
    if ( $drop_table ) {
       my $dbh = $this->{'DBH'};
@@ -160,7 +160,7 @@ sub usage {
 
 USAGE
 
-   return $usage . Recs::DBHandle::usage() .  <<EXAMPLES;
+   return $usage . App::RecordStream::DBHandle::usage() .  <<EXAMPLES;
 
 Examples:
    # Just put all the records into the recs table

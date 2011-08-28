@@ -1,4 +1,4 @@
-package Recs::Accumulator;
+package App::RecordStream::Accumulator;
 
 sub accept_record {
    my $this = shift;

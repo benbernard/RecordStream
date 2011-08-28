@@ -1,13 +1,13 @@
-package Recs::Operation::join;
+package App::RecordStream::Operation::join;
 
 use strict;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
-use Recs::Executor;
-use Recs::InputStream;
-use Recs::OutputStream;
-use Recs::Record;
+use App::RecordStream::Executor;
+use App::RecordStream::InputStream;
+use App::RecordStream::OutputStream;
+use App::RecordStream::Record;
 
 sub init {
    my $this = shift;
@@ -54,7 +54,7 @@ sub init {
 
 
    if ( $operation ) {
-      $this->{'OPERATION'} = Recs::Executor->transform_code($operation);
+      $this->{'OPERATION'} = App::RecordStream::Executor->transform_code($operation);
    }
 
    $this->create_db($dbfile, $dbkey);
@@ -67,7 +67,7 @@ sub create_db {
    my $file = shift;
    my $key  = shift;
 
-   my $db_stream = Recs::InputStream->new('FILE' => $file);
+   my $db_stream = App::RecordStream::InputStream->new('FILE' => $file);
    my %db;
    my $record;
 
@@ -113,12 +113,12 @@ sub accept_record {
          }
          else {
             if ($this->{'OPERATION'}) {
-               my $output_record = Recs::Record->new(%$db_record);
+               my $output_record = App::RecordStream::Record->new(%$db_record);
                $this->run_expression($output_record, $record);
                $this->push_record($output_record);
             }
             else {
-               $this->push_record(Recs::Record->new(%$record, %$db_record));
+               $this->push_record(App::RecordStream::Record->new(%$record, %$db_record));
             }
 
             if ($this->{'KEEP_LEFT'}) {
@@ -252,7 +252,7 @@ Operation:
    The expression provided is evaluated for every pair of db record and input
    record that have matching keys, in place of the default operation to
    overwrite input fields with db fields. The variable \$d is set to a
-   Recs::Record object for the db record, and \$i is set to a Recs::Record
+   App::RecordStream::Record object for the db record, and \$i is set to a App::RecordStream::Record
    object for the input record. The \$d record is used for the result. Thus, if
    you provide an empty operation, the result will contain only fields from the
    db record.

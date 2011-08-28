@@ -1,12 +1,12 @@
-package Recs::Aggregator::Covariance;
+package App::RecordStream::Aggregator::Covariance;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::Ord2Bivariate;
-use Recs::Aggregator;
+use App::RecordStream::Aggregator::Ord2Bivariate;
+use App::RecordStream::Aggregator;
 
-use base 'Recs::Aggregator::Ord2Bivariate';
+use base 'App::RecordStream::Aggregator::Ord2Bivariate';
 
 sub new
 {
@@ -37,8 +37,8 @@ sub short_usage
    return "find covariance of provided fields";
 }
 
-Recs::Aggregator::register_aggregator('cov', __PACKAGE__);
-Recs::Aggregator::register_aggregator('covariance', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('cov', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('covariance', __PACKAGE__);
 
 1;
 

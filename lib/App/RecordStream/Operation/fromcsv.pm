@@ -1,8 +1,8 @@
-package Recs::Operation::fromcsv;
+package App::RecordStream::Operation::fromcsv;
 
 use strict;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 use Text::CSV;
 
@@ -55,7 +55,7 @@ sub run_operation {
 
       my @values = @$row;
 
-      my $record = Recs::Record->new();
+      my $record = App::RecordStream::Record->new();
       for(my $i = 0; $i < @values; ++$i)
       {
          my $key = $this->{'FIELDS'}->[$i] || $i;

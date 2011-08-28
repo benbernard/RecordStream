@@ -1,4 +1,4 @@
-package Recs::ScreenPrinter;
+package App::RecordStream::ScreenPrinter;
 
 sub get_printer {
    my $this = shift;

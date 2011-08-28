@@ -1,8 +1,8 @@
-package Recs::Operation::fromre;
+package App::RecordStream::Operation::fromre;
 
 use strict;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 sub init {
    my $this = shift;
@@ -54,7 +54,7 @@ sub run_operation {
       chomp $line;
 
       if(my @groups = ($line =~ $this->get_pattern())) {
-         my $record = Recs::Record->new();
+         my $record = App::RecordStream::Record->new();
          my $index = 0;
 
          foreach my $value (@groups) {

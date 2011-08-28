@@ -1,12 +1,12 @@
-package Recs::Operation::fromxml;
+package App::RecordStream::Operation::fromxml;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 use XML::Simple;
-use Recs::Record;
+use App::RecordStream::Record;
 use LWP::UserAgent;
 use HTTP::Request;
 
@@ -83,7 +83,7 @@ sub push_value {
    my $default_hash = shift;
 
    if ( UNIVERSAL::isa($value, 'HASH') ) {
-      my $record = Recs::Record->new($value);
+      my $record = App::RecordStream::Record->new($value);
       foreach my $key ( keys %$default_hash ) {
          $record->{$key} = $default_hash->{$key};
       }
@@ -96,7 +96,7 @@ sub push_value {
       }
    }
    else {
-      my $record = Recs::Record->new(%$default_hash);
+      my $record = App::RecordStream::Record->new(%$default_hash);
       $record->{'value'} = $value;
       $this->push_record($record);
    }

@@ -1,15 +1,15 @@
-package Recs::Operation::generate;
+package App::RecordStream::Operation::generate;
 
 use strict;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
-use Recs::Executor;
+use App::RecordStream::Executor;
 
 use Data::Dumper;
-use Recs::InputStream;
-use Recs::Record;
-use Recs::Executor;
+use App::RecordStream::InputStream;
+use App::RecordStream::Record;
+use App::RecordStream::Executor;
 
 sub init {
    my $this = shift;
@@ -34,7 +34,7 @@ sub init {
    }
 
    my $expression      = shift @{$this->_get_extra_args()};
-   my $executor        = Recs::Executor->new("qq\000" . $expression . "\000");
+   my $executor        = App::RecordStream::Executor->new("qq\000" . $expression . "\000");
    $this->{'EXECUTOR'} = $executor;
 }
 
@@ -59,13 +59,13 @@ sub accept_record {
       next;
    }
 
-   my $generator_stream = Recs::InputStream->new(FH => $pipe);
+   my $generator_stream = App::RecordStream::InputStream->new(FH => $pipe);
 
    while(my $generated_record = $generator_stream->get_record()) {
       ${$generated_record->guess_key_from_spec($this->{'KEYCHAIN'})} = $record->as_hashref();
       $this->push_record($generated_record);
    }
-   # Recs::InputStream closes the file handle for us
+   # App::RecordStream::InputStream closes the file handle for us
 }
 
 sub add_help_types {
@@ -82,9 +82,9 @@ Usage: recs-generate <args> <command> [<files>]
    then output with a chain link back to the original record.
 
    <command> is executed opened as a command for each record of input (or
-   records from <files>) with \$r set to a Recs::Record object. The output
+   records from <files>) with \$r set to a App::RecordStream::Record object. The output
    lines of each command execution are interpreted as a serialized Recs records,
-   one per line. Each such line is reconstituted as a Recs::Record, and the
+   one per line. Each such line is reconstituted as a App::RecordStream::Record, and the
    '_chain' key is added to the record before it is printed. The value of the
    '_chain' key is the record that was originally passed to the eval expression.
 

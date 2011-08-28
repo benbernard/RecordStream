@@ -1,8 +1,8 @@
-package Recs::Record;
+package App::RecordStream::Record;
 
 =head1 NAME
 
-Recs::Record
+App::RecordStream::Record
 
 =head1 AUTHOR
 
@@ -16,14 +16,14 @@ glorified hash with some helper methods.
 
 =head1 SYNOPSIS
 
-    use Recs::Record;
-    my $record = Recs::Record->new("name" => "John Smith", "age" => 39);
+    use App::RecordStream::Record;
+    my $record = App::RecordStream::Record->new("name" => "John Smith", "age" => 39);
 
 =head1 CONSTRUCTOR
 
 =over 4
 
-=item Recs::Record->new(%hash);
+=item App::RecordStream::Record->new(%hash);
 
 Construct a new record with provided keys and values.  Can take a single
 argument which is a hash ref.  If this form is used, it will bless that hash
@@ -116,8 +116,8 @@ Returns a list of keys that the spec expanded out to.  Arrrays will still be
 
 =item $keyspecs_array_ref = $this->get_keys_for_group($key_group, $rerun)
 
-Will create a Recs::KeyGroups (if necessary) and return the keyspecs that match
-the given group.  See --help-keyspecs or Recs::KeyGroups for more information.
+Will create a App::RecordStream::KeyGroups (if necessary) and return the keyspecs that match
+the given group.  See --help-keyspecs or App::RecordStream::KeyGroups for more information.
 
 Setting rerun to true will cause every record this is called on to re-do
 keygroup calculation
@@ -127,12 +127,12 @@ keygroup calculation
 Returns the values in this record for a key group.  Will rerun keygroup parsing
 if $rerun is passed
 
-=item $comparators_ref = Recs::Record::get_comparators(@specs)
+=item $comparators_ref = App::RecordStream::Record::get_comparators(@specs)
 
 Calls get_comparator for each element of @specs and returns the results
 together in an array reference.
 
-=item $comparator = Recs::Record::get_comparator($spec)
+=item $comparator = App::RecordStream::Record::get_comparator($spec)
 
 Produces a comparator function (which takes two records and returns similarly
 to <=> or cmp) from the provided $spec.  $spec should be like "<field>" for
@@ -141,7 +141,7 @@ or "-" for descending and type is one of the known types.  Type include "",
 "l", "lex", or "lexical" for lexical sort (using cmp), and "n", "num" or
 "numeric" for numeric sort (using <=>).
 
-=item @sorted_records = Recs::Record::sort($records_ref, @specs)
+=item @sorted_records = App::RecordStream::Record::sort($records_ref, @specs)
 
 Sorts an array ref of records using the provided specs, returns an array of
 records.
@@ -153,7 +153,7 @@ records.
 use strict;
 use warnings;
 
-use Recs::KeyGroups;
+use App::RecordStream::KeyGroups;
 
 use Data::Dumper;
 
@@ -620,7 +620,7 @@ sub _guess_key_recurse {
 
       my $group = $key_groups->{$group_string};
       if ( ! $group ) {
-         my $new_group                = Recs::KeyGroups->new($group_string);
+         my $new_group                = App::RecordStream::KeyGroups->new($group_string);
          $key_groups->{$group_string} = $new_group;
          $group                       = $new_group;
       }

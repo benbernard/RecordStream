@@ -1,9 +1,9 @@
-package Recs::Operation::fromtcpdump;
+package App::RecordStream::Operation::fromtcpdump;
 
 use strict;
 use warnings;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 use NetPacket::Ethernet qw(:ALL);
 use NetPacket::IP qw(:ALL);
@@ -165,7 +165,7 @@ sub create_packet_record {
    $record->{'type'} = $type;
    $record->{'data'} = $data if ( $this->{'DATA'} );
 
-   return Recs::Record->new($record);
+   return App::RecordStream::Record->new($record);
 }
 
 sub attach_dns_info {

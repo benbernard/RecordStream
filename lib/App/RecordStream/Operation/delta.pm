@@ -1,15 +1,15 @@
-package Recs::Operation::delta;
+package App::RecordStream::Operation::delta;
 
 use strict;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 sub init
 {
    my $this = shift;
    my $args = shift;
 
-   my $key_groups = Recs::KeyGroups->new();
+   my $key_groups = App::RecordStream::KeyGroups->new();
    my $spec = {
       "key|k=s" => sub { $key_groups->add_groups($_[1]); },
    };

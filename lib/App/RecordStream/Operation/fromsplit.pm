@@ -1,8 +1,8 @@
-package Recs::Operation::fromsplit;
+package App::RecordStream::Operation::fromsplit;
 
 use strict;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 sub init {
    my $this = shift;
@@ -69,7 +69,7 @@ sub run_operation {
    while(my $line = <>) {
       chomp $line;
 
-      my $record = Recs::Record->new();
+      my $record = App::RecordStream::Record->new();
       my $index = 0;
 
       foreach my $value (@{$this->get_values_for_line($line)}) {

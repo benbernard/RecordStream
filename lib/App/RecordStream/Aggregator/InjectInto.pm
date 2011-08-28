@@ -1,8 +1,8 @@
-package Recs::Aggregator::InjectInto;
+package App::RecordStream::Aggregator::InjectInto;
 
-use Recs::Aggregator;
+use App::RecordStream::Aggregator;
 
-use base qw(Recs::Aggregator::Aggregation);
+use base qw(App::RecordStream::Aggregator::Aggregation);
 
 use strict;
 use lib;

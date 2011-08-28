@@ -1,14 +1,14 @@
-package Recs::Operation::fromkv;
+package App::RecordStream::Operation::fromkv;
 
 use strict;
 
-use base qw(Recs::Operation);
+use base qw(App::RecordStream::Operation);
 
 use strict;
 use warnings;
 
 use Getopt::Long;
-use Recs::OutputStream;
+use App::RecordStream::OutputStream;
 
 sub init {
    my $this = shift;
@@ -59,7 +59,7 @@ sub run_operation {
             $current_record->{$pair[0]} = $pair[1] if scalar(@pair) == 2;
          }
 
-         $this->push_record(Recs::Record->new($current_record));
+         $this->push_record(App::RecordStream::Record->new($current_record));
       }
    }
 }

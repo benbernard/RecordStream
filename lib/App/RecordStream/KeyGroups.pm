@@ -1,4 +1,4 @@
-package Recs::KeyGroups;
+package App::RecordStream::KeyGroups;
 
 use strict;
 use warnings;
@@ -30,10 +30,10 @@ sub add_groups {
    foreach my $group_spec (split(',', $groups)) {
       my $group;
       if ( $group_spec =~ m/^!/ ) {
-         $group = Recs::KeyGroups::Group->new($group_spec);
+         $group = App::RecordStream::KeyGroups::Group->new($group_spec);
       }
       else {
-         $group = Recs::KeyGroups::KeySpec->new($group_spec);
+         $group = App::RecordStream::KeyGroups::KeySpec->new($group_spec);
       }
 
       push @{$this->{'KEY_GROUPS'}}, $group;
@@ -98,7 +98,7 @@ HELP
 
 1;
 
-package Recs::KeyGroups::KeySpec;
+package App::RecordStream::KeyGroups::KeySpec;
 
 sub new {
    my $class = shift;
@@ -124,7 +124,7 @@ sub get_fields {
 
 1;
 
-package Recs::KeyGroups::Group;
+package App::RecordStream::KeyGroups::Group;
 
 my $VALID_OPTIONS = {
    d          => 'depth',

@@ -1,10 +1,10 @@
-package Recs::Operation::tocsv;
+package App::RecordStream::Operation::tocsv;
 
 use strict;
 
-use base qw(Recs::Operation Recs::ScreenPrinter);
+use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);
 
-use Recs::Record;
+use App::RecordStream::Record;
 use Text::CSV;
 
 sub init {
@@ -12,7 +12,7 @@ sub init {
    my $args = shift;
 
    my $header = 1;
-   my $key_groups = Recs::KeyGroups->new();
+   my $key_groups = App::RecordStream::KeyGroups->new();
    my $spec = {
       "key|k=s"     => sub { $key_groups->add_groups($_[1]); },
       "noheader|nh" => sub { $header = 0 },

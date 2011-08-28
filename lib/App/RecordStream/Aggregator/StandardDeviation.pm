@@ -1,12 +1,12 @@
-package Recs::Aggregator::StandardDeviation;
+package App::RecordStream::Aggregator::StandardDeviation;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::Ord2Univariate;
-use Recs::Aggregator;
+use App::RecordStream::Aggregator::Ord2Univariate;
+use App::RecordStream::Aggregator;
 
-use base 'Recs::Aggregator::Ord2Univariate';
+use base 'App::RecordStream::Aggregator::Ord2Univariate';
 
 sub new
 {
@@ -37,7 +37,7 @@ sub short_usage
    return "find standard deviation of provided field";
 }
 
-Recs::Aggregator::register_aggregator('stddev', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('stddev', __PACKAGE__);
 
 1;
 

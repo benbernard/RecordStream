@@ -1,4 +1,4 @@
-package Recs::Site;
+package App::RecordStream::Site;
 
 use strict;
 use warnings;
@@ -52,7 +52,7 @@ use Carp qw(croak);
 
     my $name     = delete($args{'name'})     || croak "No name given in registration?!\n";
     my $priority = delete($args{'priority'}) || 0;
-    my $path     = delete($args{'path'})     || "Recs::Site::$name";
+    my $path     = delete($args{'path'})     || "App::RecordStream::Site::$name";
 
     $registry{$name} =
     {

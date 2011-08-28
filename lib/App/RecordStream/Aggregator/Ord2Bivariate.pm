@@ -1,12 +1,12 @@
-package Recs::Aggregator::Ord2Bivariate;
+package App::RecordStream::Aggregator::Ord2Bivariate;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::MapReduce::FieldSet;
-use Recs::Aggregator;
+use App::RecordStream::Aggregator::MapReduce::FieldSet;
+use App::RecordStream::Aggregator;
 
-use base 'Recs::Aggregator::MapReduce::FieldSet';
+use base 'App::RecordStream::Aggregator::MapReduce::FieldSet';
 
 sub new
 {

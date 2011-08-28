@@ -1,12 +1,12 @@
-package Recs::Aggregator::Count;
+package App::RecordStream::Aggregator::Count;
 
 use strict;
 use lib;
 
-use Recs::Aggregator::MapReduce;
-use Recs::Aggregator;
+use App::RecordStream::Aggregator::MapReduce;
+use App::RecordStream::Aggregator;
 
-use base 'Recs::Aggregator::MapReduce';
+use base 'App::RecordStream::Aggregator::MapReduce';
 
 sub new
 {
@@ -43,7 +43,7 @@ sub short_usage
    return "counts (non-unique) records";
 }
 
-Recs::Aggregator::register_aggregator('count', __PACKAGE__);
-Recs::Aggregator::register_aggregator('ct', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('count', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('ct', __PACKAGE__);
 
 1;
