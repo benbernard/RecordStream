@@ -16,6 +16,8 @@ WriteMakefile(
    AUTHOR        => 'Ben Bernard - perlhacker@benjaminbernard.com\n'
                     . 'Keith Amling - keith.amling@gmail.com',
    LICENSE       => 'MIT',
+   dist          => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
+   clean         => { FILES => 'App-RecordStream-*' },
    PREREQ_PM     => {
      'Carp'                => 0,
      'DBD::SQLite'         => 0,
@@ -41,4 +43,5 @@ WriteMakefile(
    MAN3PODS => {
       'README.pod'                     => '$(INST_MAN3DIR)/RecordStream.3',
    },
+
 );
