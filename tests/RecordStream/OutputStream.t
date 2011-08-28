@@ -2,8 +2,6 @@ use Test::More qw(no_plan);
 use IO::String;
 use Data::Dumper;
 
-my $base_dir = $ENV{'BASE_TEST_DIR'} . '/Recs';
-
 BEGIN { use_ok( 'App::RecordStream::OutputStream' ) };
 
 use IO::String;

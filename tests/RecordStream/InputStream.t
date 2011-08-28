@@ -2,7 +2,6 @@ use Test::More qw(no_plan);
 use IO::String;
 use Data::Dumper;
 
-my $base_dir = $ENV{'BASE_TEST_DIR'} . '/Recs';
 my $files_dir = $ENV{'BASE_TEST_DIR'} . '/files';
 
 BEGIN { use_ok( 'App::RecordStream::InputStream' ) };
