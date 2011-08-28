@@ -252,10 +252,10 @@ Operation:
    The expression provided is evaluated for every pair of db record and input
    record that have matching keys, in place of the default operation to
    overwrite input fields with db fields. The variable \$d is set to a
-   App::RecordStream::Record object for the db record, and \$i is set to a App::RecordStream::Record
-   object for the input record. The \$d record is used for the result. Thus, if
-   you provide an empty operation, the result will contain only fields from the
-   db record.
+   App::RecordStream::Record object for the db record, and \$i is set to a 
+   App::RecordStream::Record object for the input record. The \$d record is
+   used for the result. Thus, if you provide an empty operation, the result
+   will contain only fields from the db record.
 
 Examples:
    Join type from STDIN and typeName from dbfile
