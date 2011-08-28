@@ -10,10 +10,10 @@ closedir $dh;
 
 WriteMakefile(
    NAME          => 'App::RecordStream',
-   VERSION       => '3.4',
+   VERSION       => '3.4_01',
    EXE_FILES     => \@scripts,
    ABSTRACT_FROM => 'README.pod',
-   AUTHOR        => 'Ben Bernard - perlhacker@benjaminbernard.com\n'
+   AUTHOR        => 'Ben Bernard - perlhacker@benjaminbernard.com '
                     . 'Keith Amling - keith.amling@gmail.com',
    LICENSE       => 'MIT',
    dist          => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
