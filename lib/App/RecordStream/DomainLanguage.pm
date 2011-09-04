@@ -57,6 +57,17 @@ sub long_usage {
          To aggregate the sums of all the fields beginning with "t"
             for_field(qr/^t/, 'sum(\$f)')
 
+   for_field(qr/.../, qr/.../, '...')
+      Takes two regexes and a snippet of code.  Creates an aggregator that
+      creates a map.  Keys in the map correspond to pairs of fields chosen by
+      matching the regexes against the fields from input records.  Values in
+      the map are produced by aggregators which the snippet must act as a
+      factory for (\$f1 is the first field, \$f2 is the second field).
+
+      Example(s):
+         To find the covariance of all x-named fields with all y-named fields:
+            for_field(qr/^x/, qr/^y/, 'covar(\$f1, \$f2)')
+
    map_reduce_agg('...', '...'[, '...'])
    map_reduce_aggregator('...', '...'[, '...'])
    mr_agg('...', '...'[, '...'])

@@ -85,6 +85,74 @@ my @tests =
         $CAST_FAILURE,
     ],
     [
+        "for_field(qr/^x/, qr/^y/, 'ct')",
+        sub
+        {
+            my $aggr = shift;
+
+            my $cookie = $aggr->initial();
+
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 1, 'x2' => 4, 'y1' => 4, 'y2' => 1));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 2, 'x2' => 4, 'y1' => 1, 'y2' => 4));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 1, 'x2' => 2, 'y1' => 4, 'y2' => 2));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 2, 'x2' => 2, 'y2' => 2));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 4, 'y1' => 3));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 2, 'y1' => 1, 'y2' => 3));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x2' => 2, 'y1' => 2, 'y2' => 4));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 4, 'x2' => 4, 'y1' => 2, 'y2' => 1));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x2' => 2, 'y2' => 4));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 4, 'x2' => 2, 'y1' => 1, 'y2' => 1));
+
+            my $value = $aggr->squish($cookie);
+
+            my $ans =
+            {
+                'x1,y1' => 7,
+                'x1,y2' => 7,
+                'x2,y1' => 6,
+                'x2,y2' => 8,
+            };
+
+            is_deeply($value, $ans);
+        },
+        $CAST_FAILURE,
+        $CAST_FAILURE,
+    ],
+    [
+        "for_field(qr/^x/, qr/^y/, 'covar(\$f1, \$f2)')",
+        sub
+        {
+            my $aggr = shift;
+
+            my $cookie = $aggr->initial();
+
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 1, 'x2' => 4, 'y1' => 4, 'y2' => 1));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 2, 'x2' => 4, 'y1' => 1, 'y2' => 4));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 1, 'x2' => 2, 'y1' => 4, 'y2' => 2));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 2, 'x2' => 2, 'y2' => 2));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 4, 'y1' => 3));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 2, 'y1' => 1, 'y2' => 3));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x2' => 2, 'y1' => 2, 'y2' => 4));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 4, 'x2' => 4, 'y1' => 2, 'y2' => 1));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x2' => 2, 'y2' => 4));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new('x1' => 4, 'x2' => 2, 'y1' => 1, 'y2' => 1));
+
+            my $value = $aggr->squish($cookie);
+
+            my $ans =
+            {
+                'x1,y1' => -0.73469387755102,
+                'x1,y2' => -0.428571428571428,
+                'x2,y1' => 0,
+                'x2,y2' => -0.28125,
+            };
+
+            is_deeply($value, $ans);
+        },
+        $CAST_FAILURE,
+        $CAST_FAILURE,
+    ],
+    [
         "rec",
         $CAST_FAILURE,
         sub
