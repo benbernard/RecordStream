@@ -3,20 +3,21 @@ use App::RecordStream::Test::OperationHelper;
 use strict;
 use warnings;
 
-my $has_pcap = 0;
 BEGIN {
-  eval { 
-    require Net::Pcap;
-    $has_pcap = 1;
-    use_ok( 'App::RecordStream::Operation::fromtcpdump' );
-  };
+   eval { 
+      require Net::Pcap;
+   };
 
-  if ( $@ ) {
-    use Test::More skip_all => 'Missing Net::Pcap';
-  }
-  else {
-    use Test::More qw(no_plan);
-  }
+   if ( $@ ) {
+      warn $@;
+      require Test::More;
+      import Test::More skip_all => 'Missing Net::Pcap';
+   }
+   else {
+      require Test::More;
+      import Test::More qw(no_plan);
+      use_ok( 'App::RecordStream::Operation::fromtcpdump' );
+   }
 };
 
 my $solution = <<SOLUTION;
