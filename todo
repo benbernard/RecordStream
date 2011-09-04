@@ -13,6 +13,7 @@ recs-join - Join in sqlite for larger db streams
 recs-sort, recs-todb - need value options for keyspec groups
 recs-fromhtmltable - parse an html file, extract data from a table
 recs-toptable - should take sort specs for the "partial records" that are it's X and Y labels, furthermore, sort should understand e.g.  "lex*" to mean "lex, but with 'ALL' at the end" and "*lex" for "ALL" at the beginning
+recs-collate - use Getopt::Long's multiple option values supports to provide easier aggregators, e.g.  something like --sum x
 
 Aribritation Collation clumps
   - suportt week over week
