@@ -167,5 +167,6 @@ lib/App/RecordStream/InputStream.pm
 lib/App/RecordStream/LRUSheriff.pm
 Makefile.old
 Changes
+generate_manifest.sh
 Makefile.PL
 LICENSE
