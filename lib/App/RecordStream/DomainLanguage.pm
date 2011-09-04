@@ -30,6 +30,22 @@ HELP
 sub long_usage {
    return <<HELP;
 
+   ii_agg('...', '...'[, '...'])
+   ii_aggregator('...', '...'[, '...'])
+   inject_into_agg('...', '...'[, '...'])
+   inject_into_aggregator('...', '...'[, '...'])
+      Take an initial snippet, a combine snippet, and an optional squish
+      snippet to produce an ad-hoc aggregator based on inject into.  The
+      initial snippet produces the aggregate value for an empty collection,
+      then combine takes \$a representing the aggregate value so far and \$r
+      representing the next record to add and returns the new aggregate value.
+      Finally, the squish snippet takes \$a representing the final aggregate
+      value so far and produces the final answer for the aggregator.
+
+      Example(s):
+         Track count and sum to produce average:
+            ii_agg('[0, 0]', '[\$a->[0] + 1, \$a->[1] + {{ct}}]', '\$a->[1] / \$a->[0]')
+
    for_field(qr/.../, '...')
       Takes a regex and a snippet of code.  Creates an aggregator that creates
       a map.  Keys in the map corresponde to fields chosen by matching the
@@ -40,6 +56,21 @@ sub long_usage {
       Example(s):
          To aggregate the sums of all the fields beginning with "t"
             for_field(qr/^t/, 'sum(\$f)')
+
+   map_reduce_agg('...', '...'[, '...'])
+   map_reduce_aggregator('...', '...'[, '...'])
+   mr_agg('...', '...'[, '...'])
+   mr_aggregator('...', '...'[, '...'])
+      Take a map snippet, a reduce snippet, and an optional squish snippet to
+      produce an ad-hoc aggregator based on map reduce.  The map snippet takes
+      \$r representing a record and returns its mapped value.  The reduce
+      snippet takes \$a and \$b representing two mapped values and combines
+      them.  Finally, the squish snippet takes a mapped value \$a representing
+      all the records and produces the final answer for the aggregator.
+
+      Example(s):
+         Track count and sum to produce average:
+            mr_agg('[1, {{ct}}]', '[\$a->[0] + \$b->[0], \$a->[1] + \$b->[1]]', '\$a->[1] / \$a->[0]')
 
    rec()
    record()
