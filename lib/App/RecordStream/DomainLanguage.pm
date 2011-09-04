@@ -48,10 +48,10 @@ sub long_usage {
 
    for_field(qr/.../, '...')
       Takes a regex and a snippet of code.  Creates an aggregator that creates
-      a map.  Keys in the map corresponde to fields chosen by matching the
-      regex against the fields from input records.  Values in the map are
-      produced by aggregators which the snippet must act as a factory for (\$f
-      is the field).
+      a map.  Keys in the map correspond to fields chosen by matching the regex
+      against the fields from input records.  Values in the map are produced by
+      aggregators which the snippet must act as a factory for (\$f is the
+      field).
 
       Example(s):
          To aggregate the sums of all the fields beginning with "t"
