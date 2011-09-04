@@ -9,7 +9,6 @@ BEGIN {
    };
 
    if ( $@ ) {
-      warn $@;
       require Test::More;
       import Test::More skip_all => 'Missing Net::Pcap';
    }
