@@ -1,7 +1,5 @@
 package App::RecordStream::Aggregator::MapReduce::FieldSet;
 
-our $VERSION = "3.4";
-
 use strict;
 use lib;
 

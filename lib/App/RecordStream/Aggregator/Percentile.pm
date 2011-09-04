@@ -1,7 +1,5 @@
 package App::RecordStream::Aggregator::Percentile;
 
-our $VERSION = "3.4";
-
 use strict;
 use lib;
 

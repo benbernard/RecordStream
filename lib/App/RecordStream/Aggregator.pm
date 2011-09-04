@@ -1,7 +1,5 @@
 package App::RecordStream::Aggregator;
 
-our $VERSION = "3.4";
-
 use App::RecordStream::Site;
 
 use strict;

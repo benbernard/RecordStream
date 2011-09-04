@@ -1,7 +1,5 @@
 package App::RecordStream::Test::OperationHelper;
 
-our $VERSION = "3.4";
-
 use strict;
 use warnings;
 

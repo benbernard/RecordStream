@@ -1,7 +1,5 @@
 package App::RecordStream::Operation::toprettyprint;
 
-our $VERSION = "3.4";
-
 use strict;
 
 use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);

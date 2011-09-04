@@ -1,7 +1,5 @@
 package App::RecordStream::Operation::fromtcpdump;
 
-our $VERSION = "3.4";
-
 use strict;
 use warnings;
 

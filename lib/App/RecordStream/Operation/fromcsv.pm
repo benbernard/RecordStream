@@ -1,7 +1,5 @@
 package App::RecordStream::Operation::fromcsv;
 
-our $VERSION = "3.4";
-
 use strict;
 
 use base qw(App::RecordStream::Operation);

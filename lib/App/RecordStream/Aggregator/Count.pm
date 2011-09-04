@@ -1,7 +1,5 @@
 package App::RecordStream::Aggregator::Count;
 
-our $VERSION = "3.4";
-
 use strict;
 use lib;
 

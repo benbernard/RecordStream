@@ -1,7 +1,5 @@
 package App::RecordStream::ScreenPrinter;
 
-our $VERSION = "3.4";
-
 sub get_printer {
    my $this = shift;
    $this->{'PRINTER'} ||= sub { print $_[0] };

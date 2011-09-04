@@ -72,8 +72,6 @@ streams are exhausted
 
 =cut
 
-our $VERSION = "3.4";
-
 use strict;
 use lib;
 
