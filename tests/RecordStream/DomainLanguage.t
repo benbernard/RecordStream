@@ -113,6 +113,45 @@ my @tests =
         $CAST_FAILURE,
     ],
     [
+        "ii_agg('0', '\$a+{{ct}}', '\$a')",
+        sub
+        {
+            my $aggr = shift;
+
+            my $cookie = $aggr->initial();
+
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("ct" => 1));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("ct" => 2));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("ct" => 3));
+
+            my $value = $aggr->squish($cookie);
+
+            is_deeply($value, 6);
+        },
+        $CAST_FAILURE,
+        $CAST_FAILURE,
+    ],
+    [
+        "ii_agg('[0, 0]', '[\$a->[0] + 1, \$a->[1] + {{ct}}]', '\$a->[1] / \$a->[0]')",
+        sub
+        {
+            my $aggr = shift;
+
+            my $cookie = $aggr->initial();
+
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("ct" => 1));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("ct" => 2));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("ct" => 3));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("ct" => 4));
+
+            my $value = $aggr->squish($cookie);
+
+            is_deeply($value, 2.5);
+        },
+        $CAST_FAILURE,
+        $CAST_FAILURE,
+    ],
+    [
         "sum(ct)",
         $CAST_FAILURE,
         $CAST_FAILURE,
