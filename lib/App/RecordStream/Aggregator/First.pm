@@ -4,15 +4,13 @@ use strict;
 use lib;
 
 use App::RecordStream::Aggregator::InjectInto::Field;
+use App::RecordStream::DomainLanguage::Registry;
+
 use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
-sub new
-{
-   my $class = shift;
-   my @args  = @_;
+#sub new -- passed through
 
-   return $class->SUPER::new(@args);
-}
+#sub new_from_valuation -- passed through
 
 sub combine_field
 {
@@ -36,5 +34,7 @@ sub long_usage
 }
 
 App::RecordStream::Aggregator::register_aggregator('first', __PACKAGE__);
+
+App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'first', 'VALUATION');
 
 1;

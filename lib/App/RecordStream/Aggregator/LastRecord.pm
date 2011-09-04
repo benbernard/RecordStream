@@ -3,6 +3,9 @@ package App::RecordStream::Aggregator::LastRecord;
 use strict;
 use lib;
 
+use App::RecordStream::Aggregator::InjectInto;
+use App::RecordStream::DomainLanguage::Registry;
+
 use base qw(App::RecordStream::Aggregator::InjectInto);
 
 sub new
@@ -46,5 +49,8 @@ sub argct
 
 App::RecordStream::Aggregator::register_aggregator('lastrecord', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('lastrec', __PACKAGE__);
+
+App::RecordStream::DomainLanguage::Registry::register_ctor(__PACKAGE__, 'lastrecord');
+App::RecordStream::DomainLanguage::Registry::register_ctor(__PACKAGE__, 'lastrec');
 
 1;

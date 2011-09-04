@@ -3,16 +3,14 @@ package App::RecordStream::Aggregator::CountBy;
 use strict;
 use warnings;
 
+use App::RecordStream::Aggregator::InjectInto::Field;
+use App::RecordStream::DomainLanguage::Registry;
+
 use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
-sub new
-{
-   my $class = shift;
-   my $field = shift;
+#sub new -- passed through
 
-   my $this = $class->SUPER::new($field);
-   return $this;
-}
+#sub new_from_valuation -- passed through
 
 sub initial
 {
@@ -63,5 +61,8 @@ sub argct
 
 App::RecordStream::Aggregator::register_aggregator('countby', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('cb', __PACKAGE__);
+
+App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'countby', 'VALUATION');
+App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'cb', 'VALUATION');
 
 1;

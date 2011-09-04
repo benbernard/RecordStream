@@ -7,7 +7,7 @@ use base qw(App::RecordStream::Accumulator App::RecordStream::Operation App::Rec
 
 use App::RecordStream::OutputStream;
 
-# TODO: zOMG!  This format is so ugly it hurts.  Think of something better.
+# TODO: amling, this format is so ugly it hurts.  Think of something better.
 
 sub init {
    my $this = shift;

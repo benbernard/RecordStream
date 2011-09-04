@@ -4,17 +4,32 @@ use strict;
 use lib;
 
 use App::RecordStream::Aggregator;
+use App::RecordStream::DomainLanguage::Registry;
+use App::RecordStream::DomainLanguage::Valuation::KeySpec;
+
 use base qw(App::RecordStream::Aggregator::Aggregation);
 
 sub new
 {
-   my ($class, $delim, $field) = @_;
+   my $class = shift;
+   my $delim = shift;
+   my $field = shift;
+
+   return new_from_valuation($class, $delim, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($field));
+}
+
+sub new_from_valuation
+{
+   my $class = shift;
+   my $delim = shift;
+   my $valuation = shift;
 
    my $this =
    {
-      'field' => $field,
+      'valuation' => $valuation,
       'delim' => $delim,
    };
+
    bless $this, $class;
 
    return $this;
@@ -53,7 +68,8 @@ sub combine
 {
    my ($this, $cookie, $record) = @_;
 
-   my $value = ${$record->guess_key_from_spec($this->{'field'})};
+   my $value = $this->{'valuation'}->evaluate_record($record);
+
    $cookie->{$value} = 1;
 
    return $cookie;
@@ -61,5 +77,8 @@ sub combine
 
 App::RecordStream::Aggregator::register_aggregator('uconcatenate', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('uconcat', __PACKAGE__);
+
+App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'uconcatenate', 'SCALAR', 'VALUATION');
+App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'uconcat', 'SCALAR', 'VALUATION');
 
 1;

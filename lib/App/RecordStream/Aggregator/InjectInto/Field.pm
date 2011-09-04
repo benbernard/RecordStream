@@ -3,6 +3,10 @@ package App::RecordStream::Aggregator::InjectInto::Field;
 use strict;
 use lib;
 
+use App::RecordStream::DomainLanguage::Registry;
+use App::RecordStream::DomainLanguage::Valuation::KeySpec;
+use App::RecordStream::Aggregator::InjectInto;
+
 use base qw(App::RecordStream::Aggregator::InjectInto);
 
 sub new
@@ -10,8 +14,17 @@ sub new
    my $class = shift;
    my $field = shift;
 
-   my $this = {
-      'field' => $field,
+   return new_from_valuation($class, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($field));
+}
+
+sub new_from_valuation
+{
+   my $class = shift;
+   my $valuation = shift;
+
+   my $this =
+   {
+      'valuation' => $valuation,
    };
 
    bless $this, $class;
@@ -30,20 +43,22 @@ sub combine
    my $cookie = shift;
    my $record = shift;
 
-   my $value = ${$record->guess_key_from_spec($this->get_field())};
+   my $value = $this->get_valuation()->evaluate_record($record);
 
-   if ( defined $value ) {
+   if ( defined $value )
+   {
       return $this->combine_field($cookie, $value);
    }
-   else {
+   else
+   {
       return $cookie;
    }
 }
 
-sub get_field
+sub get_valuation
 {
     my $this = shift;
-    return $this->{'field'};
+    return $this->{'valuation'};
 }
 
 sub squish
@@ -57,6 +72,5 @@ sub argct
 {
    return 1;
 }
-
 
 1;

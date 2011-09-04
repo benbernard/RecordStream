@@ -5,7 +5,12 @@ use warnings;
 
 use base qw(App::RecordStream::Operation);
 
+use App::RecordStream::Aggregator::Last;
 use App::RecordStream::Aggregator;
+use App::RecordStream::DomainLanguage;
+use App::RecordStream::DomainLanguage::Executor;
+use App::RecordStream::DomainLanguage::Library;
+use App::RecordStream::DomainLanguage::Value;
 use App::RecordStream::LRUSheriff;
 
 sub init {
@@ -15,6 +20,7 @@ sub init {
    App::RecordStream::Aggregator::load_aggregators();
 
    my @aggregators;
+   my %dlaggregators;
    my $size = undef;
    my $cube = 0;
    my $cube_default = "ALL";
@@ -23,10 +29,13 @@ sub init {
    my $aggregator = 0;
 
    my $key_groups = App::RecordStream::KeyGroups->new();
+   my %dlkeys;
 
    my $spec = {
       "key|k=s"           => sub { $key_groups->add_groups($_[1]); },
+      "dlkey=s"           => sub { build_dlkey(\%dlkeys, $_[1]); },
       "aggregator|a=s"    => sub { push @aggregators, split(/:/, $_[1]); },
+      "dlaggregator=s"    => sub { build_dlaggregator(\%dlaggregators, $_[1]); },
       "size|sz|n=i"       => \$size,
       "adjacent|1"        => sub { $size = 1; },
       "cube|c"            => \$cube,
@@ -49,12 +58,16 @@ sub init {
       die sub { App::RecordStream::Aggregator::show_aggregator($aggregator) };
    }
 
-   die "Must specify --key or --aggregator\n" unless ( $key_groups->has_any_group() || @aggregators );
+   die "Must specify --key or --dlkey or --aggregator or --dlaggregator\n" unless ( $key_groups->has_any_group() || %dlkeys || @aggregators || %dlaggregators );
 
    my $aggregator_objects = App::RecordStream::Aggregator::make_aggregators(@aggregators);
+
+   $aggregator_objects = {%$aggregator_objects, %dlaggregators};
+
    my $lru_sheriff = App::RecordStream::LRUSheriff->new();
 
    $this->{'KEY_GROUPS'}         = $key_groups;
+   $this->{'DLKEYS'}             = \%dlkeys;
    $this->{'AGGREGATORS'}        = $aggregator_objects;
    $this->{'SIZE'}               = $size;
    $this->{'CUBE'}               = $cube;
@@ -62,6 +75,36 @@ sub init {
    $this->{'LRU_SHERIFF'}        = $lru_sheriff;
    $this->{'CUBE_DEFAULT'}       = $cube_default;
    $this->{'SEEN_RECORD'}        = 0;
+}
+
+sub build_dlkey {
+   my $dlkeys_ref = shift;
+   my $string = shift;
+
+   my $name;
+   if($string =~ s/^([^=]*)=//) {
+      $name = $1;
+   }
+   else {
+      die "Bad domain language key option: " . $string;
+   }
+
+   $dlkeys_ref->{$name} = App::RecordStream::DomainLanguage::Snippet->new($string)->evaluate_as('VALUATION');
+}
+
+sub build_dlaggregator {
+   my $dlaggregators_ref = shift;
+   my $string = shift;
+
+   my $name;
+   if($string =~ s/^([^=]*)=//) {
+      $name = $1;
+   }
+   else {
+      die "Bad domain language aggregator option: " . $string;
+   }
+
+   $dlaggregators_ref->{$name} = App::RecordStream::DomainLanguage::Snippet->new($string)->evaluate_as('AGG');
 }
 
 sub accept_record {
@@ -175,9 +218,17 @@ sub output {
 
    my $record = App::RecordStream::Aggregator::map_squish($aggregators, $aggregaotr_values);
 
+   my $next_value_index = 0;
+
+   # first key groups
    my $keys = $this->{'KEYS'};
-   for(my $i = 0; $i < @$keys; ++$i) {
-      ${$record->guess_key_from_spec($keys->[$i])} = $record_keys->[$i];
+   for my $key (@$keys) {
+      ${$record->guess_key_from_spec($key)} = $record_keys->[$next_value_index++];
+   }
+
+   # then domain language keys
+   for my $dlkey (sort(keys(%{$this->{'DLKEYS'}}))) {
+      $record->{$dlkey} = $record_keys->[$next_value_index++];
    }
 
    $this->push_record($record);
@@ -188,7 +239,16 @@ sub get_keys {
    my $this   = shift;
    my $record = shift;
 
+   # first key groups
    my @keys = map { ${$record->guess_key_from_spec($_)} } @{$this->{'KEYS'}};
+
+   # then domain language keys
+   for my $dlkey (sort(keys(%{$this->{'DLKEYS'}}))) {
+      my $dlkey_valuation = $this->{'DLKEYS'}->{$dlkey};
+      my $dlkey_value = $dlkey_valuation->evaluate_record($record);
+      push @keys, $dlkey_value;
+   }
+
    return \@keys;
 }
 
@@ -210,6 +270,7 @@ sub add_help_types {
    $this->use_help_type('keyspecs');
    $this->use_help_type('keygroups');
    $this->use_help_type('keys');
+   $this->use_help_type('domainlanguage');
    $this->add_help_type(
      'aggregators',
      sub { App::RecordStream::Aggregator::list_aggregators(); },
@@ -218,13 +279,17 @@ sub add_help_types {
 }
 
 sub usage {
-   return <<USAGE;
+   return <<USAGE
 Usage: recs-collate <args> [<files>]
    Collate records of input (or records from <files>) into output records.
 
 Arguments:
-   --key|-k <keys>               Comma separated list of key fields.  may be a
+   --key|-k <keys>               Comma separated list of key fields.  May be a
                                  key spec or key group
+   --dlkey ...                   Specify a domain language key.  See "Domain
+                                 Language Integration" below.
+   --dlaggregator ...            Specify a domain language aggregate.  See
+                                 "Domain Language Integration" below.
    --aggregator|-a <aggregators> Colon separated list of aggregate field specifiers.
                                  See "Aggregates" section below.
    --size|--sz|-n <number>       Number of running clumps to keep.
@@ -255,6 +320,21 @@ Cubing:
    and y then we'd get output records for {x = 1, y = 2}, {x = 1, y = ALL}, {x
    = ALL, y = 2} and {x = ALL, y = ALL}.
 
+Domain Lanuage Integration:
+USAGE
+   . App::RecordStream::DomainLanguage::short_usage()
+   . <<USAGE
+
+   Either aggregates or keys may be specified using the recs domain language.
+   Both --dlkey and --dlaggregator require an options of the format
+   '<name>=<domain language code>'.  --dlkey requires the code evaluate as a
+   valuation, --dlaggregator requires the code evaluate as an aggregator.
+
+   See --help-domainlanguage for a more complete description of its workings
+   and a list of available functions.
+
+   See the examples below for a more gentle introduction.
+
 Examples:
    Count clumps of adjacent lines with matching x fields.
       recs-collate --adjacent --key x --aggregator count
@@ -266,9 +346,18 @@ Examples:
       recs-collate --key date --adjcent --incremental --aggregator profit_to_date=sum,profit
    Produce record count for each date, hour pair
       recs-collate --key date,hour --aggregator count
-    Finds the maximum latency for each date, hour pair
+   Finds the maximum latency for each date, hour pair
       recs-collate --key date,hour --aggregator worst_latency=max,latency
+   Produce a list of hosts in each datacenter.
+      recs-collate --key dc --dlaggregator "hosts=uconcat(', ', 'host')"
+   Sum all time fields
+      recs-collate --key ... --dlaggregator "times=for_field(qr/^t/, 'sum(\\\$f)')"
+   Find the median value of x+y in records
+      recs-collate --dlaggregator 'median=perc(50, val(sub{\$_[0]->{x}+\$_[0]->{y}}))'
+   Count people by first three letters of their name
+      recs-collate --dlkey 'tla=val(sub{substr(\$_[0]->{name},0,3)})'
 USAGE
+   ;
 }
 
 1;

@@ -5,6 +5,7 @@ use lib;
 
 use App::RecordStream::Aggregator::MapReduce;
 use App::RecordStream::Aggregator;
+use App::RecordStream::DomainLanguage::Registry;
 
 use base 'App::RecordStream::Aggregator::MapReduce';
 
@@ -45,5 +46,8 @@ sub short_usage
 
 App::RecordStream::Aggregator::register_aggregator('count', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('ct', __PACKAGE__);
+
+App::RecordStream::DomainLanguage::Registry::register_ctor(__PACKAGE__, 'count');
+App::RecordStream::DomainLanguage::Registry::register_ctor(__PACKAGE__, 'ct');
 
 1;

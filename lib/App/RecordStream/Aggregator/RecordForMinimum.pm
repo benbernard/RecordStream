@@ -3,16 +3,28 @@ package App::RecordStream::Aggregator::RecordForMinimum;
 use strict;
 use lib;
 
+use App::RecordStream::Aggregator::MapReduce;
+use App::RecordStream::DomainLanguage::Registry;
+use App::RecordStream::DomainLanguage::Valuation::KeySpec;
+
 use base 'App::RecordStream::Aggregator::MapReduce';
 
 sub new
 {
+    my $class = shift;
+    my $field = shift;
+
+    return new_from_valuation($class, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($field));
+}
+
+sub new_from_valuation
+{
    my $class = shift;
-   my ($field) = @_;
+   my ($valuation) = @_;
 
    my $this =
    {
-      'field' => $field,
+      'valuation' => $valuation,
    };
    bless $this, $class;
 
@@ -23,7 +35,7 @@ sub map
 {
    my ($this, $record) = @_;
 
-   my $value = ${$record->guess_key_from_spec($this->{'field'})};
+   my $value = $this->{'valuation'}->evaluate_record($record);
 
    return [$value, $record];
 }
@@ -78,5 +90,10 @@ App::RecordStream::Aggregator::register_aggregator('recformin', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('recforminimum', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('recordformin', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('recordforminimum', __PACKAGE__);
+
+App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'recformin', 'VALUATION');
+App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'recforminimum', 'VALUATION');
+App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'recordformin', 'VALUATION');
+App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'recordforminimum', 'VALUATION');
 
 1;

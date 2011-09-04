@@ -9,6 +9,7 @@ use Getopt::Long;
 use App::RecordStream::InputStream;
 use App::RecordStream::Site;
 
+use App::RecordStream::DomainLanguage;
 use App::RecordStream::KeyGroups;
 use App::RecordStream::Executor;
 
@@ -48,42 +49,48 @@ sub new {
 sub init_help {
    my $this        = shift;
    $this->{'HELP_TYPES'} = {
-      all       => { 
+      all       => {
          USE         => 0,
          SKIP_IN_ALL => 1,
          CODE        => \&all_help,
          DESCRIPTION => 'Output all help for this script',
       },
-      snippet   => { 
+      snippet   => {
          USE         => 0,
          SKIP_IN_ALL => 0,
          CODE        => \&snippet_help,
          DESCRIPTION => 'Help on code snippets',
       },
-      keygroups => { 
+      keygroups => {
          USE         => 0,
          SKIP_IN_ALL => 0,
          CODE        => \&keygroups_help,
          DESCRIPTION => 'Help on keygroups, a way of specifying multiple keys',
       },
-      keyspecs  => { 
+      keyspecs  => {
          USE         => 0,
          SKIP_IN_ALL => 0,
          CODE        => \&keyspecs_help,
          DESCRIPTION => 'Help on keyspecs, a way to index deeply and with regexes',
       },
-      basic     => { 
+      basic     => {
          USE         => 1,
          SKIP_IN_ALL => 0,
          CODE        => \&basic_help,
          OPTION_NAME => 'help',
          DESCRIPTION => 'This help screen',
       },
-      'keys'    => { 
+      'keys'    => {
          USE         => 0,
          SKIP_IN_ALL => 1,
          CODE        => \&keys_help,
          DESCRIPTION => 'Help on keygroups and keyspecs',
+      },
+      domainlanguage => {
+         USE         => 0,
+         SKIP_IN_ALL => 0,
+         CODE        => \&domainlanguage_help,
+         DESCRIPTION => 'Help on the recs domain language, a [very complicated] way of specifying valuations (which act like keys) or aggregators',
       },
    };
 
@@ -130,9 +137,9 @@ sub parse_options {
 
       my $help_option = $type_info->{'OPTION_NAME'} || 'help-' . $help_type;
 
-      $options_spec->{$help_option} ||= sub { 
-         $type_info->{'CODE'}->($this); 
-         exit 1; 
+      $options_spec->{$help_option} ||= sub {
+         $type_info->{'CODE'}->($this);
+         exit 1;
       };
    }
 
@@ -332,7 +339,7 @@ sub create_operation {
    eval {
       $op = $module->new(\@args);
    };
-   
+
    if ( $@ || $op->get_wants_help() ) {
       if ( ! $op ) {
          $op = bless {}, $module;
@@ -383,6 +390,11 @@ sub keyspecs_help {
 sub keygroups_help {
    my $this = shift;
    print App::RecordStream::KeyGroups::usage();
+}
+
+sub domainlanguage_help {
+   my $this = shift;
+   print App::RecordStream::DomainLanguage::usage();
 }
 
 sub _set_next_operation {

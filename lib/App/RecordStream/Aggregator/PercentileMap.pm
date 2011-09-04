@@ -4,7 +4,22 @@ use strict;
 use lib;
 
 use App::RecordStream::Aggregator::InjectInto::Field;
+use App::RecordStream::DomainLanguage::Registry;
+
 use base qw(App::RecordStream::Aggregator::InjectInto::Field);
+
+sub _make_percentiles
+{
+   my $percentiles = shift;
+
+   if(ref($percentiles) eq "ARRAY")
+   {
+      return $percentiles;
+   }
+
+   # be careful, split(' ', ...) is extreme magic split, not split on one space
+   return [split(' ', $percentiles)];
+}
 
 sub new
 {
@@ -13,8 +28,19 @@ sub new
    my $field       = shift;
 
    my $this = $class->SUPER::new($field);
-   # be careful, split(' ', ...) is extreme magic split, not split on one space
-   $this->{'percentiles'} = [split(' ', $percentiles)];
+   $this->{'percentiles'} = _make_percentiles($percentiles);
+
+   return $this;
+}
+
+sub new_from_valuation
+{
+   my $class       = shift;
+   my $percentiles = shift;
+   my $valuation   = shift;
+
+   my $this = $class->SUPER::new_from_valuation($valuation);
+   $this->{'percentiles'} = _make_percentiles($percentiles);
 
    return $this;
 }
@@ -87,5 +113,8 @@ sub argct
 
 App::RecordStream::Aggregator::register_aggregator('percentilemap', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('percmap', __PACKAGE__);
+
+App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'percentilemap', 'SCALAR', 'VALUATION');
+App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'percmap', 'SCALAR', 'VALUATION');
 
 1;
