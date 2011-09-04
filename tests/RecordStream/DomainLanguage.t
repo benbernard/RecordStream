@@ -19,7 +19,10 @@ my $CAST_FAILURE = 'CAST_FAILURE';
 my @tests =
 (
     [
-        "_last(x)",
+        [
+            "_last(x)",
+            "_last('x')",
+        ],
         sub
         {
             my $aggr = shift;
@@ -30,7 +33,11 @@ my @tests =
         $CAST_FAILURE,
     ],
     [
-        "dct(x)",
+        [
+            "_dct(x)",
+            "dct(x)",
+            "dct('x')",
+        ],
         sub
         {
             my $aggr = shift;
@@ -94,7 +101,13 @@ my @tests =
         $CAST_FAILURE,
     ],
     [
-        "sum('ct')",
+        [
+            "sum('ct')",
+            "ii_agg('0', '\$a+{{ct}}', '\$a')",
+            "ii_agg('0', '\$a+{{ct}}')",
+            "inject_into_aggregator('0', '\$a+{{ct}}', '\$a')",
+            "inject_into_aggregator('0', '\$a+{{ct}}')",
+        ],
         sub
         {
             my $aggr = shift;
@@ -113,26 +126,11 @@ my @tests =
         $CAST_FAILURE,
     ],
     [
-        "ii_agg('0', '\$a+{{ct}}', '\$a')",
-        sub
-        {
-            my $aggr = shift;
-
-            my $cookie = $aggr->initial();
-
-            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("ct" => 1));
-            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("ct" => 2));
-            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("ct" => 3));
-
-            my $value = $aggr->squish($cookie);
-
-            is_deeply($value, 6);
-        },
-        $CAST_FAILURE,
-        $CAST_FAILURE,
-    ],
-    [
-        "ii_agg('[0, 0]', '[\$a->[0] + 1, \$a->[1] + {{ct}}]', '\$a->[1] / \$a->[0]')",
+        [
+            "avg('ct')",
+            "ii_agg('[0, 0]', '[\$a->[0] + 1, \$a->[1] + {{ct}}]', '\$a->[1] / \$a->[0]')",
+            "inject_into_aggregator('[0, 0]', '[\$a->[0] + 1, \$a->[1] + {{ct}}]', '\$a->[1] / \$a->[0]')",
+        ],
         sub
         {
             my $aggr = shift;
@@ -183,56 +181,63 @@ my @tests =
 
 for my $test (@tests)
 {
-    my ($code, $agg_check, $val_check, $scalar_check) = @$test;
-    my $snip = App::RecordStream::DomainLanguage::Snippet->new($code);
-    for my $sub_test (['AGG', $agg_check], ['VALUATION', $val_check], ['SCALAR', $scalar_check])
+    my ($codes, $agg_check, $val_check, $scalar_check) = @$test;
+    if(!ref($codes))
     {
-        my ($type, $check) = @$sub_test;
+        $codes = [$codes];
+    }
+    for my $code (@$codes)
+    {
+        my $snip = App::RecordStream::DomainLanguage::Snippet->new($code);
+        for my $sub_test (['AGG', $agg_check], ['VALUATION', $val_check], ['SCALAR', $scalar_check])
+        {
+            my ($type, $check) = @$sub_test;
 
-        my $r;
-        eval
-        {
-            $r = $snip->evaluate_as($type);
-        };
-        if($@)
-        {
-            my $fail = $@;
-            if(ref($check) && ref($check) eq "CODE")
+            my $r;
+            eval
             {
-                fail("'$code' as '$type' failed: $fail");
-            }
-            elsif($check && $check eq $NO_CHECK)
+                $r = $snip->evaluate_as($type);
+            };
+            if($@)
             {
-            }
-            elsif($check && $check eq $CAST_FAILURE)
-            {
-                if($fail =~ /( found where .* expected)|(^No .* possibilities)/)
+                my $fail = $@;
+                if(ref($check) && ref($check) eq "CODE")
                 {
-                    # OK
+                    fail("'$code' as '$type' failed: $fail");
+                }
+                elsif($check && $check eq $NO_CHECK)
+                {
+                }
+                elsif($check && $check eq $CAST_FAILURE)
+                {
+                    if($fail =~ /( found where .* expected)|(^No .* possibilities)/)
+                    {
+                        # OK
+                    }
+                    else
+                    {
+                        fail("'$code' as '$type' failed, expected cast failure: $fail");
+                    }
                 }
                 else
                 {
-                    fail("'$code' as '$type' failed, expected cast failure: $fail");
+                    fail("'$code', '$type' => no expectation, failed: $fail");
                 }
             }
             else
             {
-                fail("'$code', '$type' => no expectation, failed: $fail");
-            }
-        }
-        else
-        {
-            if(ref($check) && ref($check) eq "CODE")
-            {
-                $check->($r);
-            }
-            elsif($check && $check eq $NO_CHECK)
-            {
-                fail("'$code' as '$type' succeeded, expected cast failure: " . Dumper($r));
-            }
-            else
-            {
-                fail("'$code', '$type' => no expectation, succeeded: " . Dumper($r));
+                if(ref($check) && ref($check) eq "CODE")
+                {
+                    $check->($r);
+                }
+                elsif($check && $check eq $NO_CHECK)
+                {
+                    fail("'$code' as '$type' succeeded, expected cast failure: " . Dumper($r));
+                }
+                else
+                {
+                    fail("'$code', '$type' => no expectation, succeeded: " . Dumper($r));
+                }
             }
         }
     }
