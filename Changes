@@ -1,3 +1,5 @@
+3.4_01 3.4_02 - Minor changes for CPAN Compatability
+
 3.4 - Updated modules names from Recs::* to App::RecordStream
       Other changes for building in CPAN
       Changed xform to use $r for splitting records
