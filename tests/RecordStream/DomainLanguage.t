@@ -129,6 +129,17 @@ my @tests =
         $CAST_FAILURE,
         $CAST_FAILURE,
     ],
+    [
+        "uconcat(',', snip('{{x}}'))",
+        sub
+        {
+            my $aggr = shift;
+
+            App::RecordStream::Test::UniqConcatHelper::test_aggregator($aggr);
+        },
+        $CAST_FAILURE,
+        $CAST_FAILURE,
+    ],
 );
 
 for my $test (@tests)

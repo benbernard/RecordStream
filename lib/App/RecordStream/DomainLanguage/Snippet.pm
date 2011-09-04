@@ -5,11 +5,14 @@ use warnings;
 
 use App::RecordStream::DomainLanguage::Executor;
 use App::RecordStream::DomainLanguage::Value;
+use App::RecordStream::Executor;
 
 sub new
 {
     my $class = shift;
     my $code = shift;
+
+    $code = App::RecordStream::Executor->transform_code($code);
 
     my $this =
     {

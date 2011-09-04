@@ -45,6 +45,13 @@ sub long_usage {
    record()
       A valuation that just returns the entire record.
 
+   snip(snip)
+      Takes a snippet and returns both the snippet and the snippet as a
+      valuation.  Used to distinguished snippets from scalars in cases where it
+      matters, e.g.  min('{{x}}') interprets it is a keyspec when it was meant
+      to be a snippet (and then a valuation), min(snip('{{x}}')) does what is
+      intended.
+
    type_agg(obj)
    type_scalar(obj)
    type_val(obj)

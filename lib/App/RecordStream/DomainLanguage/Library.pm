@@ -6,6 +6,7 @@ use warnings;
 use App::RecordStream::DomainLanguage::Registry;
 use App::RecordStream::DomainLanguage::Valuation::KeySpec;
 use App::RecordStream::DomainLanguage::Valuation::Sub;
+use App::RecordStream::DomainLanguage::Value;
 
 sub _identity
 {
@@ -15,6 +16,18 @@ sub _identity
 App::RecordStream::DomainLanguage::Registry::register_fn(\&_identity, 'type_agg', 'AGGREGATOR');
 App::RecordStream::DomainLanguage::Registry::register_fn(\&_identity, 'type_valuation', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_fn(\&_identity, 'type_scalar', 'SCALAR');
+
+sub _snippet_upgrade
+{
+    my $snippet = shift;
+
+    my $ret = App::RecordStream::DomainLanguage::Value->new();
+    $ret->add_possibility('VALUATION', App::RecordStream::DomainLanguage::Valuation::Sub->new(sub { return $snippet->evaluate_as('SCALAR', {'$r' => $_[0]}); }));
+    $ret->add_possibility('SNIPPET', $snippet);
+    return $ret;
+}
+
+App::RecordStream::DomainLanguage::Registry::register_fn(\&_snippet_upgrade, 'snip', 'SNIPPET');
 
 sub _rec_valuation
 {
