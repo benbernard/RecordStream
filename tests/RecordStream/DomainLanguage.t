@@ -107,6 +107,10 @@ my @tests =
             "ii_agg('0', '\$a+{{ct}}')",
             "inject_into_aggregator('0', '\$a+{{ct}}', '\$a')",
             "inject_into_aggregator('0', '\$a+{{ct}}')",
+            "mr_agg('{{ct}}', '\$a+\$b', '\$a')",
+            "mr_agg('{{ct}}', '\$a+\$b')",
+            "map_reduce_aggregator('{{ct}}', '\$a+\$b', '\$a')",
+            "map_reduce_aggregator('{{ct}}', '\$a+\$b')",
         ],
         sub
         {
@@ -130,6 +134,8 @@ my @tests =
             "avg('ct')",
             "ii_agg('[0, 0]', '[\$a->[0] + 1, \$a->[1] + {{ct}}]', '\$a->[1] / \$a->[0]')",
             "inject_into_aggregator('[0, 0]', '[\$a->[0] + 1, \$a->[1] + {{ct}}]', '\$a->[1] / \$a->[0]')",
+            "mr_agg('[1, {{ct}}]', '[\$a->[0] + \$b->[0], \$a->[1] + \$b->[1]]', '\$a->[1] / \$a->[0]')",
+            "map_reduce_aggregator('[1, {{ct}}]', '[\$a->[0] + \$b->[0], \$a->[1] + \$b->[1]]', '\$a->[1] / \$a->[0]')",
         ],
         sub
         {

@@ -92,4 +92,44 @@ for my $ii_name ('ii', 'inject_into')
     }
 }
 
+sub _map_reduce_aggregator
+{
+    my $map_snippet = shift;
+    my $reduce_snippet = shift;
+    my $squish_snippet = shift || App::RecordStream::DomainLanguage::Snippet->new('$a');
+
+    my $map_sub = sub
+    {
+        my $record = shift;
+
+        return $map_snippet->evaluate_as('SCALAR', {'$r' => $record});
+    };
+
+    my $reduce_sub = sub
+    {
+        my $cookie1 = shift;
+        my $cookie2 = shift;
+
+        return $reduce_snippet->evaluate_as('SCALAR', {'$a' => $cookie1, '$b' => $cookie2});
+    };
+
+    my $squish_sub = sub
+    {
+        my $cookie = shift;
+
+        return $squish_snippet->evaluate_as('SCALAR', {'$a' => $cookie});
+    };
+
+    return App::RecordStream::Aggregator::MapReduce::Subrefs->new($map_sub, $reduce_sub, $squish_sub);
+}
+
+for my $mr_name ('mr', 'map_reduce')
+{
+    for my $agg_name ('agg', 'aggregator')
+    {
+        App::RecordStream::DomainLanguage::Registry::register_fn(\&_map_reduce_aggregator, $mr_name . '_' . $agg_name, 'SNIPPET', 'SNIPPET');
+        App::RecordStream::DomainLanguage::Registry::register_fn(\&_map_reduce_aggregator, $mr_name . '_' . $agg_name, 'SNIPPET', 'SNIPPET', 'SNIPPET');
+    }
+}
+
 1;
