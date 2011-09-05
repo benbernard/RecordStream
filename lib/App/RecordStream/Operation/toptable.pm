@@ -6,6 +6,7 @@ use warnings;
 use base qw(App::RecordStream::Accumulator App::RecordStream::Operation App::RecordStream::ScreenPrinter);
 
 use App::RecordStream::OutputStream;
+use App::RecordStream::Record;
 
 # TODO: amling, this format is so ugly it hurts.  Think of something better.
 
@@ -21,12 +22,14 @@ sub init {
    my $ygroup = App::RecordStream::KeyGroups->new();
    my $vgroup = App::RecordStream::KeyGroups->new();
    my $output_records = 0;
+   my %sorts = ();
 
    my $spec = {
       "x-field|x=s"     => sub { $xgroup->add_groups($_[1]); },
       "y-field|y=s"     => sub { $ygroup->add_groups($_[1]); },
       "v-field|v=s"     => sub { $vgroup->add_groups($_[1]); },
       "pin=s"           => sub { for(split(/,/, $_[1])) { if(/^(.*)=(.*)$/) { $pins{$1} = $2; } } },
+      "sort=s"          => sub { for(split(/,/, $_[1])) { my ($comparator, $field) = App::RecordStream::Record::get_comparator_and_field($_); $sorts{$field} = $comparator; } },
       'noheaders'       => sub { $headers = 0; },
       'records|recs'    => \$output_records,
    };
@@ -40,6 +43,7 @@ sub init {
    $this->{'VGROUP'} = $vgroup;
 
    $this->{'PINS_HASH'}      = \%pins;
+   $this->{'SORTS'}          = \%sorts;
    $this->{'HEADERS'}        = $headers;
    $this->{'DO_VFIELDS'}     = $do_vfields;
    $this->{'OUTPUT_RECORDS'} = $output_records;
@@ -196,10 +200,10 @@ sub stream_done {
    # @x_value_list) and tag each node in the tree with the index in
    # @x_values_list so we can look it up later
    my @x_values_list;
-   _dump_node_recurse($x_values_tree, \@x_values_list, scalar(@xfields));
+   $this->_dump_node_recurse($x_values_tree, \@x_values_list, [@xfields], []);
 
    my @y_values_list;
-   _dump_node_recurse($y_values_tree, \@y_values_list, scalar(@yfields));
+   $this->_dump_node_recurse($y_values_tree, \@y_values_list, [@yfields], []);
 
    # Collected the data, if we're only outputing records, stop here.
    if ( $this->{'OUTPUT_RECORDS'} ) {
@@ -378,6 +382,22 @@ sub _format_row {
    return $s;
 }
 
+sub _get_sort {
+   my $this = shift;
+   my $field = shift;
+
+   my $comparator = $this->{'SORTS'}->{$field};
+   if(!defined($comparator)) {
+      return undef;
+   }
+
+   return sub {
+      my @fake_records = map { App::RecordStream::Record->new($field => $_) } @_;
+      @fake_records = sort { $comparator->($a, $b) } @fake_records;
+      return map { $_->{$field} } @fake_records;
+   };
+}
+
 sub _new_node {
    return [{}, [], -1];
 }
@@ -403,20 +423,33 @@ sub _touch_node_recurse {
 }
 
 sub _dump_node_recurse {
-   my ($node, $acc, $depth_left, @values_so_far) = @_;
+   my ($this, $node, $acc, $fields_left, $values_so_far) = @_;
 
    my $hash = $node->[0];
    my $array = $node->[1];
 
-   if(!$depth_left) {
+   if(!@$fields_left) {
       $node->[2] = scalar(@$acc);
-      push @$acc, \@values_so_far;
+      push @$acc, [@$values_so_far];
       return;
    }
 
-   foreach my $key (@$array) {
-      _dump_node_recurse($hash->{$key}, $acc, $depth_left - 1, @values_so_far, $key);
+   my $field = shift @$fields_left;
+
+   my @field_values = @$array;
+   my $sort = $this->_get_sort($field);
+   if(defined($sort))
+   {
+      @field_values = $sort->(@field_values);
    }
+
+   foreach my $key (@field_values) {
+      push @$values_so_far, $key;
+      $this->_dump_node_recurse($hash->{$key}, $acc, $fields_left, $values_so_far);
+      pop @$values_so_far;
+   }
+
+   unshift @$fields_left, $field;
 }
 
 sub _find_index_recursive {

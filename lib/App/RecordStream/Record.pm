@@ -196,32 +196,35 @@ sub get_comparators
 }
 
 {
-   my %parsed_comparators;
    sub get_comparator
+   {
+      my ($comparator, $field) = get_comparator_and_field(@_);
+
+      return $comparator;
+   }
+
+   sub get_comparator_and_field
    {
       my $spec = shift;
 
-      my $parsed = $parsed_comparators{$spec};
-      return $parsed if ( $parsed ) ;
-
-      my ($field, $direction, $comparator, $all_hack);
+      my ($field, $direction, $comparator_name, $all_hack);
 
       if ( $spec =~ m/=/ )
       {
-         ($field, $direction, $comparator, $all_hack) = $spec =~ /^(.*)=([-+]?)(.*?)(\*?)$/;
+         ($field, $direction, $comparator_name, $all_hack) = $spec =~ /^(.*)=([-+]?)(.*?)(\*?)$/;
       }
       else
       {
-         ($field, $direction, $comparator, $all_hack) = ($spec, undef, 'lexical', '');
+         ($field, $direction, $comparator_name, $all_hack) = ($spec, undef, 'lexical', '');
       }
 
       $direction = '+' unless ( $direction );
       $all_hack = $all_hack ? 1 : 0;
 
-      my $func = $comparators{$comparator};
-      die "Not a valid comparator: $comparator" unless ( $func );
+      my $func = $comparators{$comparator_name};
+      die "Not a valid comparator: $comparator_name" unless ( $func );
 
-      return sub {
+      my $comparator = sub {
          my ($this, $that) = @_;
 
          my $val = undef;
@@ -255,7 +258,9 @@ sub get_comparators
          }
 
          return $val;
-      }
+      };
+
+      return ($comparator, $field);
    }
 }
 
