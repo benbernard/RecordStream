@@ -3,7 +3,7 @@ use ExtUtils::MakeMaker;
 use strict;
 use warnings;
 
-use BuildTools qw(get_bin_scripts);
+use BuildTools qw(get_bin_scripts get_pms);
 
 my @scripts = get_bin_scripts();
 
@@ -53,5 +53,8 @@ WriteMakefile(
    },
    PL_FILES => {
       './generate_pods.pl' => 'generate_pods',
+   },
+   PM => { 
+      (map {( $_ => "\$(INST_LIBDIR)/$_" )} get_pms()),
    }
 );

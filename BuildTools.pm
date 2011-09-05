@@ -2,7 +2,9 @@ package BuildTools;
 
 use base qw(Exporter);
 
-our @EXPORT_OK = qw(get_bin_scripts run_command);
+use File::Find;
+
+our @EXPORT_OK = qw(get_bin_scripts run_command get_pms);
 
 sub get_bin_scripts {
    my $bin_dir = 'bin';
@@ -22,6 +24,19 @@ sub run_command {
    if ( $? ) {
       warn "Failed running $command_str: $?";
    }
+}
+
+
+sub get_pms {
+   my @pms;
+
+   my $wanted = sub {
+      push @pms, $File::Find::name if ( -f $_ );
+   };
+
+   File::Find::find({wanted => $wanted}, 'lib');
+
+   return @pms;
 }
 
 1;
