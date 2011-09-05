@@ -13,6 +13,7 @@ sub new
     my $code = shift;
 
     $code = App::RecordStream::Executor->transform_code($code);
+    $code = _transform_angles($code);
 
     my $this =
     {
@@ -50,6 +51,115 @@ sub evaluate_as
     my $result = $executor->exec($this->{'CODE'});
 
     return App::RecordStream::DomainLanguage::Value::cast_or_die($type, $result);
+}
+
+sub _transform_angles
+{
+    my $code = shift;
+
+    my $in = $code;
+    my $out = '';
+    my $level = 0;
+    my $state = 'ZERO';
+    my $c = undef;
+    my $redo = 0;
+    my $had_eof = 0;
+
+    while(1)
+    {
+        if(!$redo)
+        {
+            if(length($in))
+            {
+                $c = substr($in, 0, 1, "");
+            }
+            elsif($had_eof)
+            {
+                last;
+            }
+            else
+            {
+                $had_eof = 1;
+                $c = '';
+            }
+        }
+        $redo = 0;
+
+        if($state eq 'ZERO')
+        {
+            if(0)
+            {
+            }
+            elsif($c eq '<')
+            {
+                $state = 'ENTER';
+            }
+            elsif($c eq '>')
+            {
+                $state = 'EXIT';
+            }
+            else
+            {
+                $out .= $c;
+            }
+        }
+        elsif($state eq 'ENTER')
+        {
+            if(0)
+            {
+            }
+            elsif($c eq '<')
+            {
+                if($level == 0)
+                {
+                    $out .= "snip('";
+                }
+                else
+                {
+                    $out .= '<<';
+                }
+                ++$level;
+                $state = 'ZERO';
+            }
+            else
+            {
+                $out .= '<';
+                $redo = 1;
+                $state = 'ZERO';
+            }
+        }
+        elsif($state eq 'EXIT')
+        {
+            if(0)
+            {
+            }
+            elsif($c eq '>')
+            {
+                --$level;
+                if($level == 0)
+                {
+                    $out .= "')";
+                }
+                else
+                {
+                    $out .= '>>';
+                }
+                $state = 'ZERO';
+            }
+            else
+            {
+                $out .= '>';
+                $redo = 1;
+                $state = 'ZERO';
+            }
+        }
+        else
+        {
+            die "Invalid state in snippet angle transform: $state";
+        }
+    }
+
+    return $out;
 }
 
 1;
