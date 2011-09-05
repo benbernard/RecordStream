@@ -3,11 +3,11 @@
 use strict;
 use File::Basename qw(basename);
 
-use BuildTools qw(get_bin_scripts run_command);
+require 'BuildTools.recbuildtool';
 
 $ENV{'PERL5LIB'} .= ':lib';
 
-my @scripts = get_bin_scripts();
+my @scripts = BuildTools::get_bin_scripts();
 
 foreach my $script (@scripts) {
    generate_pod("bin/$script");

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
-use BuildTools qw(run_command);
+require 'BuildTools.recbuildtool';
 use File::Glob qw(glob);
 
 my $DIST_DIR = 'deb-dist';
@@ -69,4 +69,8 @@ sub find_one_glob {
   }
 
   return $found[0];
+}
+
+sub run_command {
+   return BuildTools::run_command(@_);
 }

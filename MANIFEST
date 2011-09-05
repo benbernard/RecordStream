@@ -1,5 +1,5 @@
 .gitignore
-BuildTools.pm
+BuildTools.recbuildtool
 Changes
 INSTALLING
 LICENSE
