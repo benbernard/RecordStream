@@ -33,10 +33,6 @@ sub init {
    my $this = shift;
    my $code = shift;
 
-   if ( -e $code ) {
-      $code = $this->slurp($code);
-   }
-
    my $return_statement = '';
    if ( $this->{'OUTPUT_RECORD'} ) {
       $return_statement = '; $r;'
@@ -46,20 +42,6 @@ sub init {
    if ( $@ ) {
       die "Could not compile code '$code':\n$@"
    }
-}
-
-sub slurp {
-   my $this = shift;
-   my $file = shift;
-
-   local $/;
-   undef $/;
-
-   open (my $fh, '<', $file) or die "Could not open code snippet file: $file: $!";
-   my $code = <$fh>;
-   close $fh;
-
-   return $code;
 }
 
 sub create_code_ref {

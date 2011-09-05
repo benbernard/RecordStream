@@ -5,6 +5,7 @@ use warnings;
 
 use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);
 
+use App::RecordStream::Executor::Getopt;
 use App::RecordStream::Executor;
 
 sub init {
@@ -12,15 +13,16 @@ sub init {
    my $args = shift;
 
    my $no_newline = 0;
+   my $executor_options = App::RecordStream::Executor::Getopt->new();
    my $spec = {
       "--no-newline"  => \$no_newline,
+      $executor_options->arguments(),
    };
 
+   Getopt::Long::Configure('no_ignore_case');
    $this->parse_options($args, $spec);
-   if(!@{$this->_get_extra_args()}) {
-      die "Missing expression\n";
-   }
-   my $expression = shift @{$this->_get_extra_args()};
+
+   my $expression = $executor_options->get_string($this->_get_extra_args());
    my $executor = App::RecordStream::Executor->new($expression);
 
    $this->{'EXECUTOR'}   = $executor;
