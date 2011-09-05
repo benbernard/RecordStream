@@ -4,19 +4,24 @@ use strict;
 
 use base qw(App::RecordStream::Operation);
 
+use App::RecordStream::Executor::Getopt;
 use App::RecordStream::Executor;
 
 sub init {
    my $this = shift;
    my $args = shift;
 
-   $this->parse_options($args);
-   if(!@{$this->_get_extra_args()}) {
-      die "Missing expression\n";
-   }
+   my $executor_options = App::RecordStream::Executor::Getopt->new();
+   my $spec = {
+      $executor_options->arguments(),
+   };
 
-   my $expression = shift @{$this->_get_extra_args()};
+   Getopt::Long::Configure('no_ignore_case');
+   $this->parse_options($args, $spec);
+
+   my $expression = $executor_options->get_string($this->_get_extra_args());
    my $executor = App::RecordStream::Executor->new($expression, 1);
+
    $this->{'EXECUTOR'} = $executor;
 }
 

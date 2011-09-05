@@ -4,6 +4,7 @@ use strict;
 
 use base qw(App::RecordStream::Operation);
 
+use App::RecordStream::Executor::Getopt;
 use App::RecordStream::Executor;
 
 sub init {
@@ -14,18 +15,20 @@ sub init {
    my $context = 0;
    my $after   = 0;
    my $before  = 0;
+   my $executor_options = App::RecordStream::Executor::Getopt->new();
    my $spec = {
       "-v"  => \$anti_match,
       "C=s" => \$context,
       "A=s" => \$after,
       "B=s" => \$before,
+      $executor_options->arguments(),
    };
 
+   Getopt::Long::Configure('no_ignore_case');
    $this->parse_options($args, $spec);
 
-   if ( ! @{$this->_get_extra_args()} ) {
-      die "Missing expression\n";
-   }
+   my $expression = $executor_options->get_string($this->_get_extra_args());
+   my $executor = App::RecordStream::Executor->new($expression);
 
    $this->{'ANTI_MATCH'} = $anti_match;
 
@@ -38,8 +41,6 @@ sub init {
 
    $this->{'ACCUMULATOR'} = [];
 
-   my $expression = shift @{$this->_get_extra_args()};
-   my $executor = App::RecordStream::Executor->new($expression);
    $this->{'EXECUTOR'} = $executor;
 }
 

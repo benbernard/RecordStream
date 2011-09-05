@@ -4,6 +4,7 @@ use strict;
 
 use base qw(App::RecordStream::Operation);
 
+use App::RecordStream::Executor::Getopt;
 use App::RecordStream::Executor;
 
 use Data::Dumper;
@@ -17,24 +18,22 @@ sub init {
 
    my $keychain = '_chain';
    my $passthrough = 0;
+   my $executor_options = App::RecordStream::Executor::Getopt->new();
 
    my $spec = {
       'keychain=s'  => \$keychain,
       'passthrough' => \$passthrough,
+      $executor_options->arguments(),
    };
 
+   Getopt::Long::Configure('no_ignore_case');
    $this->parse_options($args, $spec);
 
+   my $expression = $executor_options->get_string($this->_get_extra_args());
+   my $executor = App::RecordStream::Executor->new($expression);
 
    $this->{'KEYCHAIN'}    = $keychain;
    $this->{'PASSTHROUGH'} = $passthrough;
-
-   if ( ! @{$this->_get_extra_args()} ) {
-      die "Missing expression\n";
-   }
-
-   my $expression      = shift @{$this->_get_extra_args()};
-   my $executor        = App::RecordStream::Executor->new("qq\000" . $expression . "\000");
    $this->{'EXECUTOR'} = $executor;
 }
 
