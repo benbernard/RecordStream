@@ -3,6 +3,8 @@
       Adding sorting toptable fields
       Changing code snippet file read behavior to require -E
       Support for generating .deb install file
+      Additional alias for -a corr
+      Added ord2map alias
       
 3.4_01 3.4_02 - Minor changes for CPAN Compatability
 
