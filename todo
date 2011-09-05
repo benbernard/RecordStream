@@ -1,8 +1,6 @@
 perldocs for modules
    other than Record
 more aggregators
-   powersum
-   threshct
    linreg
 perf test
    recs-collate lru size 1 v. optimized adjacent recs collate

@@ -94,6 +94,16 @@ sub long_usage {
       to be a snippet (and then a valuation), min(snip('{{x}}')) does what is
       intended.
 
+   subset_agg('...', <aggregator>)
+   subset_aggregator('...', <aggregator>)
+      Takes a snippate to act as a record predicate and an aggregator and
+      produces an aggregator that acts as the provided aggregator as run on the
+      filtered view.
+
+      Example(s):
+          An aggregator that counts the number of records with a time not above 6 seconds:
+             subset_agg('{{time_ms}} <= 6000', ct())
+
    type_agg(obj)
    type_scalar(obj)
    type_val(obj)
