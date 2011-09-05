@@ -10,13 +10,14 @@ $ENV{'PERL5LIB'} .= ':lib';
 my @scripts = get_bin_scripts();
 
 foreach my $script (@scripts) {
-   generate_pod($script);
+   generate_pod("bin/$script");
 }
 
 sub generate_pod {
    my $script = shift;
 
    print "Generating pod documentation for $script\n";
+   print "\n\n\nBENBENBENBEN in dir: $ENV{PWD}\n\n\n";
 
    my $script_base = basename($script);
 
