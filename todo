@@ -3,7 +3,6 @@ perldocs for modules
 more aggregators
    powersum
    threshct
-   ord2univariatemap ord2bivariatemap
    linreg
 perf test
    recs-collate lru size 1 v. optimized adjacent recs collate
