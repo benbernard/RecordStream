@@ -204,25 +204,50 @@ sub get_comparators
       my $parsed = $parsed_comparators{$spec};
       return $parsed if ( $parsed ) ;
 
-      my ($field, $direction, $comparator);
+      my ($field, $direction, $comparator, $all_hack);
 
       if ( $spec =~ m/=/ )
       {
-         ($field, $direction, $comparator) = $spec =~ /^(.*)=([-+])?(.*)$/;
+         ($field, $direction, $comparator, $all_hack) = $spec =~ /^(.*)=([-+]?)(.*?)(\*?)$/;
       }
       else
       {
-         ($field, $direction, $comparator) = ($spec, undef, 'lexical');
+         ($field, $direction, $comparator, $all_hack) = ($spec, undef, 'lexical', '');
       }
 
       $direction = '+' unless ( $direction );
+      $all_hack = $all_hack ? 1 : 0;
 
       my $func = $comparators{$comparator};
       die "Not a valid comparator: $comparator" unless ( $func );
 
       return sub {
          my ($this, $that) = @_;
-         my $val = $func->(${$this->guess_key_from_spec($field)}, ${$that->guess_key_from_spec($field)});
+
+         my $val = undef;
+
+         if ( $all_hack )
+         {
+            my $this_value = ${$this->guess_key_from_spec($field)};
+            my $that_value = ${$that->guess_key_from_spec($field)};
+            if ( $this_value eq 'ALL' && $that_value ne 'ALL' )
+            {
+               $val = 1;
+            }
+            if ( $this_value ne 'ALL' && $that_value eq 'ALL' )
+            {
+               $val = -1;
+            }
+            if ( $this_value eq 'ALL' && $that_value eq 'ALL' )
+            {
+               return 0;
+            }
+         }
+
+         if ( ! defined $val )
+         {
+            $val = $func->(${$this->guess_key_from_spec($field)}, ${$that->guess_key_from_spec($field)});
+         }
 
          if ( $direction eq '-' )
          {
