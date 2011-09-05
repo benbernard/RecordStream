@@ -1,9 +1,43 @@
+================================================================================
+==================  Easiest Install - .deb =====================================
+================================================================================
+
+This will download the prepped .deb file and install the dependencies you need
+
+% wget http://technofetish.net/libapp-recordstream.deb
+% sudo dpkg -i libapp-recordstream.deb
+% sudo apt-get -f install
+
+See the getting started guide below for starting to use RecordStream!
+
+Once that is done, you might want to check out aRecordStreamStory in this
+directory.  A humorus introduction to a simple use of RecordStream.
+
+================================================================================
+==================  Easy Install - CPAN    =====================================
+================================================================================
+
+% sudo perl -MCPAN -e shell
+> install App::RecordStream
+
+Then answer all the many many prompts.
+
+See the getting started guide below for starting to use RecordStream!
+
+Once that is done, you might want to check out aRecordStreamStory in this
+directory.  A humorus introduction to a simple use of RecordStream.
+
+================================================================================
+==================  Manual Install          ====================================
+================================================================================
+
 To use this package, put bin on your path and libs in your PERL5LIB env
 variable.  Also install the dependencies listed below.  ./tester.pl should run
 with no errors if everything is working.
 
-This is an informal list of dependencies.  Eventually I hope to make
-auto-make/conf and distribution bundles, but for now, this will serve
+First download all the source (available from http://github.com/benbernard/RecordStream)
+
+Then you'll need some packages:
 
 Ubuntu packages: 
   libdbd-sqlite3-perl
@@ -18,6 +52,10 @@ Ubuntu packages:
   libnet-dns-perl
   libjson-perl
 
+you can install these with:
+
+% sudo apt-get install libdbd-sqlite3-perl sqlite3 libxml-simple-perl libproc-processtable-perl libdate-manip-perl libtext-csv-perl gnuplot libnetpacket-perl libnet-pcap-perl libnet-dns-perl libjson-perl
+
 ----
 
 Once that is done, you might want to check out aRecordStreamStory in this
@@ -31,6 +69,9 @@ Some Examples you can run right now:
 
 export PATH=$PATH:`pwd`/bin && export PERL5LIB=$PERL5LIB:`pwd`/libs
 
+================================================================================
+==================  Getting Started with RecordStream ==========================
+================================================================================
 
 EXAMPLE 1:
 How many processes are each of the users on my system running?
@@ -58,7 +99,7 @@ Broken down:
      into the group
 3. recs-toptable --x priority --y uid -v count
      Create a 2 dimensional table, across the top put the priority values, down
-     the side put the uid.  In the game use as the value the count field.
+     the side put the uid.  In put the value of the count field in the cell
 
 EXAMPLE 3:
 What Xorg modules put information in my Xorg.log at startup, and what log level
