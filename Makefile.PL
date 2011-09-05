@@ -3,15 +3,14 @@ use ExtUtils::MakeMaker;
 use strict;
 use warnings;
 
-my $bin_dir = 'bin';
-opendir(my $dh, $bin_dir) || die "can't opendir $bin_dir: $!";
-my @scripts = map { "$bin_dir/$_" } grep { ! m/^\./ } readdir($dh);
-closedir $dh;
+use BuildTools qw(get_bin_scripts);
+
+my @scripts = get_bin_scripts();
 
 WriteMakefile(
    NAME          => 'App::RecordStream',
    VERSION       => '3.4_02',
-   EXE_FILES     => \@scripts,
+   EXE_FILES     => [ map { "bin/$_" } @scripts ],
    ABSTRACT_FROM => 'README.pod',
    AUTHOR        => 'Ben Bernard - perlhacker@benjaminbernard.com '
                     . 'Keith Amling - keith.amling@gmail.com',
@@ -41,7 +40,19 @@ WriteMakefile(
      'XML::Simple'         => 0,
    },
    MAN3PODS => {
-      'README.pod'                     => '$(INST_MAN3DIR)/RecordStream.3',
+      'README.pod'                => '$(INST_MAN3DIR)/RecordStream.3',
+      'README.pod'                => '$(INST_MAN3DIR)/recs.3',
+      'doc/Examples.pod'          => '$(INST_MAN3DIR)/recs-examples.3',
+      'doc/RecordStreamStory.pod' => '$(INST_MAN3DIR)/recs-story.3',
    },
+   MAN1PODS => {
+      (map {( "doc/$_.pod" => "\$(INST_MAN1DIR)/$_.1" )} @scripts)
+   },
+   depend => {
+      (map {( "doc/$_.pod" => "generate_pods" )} @scripts),
+   },
+   PL_FILES => {
+      './generate_pods.pl' => 'generate_pods',
+   }
 
 );

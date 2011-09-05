@@ -208,9 +208,18 @@ JSON::Syck, a fast xs-binding of a c implementation of a YAML parser/outputer
 
 Each of the recs-* scripts discussed have a --help mode available to print out
 usage and examples for the particular script, See that documentation for
-detailed information on the operation of each of the scripts
+detailed information on the operation of each of the scripts.  Also see some
+other man pages:
 
-=head1 AUTHOR
+=over
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=back
+
+=head1 AUTHORS
 
   Benjamin Bernard <perlhacker@benjaminbernard.com>
   Keith Amling <keith.amling@gmail.com>
@@ -219,3 +228,6 @@ detailed information on the operation of each of the scripts
 
 Copyright 2007 by Benjamin Bernard and Keith Amling
 This software is released under the MIT license
+
+=head1 See Also
+

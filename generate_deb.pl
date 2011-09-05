@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
+use BuildTools qw(run_command);
 use File::Glob qw(glob);
 
 my $DIST_DIR = 'deb-dist';
@@ -45,17 +46,6 @@ run_command('debuild -i -us -uc -b');
 
 chdir '..';
 run_command('cp *.deb ..');
-
-sub run_command {
-   my @command = @_;
-   my $command_str = join(' ', @command);
-   print "Running: $command_str\n";
-   system(@command);
-
-   if ( $? ) {
-      warn "Failed running $command_str: $?";
-   }
-}
 
 sub cleanup {
    my $commands = shift;

@@ -1,3 +1,0 @@
-#!/bin/sh
-
-pod2man -c 'Record Stream System' ../README.pod > recs.1

@@ -1,0 +1,179 @@
+=head1 PURPOSE
+
+This was a humorus article written to give an introduction to the RecordStream
+tools, please read with tongue firmly planted in cheek
+
+=head1 And So It Begins
+
+Every ninja knows the value of tools. How could one accomplish anything without
+a mouse quenched in the blood of a live and willing dragon or a monitor whose
+CRT is hewn from a single enormous diamond, formed in the fire of Hades?
+Indeed, most ninja scholars agree unanimously that the hundred-handed
+conference room reservation prana cannot be done with out a keyboard each key
+of which is greased with the blood of a different enemy of your ancestors'.
+
+Given that you have already collected the 12 ancient swords of the sun and the
+IBM Model M keyboard, you must now choose wisely which to use in each of your
+challenges. When one wrestles Leviathan one does not do it with chopsticks.
+
+Similarly, when a ninja faces a complex dataset they do not come at it with
+grep (well, many times you start with grep). The true ninja runs atop the
+cubicle dividers, slaughtering all until the dataset is rendered meaningless.
+code ninjas use recs.
+
+=head1 On the first day, we analyzed an access log
+
+Say you have only seconds to report URL statistics from an apache access log
+before the ancient sea wyrm of Atlantis raises from the Puget Sound and
+destroys Seattle entirely. Then you might type something like this:
+
+  recs-frommultire --re 'latency=TIME: (\d*)' --re 'method,url="([^" ]*) ([^" ?]*)' access.log \
+    | recs-xform '$r->{url} =~ s/(get\.cgi)\/.*/$1/;' \
+    | recs-collate -k url --perfect -a 'avg,latency' -a count \
+    | recs-sort -k 'avg_latency=-n' \
+    | head -n 5 \
+    | recs-totable 
+
+Scared yet? A proper tool should always inspire fear in the weak. With
+appropriate mastery, you too can learn to banish ancient horrors using recs.
+But one does not learn recs-jitsu all at once; one must learn it kata by kata.
+
+First one must understand the principles and overall form of this arcane art.
+Recs, or RecordStream is a collection of scripts that facilitates the parsing
+of files into JSON records and the transformation of those records. Many common
+UNIX programs like grep, sort, and uniq have recs analogs and several recs
+scripts allow transformations unheard of using typical UNIX tools. In general
+the tools fall into three categories: those that produce JSON records, those
+that operate on JSON records, and those that convert JSON records into output.
+A typical use of recs will consist of one of the first type, one, or more of
+the second type, and one of the third type. To begin using recs, you'll have to
+decide on how to get your data into JSON. There are several scripts available
+to do this, one of the most powerful of which is recs-frommultire. It allows
+you to write multiple regular expressions to capture fields.
+
+=head1 recs-frommultire - parsing data into JSON
+
+To understand how our invocation of recs-frommultire was written, you'll want
+to see our access log. Here are four sample lines:
+
+  192.168.151.55 - - [10/Sep/2007:01:01:55 -0700] "GET /view_image.cgi?uid=bernard&badge=1 HTTP/1.1" 200 3528 TIME: 0
+  192.168.153.89 - - [10/Sep/2007:01:02:28 -0700] "GET /x.gif HTTP/1.1" 304 - TIME: 0
+  192.168.153.105 - - [10/Sep/2007:01:02:32 -0700] "GET /dbfiles/get.cgi/data.xml HTTP/1.1" 200 7338 TIME: 1
+  192.168.151.66 - - [10/Sep/2007:01:02:41 -0700] "GET /helpdesk.html HTTP/1.1" 200 40 TIME: 1
+
+For reference the invocation was:
+
+  recs-frommultire --re 'latency=TIME: (\d*)' --re 'method,url="([^" ]*) ([^" ?]*)' access.log
+
+The first option specifies one field, named "latency" which is the only capture
+group of the first regular expression. The second option specifies two fields,
+named "method" and "url" which are the two capture groups of the second regular
+expression. The final argument is the file to parse. Each regular expression is
+run against each line. When a field would be duplicated, all matches so far are
+flushed as a record.
+
+The output from recs-frommultire looks like:
+
+  {"url":"/view_image.cgi","method":"GET","latency":"0"}
+  {"url":"/x.gif","method":"GET","latency":"0"}
+  {"url":"/dbfiles/get.cgi/data.xml","method":"GET","latency":"1"}
+  {"url":"/helpdesk.html","method":"GET","latency":"1"}
+
+=head1 recs-xform - arbitrary manipulation of records
+
+JSON is mostly human readable and as you can see each record has three fields,
+"url", "method", and "latency". Unfortunately "url" isn't quite as we want it.
+As it stands the key for get.cgi requests is included in the URL but that will
+mess up our statistics so we'd like to get rid of it which brings us to our
+next stage in the pipeline:
+
+  recs-xform '$r->{url} =~ s/(get\.cgi)\/.*/$1/;'
+
+recs-xform is both simple and powerful: it executes arbitrary, inline perl on
+each record. The record is represented as a App::RecordStream::Record object in the scalar
+$r, but all the fields can be accessed as if it were no more than a hashref. In
+this case we are using a substitution command to strip the key off of get.cgi
+requests. At this point our data is ready to be aggregated and made into
+statistics.
+
+=head1 recs-collate - Generate aggregate statistics
+
+recs-collate -k url --perfect -a avg,latency -a count
+
+recs-collate is the crown jewel of recs analysis. It groups records from input
+together, computes aggregate information about them, and dumps this aggregate
+information as output records. "-k url" requests that records be grouped by
+their "url" field. "--perfect" indicates that they should be grouped together
+even if they are not adjacent in input (adjacent only is the default). "-a
+avg,latency" requests that the average aggregator be used on the latency field.
+"-a count" requests that the count aggregator be used.
+
+Aggregators are one of the most powerful features of recs. As of writing there
+are 21 distinct aggregators ready for use. Some of the most powerful are:
+
+  average: averages provided field
+  count: counts (non-unique) records
+  distinctcount: count unique values from provided field
+  maximum: maximum value for a field
+  percentile: value of pXX for field
+  sum: sums provided field
+
+You can find out what all of them are with `recs-collate --list-aggregators`.
+
+Here are a few sample records from after the collate step:
+
+  {"count":11,"url":"/dbfiles/list.cgi","avg_latency":21.0909090909091}
+  {"count":2,"url":"/linkGenerator/Host.cgi","avg_latency":0.5}
+  {"count":3,"url":"/view_image.cgi","avg_latency":0.333333333333333}
+  {"count":21,"url":"/dbfiles/check.cgi","avg_latency":0.476190476190476}
+
+=head1 recs-sort - ordering records in a stream
+
+Now that the collation has been done the records have the numbers we desire, but they are neither in a useful order, nor a pretty format.
+
+The first we rectify with recs-sort:
+
+recs-sort -k 'avg_latency=-n'
+
+We have specified that the records are to be sorted by their avg_latency field
+and they are to be sorted numerically, descending (negative n)
+
+=head1 recs-totable - pretty output of data
+
+Finally, we convert JSON back to something slightly more human readable:
+
+head -n 5 | recs-totable
+
+Since JSON records are one to a line, we can use good ol' UNIX head to take the
+5 top offenders. And we use recs-totable to convert those top ten to a nicely
+formatted text table:
+
+  avg_latency         ct     url
+  -----------------   ----   -----------------------
+  21.0909090909091    11     /dbfiles/list.cgi
+  1.36368901114811    6907   /view_image.cgi
+  1.02898550724638    345    /helpdesk.html
+  1                   1      /dbfiles/
+  0.727272727272727   11     /linkGenerator/Host.cgi
+
+=head1 And so it ends
+
+When faced with awesome prowess like this, what can a 346-foot, 26000-ton sea
+monster from beyond the stars do but slink back to its cave and bide its time
+beneath downtown Seattle?
+
+Should you find yourself locked in mortal combat with a unspeakable horror of
+your own you can always turn to --help. All recs scripts come equipped with
+detailed usage instructions triggered by the --help option. You can also turn
+to `man recs` (if the man file is installed correctly)
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=back
+
