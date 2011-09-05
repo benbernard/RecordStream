@@ -379,63 +379,63 @@ sub _format_row {
 }
 
 sub _new_node {
-    return [{}, [], -1];
+   return [{}, [], -1];
 }
 
 sub _touch_node_recurse {
-    my ($node, @keys) = @_;
+   my ($node, @keys) = @_;
 
-    if(!@keys) {
-        return;
-    }
+   if(!@keys) {
+      return;
+   }
 
-    my $hash = $node->[0];
-    my $array = $node->[1];
+   my $hash = $node->[0];
+   my $array = $node->[1];
 
-    my $key = shift @keys;
-    my $next_node = $hash->{$key};
-    if(!$next_node) {
-        $next_node = $hash->{$key} = _new_node();
-        push @$array, $key;
-    }
+   my $key = shift @keys;
+   my $next_node = $hash->{$key};
+   if(!$next_node) {
+      $next_node = $hash->{$key} = _new_node();
+      push @$array, $key;
+   }
 
-    _touch_node_recurse($next_node, @keys);
+   _touch_node_recurse($next_node, @keys);
 }
 
 sub _dump_node_recurse {
-    my ($node, $acc, $depth_left, @values_so_far) = @_;
+   my ($node, $acc, $depth_left, @values_so_far) = @_;
 
-    my $hash = $node->[0];
-    my $array = $node->[1];
+   my $hash = $node->[0];
+   my $array = $node->[1];
 
-    if(!$depth_left) {
-        $node->[2] = scalar(@$acc);
-        push @$acc, \@values_so_far;
-        return;
-    }
+   if(!$depth_left) {
+      $node->[2] = scalar(@$acc);
+      push @$acc, \@values_so_far;
+      return;
+   }
 
-    foreach my $key (@$array) {
-        _dump_node_recurse($hash->{$key}, $acc, $depth_left - 1, @values_so_far, $key);
-    }
+   foreach my $key (@$array) {
+      _dump_node_recurse($hash->{$key}, $acc, $depth_left - 1, @values_so_far, $key);
+   }
 }
 
 sub _find_index_recursive {
-    my ($node, @path) = @_;
+   my ($node, @path) = @_;
 
-    if(!@path) {
-        return $node->[2];
-    }
+   if(!@path) {
+      return $node->[2];
+   }
 
-    my $hash = $node->[0];
+   my $hash = $node->[0];
 
-    my $k = shift @path;
-    my $next_node = $hash->{$k};
+   my $k = shift @path;
+   my $next_node = $hash->{$k};
 
-    if(!$next_node) {
-        die "Missing key " . $k . " followed by " . join(", ", @path);
-    }
+   if(!$next_node) {
+      die "Missing key " . $k . " followed by " . join(", ", @path);
+   }
 
-    return _find_index_recursive($next_node, @path);
+   return _find_index_recursive($next_node, @path);
 }
 
 sub add_help_types {
