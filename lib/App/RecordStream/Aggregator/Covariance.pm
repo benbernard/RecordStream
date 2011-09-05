@@ -37,9 +37,11 @@ sub short_usage
 }
 
 App::RecordStream::Aggregator::register_aggregator('cov', __PACKAGE__);
+App::RecordStream::Aggregator::register_aggregator('covar', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('covariance', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'cov', 'VALUATION', 'VALUATION');
+App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'covar', 'VALUATION', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'covariance', 'VALUATION', 'VALUATION');
 
 1;
