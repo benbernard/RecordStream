@@ -1,5 +1,7 @@
 package App::RecordStream::Aggregator::MapReduce;
 
+our $VERSION = "3.4";
+
 use strict;
 use lib;
 

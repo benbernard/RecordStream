@@ -1,5 +1,7 @@
 package App::RecordStream::Accumulator;
 
+our $VERSION = "3.4";
+
 sub accept_record {
    my $this = shift;
    $this->accumulate_record(shift);

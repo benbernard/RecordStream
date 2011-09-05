@@ -1,5 +1,7 @@
 package App::RecordStream::Aggregator::InjectInto;
 
+our $VERSION = "3.4";
+
 use App::RecordStream::Aggregator;
 
 use base qw(App::RecordStream::Aggregator::Aggregation);
