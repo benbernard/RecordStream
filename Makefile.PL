@@ -16,7 +16,8 @@ WriteMakefile(
                     . 'Keith Amling - keith.amling@gmail.com',
    LICENSE       => 'MIT',
    dist          => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-   clean         => { FILES => 'App-RecordStream-*' },
+   clean         => { FILES => 'App-RecordStream-* doc/recs-* deb-dist testDb makedeb' },
+
    PREREQ_PM     => {
      'Carp'                => 0,
      'DBD::SQLite'         => 0,
@@ -39,22 +40,27 @@ WriteMakefile(
      'Tie::IxHash'         => 0,
      'XML::Simple'         => 0,
    },
+
    MAN3PODS => {
       'README.pod'                => '$(INST_MAN3DIR)/RecordStream.3',
       'README.pod'                => '$(INST_MAN3DIR)/recs.3',
       'doc/Examples.pod'          => '$(INST_MAN3DIR)/recs-examples.3',
       'doc/RecordStreamStory.pod' => '$(INST_MAN3DIR)/recs-story.3',
    },
+
    MAN1PODS => {
       (map {( "doc/$_.pod" => "\$(INST_MAN1DIR)/$_.1" )} @scripts)
    },
+
    depend => {
       (map {( "doc/$_.pod" => "generate_pods" )} @scripts),
    },
+
    PL_FILES => {
       './generate_pods.pl' => 'generate_pods',
    },
+
    PM => { 
       (map {( $_ => "\$(INST_LIBDIR)/$_" )} get_pms()),
-   }
+   },
 );
