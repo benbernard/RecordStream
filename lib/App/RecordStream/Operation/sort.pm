@@ -54,9 +54,11 @@ Usage: recs-sort <args> [<files>]
                      be either lexical or numeric.  Default sort type is
                      lexical (can also use nat, lex, n, and l).  Additionallly,
                      the sort type may be prefixed with '-' to indicate a
-                     decreasing sort order.  (See perldoc for App::RecordStream::Record for
-                     more on sort specs).
-                     Maybe be a key spec, see '--help-keyspecs' for more
+                     decreasing sort order.  Additionally, the sort type may be
+                     postfixed with "*" to sort the special value "ALL" to the
+                     end (useful for the output of recs-collate --cube).  See
+                     perldoc for App::RecordStream::Record for more on sort
+                     specs.  May be a key spec, see '--help-keyspecs' for more.
                      Cannot be a keygroup.
     --reverse      - Reverses the sort order
 
