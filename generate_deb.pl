@@ -14,11 +14,12 @@ my $CLEAN_COMMANDS = {
 
 cleanup($CLEAN_COMMANDS);
 
-if ( $ARGV[0] eq '--clean' ) {
+if ( $ARGV[0] && $ARGV[0] eq '--clean' ) {
    print "Clean only, bailing!\n";
    exit 0;
 }
 
+run_command('./generate_manifest.sh');
 run_command('perl Makefile.PL');
 run_command('make dist');
 

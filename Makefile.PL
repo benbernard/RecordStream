@@ -61,6 +61,6 @@ WriteMakefile(
    },
 
    PM => { 
-      (map {( $_ => "\$(INST_LIBDIR)/$_" )} get_pms()),
+      (map {( "lib/$_" => "\$(INST_LIB)/$_" )} get_pms()),
    },
 );

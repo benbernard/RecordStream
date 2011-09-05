@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::Harness;
+use FindBin qw($Bin);
 use Cwd ('abs_path');
 
 my $debug = shift;
@@ -15,7 +16,7 @@ if ( $debug ) {
 
 
 # my $dir = shift || '.';
-my $dir = abs_path('.');
+my $dir = $Bin;
 
 unshift @INC, "$dir/lib";
 unshift @INC, "$dir/tests";

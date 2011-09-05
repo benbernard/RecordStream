@@ -36,7 +36,7 @@ sub get_pms {
 
    File::Find::find({wanted => $wanted}, 'lib');
 
-   return @pms;
+   return map { $_ =~ s/^lib\///; $_ } @pms;
 }
 
 1;
