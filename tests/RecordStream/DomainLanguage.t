@@ -251,6 +251,28 @@ my @tests =
         $CAST_FAILURE,
         $CAST_FAILURE,
     ],
+    [
+        "subset_agg('2 <= {{x}} && {{x}} <= 4', sum('y'))",
+        sub
+        {
+            my $aggr = shift;
+
+            my $cookie = $aggr->initial();
+
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => 1, "y" => 6));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => 2, "y" => 5));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => 3, "y" => 4));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => 4, "y" => 3));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => 5, "y" => 2));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => 6, "y" => 1));
+
+            my $value = $aggr->squish($cookie);
+
+            is_deeply($value, 12);
+        },
+        $CAST_FAILURE,
+        $CAST_FAILURE,
+    ],
 );
 
 for my $test (@tests)

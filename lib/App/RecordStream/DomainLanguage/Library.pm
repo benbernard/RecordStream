@@ -132,4 +132,40 @@ for my $mr_name ('mr', 'map_reduce')
     }
 }
 
+sub _subset_agg
+{
+    my $match_snippet = shift;
+    my $aggregator = shift;
+
+    my $initial_sub = sub
+    {
+        return $aggregator->initial();
+    };
+
+    my $combine_sub = sub
+    {
+        my $cookie = shift;
+        my $record = shift;
+
+        if($match_snippet->evaluate_as('SCALAR', {'$r' => $record}))
+        {
+            $cookie = $aggregator->combine($cookie, $record);
+        }
+
+        return $cookie;
+    };
+
+    my $squish_sub = sub
+    {
+        my $cookie = shift;
+
+        return $aggregator->squish($cookie);
+    };
+
+    return App::RecordStream::Aggregator::InjectInto::Subrefs->new($initial_sub, $combine_sub, $squish_sub);
+}
+
+App::RecordStream::DomainLanguage::Registry::register_fn(\&_subset_agg, 'subset_aggregator', 'SNIPPET', 'AGGREGATOR');
+App::RecordStream::DomainLanguage::Registry::register_fn(\&_subset_agg, 'subset_agg', 'SNIPPET', 'AGGREGATOR');
+
 1;
