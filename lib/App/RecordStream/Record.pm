@@ -61,14 +61,13 @@ field.
 
 Calls $this->set("XXX", $value);
 
-=item $old_value = $this->remove($key);
+=item @old_values = $this->remove(@keys);
 
-Remove a field from the record, returns the old value, or undef if there was no
-such field.
+Remove fields from the record, returns the old values (or undef for each missing).
 
-=item $this->prune(@keys);
+=item $this->prune_to(@keys);
 
-Removes any fields whose names are not among those provided.
+Removes fields whose names are not among those provided.
 
 =item $this->rename($old_key, $new_key);
 
@@ -327,15 +326,18 @@ sub set
 
 sub remove
 {
-   my ($this, $field) = @_;
+   my ($this, @fields) = @_;
 
-   my $old = $this->{$field};
-   delete $this->{$field};
+   my @old;
+   for my $field (@fields)
+   {
+      push @old, delete $this->{$field};
+   }
 
-   return $old;
+   return @old;
 }
 
-sub prune
+sub prune_to
 {
    my ($this, @ok) = @_;
 

@@ -34,7 +34,7 @@ BEGIN { use_ok("App::RecordStream::Record"); }
 {
    my $rec = App::RecordStream::Record->new("a" => "b", "c" => "d");
 
-   is($rec->remove('a'), "b", "remove('a')");
+   is_deeply([$rec->remove('a')], ["b"], "remove('a')");
 
    is_deeply({$rec->as_hash()}, {"c" => "d"}, "as_hash()");
 }
@@ -42,7 +42,7 @@ BEGIN { use_ok("App::RecordStream::Record"); }
 {
    my $rec = App::RecordStream::Record->new("a" => "b", "c" => "d");
 
-   is($rec->remove('x'), undef, "remove('x')");
+   is_deeply([$rec->remove('x')], [undef], "remove('x')");
 
    is_deeply({$rec->as_hash()}, {"a" => "b", "c" => "d"}, "as_hash()");
 }
@@ -74,7 +74,7 @@ BEGIN { use_ok("App::RecordStream::Record"); }
 {
    my $rec = App::RecordStream::Record->new("a" => "b", "c" => "d", "e" => "f", "g" => "h");
 
-   $rec->prune("a", "e", "x");
+   $rec->prune_to("a", "e", "x");
 
    is_deeply({$rec->as_hash()}, {"a" => "b", "e" => "f"});
 }

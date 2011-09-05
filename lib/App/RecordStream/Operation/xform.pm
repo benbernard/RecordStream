@@ -72,12 +72,12 @@ Usage: recs-xform <args> <expr> [<files>]
 Examples:
    Add line number to records
       recs-xform '\$r->{line} = \$line'
-   Rename field a to b
-      recs-xform '\$r->rename("a", "n")'
-   Delete field a
-      recs-xform '\$r->remove("a")'
+   Rename field old to new
+      recs-xform '\$r->rename("old", "new")'
+   Delete fields a and b
+      recs-xform '\$r->remove("a", "b")'
    Remove fields which are not "a", "b", or "c"
-      recs-xform '\$r->prune("a", "b", "c")'
+      recs-xform '\$r->prune_to("a", "b", "c")'
    Double records
       recs-xform --ret '\$r = [{\%\$r}, {\%\$r}]'
    Split the records on field a
