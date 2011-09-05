@@ -66,10 +66,10 @@ my @tests =
 
             my $cookie = $aggr->initial();
 
-            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new());
-            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("t1" => 1));
-            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("t2" => 3));
-            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("t1" => 7, "t2" => 6));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("not-t" => "t-is-not-matched-here"));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("not-t" => "t-is-not-matched-here", "t1" => 1));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("not-t" => "t-is-not-matched-here", "t2" => 3));
+            $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("not-t" => "t-is-not-matched-here", "t1" => 7, "t2" => 6));
 
             my $value = $aggr->squish($cookie);
 
