@@ -1,3 +1,9 @@
+3.5 - Adding Domain Language for collate aggregators
+      Adding man files for all recs-* scripts
+      Adding sorting toptable fields
+      Changing code snippet file read behavior to require -E
+      Support for generating .deb install file
+      
 3.4_01 3.4_02 - Minor changes for CPAN Compatability
 
 3.4 - Updated modules names from Recs::* to App::RecordStream

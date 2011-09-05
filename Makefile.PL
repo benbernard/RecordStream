@@ -9,7 +9,7 @@ my @scripts = get_bin_scripts();
 
 WriteMakefile(
    NAME          => 'App::RecordStream',
-   VERSION       => '3.4_02',
+   VERSION       => '3.5',
    EXE_FILES     => [ map { "bin/$_" } @scripts ],
    ABSTRACT_FROM => 'README.pod',
    AUTHOR        => 'Ben Bernard - perlhacker@benjaminbernard.com '
@@ -54,5 +54,4 @@ WriteMakefile(
    PL_FILES => {
       './generate_pods.pl' => 'generate_pods',
    }
-
 );

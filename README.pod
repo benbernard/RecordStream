@@ -228,6 +228,3 @@ other man pages:
 
 Copyright 2007 by Benjamin Bernard and Keith Amling
 This software is released under the MIT license
-
-=head1 See Also
-
