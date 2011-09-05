@@ -1,4 +1,5 @@
 .gitignore
+App-RecordStream-3.5.tar.gz
 BuildTools.pm
 Changes
 INSTALLING
@@ -134,7 +135,7 @@ lib/App/RecordStream/Test/LastHelper.pm
 lib/App/RecordStream/Test/OperationHelper.pm
 lib/App/RecordStream/Test/Tester.pm
 lib/App/RecordStream/Test/UniqConcatHelper.pm
-libapp-recordstream-perl_3.4-02-1_i386.deb
+libapp-recordstream.deb
 src/fast-recs-collate/LICENSE
 src/fast-recs-collate/Makefile
 src/fast-recs-collate/aggregators.c

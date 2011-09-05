@@ -22,13 +22,8 @@ if ( $ARGV[0] eq '--clean' ) {
 run_command('perl Makefile.PL');
 run_command('make dist');
 
-my @found_tars = glob('App-RecordStream-*.tar.gz');
 
-if ( scalar @found_tars > 1 ) {
-   die "Found more than one tar file: " . join(' ', @found_tars);
-}
-
-my $tar = $found_tars[0];
+my $tar = find_one_glob('App-RecordStream-*.tar.gz');
 
 mkdir $DIST_DIR;
 run_command("cp $tar $DIST_DIR");
@@ -45,7 +40,9 @@ run_command('sed -e \'s/perl\///g\' -i debian/control');
 run_command('debuild -i -us -uc -b');
 
 chdir '..';
-run_command('cp *.deb ..');
+
+my $deb = find_one_glob('*.deb');
+run_command("cp $deb ../libapp-recordstream.deb");
 
 sub cleanup {
    my $commands = shift;
@@ -56,4 +53,15 @@ sub cleanup {
          run_command($command);
       }
    }
+}
+
+sub find_one_glob {
+  my $glob = shift;
+  my @found = glob('App-RecordStream-*.tar.gz');
+  
+  if ( scalar @found > 1 ) {
+     die "Found more than one file: " . join(' ', @found);
+  }
+
+  return $found[0];
 }
