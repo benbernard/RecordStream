@@ -661,6 +661,10 @@ Usage: recs-toptable <args> [<files>]
                    that value, very similar to doing a recs-grep befor toptable.
                    Takes value of the form: field=pinnedValue, field may be a
                    keyspec (not a keygroup)
+   --sort          Take sort specifications to sort X values and Y values in
+                   headers.  See `recs-sort --help` for details of sort
+                   specifications, especially the * option to sort "ALL" to the
+                   end, e.g.  "some_field=lex*".
    --noheaders     Do not print row and column headers (removes blank rows and
                    columns)
    --records|recs  Instead of printing table, output records, one per row of

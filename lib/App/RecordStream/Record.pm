@@ -136,9 +136,10 @@ together in an array reference.
 
 Produces a comparator function (which takes two records and returns similarly
 to <=> or cmp) from the provided $spec.  $spec should be like "<field>" for
-lexical sort, or "<field>=<sign><type>" where <sign> is "+" or "" for ascending
-or "-" for descending and type is one of the known types.  Type include "",
-"l", "lex", or "lexical" for lexical sort (using cmp), and "n", "num" or
+lexical sort, or "<field>=<sign><type><star>" where <sign> is "+" or "" for
+ascending or "-" for descending and type is one of the known types and <star>
+is "*" for sorting "ALL" to the end or "" for normal behaviour.  Type include
+"", "l", "lex", or "lexical" for lexical sort (using cmp), and "n", "num" or
 "numeric" for numeric sort (using <=>).
 
 =item @sorted_records = App::RecordStream::Record::sort($records_ref, @specs)
