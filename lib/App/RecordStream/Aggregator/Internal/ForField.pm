@@ -40,8 +40,6 @@ sub combine
    {
       next unless($field =~ $this->{'REGEX'});
 
-      my $value = $record->{$field};
-
       if(!exists($cookie->{$field}))
       {
          my $agg = $this->{'SNIPPET'}->evaluate_as('AGG', {'$f' => $field});
