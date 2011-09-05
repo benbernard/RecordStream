@@ -1,7 +1,5 @@
 package App::RecordStream::Aggregator::InjectInto::Subrefs;
 
-our $VERSION = "3.4";
-
 use strict;
 use lib;
 
