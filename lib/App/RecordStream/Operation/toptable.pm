@@ -116,8 +116,10 @@ sub stream_done {
    # pass 1: build xvals and yvals structures and break records up by vfield
 
    my @r2;
-   my %xvs;
-   my %yvs;
+   # x_values_tree represent a nested tree of all possible x value tuples
+   # i.e.  {x2 => 4, y => 7, x1 => 1} has an x values tuple of (1, 4) and thus with "touch" that path in the tree
+   my $x_values_tree = _new_node();
+   my $y_values_tree = _new_node();
    foreach my $record (@$records) {
       # make sure records matches appropriate pins
       my $kickout = 0;
@@ -181,22 +183,27 @@ sub stream_done {
             $v = ${$record->guess_key_from_spec($vfield)};
          }
 
-         _put_deep(\%xvs, @xv);
-         _put_deep(\%yvs, @yv);
+         _touch_node_recurse($x_values_tree, @xv);
+         _touch_node_recurse($y_values_tree, @yv);
 
          push @r2, [\@xv, \@yv, $v];
       }
    }
 
    # Start constructing the ASCII table
-   my @xvs;
-   _dump_deep(\%xvs, \@xvs, scalar(@xfields));
-   my @yvs;
-   _dump_deep(\%yvs, \@yvs, scalar(@yfields));
+
+   # we dump the tree out into all possible x value tuples (saved in
+   # @x_value_list) and tag each node in the tree with the index in
+   # @x_values_list so we can look it up later
+   my @x_values_list;
+   _dump_node_recurse($x_values_tree, \@x_values_list, scalar(@xfields));
+
+   my @y_values_list;
+   _dump_node_recurse($y_values_tree, \@y_values_list, scalar(@yfields));
 
    # Collected the data, if we're only outputing records, stop here.
    if ( $this->{'OUTPUT_RECORDS'} ) {
-      $this->output_records(\@xfields, \@yfields, \@r2, \@xvs, \@yvs);
+      $this->output_records(\@xfields, \@yfields, \@r2, \@x_values_list, \@y_values_list);
       return;
    }
 
@@ -209,8 +216,8 @@ sub stream_done {
       $height_offset += 1;
    }
 
-   my $w = $width_offset + scalar(@xvs);
-   my $h = $height_offset + scalar(@yvs);
+   my $w = $width_offset + scalar(@x_values_list);
+   my $h = $height_offset + scalar(@y_values_list);
    my @table = map { [map { "" } (1..$w)] } (1..$h);
 
    if ( $headers ) {
@@ -224,8 +231,8 @@ sub stream_done {
    }
 
    my @last_xv = map { "" } (1..@xfields);
-   for(my $i = 0; $i < @xvs; ++$i) {
-      my $xv = $xvs[$i];
+   for(my $i = 0; $i < @x_values_list; ++$i) {
+      my $xv = $x_values_list[$i];
       for(my $j = 0; $j < @xfields; ++$j) {
          if($last_xv[$j] ne $xv->[$j]) {
             $last_xv[$j] = $xv->[$j];
@@ -238,8 +245,8 @@ sub stream_done {
    }
 
    my @last_yv = map { "" } (1..@yfields);
-   for(my $i = 0; $i < @yvs; ++$i) {
-      my $yv = $yvs[$i];
+   for(my $i = 0; $i < @y_values_list; ++$i) {
+      my $yv = $y_values_list[$i];
       for(my $j = 0; $j < @yfields; ++$j) {
          if($last_yv[$j] ne $yv->[$j]) {
             $last_yv[$j] = $yv->[$j];
@@ -254,13 +261,14 @@ sub stream_done {
    for my $r2 (@r2) {
       my ($xv, $yv, $v) = @$r2;
 
-      my $i = _find_deep(\%xvs, @$xv);
+      # now we have our x value tuple, we need to know where it was in @x_values_list so we can know its x coordinate
+      my $i = _find_index_recursive($x_values_tree, @$xv);
 
       if($i == -1) {
          die "No index set for " . join(", " . @$xv);
       }
 
-      my $j = _find_deep(\%yvs, @$yv);
+      my $j = _find_index_recursive($y_values_tree, @$yv);
 
       if($j == -1) {
          die "No index set for " . join(", " . @$yv);
@@ -370,48 +378,64 @@ sub _format_row {
    return $s;
 }
 
-sub _put_deep {
-    my ($hash, @keys) = @_;
-
-    foreach my $key (@keys) {
-       if(!exists($hash->{$key})) {
-          $hash->{$key} = { };
-       }
-
-       $hash = $hash->{$key};
-    }
-
-    $hash->{"_"} = -1;
+sub _new_node {
+    return [{}, [], -1];
 }
 
-sub _dump_deep {
-    my ($hash, $array, $depth, @xv) = @_;
+sub _touch_node_recurse {
+    my ($node, @keys) = @_;
 
-    if(!$depth) {
-        $hash->{"_"} = scalar(@$array);
-        push @$array, \@xv;
+    if(!@keys) {
         return;
     }
 
-    foreach my $key (sort(keys(%$hash))) {
-        _dump_deep($hash->{$key}, $array, $depth - 1, @xv, $key);
+    my $hash = $node->[0];
+    my $array = $node->[1];
+
+    my $key = shift @keys;
+    my $next_node = $hash->{$key};
+    if(!$next_node) {
+        $next_node = $hash->{$key} = _new_node();
+        push @$array, $key;
+    }
+
+    _touch_node_recurse($next_node, @keys);
+}
+
+sub _dump_node_recurse {
+    my ($node, $acc, $depth_left, @values_so_far) = @_;
+
+    my $hash = $node->[0];
+    my $array = $node->[1];
+
+    if(!$depth_left) {
+        $node->[2] = scalar(@$acc);
+        push @$acc, \@values_so_far;
+        return;
+    }
+
+    foreach my $key (@$array) {
+        _dump_node_recurse($hash->{$key}, $acc, $depth_left - 1, @values_so_far, $key);
     }
 }
 
-sub _find_deep {
-    my $hr = shift;
+sub _find_index_recursive {
+    my ($node, @path) = @_;
 
-    while(@_) {
-        my $k = shift;
-
-        $hr = $hr->{$k};
-
-        if(!$hr) {
-            die "Missing key " . $k . " followed by " . join(", ", @_);
-        }
+    if(!@path) {
+        return $node->[2];
     }
 
-    return $hr->{"_"};
+    my $hash = $node->[0];
+
+    my $k = shift @path;
+    my $next_node = $hash->{$k};
+
+    if(!$next_node) {
+        die "Missing key " . $k . " followed by " . join(", ", @path);
+    }
+
+    return _find_index_recursive($next_node, @path);
 }
 
 sub add_help_types {
