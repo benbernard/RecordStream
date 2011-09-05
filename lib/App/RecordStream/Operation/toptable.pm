@@ -6,6 +6,7 @@ use warnings;
 use base qw(App::RecordStream::Accumulator App::RecordStream::Operation App::RecordStream::ScreenPrinter);
 
 use App::RecordStream::OutputStream;
+use App::RecordStream::Record;
 
 # TODO: amling, this format is so ugly it hurts.  Think of something better.
 
@@ -21,12 +22,14 @@ sub init {
    my $ygroup = App::RecordStream::KeyGroups->new();
    my $vgroup = App::RecordStream::KeyGroups->new();
    my $output_records = 0;
+   my %sorts = ();
 
    my $spec = {
       "x-field|x=s"     => sub { $xgroup->add_groups($_[1]); },
       "y-field|y=s"     => sub { $ygroup->add_groups($_[1]); },
       "v-field|v=s"     => sub { $vgroup->add_groups($_[1]); },
       "pin=s"           => sub { for(split(/,/, $_[1])) { if(/^(.*)=(.*)$/) { $pins{$1} = $2; } } },
+      "sort=s"          => sub { for(split(/,/, $_[1])) { my ($comparator, $field) = App::RecordStream::Record::get_comparator_and_field($_); $sorts{$field} = $comparator; } },
       'noheaders'       => sub { $headers = 0; },
       'records|recs'    => \$output_records,
    };
@@ -40,6 +43,7 @@ sub init {
    $this->{'VGROUP'} = $vgroup;
 
    $this->{'PINS_HASH'}      = \%pins;
+   $this->{'SORTS'}          = \%sorts;
    $this->{'HEADERS'}        = $headers;
    $this->{'DO_VFIELDS'}     = $do_vfields;
    $this->{'OUTPUT_RECORDS'} = $output_records;
@@ -116,8 +120,10 @@ sub stream_done {
    # pass 1: build xvals and yvals structures and break records up by vfield
 
    my @r2;
-   my %xvs;
-   my %yvs;
+   # x_values_tree represent a nested tree of all possible x value tuples
+   # i.e.  {x2 => 4, y => 7, x1 => 1} has an x values tuple of (1, 4) and thus with "touch" that path in the tree
+   my $x_values_tree = _new_node();
+   my $y_values_tree = _new_node();
    foreach my $record (@$records) {
       # make sure records matches appropriate pins
       my $kickout = 0;
@@ -181,22 +187,27 @@ sub stream_done {
             $v = ${$record->guess_key_from_spec($vfield)};
          }
 
-         _put_deep(\%xvs, @xv);
-         _put_deep(\%yvs, @yv);
+         _touch_node_recurse($x_values_tree, @xv);
+         _touch_node_recurse($y_values_tree, @yv);
 
          push @r2, [\@xv, \@yv, $v];
       }
    }
 
    # Start constructing the ASCII table
-   my @xvs;
-   _dump_deep(\%xvs, \@xvs, scalar(@xfields));
-   my @yvs;
-   _dump_deep(\%yvs, \@yvs, scalar(@yfields));
+
+   # we dump the tree out into all possible x value tuples (saved in
+   # @x_value_list) and tag each node in the tree with the index in
+   # @x_values_list so we can look it up later
+   my @x_values_list;
+   $this->_dump_node_recurse($x_values_tree, \@x_values_list, [@xfields], []);
+
+   my @y_values_list;
+   $this->_dump_node_recurse($y_values_tree, \@y_values_list, [@yfields], []);
 
    # Collected the data, if we're only outputing records, stop here.
    if ( $this->{'OUTPUT_RECORDS'} ) {
-      $this->output_records(\@xfields, \@yfields, \@r2, \@xvs, \@yvs);
+      $this->output_records(\@xfields, \@yfields, \@r2, \@x_values_list, \@y_values_list);
       return;
    }
 
@@ -209,8 +220,8 @@ sub stream_done {
       $height_offset += 1;
    }
 
-   my $w = $width_offset + scalar(@xvs);
-   my $h = $height_offset + scalar(@yvs);
+   my $w = $width_offset + scalar(@x_values_list);
+   my $h = $height_offset + scalar(@y_values_list);
    my @table = map { [map { "" } (1..$w)] } (1..$h);
 
    if ( $headers ) {
@@ -224,8 +235,8 @@ sub stream_done {
    }
 
    my @last_xv = map { "" } (1..@xfields);
-   for(my $i = 0; $i < @xvs; ++$i) {
-      my $xv = $xvs[$i];
+   for(my $i = 0; $i < @x_values_list; ++$i) {
+      my $xv = $x_values_list[$i];
       for(my $j = 0; $j < @xfields; ++$j) {
          if($last_xv[$j] ne $xv->[$j]) {
             $last_xv[$j] = $xv->[$j];
@@ -238,8 +249,8 @@ sub stream_done {
    }
 
    my @last_yv = map { "" } (1..@yfields);
-   for(my $i = 0; $i < @yvs; ++$i) {
-      my $yv = $yvs[$i];
+   for(my $i = 0; $i < @y_values_list; ++$i) {
+      my $yv = $y_values_list[$i];
       for(my $j = 0; $j < @yfields; ++$j) {
          if($last_yv[$j] ne $yv->[$j]) {
             $last_yv[$j] = $yv->[$j];
@@ -254,13 +265,14 @@ sub stream_done {
    for my $r2 (@r2) {
       my ($xv, $yv, $v) = @$r2;
 
-      my $i = _find_deep(\%xvs, @$xv);
+      # now we have our x value tuple, we need to know where it was in @x_values_list so we can know its x coordinate
+      my $i = _find_index_recursive($x_values_tree, @$xv);
 
       if($i == -1) {
          die "No index set for " . join(", " . @$xv);
       }
 
-      my $j = _find_deep(\%yvs, @$yv);
+      my $j = _find_index_recursive($y_values_tree, @$yv);
 
       if($j == -1) {
          die "No index set for " . join(", " . @$yv);
@@ -370,48 +382,93 @@ sub _format_row {
    return $s;
 }
 
-sub _put_deep {
-    my ($hash, @keys) = @_;
+sub _get_sort {
+   my $this = shift;
+   my $field = shift;
 
-    foreach my $key (@keys) {
-       if(!exists($hash->{$key})) {
-          $hash->{$key} = { };
-       }
+   my $comparator = $this->{'SORTS'}->{$field};
+   if(!defined($comparator)) {
+      return undef;
+   }
 
-       $hash = $hash->{$key};
-    }
-
-    $hash->{"_"} = -1;
+   return sub {
+      my @fake_records = map { App::RecordStream::Record->new($field => $_) } @_;
+      @fake_records = sort { $comparator->($a, $b) } @fake_records;
+      return map { $_->{$field} } @fake_records;
+   };
 }
 
-sub _dump_deep {
-    my ($hash, $array, $depth, @xv) = @_;
-
-    if(!$depth) {
-        $hash->{"_"} = scalar(@$array);
-        push @$array, \@xv;
-        return;
-    }
-
-    foreach my $key (sort(keys(%$hash))) {
-        _dump_deep($hash->{$key}, $array, $depth - 1, @xv, $key);
-    }
+sub _new_node {
+   return [{}, [], -1];
 }
 
-sub _find_deep {
-    my $hr = shift;
+sub _touch_node_recurse {
+   my ($node, @keys) = @_;
 
-    while(@_) {
-        my $k = shift;
+   if(!@keys) {
+      return;
+   }
 
-        $hr = $hr->{$k};
+   my $hash = $node->[0];
+   my $array = $node->[1];
 
-        if(!$hr) {
-            die "Missing key " . $k . " followed by " . join(", ", @_);
-        }
-    }
+   my $key = shift @keys;
+   my $next_node = $hash->{$key};
+   if(!$next_node) {
+      $next_node = $hash->{$key} = _new_node();
+      push @$array, $key;
+   }
 
-    return $hr->{"_"};
+   _touch_node_recurse($next_node, @keys);
+}
+
+sub _dump_node_recurse {
+   my ($this, $node, $acc, $fields_left, $values_so_far) = @_;
+
+   my $hash = $node->[0];
+   my $array = $node->[1];
+
+   if(!@$fields_left) {
+      $node->[2] = scalar(@$acc);
+      push @$acc, [@$values_so_far];
+      return;
+   }
+
+   my $field = shift @$fields_left;
+
+   my @field_values = @$array;
+   my $sort = $this->_get_sort($field);
+   if(defined($sort))
+   {
+      @field_values = $sort->(@field_values);
+   }
+
+   foreach my $key (@field_values) {
+      push @$values_so_far, $key;
+      $this->_dump_node_recurse($hash->{$key}, $acc, $fields_left, $values_so_far);
+      pop @$values_so_far;
+   }
+
+   unshift @$fields_left, $field;
+}
+
+sub _find_index_recursive {
+   my ($node, @path) = @_;
+
+   if(!@path) {
+      return $node->[2];
+   }
+
+   my $hash = $node->[0];
+
+   my $k = shift @path;
+   my $next_node = $hash->{$k};
+
+   if(!$next_node) {
+      die "Missing key " . $k . " followed by " . join(", ", @path);
+   }
+
+   return _find_index_recursive($next_node, @path);
 }
 
 sub add_help_types {
