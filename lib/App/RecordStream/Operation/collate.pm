@@ -353,9 +353,9 @@ Examples:
    Sum all time fields
       recs-collate --key ... --dlaggregator "times=for_field(qr/^t/, 'sum(\\\$f)')"
    Find the median value of x+y in records
-      recs-collate --dlaggregator 'median=perc(50, val(sub{\$_[0]->{x}+\$_[0]->{y}}))'
+      recs-collate --dlaggregator "m=perc(50,snip('{{x}}+{{y}}'))"
    Count people by first three letters of their name
-      recs-collate --dlkey 'tla=val(sub{substr(\$_[0]->{name},0,3)})'
+      recs-collate --dlkey "tla=snip('substr({{name}},0,3')"
 USAGE
    ;
 }
