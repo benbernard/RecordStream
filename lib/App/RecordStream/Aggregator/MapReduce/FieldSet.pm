@@ -13,10 +13,10 @@ sub new
    my $class = shift;
    my @fields = @_;
 
-   return new_from_valuations($class, map { App::RecordStream::DomainLanguage::Valuation::KeySpec->new($_) } @fields);
+   return new_from_valuation($class, map { App::RecordStream::DomainLanguage::Valuation::KeySpec->new($_) } @fields);
 }
 
-sub new_from_valuations
+sub new_from_valuation
 {
    my $class = shift;
    my @valuations = @_;
