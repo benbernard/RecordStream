@@ -35,7 +35,7 @@ $dir =~ s/\.tar\.gz$//;
 
 chdir $dir;
 
-run_command('dh-make-perl --depends gnuplot --build .');
+run_command('dh-make-perl --depends gnuplot .');
 run_command('sed -e \'s/perl\///g\' -i debian/control');
 run_command('debuild -i -us -uc -b');
 
@@ -57,10 +57,14 @@ sub cleanup {
 
 sub find_one_glob {
   my $glob = shift;
-  my @found = glob('App-RecordStream-*.tar.gz');
+  my @found = glob($glob);
   
   if ( scalar @found > 1 ) {
-     die "Found more than one file: " . join(' ', @found);
+     die "Found more than one file: " . join(' ', @found) . " for glob $glob in dir: " . $ENV{PWD};
+  }
+
+  if ( scalar @found == 0 ) {
+     die "Found no files for glob: $glob in dir: $ENV{PWD}";
   }
 
   return $found[0];
