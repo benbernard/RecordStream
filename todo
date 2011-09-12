@@ -2,6 +2,7 @@ perldocs for modules
    other than Record
 more aggregators
    linreg
+   weighted percentile [map] (may be difficult to decide integration with the domain language...)
 perf test
    recs-collate lru size 1 v. optimized adjacent recs collate
    JSON v. old recs v. other serialization (Data::Dumper, Storable, ?)
