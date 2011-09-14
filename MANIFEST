@@ -26,6 +26,7 @@ bin/recs-join
 bin/recs-normalizetime
 bin/recs-operation
 bin/recs-sort
+bin/recs-stream2table
 bin/recs-tocsv
 bin/recs-todb
 bin/recs-tognuplot
@@ -119,6 +120,7 @@ lib/App/RecordStream/Operation/grep.pm
 lib/App/RecordStream/Operation/join.pm
 lib/App/RecordStream/Operation/normalizetime.pm
 lib/App/RecordStream/Operation/sort.pm
+lib/App/RecordStream/Operation/stream2table.pm
 lib/App/RecordStream/Operation/tocsv.pm
 lib/App/RecordStream/Operation/todb.pm
 lib/App/RecordStream/Operation/tognuplot.pm
@@ -194,6 +196,7 @@ tests/RecordStream/Operation/grep.t
 tests/RecordStream/Operation/join.t
 tests/RecordStream/Operation/normalizetime.t
 tests/RecordStream/Operation/sort.t
+tests/RecordStream/Operation/stream2table.t
 tests/RecordStream/Operation/tocsv.t
 tests/RecordStream/Operation/tognuplot.t
 tests/RecordStream/Operation/tohtml.t
