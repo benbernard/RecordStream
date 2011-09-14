@@ -5,15 +5,21 @@ more aggregators
 perf test
    recs-collate lru size 1 v. optimized adjacent recs collate
    JSON v. old recs v. other serialization (Data::Dumper, Storable, ?)
+recs-frommultire
+   block mechanism
+      could be sed-esque script where there are primitives for shoving matched groups "into" a block in construction
+         could actually be a full perl domain language
 recs-join - Join in sqlite for larger db streams
 recs-sort, recs-todb - need value options for keyspec groups
 recs-fromhtmltable - parse an html file, extract data from a table
 recs-collate - use Getopt::Long's multiple option values supports to provide easier aggregators, e.g.  something like --sum x
 recs-collate - option to ignore keys that have a null value for provided key field (eliminate silly recs-grep)
+recs-multiplex - divide incoming stream by a "thread/process" key, feeding to multiple copies of the "same" operation and dumping their outputs incrementally
 
 Aribritation Collation clumps
   - suportt week over week
   - add new aggreators that expect 2 or some number of recs
+  - "clumper" could be a new type in the domain language allowing things like nested mechanisms easily
 
 recs-autojoin - join stream against itself
 
