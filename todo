@@ -1,5 +1,3 @@
-perldocs for modules
-   other than Record
 more aggregators
    linreg
    weighted percentile [map] (may be difficult to decide integration with the domain language...)
@@ -23,6 +21,10 @@ Aribritation Collation clumps
   - "clumper" could be a new type in the domain language allowing things like nested mechanisms easily
 
 recs-autojoin - join stream against itself
+
+Documentation - 
+  perldocs other than Record
+  SQL equivalents (recs-grep for Select..WHERE, recs-collate for SELECT AGG() from... GROUP BY KEY)
 
 Key groups:
   rerun field group for each record - may have an issue with recs-collate
