@@ -126,29 +126,32 @@ sub run_operation {
 sub get_field_value_pairs {
    my ($this, $groups, $fields, $prefix) = @_;
 
-   #Check for $NUM for field name
-   my @real_fields;
-   my $values_to_remove = {};
+   my @field_names;
+   my %groups_used;
 
-   my $index = -1;
-   foreach my $field ( @$fields ) {
-      $index++;
-      my $real_field = $field;
-      if ( $field =~ m/^\$(\d+)$/ ) {
-         my $index = $1 - 1;
-         $real_field = $groups->[$index];
-         $values_to_remove->{$real_field} = 1;
+   for(my $i = 0; $i < @$fields; ++$i) {
+      my $field = $fields->[$i];
+      my $field_name;
+      if($field =~ /^\$(\d+)$/) {
+         my $n = $1 - 1;
+         $field_name = $groups->[$n];
+         $groups_used{$n} = 1;
       }
-      push @real_fields, $real_field;
+      else {
+         $field_name = $field;
+      }
+      push @field_names, $field_name;
    }
 
-   my @values = grep { ! exists $values_to_remove->{$_} } @$groups;
-
    my @pairs;
-   for(my $index = 0; $index < @values; ++$index) {
-      my $field_name = ($index < @real_fields) ? $real_fields[$index] : ($prefix . $index);
-      my $value = $values[$index];
-      push @pairs, [$field_name, $value];
+   my $pair_index = 0;
+   for(my $i = 0; $i < @$groups; ++$i) {
+      if($groups_used{$i}) {
+          next;
+      }
+      my $field_name = ($pair_index < @field_names) ? $field_names[$pair_index] : ($prefix . $pair_index);
+      push @pairs, [$field_name, $groups->[$i]];
+      $pair_index++;
    }
 
    return \@pairs;
