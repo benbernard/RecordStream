@@ -55,11 +55,11 @@ sub usage {
    my $usage =  <<USAGE;
 Usage: recs-eval <args> <expr> [<files>]
    <expr> is evaluated as perl on each record of input (or records from
-   <files>) with \$r set to a App::RecordStream::Record object and \$line set to the current
-   line number (starting at 1).  The result of each evaluation is printed on a
-   line by itself (this is not a recs stream).  See App::RecordStream::Record for help on
-   what the \$r object can do.  See --help-snippets for more information on
-   code snippets
+   <files>) with \$r set to a App::RecordStream::Record object and \$line set
+   to the current line number (starting at 1).  The result of each evaluation
+   is printed on a line by itself (this is not a recs stream).  See
+   App::RecordStream::Record for help on what the \$r object can do.  See
+   --help-snippets for more information on code snippets
 
    --no-newline - Do not put a newline after each record's output
 
