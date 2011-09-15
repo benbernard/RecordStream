@@ -83,7 +83,7 @@ KEY GROUPS
 
    You can have a literal '!' in your regex, just escape it with a \\.
 
-   Normally, key groups will only match keys who's values are scalars.  This
+   Normally, key groups will only match keys whose values are scalars.  This
    can be changed with the 'returnrefs' or rr flag.
 
    With the above record !f! would match no fields, but !f!rr would match foo
