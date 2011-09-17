@@ -14,6 +14,13 @@ recs-fromhtmltable - parse an html file, extract data from a table
 recs-collate - use Getopt::Long's multiple option values supports to provide easier aggregators, e.g.  something like --sum x
 recs-collate - option to ignore keys that have a null value for provided key field (eliminate silly recs-grep)
 recs-multiplex - divide incoming stream by a "thread/process" key, feeding to multiple copies of the "same" operation and dumping their outputs incrementally
+recs-annotate - memoized annotation of records based on a slice of keys
+recs-collate - use fastcollate when possible
+
+Distribution Notes:
+  Set up PPA for updates
+  No-architecture .deb (32-bit needs love)
+  Generate script man files in the source for CPAN
 
 Aribritation Collation clumps
   - suportt week over week
