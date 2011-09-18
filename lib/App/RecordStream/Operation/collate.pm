@@ -106,7 +106,7 @@ sub build_dlaggregator {
       die "Bad domain language aggregator option: " . $string;
    }
 
-   $dlaggregators_ref->{$name} = App::RecordStream::DomainLanguage::Snippet->new($string)->evaluate_as('AGG');
+   $dlaggregators_ref->{$name} = App::RecordStream::DomainLanguage::Snippet->new($string)->evaluate_as('AGGREGATOR');
 }
 
 sub accept_record {

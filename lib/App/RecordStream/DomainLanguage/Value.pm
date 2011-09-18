@@ -131,7 +131,7 @@ sub cast_or_die
     my $type = shift;
     my $obj = shift;
 
-    if($type eq 'AGG')
+    if($type eq 'AGGREGATO')
     {
         return cast_agg_or_die($obj);
     }
