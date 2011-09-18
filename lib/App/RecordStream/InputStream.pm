@@ -75,7 +75,7 @@ streams are exhausted
 our $VERSION = "3.4";
 
 use strict;
-use lib;
+use warnings;
 
 use IO::String;
 use JSON qw(decode_json);

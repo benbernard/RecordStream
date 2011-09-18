@@ -3,7 +3,7 @@ package App::RecordStream::LRUSheriff;
 our $VERSION = "3.4";
 
 use strict;
-use lib;
+use warnings;
 
 sub new
 {

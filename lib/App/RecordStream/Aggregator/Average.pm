@@ -3,7 +3,7 @@ package App::RecordStream::Aggregator::Average;
 our $VERSION = "3.4";
 
 use strict;
-use lib;
+use warnings;
 
 use App::RecordStream::Aggregator::Ord2Univariate;
 use App::RecordStream::Aggregator;

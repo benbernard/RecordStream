@@ -3,7 +3,7 @@ package App::RecordStream::Aggregator::ValuesToKeys;
 our $VERSION = "3.4";
 
 use strict;
-use lib;
+use warnings;
 
 use App::RecordStream::Aggregator;
 use base qw(App::RecordStream::Aggregator::MapReduce::FieldSet);

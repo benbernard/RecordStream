@@ -64,7 +64,7 @@ String representation of a hash ref, what would be printed from put_hashref
 our $VERSION = "3.4";
 
 use strict;
-use lib;
+use warnings;
 
 use JSON qw(encode_json);
 

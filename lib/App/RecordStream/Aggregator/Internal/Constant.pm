@@ -1,7 +1,7 @@
 package App::RecordStream::Aggregator::Internal::Constant;
 
 use strict;
-use lib;
+use warnings;
 
 use App::RecordStream::Aggregator::Aggregation;
 use base 'App::RecordStream::Aggregator::Aggregation';

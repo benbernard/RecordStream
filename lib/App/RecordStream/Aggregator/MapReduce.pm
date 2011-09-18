@@ -3,7 +3,7 @@ package App::RecordStream::Aggregator::MapReduce;
 our $VERSION = "3.4";
 
 use strict;
-use lib;
+use warnings;
 
 use base qw(App::RecordStream::Aggregator::Aggregation);
 

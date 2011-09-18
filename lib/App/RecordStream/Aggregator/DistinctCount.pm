@@ -3,7 +3,7 @@ package App::RecordStream::Aggregator::DistinctCount;
 our $VERSION = "3.4";
 
 use strict;
-use lib;
+use warnings;
 
 use App::RecordStream::Aggregator;
 use App::RecordStream::DomainLanguage::Registry;

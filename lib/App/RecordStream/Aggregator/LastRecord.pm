@@ -3,7 +3,7 @@ package App::RecordStream::Aggregator::LastRecord;
 our $VERSION = "3.4";
 
 use strict;
-use lib;
+use warnings;
 
 use App::RecordStream::Aggregator::InjectInto;
 use App::RecordStream::DomainLanguage::Registry;

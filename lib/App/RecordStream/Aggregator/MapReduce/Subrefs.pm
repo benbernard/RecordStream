@@ -1,7 +1,7 @@
 package App::RecordStream::Aggregator::MapReduce::Subrefs;
 
 use strict;
-use lib;
+use warnings;
 
 use App::RecordStream::Aggregator::MapReduce;
 
