@@ -104,6 +104,11 @@ Produces records from packet capture files (.pcap) as made by tcpdump
 
 =over 4
 
+=item recs-annotate
+
+Annotate records with common fields, will memoize additions to speed up common
+annotations
+
 =item recs-collate
 
 Perforce aggregation operations on records.  Group by a field, get an average,
