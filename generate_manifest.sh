@@ -4,7 +4,6 @@ find . \( -type f -o -type l \) \
    -not -path './makedeb/*' \
    -not -path "./debian/*" \
    -not -path "./deb-dist/*" \
-   -not -path "./doc/recs-*" \
    -not -path "./blib/*" \
    -not -path './.git/*' \
    -not -path ./Makefile \
