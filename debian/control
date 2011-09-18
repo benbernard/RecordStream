@@ -1,0 +1,30 @@
+Source: libapp-recordstream-perl
+Section: perl
+Priority: optional
+Build-Depends: debhelper (>= 7)
+Build-Depends-Indep: perl, libtie-ixhash-perl, libnetpacket-perl,
+  libdbd-sqlite3-perl, libxml-simple-perl, libtext-csv-perl,
+  libjson-xs-perl, libdbi-perl, libnet-pcap-perl,
+  libio-string-perl, libnet-dns-perl, libproc-processtable-perl,
+  libdate-manip-perl, libjson-perl, libwww-perl
+Maintainer: Ben Bernard <ppa@benjaminbernard.com>
+Standards-Version: 3.8.3
+Homepage: http://search.cpan.org/dist/App-RecordStream/
+
+Package: libapp-recordstream-perl
+Architecture: all
+Depends: ${perl:Depends}, ${misc:Depends}, libtie-ixhash-perl,
+  libnetpacket-perl, libdbd-sqlite3-perl, libxml-simple-perl,
+  libtext-csv-perl, libjson-xs-perl, libdbi-perl,
+  libnet-pcap-perl, libio-string-perl, libnet-dns-perl,
+  libproc-processtable-perl, libdate-manip-perl, libjson-perl,
+  libwww-perl, gnuplot
+Description: System for commandline analysis of data
+ The recs system consists of 3 basic sets of scripts. Input scripts
+ responsible for generating streams of record objects, Manipulation scripts
+ responsible for analyzing, select, and manipulating records, and output
+ scripts which take record streams and produce output for humans. These
+ scripts can interface with other systems to retrieve data, parse existing
+ files, or just regex out some values from a text stream.
+ .
+ This description was automagically extracted from the module by dh-make-perl.

@@ -36,7 +36,7 @@ $dir =~ s/\.tar\.gz$//;
 
 chdir $dir;
 
-run_command('dh-make-perl --arch all --depends gnuplot -i \'.*/fast-recs-collate/.*\'');
+run_command('dh-make-perl -e ppa@benjaminbernard.com --arch all --depends gnuplot -i \'.*/fast-recs-collate/.*\'');
 
 if ($?) {
    die "failed running dh-make-perl!";

@@ -25,6 +25,7 @@ bin/recs-grep
 bin/recs-join
 bin/recs-normalizetime
 bin/recs-operation
+bin/recs-shell
 bin/recs-sort
 bin/recs-stream2table
 bin/recs-tocsv
