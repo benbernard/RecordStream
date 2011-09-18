@@ -16,6 +16,7 @@ recs-collate - option to ignore keys that have a null value for provided key fie
 recs-multiplex - divide incoming stream by a "thread/process" key, feeding to multiple copies of the "same" operation and dumping their outputs incrementally
 recs-annotate - memoized annotation of records based on a slice of keys
 recs-collate - use fastcollate when possible
+refactor Aggregator/Deaggregator loading/registry code since we'll need it for clumper (and annotater?) as well
 
 Distribution Notes:
   Set up PPA for updates
