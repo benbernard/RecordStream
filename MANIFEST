@@ -170,6 +170,7 @@ lib/App/RecordStream/Test/LastHelper.pm
 lib/App/RecordStream/Test/OperationHelper.pm
 lib/App/RecordStream/Test/Tester.pm
 lib/App/RecordStream/Test/UniqConcatHelper.pm
+libapp-recordstream-perl_3.5-01-1_all.deb
 libapp-recordstream.deb
 src/fast-recs-collate/LICENSE
 src/fast-recs-collate/Makefile
