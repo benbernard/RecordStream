@@ -37,8 +37,17 @@ $dir =~ s/\.tar\.gz$//;
 chdir $dir;
 
 run_command('dh-make-perl --arch all --depends gnuplot -i \'.*/fast-recs-collate/.*\'');
+
+if ($?) {
+   die "failed running dh-make-perl!";
+}
+
 run_command('sed -e \'s/perl\///g\' -i debian/control');
-run_command('debuild -i -us -uc -A');
+run_command('debuild -i -us -uc -A -b');
+
+if ($?) {
+   die "failed running debuild!";
+}
 
 chdir '..';
 
