@@ -20,7 +20,6 @@ recs-collate - use fastcollate when possible
 Distribution Notes:
   Set up PPA for updates
   No-architecture .deb (32-bit needs love)
-  Generate script man files in the source for CPAN
 
 Aribritation Collation clumps
   - suportt week over week

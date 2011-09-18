@@ -16,7 +16,7 @@ WriteMakefile(
                     . 'Keith Amling - keith.amling@gmail.com',
    LICENSE       => 'MIT',
    dist          => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-   clean         => { FILES => 'App-RecordStream-* doc/recs-* deb-dist testDb makedeb' },
+   clean         => { FILES => 'App-RecordStream-* deb-dist testDb makedeb' },
 
    PREREQ_PM     => {
      'Carp'                => 0,
