@@ -1,5 +1,6 @@
 Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=135
-Maintainer: Ben Bernard - perlhacker@benjaminbernard.com Keith Amling - keith.amling@gmail.com
+Maintainer: Benjamin Bernard <perlhacker@benjaminbernard.com>
+      Keith Amling <keith.amling@gmail.com>
 Source: http://search.cpan.org/dist/App-RecordStream/
 Name: App-RecordStream
 DISCLAIMER: This copyright info was automatically extracted 
@@ -12,7 +13,8 @@ DISCLAIMER: This copyright info was automatically extracted
  with this file.
 
 Files: *
-Copyright: Ben Bernard - perlhacker@benjaminbernard.com Keith Amling - keith.amling@gmail.com
+Copyright: Benjamin Bernard <perlhacker@benjaminbernard.com>
+      Keith Amling <keith.amling@gmail.com>
 License: Artistic or GPL-1+
 
 Files: debian/*

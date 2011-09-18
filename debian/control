@@ -2,23 +2,21 @@ Source: libapp-recordstream-perl
 Section: perl
 Priority: optional
 Build-Depends: debhelper (>= 7)
-Build-Depends-Indep: perl, libtie-ixhash-perl, libnetpacket-perl,
-  libdbd-sqlite3-perl, libxml-simple-perl, libtext-csv-perl,
-  libjson-xs-perl, libdbi-perl, libnet-pcap-perl,
-  libio-string-perl, libnet-dns-perl, libproc-processtable-perl,
-  libdate-manip-perl, libjson-perl, libwww-perl
+Build-Depends-Indep: libdate-manip-perl, libdbd-sqlite3-perl, libdbi-perl,
+ libio-string-perl, libjson-perl, libjson-xs-perl, libnet-dns-perl,
+ libnet-pcap-perl, libnetpacket-perl, libproc-processtable-perl,
+ libtext-csv-perl, libtie-ixhash-perl, libwww-perl, libxml-simple-perl
 Maintainer: Ben Bernard <ppa@benjaminbernard.com>
 Standards-Version: 3.8.3
 Homepage: http://search.cpan.org/dist/App-RecordStream/
 
 Package: libapp-recordstream-perl
 Architecture: all
-Depends: ${perl:Depends}, ${misc:Depends}, libtie-ixhash-perl,
-  libnetpacket-perl, libdbd-sqlite3-perl, libxml-simple-perl,
-  libtext-csv-perl, libjson-xs-perl, libdbi-perl,
-  libnet-pcap-perl, libio-string-perl, libnet-dns-perl,
-  libproc-processtable-perl, libdate-manip-perl, libjson-perl,
-  libwww-perl, gnuplot
+Depends: ${misc:Depends}, ${perl:Depends}, gnuplot, libdate-manip-perl,
+ libdbd-sqlite3-perl, libdbi-perl, libio-string-perl, libjson-perl,
+ libjson-xs-perl, libnet-dns-perl, libnet-pcap-perl, libnetpacket-perl,
+ libproc-processtable-perl, libtext-csv-perl, libtie-ixhash-perl, libwww-perl,
+ libxml-simple-perl
 Description: System for commandline analysis of data
  The recs system consists of 3 basic sets of scripts. Input scripts
  responsible for generating streams of record objects, Manipulation scripts
