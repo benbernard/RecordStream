@@ -90,10 +90,10 @@ sub get_values_for_line {
    my @values;
    my $delim = $this->get_delimiter();
    if ( $this->{'STRICT'} ) {
-      @values = split(/\Q$delim\E/, $line);
+      @values = split(/\Q$delim\E/, $line, -1);
    }
    else {
-      @values = split(/$delim/, $line);
+      @values = split(/$delim/, $line, -1);
    }
 
    return \@values;
