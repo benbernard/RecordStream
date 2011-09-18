@@ -1,0 +1,97 @@
+=head1 NAME
+
+recs-frommultire
+
+=head1 recs-frommultire --help-all
+
+ Usage: recs-frommultire <args> [<files>]
+    Match multiple regexes against each line of input (or lines of <files>).
+    Various parameters control when the accumulated fields are flushed to output
+    as a record and which, if any, fields are cleared when the record is
+    flushed.
+ 
+    By default regexes do not necessarily flush on either side, would-be field
+    collisions cause a flush, EOF causes a flush if any fields are set, and all
+    fields are cleared on a flush.
+ 
+ Arguments:
+    --no-flush-regex|--regex|--re <regex>   Add a normal regex.
+    --pre-flush-regex|--pre <regex>         Add a regex that flushes before
+                                            interpretting fields when matched.
+    --post-flush-regex|--post <regex>       Add a regex that flushes after
+                                            interpretting fields when matched.
+    --double-flush-regex|--double <regex>   Add a regex that flushes both before
+                                            and after interprettying fields when
+                                            matched.
+    --clobber                               Do not flush records when a field
+                                            from a match would clobber an
+                                            already existing field and do not
+                                            flush at EOF.
+    --keep-all                              Do not clear any fields on a flush.
+    --keep <fields>                         Do not clear this comma separated
+                                            list of fields on a flush.
+ 
+    <regex> - Syntax is: '<KEY1>,<KEY2>=REGEX'.  KEY field names are optional.
+    The key names may be key specs, see '--help-keyspecs' for more.  Field
+    names may not be keygroups.  If field matches $NUM, then that match number
+    in the regex will be used as the field name
+ 
+ Examples:
+    Typical use case one: parse several fields on separate lines
+       recs-frommultire --re 'fname,lname=^Name: (.*) (.*)$' --re 'addr=^Address: (.*)$'
+    Typical use case two: some fields apply to multiple records ("department" here)
+       recs-frommultire --post 'fname,lname=^Name: (.*) (.*)$' --re 'department=^Department: (.*)$' --clobber --keep team
+ 
+ Help Options:
+    --help-all       Output all help for this script
+    --help           This help screen
+    --help-keyspecs  Help on keyspecs, a way to index deeply and with regexes
+ 
+ KEY SPECS   
+    A key spec is short way of specifying a field with prefixes or regular
+    expressions, it may also be nested into hashes and arrays.  Use a '/' to nest
+    into a hash and a '#NUM' to index into an array (i.e. #2)
+    
+    An example is in order, take a record like this:
+    
+      {"biz":["a","b","c"],"foo":{"bar 1":1},"zap":"blah1"}
+      {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
+      {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
+    
+    In this case a key spec of 'foo/bar 1' would have the values 1,2, and 3
+    in the respective records.
+    
+    Similarly, 'biz/#0' would have the value of 'a' for all 3 records
+    
+    You can also prefix key specs with '@' to engage the fuzzy matching logic
+    
+    Fuzzy matching works like this in order, first key to match wins
+      1. Exact match ( eq )
+      2. Prefix match ( m/^/ )
+      3. Match anywehre in the key (m//)
+    
+    So, in the above example '@b/#2', the 'b' portion would expand to 'biz' and 2
+    would be the index into the array, so all records would have the value of 'c'
+    
+    Simiarly, @f/b would have values 1, 2, and 3
+ 
+    You can escape / with a \.  For example, if you have a record:
+    {"foo/bar":2}
+ 
+    You can address that key with foo\/bar
+ 
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

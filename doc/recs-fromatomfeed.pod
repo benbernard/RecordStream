@@ -1,0 +1,44 @@
+=head1 NAME
+
+recs-fromatomfeed
+
+=head1 recs-fromatomfeed --help-all
+
+ Usage: recs-fromatomfeed <args> [<uris>]
+    Produce records from atom feed entries.
+ 
+    Recs from atom feed will get entries from paginated atom feeds and create
+    a record stream from the results. The keys of the record will be the fields
+    in the atom field entry. Recs from atom feed will follow the 'next' link in
+    a feed to retrieve all entries.
+ 
+ 
+ Help / Usage Options:
+    --[no]follow                   Follow atom feed next links (or not).  Defaults on.
+    --max=<n>                      Print at most <n> entries and then exit.
+ 
+ Examples:
+    Dump an entire feed
+       recs-fromatomfeed "http://my.xml.com"
+    Dumps just the first page of entries
+       recs-fromatomfeed --nofollow "http://my.xml.com"
+    Dumps just the first 10 entries
+       recs-fromatomfeed --max 10 "http://my.xml.com"
+ 
+ Help Options:
+    --help  This help screen
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

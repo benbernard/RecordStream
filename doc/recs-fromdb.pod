@@ -1,0 +1,60 @@
+=head1 NAME
+
+recs-fromdb
+
+=head1 recs-fromdb --help-all
+
+ Must define --table or --sql at /home/bernard/RecordStream/lib/App/RecordStream/Operation/fromdb.pm line 34.
+ 
+    Recs from DB will execute a select statement on a database of your choice,
+    and create a record stream from the results.  The keys of the record will be
+    the column names and the values the row values.
+ 
+    --table - Name of the table to dump, this is a shortcut for
+              --sql 'SELECT * from tableName'
+    --sql   - SQL select statement to run
+ 
+ Database Options
+    password  - Password to connect as
+    user  - User to connect as
+    type  - Type of database to connect to - Default: sqlite
+ 
+ Datbase types:
+    mysql - Connect to a remote mysql database
+    sqlite - A simple local file based db
+    oracle - Connect to a remote Oracle database
+ 
+ Database Options for type: mysql
+    dbname  - Database to connect to
+    host  - Mysql Host
+ 
+ Database Options for type: sqlite
+    dbfile  - Local file for database - Default: testDb
+ 
+ Database Options for type: oracle
+    db  - Database name (tnsname) to connect to
+ 
+ Examples:
+    # Dump a table
+    recs-fromdb --type sqlite --dbfile testDb --table recs
+ 
+    # Run a select statement
+    recs-fromdb --dbfile testDb --sql 'SELECT * FROM recs WHERE id > 9'
+ 
+ Help Options:
+    --help  This help screen
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

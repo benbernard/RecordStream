@@ -1,7 +1,6 @@
 Makefile*
 blib/*
 deb-dist/*
-doc/recs-*
 makedeb/*
 pm_to_blib
 testDb

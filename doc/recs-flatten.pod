@@ -1,0 +1,124 @@
+=head1 NAME
+
+recs-flatten
+
+=head1 recs-flatten --help-all
+
+ Usage: recs-flatten <args> [<files>]
+    Flatten nested structues in records.
+ 
+    NOTE:  This script implements a strategy for dealing with nested structures
+    that is almost always better handled by using keyspecs or keygroups.  It
+    should, in general, be as easy or easier to use those concepts with the data
+    manipulations you actually want to accomplish.
+ 
+ Arguments:
+    -<n> <fields>          For this comma-separated list of fields flatten to
+                           depth n (1-9).
+    --depth <nbr>          Change the default depth, negative being arbitrary
+                           depth (defaults to 1).
+    --key <fields>         For this comma-separated list of fields flatten to the
+                           default depth (may NOT be a a key spec).
+    --deep <fields>        For this comma-separated list of fields flatten to
+                           arbitrary depth.
+    --separator <string>   Use this string to separate joined field names
+                           (defaults to "-").
+ 
+     All field values may be keyspecs or keygroups, value of keyspec must not be
+     an array element
+ 
+ Examples:
+    Under
+       recs-flatten -1 field
+    We see
+       {"field" => "value"} becomes {"field" => "value"}
+       {"field" => {"subfield" => "value"}} becomes {"field-subfield" => "value"}
+       {"field" => ["value1", "value2"]} becomes {"field-0" => "value1", "field-1" => "value2"}
+       {"field" => {"subfield" => [0, 1]}} becomes {"field-subfield" => [0, 1]}}
+    Under
+       recs-flatten --deep x
+    We see
+       {"x" => {"y" => [{"z" = "v"}]}} becomes {"x-y-0-z" => "v"}
+ 
+ Help Options:
+    --help-all        Output all help for this script
+    --help            This help screen
+    --help-keygroups  Help on keygroups, a way of specifying multiple keys
+    --help-keys       Help on keygroups and keyspecs
+    --help-keyspecs   Help on keyspecs, a way to index deeply and with regexes
+ 
+ KEY GROUPS
+    SYNTAX: !regex!opt1!opt2...
+    Key groups are a way of specifying multiple fields to a recs command with a
+    single argument or function.  They are generally regexes, and have several
+    options to control what fields they match.  By default you give a regex, and
+    it will be matched against all first level keys of a record to come up with
+    the record list.  For instance, in a record like this:
+ 
+    { 'zip': 1, 'zap': 2, 'foo': { 'bar': 3 } }
+ 
+    Key group: !z! would get the keys 'zip' and 'zap'
+ 
+    You can have a literal '!' in your regex, just escape it with a \.
+ 
+    Normally, key groups will only match keys whose values are scalars.  This
+    can be changed with the 'returnrefs' or rr flag.
+ 
+    With the above record !f! would match no fields, but !f!rr would match foo
+    (which has a value of a hash ref)
+ 
+    Options on KeyGroups:
+       returnrefs, rr  - Return keys that have reference values (default:off)
+       full, f         - Regex should match against full keys (recurse fully)
+       depth=NUM,d=NUM - Only match keys at NUM depth (regex will match against
+                         full keyspec)
+       sort, s         - sort keyspecs lexically
+ 
+ KEY SPECS   
+    A key spec is short way of specifying a field with prefixes or regular
+    expressions, it may also be nested into hashes and arrays.  Use a '/' to nest
+    into a hash and a '#NUM' to index into an array (i.e. #2)
+    
+    An example is in order, take a record like this:
+    
+      {"biz":["a","b","c"],"foo":{"bar 1":1},"zap":"blah1"}
+      {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
+      {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
+    
+    In this case a key spec of 'foo/bar 1' would have the values 1,2, and 3
+    in the respective records.
+    
+    Similarly, 'biz/#0' would have the value of 'a' for all 3 records
+    
+    You can also prefix key specs with '@' to engage the fuzzy matching logic
+    
+    Fuzzy matching works like this in order, first key to match wins
+      1. Exact match ( eq )
+      2. Prefix match ( m/^/ )
+      3. Match anywehre in the key (m//)
+    
+    So, in the above example '@b/#2', the 'b' portion would expand to 'biz' and 2
+    would be the index into the array, so all records would have the value of 'c'
+    
+    Simiarly, @f/b would have values 1, 2, and 3
+ 
+    You can escape / with a \.  For example, if you have a record:
+    {"foo/bar":2}
+ 
+    You can address that key with foo\/bar
+ 
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

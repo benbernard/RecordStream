@@ -1,0 +1,201 @@
+=head1 NAME
+
+recs-join
+
+=head1 recs-join --help-all
+
+ Usage: recs-join <args> <inputkey> <dbkey> <dbfile> [<files>]
+    Records of input (or records from <files>) are joined against records in
+    <dbfile>, using field <inputkey> from input and field <dbkey> from <dbfile>.
+    Each record from input may match 0, 1, or more records from <dbfile>. Each
+    pair of matches will be combined to form a larger record, with fields from
+    the dbfile overwriting fields from the input stream. If the join is a left
+    join or inner join, any inputs that do not match a dbfile record are
+    discarded. If the join is a right join or inner join, any db records that do
+    not match an input record are discarded.
+ 
+    dbkey and inputkey may be key specs, see '--help-keyspecs' for more
+    information
+ 
+ Arguments:
+    --left              Do a left join
+    --right             Do a right join
+    --inner             Do an inner join (This is the default)
+    --outer             Do an outer join
+    --operation         An perl expression to evaluate for merging two records
+                        together, in place of the default behavior of db fields
+                        overwriting input fields. See "Operation" below.
+    --accumulate-right  Accumulate all input records with the same key onto each
+                        db record matching that key. See "Accumulate Right"
+                        below.
+ 
+ Operation:
+    The expression provided is evaluated for every pair of db record and input
+    record that have matching keys, in place of the default operation to
+    overwrite input fields with db fields. The variable $d is set to a
+    App::RecordStream::Record object for the db record, and $i is set to a 
+    App::RecordStream::Record object for the input record. The $d record is
+    used for the result. Thus, if you provide an empty operation, the result
+    will contain only fields from the db record.
+ 
+ Examples:
+    Join type from STDIN and typeName from dbfile
+       cat recs | recs-join type typeName dbfile
+ 
+    Join host name from a mapping file to machines to get IPs
+       recs-join host host hostIpMapping machines
+ 
+ Help Options:
+    --help-all       Output all help for this script
+    --help           This help screen
+    --help-full      Help on join types and accumulate-right
+    --help-keyspecs  Help on keyspecs, a way to index deeply and with regexes
+    --help-snippet   Help on code snippets
+ 
+ Join Types
+    For instance, if you did:
+    recs-join type typeName dbfile fromfile
+ 
+    with a db file like:
+    { 'typeName': 'foo', 'hasSetting': 1 }
+    { 'typeName': 'bar', 'hasSetting': 0 }
+ 
+    and joined that with
+    { 'name': 'something', 'type': 'foo'}
+    { 'name': 'blarg', 'type': 'hip'}
+ 
+    for an inner (default) join, you would get
+    { 'name': 'something', 'type': 'foo', 'typeName': 'foo', 'hasSetting': 1}
+ 
+    for an outer join, you would get
+    { 'name': 'something', 'type': 'foo', 'typeName': 'foo', 'hasSetting': 1}
+    { 'name': 'blarg', 'type': 'hip'}
+    { 'typeName': 'bar', 'hasSetting': 0 }
+ 
+    for a left join, you would get
+    { 'name': 'something', 'type': 'foo', 'typeName': 'foo', 'hasSetting': 1}
+    { 'typeName': 'bar', 'hasSetting': 0 }
+ 
+    for a right join, you would get
+    { 'name': 'something', 'type': 'foo', 'typeName': 'foo', 'hasSetting': 1}
+    { 'name': 'blarg', 'type': 'hip'}
+ 
+ Accumulate Right:
+    Accumulate all input records with the same key onto each db record matching
+    that key. This means that a db record can have multiple input records merged
+    into it. If no operation is provided, any fields in second or later records
+    will be lost due to them being discarded. This option is most useful with a
+    user defined operation to handle collisions. For example, one could provide
+    an operation to add fields together:
+ 
+    recs-join --left --operation '
+      foreach $k (keys %$i) {
+        if (exists($d->{$k})) {
+          if ($k =~ /^value/) {$d->{$k} = $d->{$k} + $i->{$k};}
+        } else {
+          $d->{$k} = $i->{$k};
+        }
+      }' --accumulate-right name name dbfile inputfile
+ 
+ KEY SPECS   
+    A key spec is short way of specifying a field with prefixes or regular
+    expressions, it may also be nested into hashes and arrays.  Use a '/' to nest
+    into a hash and a '#NUM' to index into an array (i.e. #2)
+    
+    An example is in order, take a record like this:
+    
+      {"biz":["a","b","c"],"foo":{"bar 1":1},"zap":"blah1"}
+      {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
+      {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
+    
+    In this case a key spec of 'foo/bar 1' would have the values 1,2, and 3
+    in the respective records.
+    
+    Similarly, 'biz/#0' would have the value of 'a' for all 3 records
+    
+    You can also prefix key specs with '@' to engage the fuzzy matching logic
+    
+    Fuzzy matching works like this in order, first key to match wins
+      1. Exact match ( eq )
+      2. Prefix match ( m/^/ )
+      3. Match anywehre in the key (m//)
+    
+    So, in the above example '@b/#2', the 'b' portion would expand to 'biz' and 2
+    would be the index into the array, so all records would have the value of 'c'
+    
+    Simiarly, @f/b would have values 1, 2, and 3
+ 
+    You can escape / with a \.  For example, if you have a record:
+    {"foo/bar":2}
+ 
+    You can address that key with foo\/bar
+ 
+ CODE SNIPPETS:
+     Recs code snippets are perl code, with one exception.  There a couple of
+     variables predefined for you, and one piece of special syntax to assist in
+     modifying hashes.
+ 
+ Special Variables:
+     $r    - the current record object.  This may be used exactly like a hash,
+     or you can use some of the special record functions, see App::RecordStream::Record for
+     more information
+ 
+     $line - This is the number of records run through the code snippet,
+     starting at 1.  For most scripts this corresponds to the line number of the
+     input to the script.
+ 
+     $filename - The filename of the originating record.  Note: This is only
+     useful if you're passing filenames directly to the recs script, piping from
+     other recs scripts or from cat, for instance, will not have a useful
+     filename.
+ 
+ Special Syntax
+     Use {{search_string}} to look for a string in the keys of a record, use /
+     to nest keys.  You can nest into arrays by using an index.  If you are
+     vivifying arrays (if the array doesn't exist, prefix your key with # so
+     that an array rather than a hash will be created to put a / in your key,
+     escape it twice, i.e. \/
+ 
+     This is exactly the same as a key spec that is always prefaced with a @,
+     see 'man recs' for more info on key specs
+ 
+     For example: A record that looks like:
+     { "foo" : { "bar 1" : 1 }, "zoo" : 2}
+     Could be accessed like this:
+ 
+     # value of zoo  # value of $r->{foo}->{bar 1}: (comma separate nested keys)
+     {{zoo}}         {{foo/ar 1}}
+ 
+     # Even assign to values (set the foo key to the value 1)
+     {{fo}} = 1
+ 
+    # And auto, vivify
+     {{new_key/array_key/#0}} = 3 # creates an array within a hash within a hash
+ 
+     # Index into an array
+     {{array_key/#3}} # The value of index 3 of the array ref under the
+                        'array_key' hash key.
+ 
+     This matching is a fuzzy keyspec matching, see --help-keyspecs for more
+     details.
+ 
+ Code In Files
+     Instead of putting the code snippet on the command line, if the code
+     argument is a filename instead, that file will be read and used as the 
+     snippet.
+ 
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

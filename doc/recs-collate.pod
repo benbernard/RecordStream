@@ -1,0 +1,45 @@
+=head1 NAME
+
+recs-collate
+
+=head1 recs-collate --help-all
+
+ average, avg: averages provided field
+ cb, countby: counts by unique value for a field
+ concat, concatenate: concatenate values from provided field
+ corr, correl, correlation: find correlation of provided fields
+ count, ct: counts (non-unique) records
+ cov, covar, covariance: find covariance of provided fields
+ dcount, dct, distinctcount, distinctct: count unique values from provided field
+ first: first value for a field
+ firstrec, firstrecord: first record
+ last: last value for a field
+ lastrec, lastrecord: last record seen
+ max, maximum: maximum value for a field
+ min, minimum: minimum value for a field
+ mode: most common value for a field
+ perc, percentile: value of pXX for field
+ percentilemap, percmap: map of percentile values for field
+ recformax, recformaximum, recordformax, recordformaximum: returns the record corresponding to the maximum value for a field
+ recformin, recforminimum, recordformin, recordforminimum: returns the record corresponding to the minimum value for a field
+ records, recs: returns an arrayref of all records
+ stddev: find standard deviation of provided field
+ sum: sums provided field
+ uconcat, uconcatenate: concatenate unique values from provided field
+ valuestokeys, vk: use one key-value as a key for a different value in the record
+ var, variance: find variance of provided field
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

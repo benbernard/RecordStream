@@ -1,0 +1,46 @@
+=head1 NAME
+
+recs-fromkv
+
+=head1 recs-fromkv --help-all
+
+ Usage : recs-fromkv <args> [<files>]
+   Records are generated from charactr input with the form "<record><record-delim><record>...".
+   Records have the form "<entry><entry-delim><entry>...".  Entries are pairs of the form
+   "<key><kv-delim><value>".
+ 
+ Arguments:
+   --record-delim|r <delim>   Delimiter to for separating records (defaults to "END\n").
+   --entry-delim|e  <delim>   Delimiter to for separating entries within records (defaults to "\n").
+   --kv-delim|f   <delim>     Delimiter to for separating key/value pairs within an entry (defaults to " ").
+ 
+ Examples:
+   Parse memcached stat metrics into records
+     echo -ne 'stats\r\n' | nc -i1 localhost 11211 | tr -d "\r" | awk '{if (! /END/) {print $2" "$3} else {print $0}}' | recs-fromkv
+ 
+   Parse records separated by "E\n" with entries separated by '|' and pairs separated by '='
+     recs-fromkv --kv-delim '=' --entry-delim '|' --record-delim $(echo -ne "E\n")
+ 
+   Parse records separated by "%\n" with entries separated by "\n" and pairs separated by '='
+     recs-fromkv --kv-delim '=' --record-delim $(echo -ne "%\n")
+ 
+   Parse records separated by '%' with entries separated by '|' and pairs separated by '='
+     recs-fromkv --kv-delim '=' --entry-delim '|' --record-delim '%'
+ 
+ Help Options:
+    --help  This help screen
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

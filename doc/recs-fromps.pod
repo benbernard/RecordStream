@@ -1,0 +1,40 @@
+=head1 NAME
+
+recs-fromps
+
+=head1 recs-fromps --help-all
+
+ Usage: recs-fromps <args>
+    Prints out an html table for the records from input or from <files>.
+ 
+    --keys <fields> - Fields to output.  May be specified multiple
+                      times, may be comma separated.  Default to all fields
+                      These are Proc::ProcessTable keys, and thus may not be
+                      keyspecs or groups
+ 
+ Default fields:
+    uid, gid, pid, fname, ppid, pgrp, sess, ttynum, flags, minflt, cminflt, majflt, cmajflt, utime, stime, cutime, cstime, priority, start, size, rss, wchan, time, ctime, state, euid, suid, fuid, egid, sgid, fgid, pctcpu, pctmem, cmndline, exec, cwd
+ 
+ Examples:
+    Get records for the process table
+       recs-fromps
+    Only get uid and pid
+       recs-fromps --fields uid,pid
+ 
+ Help Options:
+    --help  This help screen
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

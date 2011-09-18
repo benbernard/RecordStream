@@ -1,0 +1,63 @@
+=head1 NAME
+
+recs-fromtcpdump
+
+=head1 recs-fromtcpdump --help-all
+
+ Missing capture file
+ 
+ Usage: recs-fromtcpdump <file1> <file2> ...
+    Runs tcpdump and puts out records, one for each packet.  Expects pcap
+    files.  Will put the name of the originating capture file in the 'file'
+    field.
+ 
+    Will parse packet types: ethernet, ip, udp, arp, tcp
+    The type key will indicate the highest level parsed.  DNS information will
+    be parsed for TCP or UDP packets that are from or to port 53. The parsed
+    representation of the packet for each valid level will be placed in the
+    corresponding key.  For instance, for a tcp packet, there will be
+    information in the keys 'ethernet', 'ip', and 'tcp'
+ 
+    By default, data output is surpressed due to poor interaction with terminal
+    programs.
+ 
+    Flags will be parsed into hash of strings
+    Possible IP flags: congestion, dont_fragment, more_fragments
+    Poassible TCP flags: CWR, URG, SYN, ECE, FIN, RST, ACK, PSH
+ 
+    ARP opcodes will be matched
+    Possible opcodes: RARP_REPLY, ARP_REQUEST, RARP_REQUEST, ARP_REPLY
+ 
+ Creating a pcap file:
+    Run a tcpdump command with -w FILE to produce a pcap file.  For instance:
+    sudo tcpdump -w /var/tmp/capture.pcap
+ 
+    Optionally, include all the data and timing information:
+    sudo tcpdump -w capture.pcap -s4096 -S -tt
+ 
+    See 'man tcpdump' for more information.
+ 
+ Arguments
+    --data - Include raw data bytes of deepest packet level
+ 
+ Examples
+    Get records for all packets
+       recs-fromtcpdump  capture.pcap
+ 
+ Help Options:
+    --help  This help screen
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

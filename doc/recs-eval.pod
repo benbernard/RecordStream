@@ -1,0 +1,132 @@
+=head1 NAME
+
+recs-eval
+
+=head1 recs-eval --help-all
+
+ Usage: recs-eval <args> <expr> [<files>]
+    <expr> is evaluated as perl on each record of input (or records from
+    <files>) with $r set to a App::RecordStream::Record object and $line set
+    to the current line number (starting at 1).  The result of each evaluation
+    is printed on a line by itself (this is not a recs stream).  See
+    App::RecordStream::Record for help on what the $r object can do.  See
+    --help-snippets for more information on code snippets
+ 
+    --no-newline - Do not put a newline after each record's output
+ 
+ Examples:
+    Print the host field from each record.
+       recs-eval '$r->{host}'
+    Prepare to gnuplot field y against field x.
+       recs-eval '$r->{x} . " " . $r->{y}'
+    Set up a script (this would be presumably piped to sh)
+       recs-eval '"./myscript --value $r->{foo}"'
+ 
+ Help Options:
+    --help-all       Output all help for this script
+    --help           This help screen
+    --help-keyspecs  Help on keyspecs, a way to index deeply and with regexes
+    --help-snippet   Help on code snippets
+ 
+ KEY SPECS   
+    A key spec is short way of specifying a field with prefixes or regular
+    expressions, it may also be nested into hashes and arrays.  Use a '/' to nest
+    into a hash and a '#NUM' to index into an array (i.e. #2)
+    
+    An example is in order, take a record like this:
+    
+      {"biz":["a","b","c"],"foo":{"bar 1":1},"zap":"blah1"}
+      {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
+      {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
+    
+    In this case a key spec of 'foo/bar 1' would have the values 1,2, and 3
+    in the respective records.
+    
+    Similarly, 'biz/#0' would have the value of 'a' for all 3 records
+    
+    You can also prefix key specs with '@' to engage the fuzzy matching logic
+    
+    Fuzzy matching works like this in order, first key to match wins
+      1. Exact match ( eq )
+      2. Prefix match ( m/^/ )
+      3. Match anywehre in the key (m//)
+    
+    So, in the above example '@b/#2', the 'b' portion would expand to 'biz' and 2
+    would be the index into the array, so all records would have the value of 'c'
+    
+    Simiarly, @f/b would have values 1, 2, and 3
+ 
+    You can escape / with a \.  For example, if you have a record:
+    {"foo/bar":2}
+ 
+    You can address that key with foo\/bar
+ 
+ CODE SNIPPETS:
+     Recs code snippets are perl code, with one exception.  There a couple of
+     variables predefined for you, and one piece of special syntax to assist in
+     modifying hashes.
+ 
+ Special Variables:
+     $r    - the current record object.  This may be used exactly like a hash,
+     or you can use some of the special record functions, see App::RecordStream::Record for
+     more information
+ 
+     $line - This is the number of records run through the code snippet,
+     starting at 1.  For most scripts this corresponds to the line number of the
+     input to the script.
+ 
+     $filename - The filename of the originating record.  Note: This is only
+     useful if you're passing filenames directly to the recs script, piping from
+     other recs scripts or from cat, for instance, will not have a useful
+     filename.
+ 
+ Special Syntax
+     Use {{search_string}} to look for a string in the keys of a record, use /
+     to nest keys.  You can nest into arrays by using an index.  If you are
+     vivifying arrays (if the array doesn't exist, prefix your key with # so
+     that an array rather than a hash will be created to put a / in your key,
+     escape it twice, i.e. \/
+ 
+     This is exactly the same as a key spec that is always prefaced with a @,
+     see 'man recs' for more info on key specs
+ 
+     For example: A record that looks like:
+     { "foo" : { "bar 1" : 1 }, "zoo" : 2}
+     Could be accessed like this:
+ 
+     # value of zoo  # value of $r->{foo}->{bar 1}: (comma separate nested keys)
+     {{zoo}}         {{foo/ar 1}}
+ 
+     # Even assign to values (set the foo key to the value 1)
+     {{fo}} = 1
+ 
+    # And auto, vivify
+     {{new_key/array_key/#0}} = 3 # creates an array within a hash within a hash
+ 
+     # Index into an array
+     {{array_key/#3}} # The value of index 3 of the array ref under the
+                        'array_key' hash key.
+ 
+     This matching is a fuzzy keyspec matching, see --help-keyspecs for more
+     details.
+ 
+ Code In Files
+     Instead of putting the code snippet on the command line, if the code
+     argument is a filename instead, that file will be read and used as the 
+     snippet.
+ 
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

@@ -1,0 +1,105 @@
+=head1 NAME
+
+recs-xform
+
+=head1 recs-xform --help-all
+
+ Usage: recs-xform <args> <expr> [<files>]
+    <expr> is evaluated as perl on each record of input (or records from
+    <files>) with $r set to a App::RecordStream::Record object and $line set to the current
+    line number (starting at 1).  All records are printed back out (changed as
+    they may be).
+ 
+    If $r is set to an ARRAY ref in the expr, then the values of the array will
+    be treated as records and outputed one to a line.  The values of the array
+    may either be a hash ref or a App::RecordStream::Record object.  The original record will
+    not be outputted in this case.
+ 
+ Examples:
+    Add line number to records
+       recs-xform '$r->{line} = $line'
+    Rename field old to new
+       recs-xform '$r->rename("old", "new")'
+    Delete fields a and b
+       recs-xform '$r->remove("a", "b")'
+    Remove fields which are not "a", "b", or "c"
+       recs-xform '$r->prune_to("a", "b", "c")'
+    Double records
+       recs-xform --ret '$r = [{%$r}, {%$r}]'
+    Split the records on field a
+       recs-xform --ret '[map { {%$r, "a" => $_} } split(/,/, delete($r->{"a"}))]'
+ 
+ Help Options:
+    --help-all      Output all help for this script
+    --help          This help screen
+    --help-snippet  Help on code snippets
+ 
+ CODE SNIPPETS:
+     Recs code snippets are perl code, with one exception.  There a couple of
+     variables predefined for you, and one piece of special syntax to assist in
+     modifying hashes.
+ 
+ Special Variables:
+     $r    - the current record object.  This may be used exactly like a hash,
+     or you can use some of the special record functions, see App::RecordStream::Record for
+     more information
+ 
+     $line - This is the number of records run through the code snippet,
+     starting at 1.  For most scripts this corresponds to the line number of the
+     input to the script.
+ 
+     $filename - The filename of the originating record.  Note: This is only
+     useful if you're passing filenames directly to the recs script, piping from
+     other recs scripts or from cat, for instance, will not have a useful
+     filename.
+ 
+ Special Syntax
+     Use {{search_string}} to look for a string in the keys of a record, use /
+     to nest keys.  You can nest into arrays by using an index.  If you are
+     vivifying arrays (if the array doesn't exist, prefix your key with # so
+     that an array rather than a hash will be created to put a / in your key,
+     escape it twice, i.e. \/
+ 
+     This is exactly the same as a key spec that is always prefaced with a @,
+     see 'man recs' for more info on key specs
+ 
+     For example: A record that looks like:
+     { "foo" : { "bar 1" : 1 }, "zoo" : 2}
+     Could be accessed like this:
+ 
+     # value of zoo  # value of $r->{foo}->{bar 1}: (comma separate nested keys)
+     {{zoo}}         {{foo/ar 1}}
+ 
+     # Even assign to values (set the foo key to the value 1)
+     {{fo}} = 1
+ 
+    # And auto, vivify
+     {{new_key/array_key/#0}} = 3 # creates an array within a hash within a hash
+ 
+     # Index into an array
+     {{array_key/#3}} # The value of index 3 of the array ref under the
+                        'array_key' hash key.
+ 
+     This matching is a fuzzy keyspec matching, see --help-keyspecs for more
+     details.
+ 
+ Code In Files
+     Instead of putting the code snippet on the command line, if the code
+     argument is a filename instead, that file will be read and used as the 
+     snippet.
+ 
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

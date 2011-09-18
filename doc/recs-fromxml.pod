@@ -1,0 +1,38 @@
+=head1 NAME
+
+recs-fromxml
+
+=head1 recs-fromxml --help-all
+
+ Usage: recs-fromxml <args> [<URIs>]
+    Reads either from STDIN or from the specified URIs.  Parses the xml
+    documents, and creates records for the specified elements
+ 
+    --elements <elements> - May be comma separated, may be specified multiple
+                            times.  Sets the elements to print records for
+    --nested              - search for elements at all levels of the xml
+                            document
+ 
+ Examples:
+    Create records for the bar element at the top level of myXMLDoc
+       recs-fromxml --element bar file:myXMLDoc
+    Create records for all foo and bar elements from the URL
+       recs-fromxml --element foo,bar --nested http://google.com
+ 
+ Help Options:
+    --help  This help screen
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

@@ -1,0 +1,104 @@
+=head1 NAME
+
+recs-todb
+
+=head1 recs-todb --help-all
+
+    Recs to DB will dump a stream of input records into a database you specify.
+    The record fields you want inserted should have the same keys as the column
+    names in the database, and the records should be key-value pairs.
+ 
+    This script will attempt to create the table, if it is not already present.
+ 
+    --drop   - Drop the table before running create / insert commands.
+    --table  - Name of the table to work with defaults to 'recs'
+    --debug  - Print all the executed SQL
+    --key    - Can either be a name value pair or just a name.  Name value pairs
+               should be fieldName=SQL Type.  If any fields are specified, they
+               will be the only fields put into the db.  May be specified
+               multiple times, may also be comma separated.  Type defaults to
+               VARCHAR(255)
+               Keys may be key specs, see '--help-keyspecs' for more
+ 
+ Database Options
+    password  - Password to connect as
+    user  - User to connect as
+    type  - Type of database to connect to - Default: sqlite
+ 
+ Datbase types:
+    mysql - Connect to a remote mysql database
+    sqlite - A simple local file based db
+    oracle - Connect to a remote Oracle database
+ 
+ Database Options for type: mysql
+    dbname  - Database to connect to
+    host  - Mysql Host
+ 
+ Database Options for type: sqlite
+    dbfile  - Local file for database - Default: testDb
+ 
+ Database Options for type: oracle
+    db  - Database name (tnsname) to connect to
+ 
+ 
+ Examples:
+    # Just put all the records into the recs table
+    recs-todb --type sqlite --dbfile testDb --table recs
+ 
+    # Just put description, status, and user into the table, make the records
+    # the only thing in the DB
+    recs-todb --dbfile testDb --drop --key status,description=TEXT --key user
+ 
+ Help Options:
+    --help-all       Output all help for this script
+    --help           This help screen
+    --help-keyspecs  Help on keyspecs, a way to index deeply and with regexes
+ 
+ KEY SPECS   
+    A key spec is short way of specifying a field with prefixes or regular
+    expressions, it may also be nested into hashes and arrays.  Use a '/' to nest
+    into a hash and a '#NUM' to index into an array (i.e. #2)
+    
+    An example is in order, take a record like this:
+    
+      {"biz":["a","b","c"],"foo":{"bar 1":1},"zap":"blah1"}
+      {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
+      {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
+    
+    In this case a key spec of 'foo/bar 1' would have the values 1,2, and 3
+    in the respective records.
+    
+    Similarly, 'biz/#0' would have the value of 'a' for all 3 records
+    
+    You can also prefix key specs with '@' to engage the fuzzy matching logic
+    
+    Fuzzy matching works like this in order, first key to match wins
+      1. Exact match ( eq )
+      2. Prefix match ( m/^/ )
+      3. Match anywehre in the key (m//)
+    
+    So, in the above example '@b/#2', the 'b' portion would expand to 'biz' and 2
+    would be the index into the array, so all records would have the value of 'c'
+    
+    Simiarly, @f/b would have values 1, 2, and 3
+ 
+    You can escape / with a \.  For example, if you have a record:
+    {"foo/bar":2}
+ 
+    You can address that key with foo\/bar
+ 
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

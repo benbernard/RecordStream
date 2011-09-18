@@ -1,0 +1,87 @@
+=head1 NAME
+
+recs-chain
+
+=head1 recs-chain --help-all
+
+ Usage: recs-chain <command> | <command> | ...
+    Creates an in-memory chain of recs operations.  This avoid serialization and
+    deserialization of records at each step in a complex recs pipeline.  For
+    ease of use the chain of recs commands main contain non-recs command,
+    anything that does not start with a recs- is interpreted as a shell command.
+    That command is forked off to the shell.  In this case, serialization and
+    deserialization costs apply, but only to and from the shell command,
+    everything else is done in memory.  If you have many shell commands in a
+    row, there is extra over head, you should instead consider splitting those
+    into separate pipes.  See the examples for more information on this.
+ 
+    Arugments are specified in on the command line separated by pipes.  For most
+    shells, you will need to escape the pipe character to avoid having the shell
+    interpret the pipe as a shell pipe.
+ 
+    --show-chain - Before running the commands, print out what will happen
+                   in the chain
+    -n           - Do not run commands, implies --show-chain
+ 
+ Examples:
+    Parse some fields, sort and collate, all in memory
+       recs-chain recs-frommultire 'data,time=(\S+) (\S+)' \| recs-sort --key time=n \| recs-collate --a perc,90,data
+    Use shell commands in your recs stream
+       recs-chain recs-frommultire 'data,time=(\S+) (\S+)' \| recs-sort --key time=n \| grep foo \| recs-collate --a perc,90,data
+    Many shell commands should be split into real pipes
+       recs-chain recs-frommultire 'data,time=(\S+) (\S+)' \| recs-xform '$r->{now} = time();' 
+         | grep foo | sort | uniq | recs-chain recs-collate --a perc,90,data \| recs-totable
+ 
+ Help Options:
+    --help-all       Output all help for this script
+    --help           This help screen
+    --help-keyspecs  Help on keyspecs, a way to index deeply and with regexes
+ 
+ KEY SPECS   
+    A key spec is short way of specifying a field with prefixes or regular
+    expressions, it may also be nested into hashes and arrays.  Use a '/' to nest
+    into a hash and a '#NUM' to index into an array (i.e. #2)
+    
+    An example is in order, take a record like this:
+    
+      {"biz":["a","b","c"],"foo":{"bar 1":1},"zap":"blah1"}
+      {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
+      {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
+    
+    In this case a key spec of 'foo/bar 1' would have the values 1,2, and 3
+    in the respective records.
+    
+    Similarly, 'biz/#0' would have the value of 'a' for all 3 records
+    
+    You can also prefix key specs with '@' to engage the fuzzy matching logic
+    
+    Fuzzy matching works like this in order, first key to match wins
+      1. Exact match ( eq )
+      2. Prefix match ( m/^/ )
+      3. Match anywehre in the key (m//)
+    
+    So, in the above example '@b/#2', the 'b' portion would expand to 'biz' and 2
+    would be the index into the array, so all records would have the value of 'c'
+    
+    Simiarly, @f/b would have values 1, 2, and 3
+ 
+    You can escape / with a \.  For example, if you have a record:
+    {"foo/bar":2}
+ 
+    You can address that key with foo\/bar
+ 
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

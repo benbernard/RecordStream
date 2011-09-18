@@ -1,0 +1,162 @@
+=head1 NAME
+
+recs-normalizetime
+
+=head1 recs-normalizetime --help-all
+
+ Usage: recs-normalizetime <args> [<files>]
+    Given a single key field containing a date/time value this recs processor
+    will construct a normalized version of the value and place this new value
+    into a field named "n_<key>" (where <key> is the key field appearing in
+    the args).
+ 
+ Arguments:
+    --key|-k <key>                Single Key field containing the date/time
+                                  may be a key spec, see '--help-keyspecs' for more info
+    --epoch|-e                    Assumes date/time field is expressed in epoch seconds
+                                  (optional, defaults to non-epoch)
+    --threshold|-n <time range>   Number of seconds in the range.  May also be a
+                                  duration string like '1 week' or '5 minutes',
+                                  parsable by Date::Manip
+    --strict|-s                   Apply strict normalization (defaults to non-strict)
+ 
+ Examples:
+    # Tag records with normalized time in 5 minute buckets from the date field
+    ... | recs-normalizetime --strict --key date -n 300
+ 
+    # Normalize time with fuzzy normalization into 1 minute buckets from the
+    # epoch-relative 'time' field
+    ... | recs-normalizetime --key time -e -n 60
+ 
+    #Get 1 week buckets
+    ... | recs-normalizetime --key timestamp -n '1 week'
+ 
+ Help Options:
+    --help-all       Output all help for this script
+    --help           This help screen
+    --help-full      Indepth description of normalization alogrithm
+    --help-keyspecs  Help on keyspecs, a way to index deeply and with regexes
+ 
+ Full Help
+ 
+ This recs processor will generate normalized versions of date/time values and
+ add this value as another attribute to the record stream.  Used in conjunction
+ with recs-collate you can aggregate information over the normalized time.  For
+ example if you use
+    recs-normalized -k date --n 1 | recs-collate -k n_date -a firstrec
+ then this picks a single record from a stream to serve in placement of lots of
+ records which are close to each other in time.
+ 
+ The normalized time value generated depends on whether or not you are using
+ strict normalization or not.  The default is to use non-strict.
+ 
+ The use of the optional --epoch argument indicates that the date/time values
+ are expressed in epoch seconds.  This argument both speeds up the execution of
+ an invocation (due to avoiding the expensive perl Date:Manip executions) and is
+ required for correctness when the values are epoch seconds.
+ 
+ 1.  When using strict normalization then time is chunked up into fixed segments
+ of --threshold seconds in each segment with the first segment occurring on
+ January 1st 1970 at 0:00.  So if the threshold is 60 seconds then the following
+ record stream would be produced
+ 
+   date      n_date
+   1:00:00   1:00:00
+   1:00:14   1:00:00
+   1:00:59   1:00:00
+   1:02:05   1:02:00
+   1:02:55   1:02:00
+   1:03:15   1:03:00
+ 
+ 
+ 2.  When not using strict normalization then the time is again chunked up into
+ fixed segments however the actual segment assigned to a value depends on the
+ segement chunk seen in the prior record.
+ 
+ The logic used is the following:
+   - a time is distilled down to a representative sample where the precision is
+     defined by the --threshold.  For example if you said that the threshold is
+     10 (seconds) then 10:22:01 and 10:22:09 would both become 10:22:00.  10:22:10
+     would be 10:22:10.
+   - as you can tell the representative values is the first second within the range
+     that you define, with one exception
+   - if the representative value of the prior record is in the prior range to the
+     current representative value then the prior record value will be used
+ 
+ So if the threshold is 60 seconds then the following record stream would be produced
+ 
+   date      n_date
+   1:00:00   1:00:00
+   1:00:59   1:00:00
+   1:02:05   1:02:00
+   1:02:55   1:02:00
+   1:03:15   1:02:00     ** Note - still matches prior representative value               **
+   1:05:59   1:05:00
+   1:06:15   1:05:00     ** Note - matches prior entry                                    **
+   1:07:01   1:07:00     ** Note - since the 1:05 and 1:06 had the same representative    **
+                         ** value then this is considered a new representative time slice **
+ 
+ Basically a 60 second threshold will match the current minute and the next minute unless
+ the prior minute was seen and then the 60 second threshold matches the current minute and
+ the prior minute.
+ 
+ 
+ Example usage: if you have log records for "out of memory" exceptions which may occur multiple
+ times because of exception catching and logging then you can distill them all down to a
+ single logical event and then count the number of occurrences for a host via:
+ 
+    grep "OutOfMemory" logs |
+       recs-frommultire --re 'host=@([^:]*):' --re 'date=^[A-Za-z]* (.*) GMT ' |
+       recs-normalizetime --key date --threshold 300 | 
+       recs-collate --perfect --key n_date -a firstrec | 
+       recs-collate --perfect --key firstrec_host -a count=count
+ 
+ 
+ KEY SPECS   
+    A key spec is short way of specifying a field with prefixes or regular
+    expressions, it may also be nested into hashes and arrays.  Use a '/' to nest
+    into a hash and a '#NUM' to index into an array (i.e. #2)
+    
+    An example is in order, take a record like this:
+    
+      {"biz":["a","b","c"],"foo":{"bar 1":1},"zap":"blah1"}
+      {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
+      {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
+    
+    In this case a key spec of 'foo/bar 1' would have the values 1,2, and 3
+    in the respective records.
+    
+    Similarly, 'biz/#0' would have the value of 'a' for all 3 records
+    
+    You can also prefix key specs with '@' to engage the fuzzy matching logic
+    
+    Fuzzy matching works like this in order, first key to match wins
+      1. Exact match ( eq )
+      2. Prefix match ( m/^/ )
+      3. Match anywehre in the key (m//)
+    
+    So, in the above example '@b/#2', the 'b' portion would expand to 'biz' and 2
+    would be the index into the array, so all records would have the value of 'c'
+    
+    Simiarly, @f/b would have values 1, 2, and 3
+ 
+    You can escape / with a \.  For example, if you have a record:
+    {"foo/bar":2}
+ 
+    You can address that key with foo\/bar
+ 
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+
