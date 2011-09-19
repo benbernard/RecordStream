@@ -92,7 +92,12 @@ sub load_deaggregators_aux
          die "Bad deaggregator: " . $aggr_name . "\n";
       }
 
-      if(@spec != $class->argct())
+      my $argct = $class->argct();
+      if(!ref($argct))
+      {
+          $argct = [$argct];
+      }
+      if(!(grep { $_ == @spec } @$argct))
       {
          $class->long_usage();
          die "Deaggregator " . $class . " long_usage implementation returns?!\n";
