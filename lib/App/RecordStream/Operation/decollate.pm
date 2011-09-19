@@ -3,11 +3,11 @@ package App::RecordStream::Operation::decollate;
 use strict;
 use warnings;
 
-# TODO: tests
 use App::RecordStream::Deaggregator;
 use App::RecordStream::DomainLanguage::Library;
 use App::RecordStream::DomainLanguage;
 use App::RecordStream::Operation;
+use App::RecordStream::Record;
 
 use base 'App::RecordStream::Operation';
 
@@ -86,7 +86,7 @@ sub accept_record_aux
     }
     else
     {
-        $this->push_record($record);
+        $this->push_record(App::RecordStream::Record->new($record));
     }
 }
 
