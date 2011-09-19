@@ -31,7 +31,7 @@ sub init {
    my $dbh = App::RecordStream::DBHandle::get_dbh($this->_get_extra_args());
    $this->{'DBH'} = $dbh;
 
-   die("Must define --table or --sql") unless ( $table_name || $sql );
+   die("Must define --table or --sql\n") unless ( $table_name || $sql );
 
    unless ( $sql ) {
      $sql = "SELECT * FROM $table_name";

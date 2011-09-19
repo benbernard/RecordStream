@@ -4,7 +4,7 @@ recs-fromdb
 
 =head1 recs-fromdb --help-all
 
- Must define --table or --sql at /home/bernard/RecordStream/lib/App/RecordStream/Operation/fromdb.pm line 34.
+ Must define --table or --sql
  
     Recs from DB will execute a select statement on a database of your choice,
     and create a record stream from the results.  The keys of the record will be

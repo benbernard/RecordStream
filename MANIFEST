@@ -5,6 +5,7 @@ INSTALLING
 LICENSE
 Makefile.PL
 README.pod
+bin/recs-annotate
 bin/recs-chain
 bin/recs-collate
 bin/recs-delta
@@ -25,7 +26,6 @@ bin/recs-grep
 bin/recs-join
 bin/recs-normalizetime
 bin/recs-operation
-bin/recs-shell
 bin/recs-sort
 bin/recs-stream2table
 bin/recs-tocsv
@@ -39,6 +39,7 @@ bin/recs-totable
 bin/recs-xform
 doc/Examples.pod
 doc/RecordStreamStory.pod
+doc/recs-annotate.pod
 doc/recs-chain.pod
 doc/recs-collate.pod
 doc/recs-delta.pod
@@ -131,6 +132,7 @@ lib/App/RecordStream/KeyGroups.pm
 lib/App/RecordStream/LRUSheriff.pm
 lib/App/RecordStream/Operation.pm
 lib/App/RecordStream/Operation/Printer.pm
+lib/App/RecordStream/Operation/annotate.pm
 lib/App/RecordStream/Operation/chain.pm
 lib/App/RecordStream/Operation/collate.pm
 lib/App/RecordStream/Operation/delta.pm
@@ -208,6 +210,7 @@ tests/RecordStream/Executor.t
 tests/RecordStream/InputStream.t
 tests/RecordStream/KeyGroups.t
 tests/RecordStream/Operation.t
+tests/RecordStream/Operation/annotate.t
 tests/RecordStream/Operation/chain.t
 tests/RecordStream/Operation/collate.t
 tests/RecordStream/Operation/delta.t
