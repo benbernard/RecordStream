@@ -81,12 +81,12 @@ sub accept_record_aux
 
         for my $deaggregated_record (@{$deaggregator->deaggregate($record)})
         {
-            $this->accept_record_aux($depth + 1, {%$record, %$deaggregated_record});
+            $this->accept_record_aux($depth + 1, App::RecordStream::Record->new({%$record, %$deaggregated_record}));
         }
     }
     else
     {
-        $this->push_record(App::RecordStream::Record->new($record));
+        $this->push_record($record);
     }
 }
 

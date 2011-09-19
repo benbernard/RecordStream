@@ -31,6 +31,54 @@ SOLUTION
     );
 }
 
+# test double split
+{
+    my $stream = <<STREAM;
+{"r":1,"first":"a_b_c/d_e"}
+{"r":2,"first":"f_g/h_i_j_k/l"}
+{"r":3,"first":"m"}
+STREAM
+
+    my $solution1 = <<SOLUTION;
+{"r":1,"first":"a_b_c/d_e","second":"a_b_c"}
+{"r":1,"first":"a_b_c/d_e","second":"d_e"}
+{"r":2,"first":"f_g/h_i_j_k/l","second":"f_g"}
+{"r":2,"first":"f_g/h_i_j_k/l","second":"h_i_j_k"}
+{"r":2,"first":"f_g/h_i_j_k/l","second":"l"}
+{"r":3,"first":"m","second":"m"}
+SOLUTION
+
+    App::RecordStream::Test::OperationHelper->do_match(
+       'decollate',
+       ['-d', 'split,first,/,second'],
+       $stream,
+       $solution1,
+    );
+
+    my $solution2 = <<SOLUTION;
+{"r":1,"first":"a_b_c/d_e","second":"a_b_c","third":"a"}
+{"r":1,"first":"a_b_c/d_e","second":"a_b_c","third":"b"}
+{"r":1,"first":"a_b_c/d_e","second":"a_b_c","third":"c"}
+{"r":1,"first":"a_b_c/d_e","second":"d_e","third":"d"}
+{"r":1,"first":"a_b_c/d_e","second":"d_e","third":"e"}
+{"r":2,"first":"f_g/h_i_j_k/l","second":"f_g","third":"f"}
+{"r":2,"first":"f_g/h_i_j_k/l","second":"f_g","third":"g"}
+{"r":2,"first":"f_g/h_i_j_k/l","second":"h_i_j_k","third":"h"}
+{"r":2,"first":"f_g/h_i_j_k/l","second":"h_i_j_k","third":"i"}
+{"r":2,"first":"f_g/h_i_j_k/l","second":"h_i_j_k","third":"j"}
+{"r":2,"first":"f_g/h_i_j_k/l","second":"h_i_j_k","third":"k"}
+{"r":2,"first":"f_g/h_i_j_k/l","second":"l","third":"l"}
+{"r":3,"first":"m","second":"m","third":"m"}
+SOLUTION
+
+    App::RecordStream::Test::OperationHelper->do_match(
+       'decollate',
+       ['-d', 'split,first,/,second', '-d', 'split,second,_,third'],
+       $stream,
+       $solution2,
+    );
+}
+
 # test unhash
 {
     my $stream = <<STREAM;
