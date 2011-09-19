@@ -94,22 +94,6 @@ RecordShell idea:
   14:49 <ben_bernard> like if I could get an interface that was like run this, but tell me the command name and what files were written to, oh and also here is your input stream
 
 Keith's personal section
-    decollate / deaggregators
-        split
-            [map { +{"CFG1" => $_} } split(/CFG2/, $r->{CFG3})]
-            split,old_field,string,new_field
-            split,old_field,/re/,new_field
-        unhash
-            [map { +{"CFG1" => $_, "CFG2" => $r->{"CFG3"}->{$_}} } keys(%{$r->{"CFG3"}})]
-            unhash,old_field,new_key_field[,new_value_field]
-        unarray
-            [map { +{"CFG1" => $_} } @{$r->{"CFG2"}}]
-            unarray,old_field,new_field
-        unrecord
-            [map { +{"CFG1" => $_, "CFG2" => $r->{$_}} } keys(%$r)]
-            oh shit, scope record (probably don't wall _all_ keys!)
-            which keys "come with" and which are split?
-            maybe screw this guy?
     fix die w/in getopt
     --incr collate by time and by record count (--incr is by record count 1)
         maybe even windowed incremental?
