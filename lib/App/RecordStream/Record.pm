@@ -371,6 +371,11 @@ sub as_hashref
    return {%$this};
 }
 
+sub TO_JSON {
+  my ($this) = @_;
+  return $this->as_hashref();
+}
+
 my $guessed_keys = {};
 
 sub _search_string_to_key {

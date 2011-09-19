@@ -80,6 +80,7 @@ sub new
    my $json = JSON::XS->new();
    $json->allow_nonref(1);
    $json->allow_blessed(1);
+   $json->convert_blessed(1);
 
    my $this =
    {
