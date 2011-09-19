@@ -6,6 +6,7 @@ use warnings;
 
 BEGIN { use_ok( 'App::RecordStream::Operation::decollate' ) };
 
+# test split and some general decollate stuff
 {
     my $stream = <<STREAM;
 {"extra":"extra1","from":"inky_pinky_blinky_"}
@@ -30,6 +31,7 @@ SOLUTION
     );
 }
 
+# test unhash
 {
     my $stream = <<STREAM;
 {"hr":{"k1":"v1","k2":"v2"}}
@@ -57,5 +59,25 @@ SOLUTION
        ['-d', 'unhash,hr,k'],
        $stream,
        $solution_k,
+    );
+}
+
+# test unarray
+{
+    my $stream = <<STREAM;
+{"ar":[1,2,"suxco"]}
+STREAM
+
+    my $solution = <<SOLUTION;
+{"ar":[1,2,"suxco"],"v":1}
+{"ar":[1,2,"suxco"],"v":2}
+{"ar":[1,2,"suxco"],"v":"suxco"}
+SOLUTION
+
+    App::RecordStream::Test::OperationHelper->do_match(
+       'decollate',
+       ['-d', 'unarray,ar,v'],
+       $stream,
+       $solution,
     );
 }
