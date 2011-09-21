@@ -18,7 +18,7 @@ recs-annotate - memoized annotation of records based on a slice of keys
 recs-collate - use fastcollate when possible
 recs-from* - Add ability to annotate record with filename
 recs-tognuplot - use a library rather than invoking gnuplot directly
-recs-togchart - use google chart api, seems simplier than gnuplot, could support more options? also look at 'Chart' on CPAN, maybe that instead?
+recs-togchart - use google chart api, seems simplier than gnuplot, could support more options? also look at 'Chart' on CPAN, maybe that instead?, could also support graph viz charts, see: http://code.google.com/apis/chart/image/docs/gallery/graphviz.html
 
 Distribution Notes:
   Set up PPA for updates
