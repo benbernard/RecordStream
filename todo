@@ -17,10 +17,11 @@ recs-multiplex - divide incoming stream by a "thread/process" key, feeding to mu
 recs-annotate - memoized annotation of records based on a slice of keys
 recs-collate - use fastcollate when possible
 recs-from* - Add ability to annotate record with filename
+recs-tognuplot - use a library rather than invoking gnuplot directly
+recs-togchart - use google chart api, seems simplier than gnuplot, could support more options? also look at 'Chart' on CPAN, maybe that instead?
 
 Distribution Notes:
   Set up PPA for updates
-  No-architecture .deb (32-bit needs love)
 
 Aribritation Collation clumps
   - suportt week over week
