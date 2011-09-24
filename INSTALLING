@@ -1,5 +1,33 @@
 ================================================================================
-==================  Easiest Install - .deb =====================================
+==================  Easiest Install - PPA ======================================
+================================================================================
+
+Add the RecordStream ppa to your sources and pull with apt.  Only works on
+apt-powered systems
+
+% sudo add-apt-repository ppa:ppa-j/recordstream
+% sudo apt-get update
+% sudo apt-get install libapp-recordstream-perl
+
+If you do not have add-apt-repository install this package:
+
+python-software-properties
+
+This install will allow you to keep up to date with any recent version releases
+
+Alternatively, you can add the src directly to /etc/apt/sources.list these
+lines:
+
+  deb http://ppa.launchpad.net/ppa-j/recordstream/ubuntu natty main 
+  deb-src http://ppa.launchpad.net/ppa-j/recordstream/ubuntu natty main
+
+Then run update and install:
+
+% sudo apt-get update
+% sudo apt-get install libapp-recordstream-perl
+
+================================================================================
+==================  Almost Easiest Install - .deb ==============================
 ================================================================================
 
 This will download the prepped .deb file and install the dependencies you need
