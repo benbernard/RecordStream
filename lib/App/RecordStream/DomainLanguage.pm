@@ -21,9 +21,9 @@ sub short_usage {
    of e.g.  last, aggregators are also included with a prefixed underscore.
 
    Below you can find documentation on all the "built in" functions.  Most
-   aggregators should be present with arguments comparable to their normal
-   instantiation arugments, but with keyspec parameters replaced with
-   valuations parameters.
+   aggregators and deaggregators should be present with arguments comparable to
+   their normal instantiation arugments, but with keyspec parameters replaced
+   with valuations parameters.
 HELP
 }
 

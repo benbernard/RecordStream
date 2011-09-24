@@ -100,6 +100,11 @@ sub evaluate
             $value->add_possibility('AGGREGATOR', $arg);
             $done = 1;
         }
+        if(blessed($arg) && $arg->isa('App::RecordStream::Deaggregator::Base'))
+        {
+            $value->add_possibility('DEAGGREGATOR', $arg);
+            $done = 1;
+        }
         if($done)
         {
             push @value_args, $value;
@@ -136,6 +141,11 @@ sub evaluate
         if(blessed($result) && $result->isa('App::RecordStream::Aggregator::Aggregation'))
         {
             $ret->add_possibility('AGGREGATOR', $result);
+            $done = 1;
+        }
+        if(blessed($result) && $result->isa('App::RecordStream::Deaggregator::Base'))
+        {
+            $ret->add_possibility('DEAGGREGATOR', $result);
             $done = 1;
         }
         if($done)

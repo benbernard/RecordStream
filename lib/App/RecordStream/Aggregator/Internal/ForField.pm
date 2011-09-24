@@ -42,7 +42,7 @@ sub combine
 
       if(!exists($cookie->{$field}))
       {
-         my $agg = $this->{'SNIPPET'}->evaluate_as('AGG', {'$f' => $field});
+         my $agg = $this->{'SNIPPET'}->evaluate_as('AGGREGATOR', {'$f' => $field});
          $cookie->{$field} = [$agg, $agg->initial()];
       }
 

@@ -119,6 +119,13 @@ sub squish
     return shift->_force('AGGREGATOR')->squish(@_);
 }
 
+# We can pretend to be a deaggregator in a pinch
+
+sub deaggregate
+{
+    return shift->_force('DEAGGREGATOR')->deaggregate(@_);
+}
+
 # We can pretend to be a valuation in a pinch
 
 sub evaluate_record
@@ -131,9 +138,13 @@ sub cast_or_die
     my $type = shift;
     my $obj = shift;
 
-    if($type eq 'AGG')
+    if($type eq 'AGGREGATO')
     {
         return cast_agg_or_die($obj);
+    }
+    elsif($type eq 'DEAGGREGATOR')
+    {
+        return cast_deagg_or_die($obj);
     }
     elsif($type eq 'VALUATION')
     {
@@ -227,6 +238,38 @@ sub cast_agg_or_die
 
     # running out of ideas here
     return App::RecordStream::Aggregator::Internal::Constant->new($obj);
+}
+
+sub cast_deagg_or_die
+{
+    my $obj = shift;
+
+    if(blessed($obj) && $obj->isa('App::RecordStream::DomainLanguage::Value'))
+    {
+        my @deagg = $obj->get_possibilities('DEAGGREGATOR');
+        if(@deagg > 1)
+        {
+            die "Multiple deaggregators for " . $obj->get_description();
+        }
+        if(@deagg == 1)
+        {
+            return $deagg[0];
+        }
+
+        die "No usable possibilities for " . $obj->get_description();
+    }
+
+    if(blessed($obj) && $obj->isa('App::RecordStream::Deaggregator::Base'))
+    {
+        return $obj;
+    }
+
+    if(blessed($obj) && $obj->isa('App::RecordStream::DomainLanguage::Valuation'))
+    {
+        die "Valuation found where aggregator expected";
+    }
+
+    die "Could not turn unknown into a deaggregator";
 }
 
 sub cast_scalar_or_die
