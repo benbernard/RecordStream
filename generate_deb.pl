@@ -3,6 +3,15 @@
 use strict;
 require 'BuildTools.recbuildtool';
 use File::Glob qw(glob);
+use Getopt::Long;
+
+my $make_cpan = 1;
+my $all       = 1;
+
+GetOptions(
+   '--just-cpan' => sub { $all = 0; $make_cpan=1 },
+);
+
 
 my $DIST_DIR = 'deb-dist';
 
@@ -33,6 +42,8 @@ run_command("tar -xzvf $tar");
 
 my $dir = $tar;
 $dir =~ s/\.tar\.gz$//;
+
+exit 0 if (!$all);
 
 chdir $dir;
 
