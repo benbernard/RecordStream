@@ -30,3 +30,6 @@ sudo rm -rf /var/temp-dist; sudo mkdir /var/temp-dist; sudo debootstrap --varian
 
 # Unpack and install recordstream in default nattychroot
 sudo rm -rf /var/temp-dist; sudo mkdir /var/temp-dist; sudo cp natty.chroot.tar.gz /var/temp-dist; cd /var/temp-dist; sudo tar -xzf natty.chroot.tar.gz; sudo chroot /var/temp-dist apt-get install libapp-recordstream-perl
+
+# Website for active ppa release streams
+http://launchpad.net/ubuntu
