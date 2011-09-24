@@ -1,3 +1,15 @@
+libapp-recordstream-perl (3.5-01-3) lucid; urgency=low
+
+  * change distro
+
+ -- Ben Bernard <ppa@benjaminbernard.com>  Sun, 18 Sep 2011 14:37:05 -0700
+
+libapp-recordstream-perl (3.5-01-2) oneiric; urgency=low
+
+  * build Changes
+
+ -- Ben Bernard <ppa@benjaminbernard.com>  Sun, 18 Sep 2011 14:37:05 -0700
+
 libapp-recordstream-perl (3.5-01-1) oneiric; urgency=low
 
   * Initial Release.
