@@ -1,6 +1,9 @@
 # Add install CPAN install into recs-install
 rm -rf ~/recs-install/*; make clean; perl Makefile.PL PREFIX=~/recs-install; make; make install PREFIX=~/recs-install
 
+# scp .deb to technofetish (be sure to add user)
+scp libapp-recordstream.deb technofetish.net:public_html/
+
 # Create deb for upload to ppa:
 debuild -S -sa -kppa@benjaminbernard.com 
 

@@ -8,6 +8,7 @@ README.pod
 bin/recs-annotate
 bin/recs-chain
 bin/recs-collate
+bin/recs-decollate
 bin/recs-delta
 bin/recs-eval
 bin/recs-flatten
@@ -37,11 +38,13 @@ bin/recs-toprettyprint
 bin/recs-toptable
 bin/recs-totable
 bin/recs-xform
+distro_command_notes
 doc/Examples.pod
 doc/RecordStreamStory.pod
 doc/recs-annotate.pod
 doc/recs-chain.pod
 doc/recs-collate.pod
+doc/recs-decollate.pod
 doc/recs-delta.pod
 doc/recs-eval.pod
 doc/recs-flatten.pod
@@ -116,6 +119,12 @@ lib/App/RecordStream/Aggregator/UniqConcatenate.pm
 lib/App/RecordStream/Aggregator/ValuesToKeys.pm
 lib/App/RecordStream/Aggregator/Variance.pm
 lib/App/RecordStream/DBHandle.pm
+lib/App/RecordStream/Deaggregator.pm
+lib/App/RecordStream/Deaggregator/Base.pm
+lib/App/RecordStream/Deaggregator/Field.pm
+lib/App/RecordStream/Deaggregator/Split.pm
+lib/App/RecordStream/Deaggregator/Unarray.pm
+lib/App/RecordStream/Deaggregator/Unhash.pm
 lib/App/RecordStream/DomainLanguage.pm
 lib/App/RecordStream/DomainLanguage/Executor.pm
 lib/App/RecordStream/DomainLanguage/Library.pm
@@ -135,6 +144,7 @@ lib/App/RecordStream/Operation/Printer.pm
 lib/App/RecordStream/Operation/annotate.pm
 lib/App/RecordStream/Operation/chain.pm
 lib/App/RecordStream/Operation/collate.pm
+lib/App/RecordStream/Operation/decollate.pm
 lib/App/RecordStream/Operation/delta.pm
 lib/App/RecordStream/Operation/eval.pm
 lib/App/RecordStream/Operation/flatten.pm
@@ -213,6 +223,7 @@ tests/RecordStream/Operation.t
 tests/RecordStream/Operation/annotate.t
 tests/RecordStream/Operation/chain.t
 tests/RecordStream/Operation/collate.t
+tests/RecordStream/Operation/decollate.t
 tests/RecordStream/Operation/delta.t
 tests/RecordStream/Operation/eval.t
 tests/RecordStream/Operation/flatten.t

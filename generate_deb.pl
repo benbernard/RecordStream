@@ -11,9 +11,8 @@ my $clean     = 0;
 
 GetOptions(
    '--just-cpan' => sub { $all = 0; $make_cpan=1 },
-   '--clean'     => \$clean;
+   '--clean'     => \$clean,
 );
-
 
 my $DIST_DIR = 'deb-dist';
 

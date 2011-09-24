@@ -1,3 +1,7 @@
+3.6 - Added recs-annotate
+      Added recs-decollate
+      recs-fromsplit - get trailing empty fields on lines, now
+
 3.5_01 - Minor CPAN Changes
 
 3.5 - Adding Domain Language for collate aggregators
