@@ -1,0 +1,81 @@
+=head1 NAME
+
+recs-decollate
+
+=head1 recs-decollate --help-all
+
+ Usage: recs-decollate <args> [<files>]
+    Decollate records of input (or records from <files>) into output records.
+ 
+ Arguments:
+    --dldeaggregator ...              Specify a domain language aggregate.  See
+                                      "Domain Language Integration" below.
+    --deaggregator|-d <deaggregators> Colon separated list of aggregate field
+                                      specifiers.  See "Deaggregates" section
+                                      below.
+ 
+ Help / Usage Options:
+    --list-deaggregators               Bail and output a list of deaggregators.
+    --show-deaggregator <deaggregator> Bail and output this deaggregator's
+                                       detailed usage.
+ 
+ Deaggregates:
+    Deaggregates are specified as <deaggregator>[,<arguments>].  See
+    --list-deaggregators for a list of available deaggregators.
+ 
+    In general, key name arguments to deaggregators may be key specs, but not
+    key groups
+ 
+ Domain Lanuage Integration:
+    The normal mechanism for specifying e.g.  keys and aggregators allows one to
+    concisely instantiate the objects that back them in the platform and is
+    certainly the easiest way to use recs.  The record stream domain language
+    allows the creation of these objects in a programmatic way, with neither the
+    syntactic issues of the normal way nor the its guiding hand.
+ 
+    The domain language is itself just PERL with a collection of library
+    functions for creating platform objects included.  Your favorite aggregators
+    are all here with constructors matching their normal token.  For convenience
+    of e.g.  last, aggregators are also included with a prefixed underscore.
+ 
+    Below you can find documentation on all the "built in" functions.  Most
+    aggregators and deaggregators should be present with arguments comparable to
+    their normal instantiation arugments, but with keyspec parameters replaced
+    with valuations parameters.
+ 
+    Deaggregates may be specified using the recs domain language.
+    --dldeaggregator requires the code evaluate as a deaggregator.
+ 
+    See --help-domainlanguage for a more complete description of its workings
+    and a list of available functions.
+ 
+    See the examples below for a more gentle introduction.
+ 
+ Examples:
+    Split the "hosts" field into individual "host" fields
+       recs-decollate --dldeaggregator '_split(hosts,qr/, */,host)'
+ 
+ Help Options:
+    --help-all             Output all help for this script
+    --help                 This help screen
+    --help-deaggregators   List the deaggregators
+    --help-domainlanguage  Help on the recs domain language, a [very complicated] way of specifying valuations (which act like keys) or aggregators
+ 
+ split: split the provided field
+ unarray: split the provided array
+ unhash: split the provided hash
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+
