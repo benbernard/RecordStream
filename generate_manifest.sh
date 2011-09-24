@@ -3,6 +3,7 @@ find . \( -type f -o -type l \) \
    -not -name 'Makefile.old' \
    -not -path './makedeb/*' \
    -not -path "./debian/*" \
+   -not -path "./App-RecordStream*.tar.gz" \
    -not -path "./deb-dist/*" \
    -not -path "./blib/*" \
    -not -path './.git/*' \
