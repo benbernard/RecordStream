@@ -7,7 +7,7 @@ use App::RecordStream::Aggregator;
 use base qw(App::RecordStream::Aggregator::Aggregation);
 
 use strict;
-use lib;
+use warnings;
 
 sub new
 {

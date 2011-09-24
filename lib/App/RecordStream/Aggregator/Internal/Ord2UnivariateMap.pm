@@ -1,7 +1,7 @@
 package App::RecordStream::Aggregator::Internal::Ord2UnivariateMap;
 
 use strict;
-use lib;
+use warnings;
 
 use App::RecordStream::Aggregator::Ord2Univariate;
 

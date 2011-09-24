@@ -3,7 +3,7 @@ package App::RecordStream::Aggregator::Count;
 our $VERSION = "3.4";
 
 use strict;
-use lib;
+use warnings;
 
 use App::RecordStream::Aggregator::MapReduce;
 use App::RecordStream::Aggregator;

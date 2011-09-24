@@ -3,7 +3,7 @@ package App::RecordStream::Aggregator::Percentile;
 our $VERSION = "3.4";
 
 use strict;
-use lib;
+use warnings;
 
 use App::RecordStream::Aggregator::InjectInto::Field;
 use App::RecordStream::DomainLanguage::Registry;

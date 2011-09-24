@@ -3,7 +3,7 @@ package App::RecordStream::Aggregator::InjectInto::Field;
 our $VERSION = "3.4";
 
 use strict;
-use lib;
+use warnings;
 
 use App::RecordStream::DomainLanguage::Registry;
 use App::RecordStream::DomainLanguage::Valuation::KeySpec;

@@ -1,7 +1,7 @@
 package App::RecordStream::Aggregator::Internal::ForField;
 
 use strict;
-use lib;
+use warnings;
 
 use App::RecordStream::Aggregator::Aggregation;
 use App::RecordStream::DomainLanguage::Registry;
