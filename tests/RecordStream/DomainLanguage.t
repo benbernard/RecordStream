@@ -11,6 +11,8 @@ BEGIN { use_ok("App::RecordStream::Test::DistinctCountHelper"); }
 BEGIN { use_ok("App::RecordStream::Test::LastHelper"); }
 BEGIN { use_ok("App::RecordStream::Test::UniqConcatHelper"); }
 
+__END__
+
 App::RecordStream::Aggregator::load_aggregators();
 
 my $NO_CHECK = 'NO_CHECK';
