@@ -11,8 +11,6 @@ BEGIN { use_ok("App::RecordStream::Test::DistinctCountHelper"); }
 BEGIN { use_ok("App::RecordStream::Test::LastHelper"); }
 BEGIN { use_ok("App::RecordStream::Test::UniqConcatHelper"); }
 
-__END__
-
 App::RecordStream::Aggregator::load_aggregators();
 
 my $NO_CHECK = 'NO_CHECK';
@@ -287,7 +285,7 @@ for my $test (@tests)
     for my $code (@$codes)
     {
         my $snip = App::RecordStream::DomainLanguage::Snippet->new($code);
-        for my $sub_test (['AGG', $agg_check], ['VALUATION', $val_check], ['SCALAR', $scalar_check])
+        for my $sub_test (['AGGREGATOR', $agg_check], ['VALUATION', $val_check], ['SCALAR', $scalar_check])
         {
             my ($type, $check) = @$sub_test;
 
