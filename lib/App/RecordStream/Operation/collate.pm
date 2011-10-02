@@ -353,11 +353,11 @@ Examples:
    Produce a list of hosts in each datacenter.
       recs-collate --key dc --dlaggregator "hosts=uconcat(', ', 'host')"
    Sum all time fields
-      recs-collate --key ... --dlaggregator "times=for_field(qr/^t/, 'sum(\\\$f)')"
+      recs-collate --key ... --dlaggregator 'times=for_field(qr/^t/, <<sum(\$f)>>)'
    Find the median value of x+y in records
-      recs-collate --dlaggregator "m=perc(50,snip('{{x}}+{{y}}'))"
+      recs-collate --dlaggregator "m=perc(50,snip(<<{{x}}+{{y}}>>))"
    Count people by first three letters of their name
-      recs-collate --dlkey "tla=snip('substr({{name}},0,3')"
+      recs-collate --dlkey "tla=<<substr({{name}},0,3)>>" -a ct
 USAGE
    ;
 }
