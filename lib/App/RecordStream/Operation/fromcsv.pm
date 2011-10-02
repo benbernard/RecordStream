@@ -43,12 +43,29 @@ sub init {
 sub run_operation {
    my $this = shift;
 
-   my $parser = $this->{'PARSER'};
+   my $files = $this->_get_extra_args();
 
-   local @ARGV = @{$this->_get_extra_args()};
+   if ( scalar @$files > 0 ) {
+      foreach my $file ( @$files ) {
+         $this->update_current_filename($file);
 
+         open(my $fh, '<', $file) or die "Could not open file: $!\n";
+         $this->get_records_from_handle($fh);
+         close $fh;
+      }
+   }
+   else {
+      $this->get_records_from_handle(\*STDIN);
+   }
+}
+
+sub get_records_from_handle {
+   my ($this, $handle) = @_;
+
+   my $parser     = $this->{'PARSER'};
    my $do_headers = $this->{'HEADER_LINE'};
-   while(my $row = $parser->getline(*ARGV)) {
+
+   while(my $row = $parser->getline($handle)) {
       if ( $do_headers ) {
          push @{$this->{'FIELDS'}}, @$row;
          $do_headers = 0;

@@ -70,6 +70,7 @@ sub run_operation {
    my $this = shift;
 
    foreach my $filename ( @{$this->{'FILES'}} ) {
+      $this->update_current_filename($filename);
       # TODO: have a connections output rather than packets
       $this->dump_packets($filename);
    }

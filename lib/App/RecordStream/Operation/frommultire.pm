@@ -85,6 +85,7 @@ sub run_operation {
    local @ARGV = @{$this->_get_extra_args()};
    while(my $line = <>) {
       chomp $line;
+      $this->update_current_filename($ARGV);
 
       my $regex_index = 0;
       for my $regex (@{$this->_get_regexes()}) {

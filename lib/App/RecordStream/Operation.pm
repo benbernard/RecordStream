@@ -133,6 +133,7 @@ sub parse_options {
    my $args         = shift || [];
    my $options_spec = shift || {};
 
+   # Add help options
    foreach my $help_type (keys %{$this->{'HELP_TYPES'}}) {
       my $type_info = $this->{'HELP_TYPES'}->{$help_type};
       next unless ( $type_info->{'USE'} );
@@ -145,6 +146,10 @@ sub parse_options {
       };
    }
 
+   # Add filename annotation option
+   $options_spec->{'--filename-key|fk=s'} = \($this->{'FILENAME_KEY'});
+
+
    local @ARGV = @$args;
    unless (GetOptions(%$options_spec)) {
       # output usage if there was a problem with option parsing
@@ -152,6 +157,11 @@ sub parse_options {
    }
 
    $this->_set_extra_args(\@ARGV);
+}
+
+sub update_current_filename {
+  my ($this, $filename) = @_;
+  set_current_filename($filename);
 }
 
 sub _set_wants_help {
@@ -273,6 +283,12 @@ sub stream_done {
 
 sub push_record {
    my ($this, $record) = @_;
+
+   if ( $this->{'FILENAME_KEY'} ) {
+     $DB::single =1;
+     ${$record->guess_key_from_spec($this->{'FILENAME_KEY'})} = get_current_filename();
+   }
+
    $this->{'NEXT'}->accept_record($record);
 }
 

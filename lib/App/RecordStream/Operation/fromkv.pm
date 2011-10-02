@@ -46,6 +46,7 @@ sub run_operation {
          local $/ = $record_delim;
          chomp $line;
       }
+      $this->update_current_filename($ARGV);
 
       # trim trailing and leading whitespace from record
       $line =~ s/^\s+|\s+$//g;

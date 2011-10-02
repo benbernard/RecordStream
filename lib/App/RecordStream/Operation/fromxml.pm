@@ -114,6 +114,7 @@ sub get_xml_string {
       return undef unless ( @$uris );
 
       my $uri = shift @$uris;
+      $this->update_current_filename($uri);
 
       my $ua = $this->make_user_agent();
       my $response = $ua->request($this->get_request($uri));

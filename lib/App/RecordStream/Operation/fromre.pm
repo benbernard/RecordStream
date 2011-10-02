@@ -54,6 +54,7 @@ sub run_operation {
    local @ARGV = @{$this->_get_extra_args()};
    while(my $line = <>) {
       chomp $line;
+      $this->update_current_filename($ARGV);
 
       if(my @groups = ($line =~ $this->get_pattern())) {
          my $record = App::RecordStream::Record->new();

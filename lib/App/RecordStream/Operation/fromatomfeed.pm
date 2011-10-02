@@ -50,6 +50,7 @@ sub run_operation
 URL:
    while (my $url = shift @urls)
    {
+      $this->update_current_filename($url);
       $request->uri($url);
       my $response = $ua->request($request);
 

@@ -70,6 +70,7 @@ sub run_operation {
 
    while(my $line = <>) {
       chomp $line;
+      $this->update_current_filename($ARGV);
 
       my $record = App::RecordStream::Record->new();
       my $index = 0;
