@@ -71,9 +71,9 @@ my $solution4 = <<SOLUTION;
 {"sweet":"barbaz,barbaz3","foo":"bar","element":"address2"}
 SOLUTION
 
-#App::RecordStream::Test::OperationHelper->do_match(
-#   'collate',
-#   ['--key', 'element', '--dlkey', 'foo=sub{shift->{foo}}', '--dlaggregator', 'sweet=uconcat(",", val(sub{$_[0]->{foo}.$_[0]->{bar};}))'],
-#   $stream,
-#   $solution4,
-#);
+App::RecordStream::Test::OperationHelper->do_match(
+   'collate',
+   ['--key', 'element', '--dlkey', 'foo=sub{shift->{foo}}', '--dlaggregator', 'sweet=uconcat(",", val(sub{$_[0]->{foo}.$_[0]->{bar};}))'],
+   $stream,
+   $solution4,
+);
