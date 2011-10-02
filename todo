@@ -1,9 +1,6 @@
 more aggregators
    linreg
    weighted percentile [map] (may be difficult to decide integration with the domain language...)
-perf test
-   recs-collate lru size 1 v. optimized adjacent recs collate
-   JSON v. old recs v. other serialization (Data::Dumper, Storable, ?)
 recs-frommultire
    block mechanism
       could be sed-esque script where there are primitives for shoving matched groups "into" a block in construction
@@ -20,6 +17,7 @@ recs-from* - Add ability to annotate record with filename
 recs-tognuplot - use a library rather than invoking gnuplot directly
 recs-togchart - use google chart api, seems simplier than gnuplot, could support more options? also look at 'Chart' on CPAN, maybe that instead?, could also support graph viz charts, see: http://code.google.com/apis/chart/image/docs/gallery/graphviz.html
 refactor Aggregator/Deaggregator loading/registry code since we'll need it for clumper (and annotater?) as well
+recs-xform - add option to send null $r at the end of the stream to allow final actions after spooling records
 
 Distribution Notes:
   Set up PPA for updates
@@ -41,6 +39,7 @@ Key groups:
       !REGEX!v=numeric
       '!perc-(\d+)!v=Percentile: $1'
       '!perc-!v-eval=Percentile {{field}}'
+  "Pretty-ify field names for toptable"
 
 RecordShell idea:
   14:34 <ben_bernard> my idea is basically you have like status files in a history tree
