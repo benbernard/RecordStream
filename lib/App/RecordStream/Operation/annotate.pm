@@ -62,7 +62,7 @@ sub accept_record {
 
    my $store = {};
 
-   my ($recording_hash, $hash) = create_recorder({$record->as_hash()}, $store);
+   my $hash = create_recorder({$record->as_hash()}, $store);
 
    my $new_record = App::RecordStream::Record->new($hash);
    $executor->execute_code($new_record);
@@ -154,7 +154,7 @@ sub create_recorder {
          my $value = $data->{$key};
          my $new_value = $value;
          if ( ref($value) eq 'HASH' || ref($value) eq 'ARRAY' ) {
-            my ($recorder, $new_data) = create_recorder($value, $store, $spec . $key);
+            my $new_data = create_recorder($value, $store, $spec . $key);
             $new_value = $new_data;
          }
          $new_hash{$key} = $new_value;
@@ -163,7 +163,7 @@ sub create_recorder {
       my %hash;
       my $recorder = tie %hash, 'RecordingHash', \%new_hash, $recorder;
 
-      return ($recorder, \%hash);
+      return \%hash;
    }
    else { #Must be an array
       my @new_array;
@@ -171,7 +171,7 @@ sub create_recorder {
       foreach my $value (@$data) {
          my $new_value = $value;
          if ( ref($value) eq 'HASH' || ref($value) eq 'ARRAY' ) {
-            my ($recorder, $new_data) = create_recorder($value, $store, $spec . '#' . $index);
+            my $new_data = create_recorder($value, $store, $spec . '#' . $index);
             $new_value = $new_data;
          }
 
@@ -182,7 +182,7 @@ sub create_recorder {
       my @array;
       my $recorder = tie @array, 'RecordingArray', \@new_array, $recorder;
 
-      return ($recorder, \@array);
+      return \@array;
    }
 
 }
