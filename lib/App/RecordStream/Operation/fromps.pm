@@ -81,7 +81,7 @@ sub usage {
    my $all_fields = join (', ', @fields);
    return <<USAGE;
 Usage: recs-fromps <args>
-   Prints out an html table for the records from input or from <files>.
+   Prints out JSON records converted from the process table.
 
    --keys <fields> - Fields to output.  May be specified multiple
                      times, may be comma separated.  Default to all fields
@@ -95,7 +95,7 @@ Examples:
    Get records for the process table
       recs-fromps
    Only get uid and pid
-      recs-fromps --fields uid,pid
+      recs-fromps --keys uid,pid
 USAGE
 }
 
