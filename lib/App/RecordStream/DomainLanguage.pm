@@ -9,11 +9,11 @@ sub usage {
 
 sub short_usage {
    return <<HELP;
-   The normal mechanism for specifying e.g.  keys and aggregators allows one to
+   The normal mechanism for specifying keys and aggregators allows one to
    concisely instantiate the objects that back them in the platform and is
    certainly the easiest way to use recs.  The record stream domain language
    allows the creation of these objects in a programmatic way, with neither the
-   syntactic issues of the normal way nor the its guiding hand.
+   syntactic issues of the normal way nor its guiding hand.
 
    The domain language is itself just PERL with a collection of library
    functions for creating platform objects included.  Your favorite aggregators
@@ -35,14 +35,15 @@ Special Syntax
    however quoting these can get fairly difficult and they can be confused with
    non-<snippet> scalars.
 
+   Example:
+     --dla "ucancat(',', snip('{{x}} * 2'))"
+
    To remedy this, one may use <<code>> to inline a snippet which will be
    immediately understood by the typing mechanism as being code.  Escaping
    inside this is as single quotes in PERL.
 
-   For example, trying to specify an aggregator via "uconcat(',', '{{x}}')"
-   won't do what one expects ('{{x}}' is taken as a scalar and thus a keyspec)
-   whereas "uconcat(',', <<{{x}}>>)" forces the "{{x}}" part to be interpreted
-   as a snippet (and as a valuation).
+   Example With <<CODE>>
+     --dla 'uconcat(",", <<{{x}} * 2>>)'
 
 Function Library
    ii_agg(<snippet>, <snippet>[, <snippet>])
