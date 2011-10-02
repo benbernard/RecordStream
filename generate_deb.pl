@@ -1,6 +1,7 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
 use strict;
+use warnings;
 require 'BuildTools.recbuildtool';
 use File::Glob qw(glob);
 use Getopt::Long;
