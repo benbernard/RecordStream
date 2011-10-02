@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 sub usage {
-   return "DOMAIN LANGUAGE\n" . short_usage() . long_usage();
+   return "DOMAIN LANGUAGE\n" . short_usage() . _long_usage();
 }
 
 sub short_usage {
@@ -27,13 +27,28 @@ sub short_usage {
 HELP
 }
 
-sub long_usage {
+sub _long_usage {
    return <<HELP;
 
-   ii_agg('...', '...'[, '...'])
-   ii_aggregator('...', '...'[, '...'])
-   inject_into_agg('...', '...'[, '...'])
-   inject_into_aggregator('...', '...'[, '...'])
+Special Syntax
+   Where one sees a <snippet> argument below, a string scalar is expected,
+   however quoting these can get fairly difficult and they can be confused with
+   non-<snippet> scalars.
+
+   To remedy this, one may use <<code>> to inline a snippet which will be
+   immediately understood by the typing mechanism as being code.  Escaping
+   inside this is as single quotes in PERL.
+
+   For example, trying to specify an aggregator via "uconcat(',', '{{x}}')"
+   won't do what one expects ('{{x}}' is taken as a scalar and thus a keyspec)
+   whereas "uconcat(',', <<{{x}}>>)" forces the "{{x}}" part to be interpreted
+   as a snippet (and as a valuation).
+
+Function Library
+   ii_agg(<snippet>, <snippet>[, <snippet>])
+   ii_aggregator(<snippet>, <snippet>[, <snippet>])
+   inject_into_agg(<snippet>, <snippet>[, <snippet>])
+   inject_into_aggregator(<snippet>, <snippet>[, <snippet>])
       Take an initial snippet, a combine snippet, and an optional squish
       snippet to produce an ad-hoc aggregator based on inject into.  The
       initial snippet produces the aggregate value for an empty collection,
@@ -44,9 +59,9 @@ sub long_usage {
 
       Example(s):
          Track count and sum to produce average:
-            ii_agg('[0, 0]', '[\$a->[0] + 1, \$a->[1] + {{ct}}]', '\$a->[1] / \$a->[0]')
+            ii_agg(<<[0, 0]>>, <<[\$a->[0] + 1, \$a->[1] + {{ct}}]>>, <<\$a->[1] / \$a->[0]>>)
 
-   for_field(qr/.../, '...')
+   for_field(qr/.../, <snippet>)
       Takes a regex and a snippet of code.  Creates an aggregator that creates
       a map.  Keys in the map correspond to fields chosen by matching the regex
       against the fields from input records.  Values in the map are produced by
@@ -55,9 +70,9 @@ sub long_usage {
 
       Example(s):
          To aggregate the sums of all the fields beginning with "t"
-            for_field(qr/^t/, 'sum(\$f)')
+            for_field(qr/^t/, <<sum(\$f)>>)
 
-   for_field(qr/.../, qr/.../, '...')
+   for_field(qr/.../, qr/.../, <snippet>)
       Takes two regexes and a snippet of code.  Creates an aggregator that
       creates a map.  Keys in the map correspond to pairs of fields chosen by
       matching the regexes against the fields from input records.  Values in
@@ -66,12 +81,12 @@ sub long_usage {
 
       Example(s):
          To find the covariance of all x-named fields with all y-named fields:
-            for_field(qr/^x/, qr/^y/, 'covar(\$f1, \$f2)')
+            for_field(qr/^x/, qr/^y/, <<covar(\$f1, \$f2)>>)
 
-   map_reduce_agg('...', '...'[, '...'])
-   map_reduce_aggregator('...', '...'[, '...'])
-   mr_agg('...', '...'[, '...'])
-   mr_aggregator('...', '...'[, '...'])
+   map_reduce_agg(<snippet>, <snippet>[, <snippet>])
+   map_reduce_aggregator(<snippet>, <snippet>[, <snippet>])
+   mr_agg(<snippet>, <snippet>[, <snippet>])
+   mr_aggregator(<snippet>, <snippet>[, <snippet>])
       Take a map snippet, a reduce snippet, and an optional squish snippet to
       produce an ad-hoc aggregator based on map reduce.  The map snippet takes
       \$r representing a record and returns its mapped value.  The reduce
@@ -81,7 +96,7 @@ sub long_usage {
 
       Example(s):
          Track count and sum to produce average:
-            mr_agg('[1, {{ct}}]', '[\$a->[0] + \$b->[0], \$a->[1] + \$b->[1]]', '\$a->[1] / \$a->[0]')
+            mr_agg(<<[1, {{ct}}]>>, <<[\$a->[0] + \$b->[0], \$a->[1] + \$b->[1]]>>, <<\$a->[1] / \$a->[0]>>)
 
    rec()
    record()
@@ -92,17 +107,18 @@ sub long_usage {
       valuation.  Used to distinguished snippets from scalars in cases where it
       matters, e.g.  min('{{x}}') interprets it is a keyspec when it was meant
       to be a snippet (and then a valuation), min(snip('{{x}}')) does what is
-      intended.
+      intended.  This is used internally by <<...>> and in fact <<...>> just
+      translates to snip('...').
 
-   subset_agg('...', <aggregator>)
-   subset_aggregator('...', <aggregator>)
+   subset_agg(<snippet>, <aggregator>)
+   subset_aggregator(<snippet>, <aggregator>)
       Takes a snippate to act as a record predicate and an aggregator and
       produces an aggregator that acts as the provided aggregator as run on the
       filtered view.
 
       Example(s):
           An aggregator that counts the number of records with a time not above 6 seconds:
-             subset_agg('{{time_ms}} <= 6000', ct())
+             subset_agg(<<{{time_ms}} <= 6000>>, ct())
 
    type_agg(obj)
    type_scalar(obj)

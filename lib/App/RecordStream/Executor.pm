@@ -138,7 +138,7 @@ Special Syntax
     {{zoo}}         {{foo/ar 1}}
 
     # Even assign to values (set the foo key to the value 1)
-    {{fo}} = 1
+    {{foo}} = 1
 
    # And auto, vivify
     {{new_key/array_key/#0}} = 3 # creates an array within a hash within a hash
