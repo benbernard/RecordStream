@@ -1,6 +1,7 @@
 3.6 - Added recs-annotate
       Added recs-decollate
       recs-fromsplit - get trailing empty fields on lines, now
+      Adding <<>> for code snippets in domain language
 
 3.5_01 - Minor CPAN Changes
 
