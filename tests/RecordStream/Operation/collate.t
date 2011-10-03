@@ -94,7 +94,7 @@ SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
    'collate',
-   ['--key', 'element', '--ignore-null=1', '--a', 'count'],
+   ['--key', 'element', '--ignore-null', '--a', 'count'],
    $stream2,
    $solution5
 );

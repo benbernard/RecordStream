@@ -37,7 +37,7 @@ sub init {
    my $spec = {
       "key|k=s"           => sub { $key_groups->add_groups($_[1]); },
       "dlkey=s"           => sub { build_dlkey(\%dlkeys, $_[1]); },
-      "ignore-null=i"     => \$ignore_null_keys,
+      "ignore-null"     => \$ignore_null_keys,
       "aggregator|a=s"    => sub { push @aggregators, split(/:/, $_[1]); },
       "dlaggregator=s"    => sub { build_dlaggregator(\%dlaggregators, $_[1]); },
       "size|sz|n=i"       => \$size,
