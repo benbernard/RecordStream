@@ -2,6 +2,10 @@
       Added recs-decollate
       recs-fromsplit - get trailing empty fields on lines, now
       Adding <<>> for code snippets in domain language
+      Options and Operations refactor (big refactors)
+      Added --filename-key option to all scripts
+      Added linearreg aggregator
+      Added --ignore-nulls flag to recs-collate
 
 3.5_01 - Minor CPAN Changes
 
