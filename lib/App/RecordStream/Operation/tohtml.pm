@@ -5,7 +5,7 @@ our $VERSION = "3.4";
 use strict;
 use warnings;
 
-use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);
+use base qw(App::RecordStream::Operation);
 
 sub init {
    my $this = shift;
@@ -42,14 +42,16 @@ sub accept_record {
    my $row_attributes  = $this->{'ROW_ATTRIBUTES'};
    my $cell_attributes = $this->{'CELL_ATTRIBUTES'};
 
-   $this->print_value("  <tr $row_attributes>\n");
+   $this->push_line("  <tr $row_attributes>");
 
    foreach my $field (@$fields) {
       my $value = ${$record->guess_key_from_spec($field)} || '';
-      $this->print_value("    <td $cell_attributes>$value</td>\n");
+      $this->push_line("    <td $cell_attributes>$value</td>");
    }
 
-   $this->print_value("  </tr>\n");
+   $this->push_line("  </tr>");
+
+   return 1;
 }
 
 sub print_start {
@@ -59,7 +61,7 @@ sub print_start {
    return if ( $this->{'PRINTED_START'} );
    $this->{'PRINTED_START'} = 1;
 
-   $this->print_value("<table>\n");
+   $this->push_line("<table>");
 
    my $groups = $this->{'KEY_GROUPS'};
    if ( $groups->has_any_group() ) {
@@ -83,18 +85,18 @@ sub print_header {
    my $row_attributes  = $this->{'ROW_ATTRIBUTES'};
    my $cell_attributes = $this->{'CELL_ATTRIBUTES'};
 
-   $this->print_value("  <tr $row_attributes>\n");
+   $this->push_line("  <tr $row_attributes>");
 
    foreach my $field (@$fields) {
-      $this->print_value("    <th $cell_attributes>$field</th>\n");
+      $this->push_line("    <th $cell_attributes>$field</th>");
    }
 
-   $this->print_value("  </tr>\n");
+   $this->push_line("  </tr>");
 }
 
 sub stream_done {
    my $this = shift;
-   $this->print_value("</table>\n");
+   $this->push_line("</table>");
 }
 
 sub add_help_types {

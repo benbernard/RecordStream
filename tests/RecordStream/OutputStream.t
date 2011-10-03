@@ -16,26 +16,6 @@ my $rec = App::RecordStream::Record->new(
    }
 );
 
-my $fh = IO::String->new();
-
-ok(my $out = App::RecordStream::OutputStream->new($fh), 'Constructor test');
-ok($out->put_record($rec), 'Put a record');
-
-my $output_string = ${$fh->string_ref};
-my $in = App::RecordStream::InputStream->new(STRING=> $output_string);
+my $output_string = App::RecordStream::OutputStream::hashref_string($rec);
+my $in = App::RecordStream::InputStream->new(STRING => $output_string);
 is_deeply($in->get_record(), $rec, 'got the same thing out as was put in');
-
-#Remove printed newline
-chomp $output_string;
-
-is($output_string, $out->record_string($rec), "String output agrees with printed output");
-
-my $hash = {
-   'foo' => 'bar',
-   'zoo' => {
-      'blah' => 'biz',
-      'far'  => [ 'fing', 'fang', 'foom' ],
-   }
-};
-
-is($output_string, $out->hashref_string($hash), "String output (hashref) agrees with printed output");

@@ -21,6 +21,8 @@ sub init {
    );
 
    $this->parse_options($args, \%options);
+
+   $this->{'RECORD'} = App::RecordStream::Record->new();
 }
 
 sub add_regex {
@@ -77,49 +79,51 @@ sub check_keep {
    return $this->get_keep_all() || exists($this->{'KEEP'}->{$field});
 }
 
-sub run_operation {
-   my ($this) = @_;
+sub accept_line {
+   my $this = shift;
+   my $line = shift;
 
-   my $record = App::RecordStream::Record->new();
+   my $regex_index = 0;
+   for my $regex (@{$this->_get_regexes()}) {
+      my ($string, $fields, $pre_flush, $post_flush) = @$regex;
+      my $field_prefix = "$regex_index-";
 
-   local @ARGV = @{$this->_get_extra_args()};
-   while(my $line = <>) {
-      chomp $line;
-
-      my $regex_index = 0;
-      for my $regex (@{$this->_get_regexes()}) {
-         my ($string, $fields, $pre_flush, $post_flush) = @$regex;
-         my $field_prefix = "$regex_index-";
-
-         if(my @groups = ($line =~ $string)) {
-            my $pairs = $this->get_field_value_pairs(\@groups, $fields, $field_prefix);
-            if(!$this->get_clobber()) {
-               foreach my $pair ( @$pairs ) {
-                  my ($name, $value) = @$pair;
-                  if(defined ${$record->guess_key_from_spec($name)}) {
-                     $pre_flush = 1;
-                  }
-               }
-            }
-
-            if($pre_flush) {
-               $record = $this->flush_record($record);
-            }
-
+      if(my @groups = ($line =~ $string)) {
+         my $pairs = $this->get_field_value_pairs(\@groups, $fields, $field_prefix);
+         if(!$this->get_clobber()) {
             foreach my $pair ( @$pairs ) {
                my ($name, $value) = @$pair;
-               ${$record->guess_key_from_spec($name)} = $value;
-            }
-
-            if($post_flush) {
-               $record = $this->flush_record($record);
+               if(defined ${$this->{'RECORD'}->guess_key_from_spec($name)}) {
+                  $pre_flush = 1;
+               }
             }
          }
-         ++$regex_index;
+
+         if($pre_flush) {
+            $this->flush_record();
+         }
+
+         foreach my $pair ( @$pairs ) {
+            my ($name, $value) = @$pair;
+            ${$this->{'RECORD'}->guess_key_from_spec($name)} = $value;
+         }
+
+         if($post_flush) {
+            $this->flush_record();
+         }
       }
+      ++$regex_index;
    }
+
+   return 1;
+}
+
+sub stream_done {
+   my $this = shift;
+   my $record = $this->{'RECORD'};
+
    if(!$this->get_clobber() && scalar($record->keys())) {
-      $record = $this->flush_record($record);
+      $this->flush_record();
    }
 }
 
@@ -158,7 +162,8 @@ sub get_field_value_pairs {
 }
 
 sub flush_record {
-   my ($this, $record) = @_;
+   my $this = shift;
+   my $record = $this->{'RECORD'};
    my $record2 = App::RecordStream::Record->new();
    for my $field ($record->keys()) {
       if($this->check_keep($field)) {
@@ -166,7 +171,7 @@ sub flush_record {
       }
    }
    $this->push_record($record);
-   return $record2;
+   $this->{'RECORD'} = $record2;
 }
 
 sub add_help_types {

@@ -18,7 +18,7 @@ $output = <<OUTPUT;
 {"backpointer":{"title":"bert"},"title2":"bert"}
 OUTPUT
 
-$tester->test_stdin([qw(--keychain backpointer), q("echo '{\"title2\":\"$r->{title}\"}'")], $input, $output);
+$tester->test_input([qw(--keychain backpointer), q("echo '{\"title2\":\"$r->{title}\"}'")], $input, $output);
 
 $output = <<OUTPUT;
 {"title":"ernie"}
@@ -27,4 +27,4 @@ $output = <<OUTPUT;
 {"backpointer":{"title":"bert"},"title2":"bert"}
 OUTPUT
 
-$tester->test_stdin([qw(--passthrough --keychain backpointer), q("echo '{\"title2\":\"$r->{title}\"}'")], $input, $output);
+$tester->test_input([qw(--passthrough --keychain backpointer), q("echo '{\"title2\":\"$r->{title}\"}'")], $input, $output);

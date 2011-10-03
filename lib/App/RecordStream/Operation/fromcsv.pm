@@ -38,14 +38,19 @@ sub init {
    $this->{'FIELDS'}      = \@fields;
    $this->{'HEADER_LINE'} = $header_line;
    $this->{'PARSER'}      = new Text::CSV($csv_args);
+   $this->{'EXTRA_ARGS'}  = $args;
 }
 
-sub run_operation {
+sub wants_input {
+   return 0;
+}
+
+sub stream_done {
    my $this = shift;
 
    my $parser = $this->{'PARSER'};
 
-   local @ARGV = @{$this->_get_extra_args()};
+   local @ARGV = @{$this->{'EXTRA_ARGS'}};
 
    my $do_headers = $this->{'HEADER_LINE'};
    while(my $row = $parser->getline(*ARGV)) {

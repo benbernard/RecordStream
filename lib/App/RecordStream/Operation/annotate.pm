@@ -25,7 +25,7 @@ sub init {
    Getopt::Long::Configure('no_ignore_case');
    $this->parse_options($args, $spec);
 
-   my $expression = $executor_options->get_string($this->_get_extra_args());
+   my $expression = $executor_options->get_string($args);
    my $executor = App::RecordStream::Executor->new($expression, 1);
 
    if ( ! $key_groups->has_any_group() ) {
@@ -55,7 +55,7 @@ sub accept_record {
    if ( exists $this->{'ANNOTATIONS'}->{$synthetic_key} ) {
       $this->apply_annotation($synthetic_key, $record);
       $this->push_record($record);
-      return;
+      return 1;
    }
 
    my $executor = $this->{'EXECUTOR'};
@@ -72,6 +72,8 @@ sub accept_record {
    $this->{'ANNOTATIONS'}->{$synthetic_key} = $store;
 
    $this->push_record($returned_record);
+
+   return 1;
 }
 
 sub apply_annotation {

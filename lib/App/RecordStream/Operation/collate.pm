@@ -138,6 +138,8 @@ sub accept_record {
    else {
       $this->put($record_keys, $record);
    }
+
+   return 1;
 }
 
 sub canonicalize {

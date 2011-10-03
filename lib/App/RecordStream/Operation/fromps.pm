@@ -54,7 +54,11 @@ sub get_converter {
    return $this->{'CONVERTER'};
 }
 
-sub run_operation {
+sub wants_input {
+   return 0;
+}
+
+sub stream_done {
    my $this = shift;
 
    my $table  = $this->get_process_table();

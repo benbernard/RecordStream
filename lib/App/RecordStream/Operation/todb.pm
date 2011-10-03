@@ -41,7 +41,7 @@ sub init {
    $this->{'DEBUG'}      = $debug;
    $this->{'FIELDS'}     = $fields;
 
-   $this->{'DBH'} = App::RecordStream::DBHandle::get_dbh($this->_get_extra_args());
+   $this->{'DBH'} = App::RecordStream::DBHandle::get_dbh($args);
 
    if ( $drop_table ) {
       my $dbh = $this->{'DBH'};
@@ -65,6 +65,8 @@ sub accept_record {
    }
 
    $this->add_row($record);
+
+   return 1;
 }
 
 sub add_fields {

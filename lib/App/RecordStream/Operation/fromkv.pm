@@ -10,7 +10,6 @@ use strict;
 use warnings;
 
 use Getopt::Long;
-use App::RecordStream::OutputStream;
 
 sub init {
    my $this = shift;
@@ -34,7 +33,11 @@ sub init {
 }
 
 
-sub run_operation {
+sub wants_input {
+   return 0;
+}
+
+sub stream_done {
    my $this = shift;
 
    my $kv_delim     = $this->{'KV_DELIM'};

@@ -32,10 +32,15 @@ sub init
 
    $this->{'FOLLOW'} = $follow;
    $this->{'MAX'}    = $max;
-   $this->{'URLS'}   = $this->_get_extra_args();
+   $this->{'URLS'}   = $args;
 }
 
-sub run_operation
+sub wants_input
+{
+   return 0;
+}
+
+sub stream_done
 {
    my ($this) = @_;
 

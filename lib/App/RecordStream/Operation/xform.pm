@@ -21,7 +21,7 @@ sub init {
    Getopt::Long::Configure('no_ignore_case');
    $this->parse_options($args, $spec);
 
-   my $expression = $executor_options->get_string($this->_get_extra_args());
+   my $expression = $executor_options->get_string($args);
    my $executor = App::RecordStream::Executor->new($expression, 1);
 
    $this->{'EXECUTOR'} = $executor;
@@ -49,6 +49,8 @@ sub accept_record {
    else {
      $this->push_record($value);
    }
+
+   return 1;
 }
 
 sub add_help_types {

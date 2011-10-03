@@ -80,6 +80,8 @@ sub accept_record {
    }
 
    $this->push_record($record);
+
+   return 1;
 }
 
 sub remove_spec {

@@ -31,7 +31,7 @@ sub init {
    Getopt::Long::Configure('no_ignore_case');
    $this->parse_options($args, $spec);
 
-   my $expression = $executor_options->get_string($this->_get_extra_args());
+   my $expression = $executor_options->get_string($args);
    my $executor = App::RecordStream::Executor->new($expression);
 
    $this->{'KEYCHAIN'}    = $keychain;
@@ -50,14 +50,14 @@ sub accept_record {
    if ($@) {
       chomp $@;
       warn "# $0 interpolating command threw: " . $@ . "\n";
-      next;
+      return 1;
    }
 
    my $pid = open(my $pipe, "-|", $interpolated_command);
 
    if (!$pid) {
       warn "# $0 open(..., \"$interpolated_command |\") failed: $!\n";
-      next;
+      return 1;
    }
 
    my $generator_stream = App::RecordStream::InputStream->new(FH => $pipe);
@@ -67,6 +67,8 @@ sub accept_record {
       $this->push_record($generated_record);
    }
    # App::RecordStream::InputStream closes the file handle for us
+
+   return 1;
 }
 
 sub add_help_types {

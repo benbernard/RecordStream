@@ -34,6 +34,8 @@ sub accept_record {
 
    $this->{'HASH'}->{$key} ||= [];
    push @{$this->{'HASH'}->{$key}}, $record;
+
+   return 1;
 }
 
 sub stream_done {

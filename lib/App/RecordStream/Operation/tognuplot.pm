@@ -5,7 +5,7 @@ our $VERSION = "3.4";
 use strict;
 use warnings;
 
-use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);
+use base qw(App::RecordStream::Operation);
 
 use File::Temp qw(tempfile);
 
@@ -141,12 +141,14 @@ sub accept_record {
 
    chop $line;
    if ( $this->{'DUMP_TO_SCREEN'} ) {
-      $this->print_value($line . "\n");
+      $this->push_line($line);
    }
    else {
       my $tempfh = $this->{'TEMPFH'};
       print $tempfh $line . "\n";
    }
+
+   return 1;
 }
 
 sub stream_done {
@@ -211,7 +213,7 @@ CMDS
    $plot_script .= $plot_cmd;
 
    if ( $this->{'DUMP_TO_SCREEN'} ) {
-      $this->print_value($plot_script . "\n");
+      $this->push_line($plot_script);
    }
    else {
       open(my $plot, '|-', $this->{'GNUPLOT_COMMAND'});
@@ -225,7 +227,7 @@ CMDS
       return;
    }
 
-   $this->print_value("Wrote graph file: " . $this->{'PNG_FILE'} . "\n");
+   $this->push_line("Wrote graph file: " . $this->{'PNG_FILE'});
 }
 
 sub DESTROY {

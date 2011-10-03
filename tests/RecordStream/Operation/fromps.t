@@ -15,12 +15,14 @@ STREAM
 
 my $converter = sub { return 'bernard' };
 
-my $op = App::RecordStream::Operation::fromps->new([]);
+my $keeper = App::RecordStream::Test::OperationHelper::Keeper->new();
+my $op = App::RecordStream::Operation::fromps->new([], $keeper);
 $op->set_converter($converter);
 $op->set_process_table(MockTable->new());
 
 my $helper = App::RecordStream::Test::OperationHelper->new(
     operation => $op,
+    keeper    => $keeper,
     input     => '',
     output    => $solution,
 );

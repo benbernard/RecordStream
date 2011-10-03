@@ -8,7 +8,6 @@ use base qw(App::RecordStream::Operation);
 
 use App::RecordStream::Executor;
 use App::RecordStream::InputStream;
-use App::RecordStream::OutputStream;
 use App::RecordStream::Record;
 
 sub init {
@@ -34,19 +33,19 @@ sub init {
 
    $this->parse_options($args, $spec);
 
-   if ( ! @{$this->_get_extra_args()} ) {
+   if ( ! @$args ) {
       die("You must provide inputkey");
    }
 
-   my $inputkey = shift @{$this->_get_extra_args()};
+   my $inputkey = shift @$args;
 
-   die("You must provide dbkey") unless (@{$this->_get_extra_args()});
+   die("You must provide dbkey") unless (@$args);
 
-   my $dbkey = shift @{$this->_get_extra_args()};
+   my $dbkey = shift @$args;
 
-   usage("You must provide dbfile") unless (@{$this->_get_extra_args()});
+   usage("You must provide dbfile") unless (@$args);
 
-   my $dbfile = shift @{$this->_get_extra_args()};
+   my $dbfile = shift @$args;
 
    $this->{'ACCUMULATE_RIGHT'} = $accumulate_right;
    $this->{'DB_KEY'}           = $dbkey;
@@ -132,6 +131,8 @@ sub accept_record {
    elsif ($this->{'KEEP_RIGHT'}) {
       $this->push_record($record);
    }
+
+   return 1;
 }
 
 # TODO: shove down into executor

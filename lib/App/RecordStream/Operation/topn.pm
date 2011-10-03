@@ -57,6 +57,8 @@ sub accept_record {
    if( $this->{'NUM_SEEN'}->{$current_key_values} <= $this->{'NUM'} ) {
      $this->push_record($record);
    }
+
+   return 1;
 }
 
 sub add_help_types {

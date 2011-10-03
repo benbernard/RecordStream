@@ -32,6 +32,20 @@ sub no_input_test {
    );
 }
 
+sub test_input {
+   my $this   = shift;
+   my $args   = shift;
+   my $input  = shift;
+   my $output = shift;
+
+   return App::RecordStream::Test::OperationHelper->do_match(
+      $this->{'OPERATION'},
+      $args,
+      ['LINES', split(/\n/, $input)],
+      $output,
+   );
+}
+
 sub test_stdin {
    my $this   = shift;
    my $args   = shift;
