@@ -150,9 +150,8 @@ Special Syntax
     {{new_key/array_key/#0}} = 3 # creates an array within a hash within a hash
 
     # Index into an array
-   __FORMAT_TEXT__
-    {{array_key/#3}} # The value of index 3 of the array ref under the 'array_key' hash key.
-   __FORMAT_TEXT__
+    {{array_key/#3}} # The value of index 3 of the array ref under the
+                       'array_key' hash key.
 
    __FORMAT_TEXT__
     This matching is a fuzzy keyspec matching, see --help-keyspecs for more
