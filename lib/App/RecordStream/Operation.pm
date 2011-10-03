@@ -150,9 +150,7 @@ sub _options_format {
       my $formatted            = $this->format_text($description, $description_indent_level);
       my $description_prefix   = (' ' x ($indent_level * 3)) . '--' . $name;
 
-      if ( length($description_prefix) < $description_indent_level ) {
-         $description_prefix .= ' ' x ($description_indent_level - length($description_prefix));
-      }
+      $description_prefix .= ' ' x ($description_indent_level - length($description_prefix));
 
       my $prefix_size = length($description_prefix);
       $string .= $description_prefix;
