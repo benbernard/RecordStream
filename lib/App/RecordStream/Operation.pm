@@ -107,6 +107,8 @@ sub init_help {
 sub options_string {
    my ($this, $options) = @_;
 
+   push @$options, ['filename-key|fk <keyspec>', 'Add a key with the source filename (if no filename is applicable will put NONE)'];
+
    my $string = $this->_options_format($options);
    $string .= "\n  Help Options:\n";
 
@@ -119,8 +121,6 @@ sub options_string {
       my $description = $info->{'DESCRIPTION'};
       push @$help_options, [$option_name, $description];
    }
-
-   $DB::single =1;
 
    $string .= $this->_options_format($help_options, 2);
 
@@ -166,12 +166,26 @@ sub _options_format {
    return $string;
 }
 
+{
+   my $size_initialized = 0;
+   my $size = 80;
+   sub get_terminal_size {
+      if ( ! $size_initialized ) {
+         $size_initialized = 1;
+         eval {
+            $size = (Term::ReadKey::GetTerminalSize())[0];
+         };
+      }
+      return $size;
+   }
+}
+
 sub format_text {
    my ($this, $text, $left_indent) = @_;
    $left_indent ||= 0;
    return autoformat $text, {
       left  => $left_indent + 1,
-      right => (Term::ReadKey::GetTerminalSize())[0],
+      right => get_terminal_size(),
       all   => 1,
    };
 }
