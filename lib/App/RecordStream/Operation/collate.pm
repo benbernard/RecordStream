@@ -37,7 +37,7 @@ sub init {
    my $spec = {
       "key|k=s"           => sub { $key_groups->add_groups($_[1]); },
       "dlkey=s"           => sub { build_dlkey(\%dlkeys, $_[1]); },
-      "ignore-null"     => \$ignore_null_keys,
+      "ignore-null"       => \$ignore_null_keys,
       "aggregator|a=s"    => sub { push @aggregators, split(/:/, $_[1]); },
       "dlaggregator=s"    => sub { build_dlaggregator(\%dlaggregators, $_[1]); },
       "size|sz|n=i"       => \$size,
@@ -303,7 +303,7 @@ Arguments:
                                  key spec or key group
    --dlkey ...                   Specify a domain language key.  See "Domain
                                  Language Integration" below.
-   --ignore-null ...             Comma separated list of keys to ignore if they are null in records
+   --ignore-null ...             ignore undefined or non-existant keys in records
    --dlaggregator ...            Specify a domain language aggregate.  See
                                  "Domain Language Integration" below.
    --aggregator|-a <aggregators> Colon separated list of aggregate field specifiers.
