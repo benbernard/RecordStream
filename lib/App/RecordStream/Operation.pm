@@ -11,37 +11,26 @@ use Getopt::Long;
 use Text::Autoformat;
 use Term::ReadKey;
 
-use App::RecordStream::InputStream;
-use App::RecordStream::Site;
-
 use App::RecordStream::DomainLanguage;
-use App::RecordStream::KeyGroups;
 use App::RecordStream::Executor;
+use App::RecordStream::KeyGroups;
+use App::RecordStream::Site;
+use App::RecordStream::Stream::Base;
+use App::RecordStream::Stream::Printer;
 
-require App::RecordStream::Operation::Printer;
-
-sub accept_record {
-   subclass_should_implement(shift);
-}
+use base 'App::RecordStream::Stream::Base';
 
 sub usage {
    subclass_should_implement(shift);
 }
 
-sub create_default_next {
-   my $printer = App::RecordStream::Operation::Printer->new();
-   $printer->init();
-   return $printer;
-}
-
 sub new {
    my $class    = shift;
    my $args     = shift;
-
-   my $default_next = $class->create_default_next();
+   my $next     = shift;
 
    my $this = {
-      NEXT => $default_next,
+      NEXT => $next,
    };
 
    bless $this, $class;
@@ -241,7 +230,7 @@ sub parse_options {
       $this->_set_wants_help(1);
    }
 
-   $this->_set_extra_args(\@ARGV);
+   @$args = @ARGV;
 }
 
 sub update_current_filename {
@@ -343,33 +332,16 @@ sub format_usage {
 sub init {
 }
 
+# subclasses can override to indicate they'll handle their own extra
+# args and input in stream_done()
+sub wants_input {
+   return 1;
+}
+
 sub finish {
    my $this = shift;
    $this->stream_done();
-   $this->_get_next_operation()->finish();
-}
-
-sub get_input_stream {
-   my $this = shift;
-   $this->{'INPUT_STREAM'} ||= App::RecordStream::InputStream->new_magic($this->_get_extra_args());
-   return $this->{'INPUT_STREAM'};
-}
-
-sub set_input_stream {
-   my $this   = shift;
-   my $stream = shift;
-   $this->{'INPUT_STREAM'} = $stream;
-}
-
-sub run_operation {
-   my $this = shift;
-
-   my $input = $this->get_input_stream();
-   set_current_filename($input->get_filename());
-
-   while ( my $record = $input->get_record() ) {
-      $this->accept_record($record);
-   }
+   $this->{'NEXT'}->finish();
 }
 
 {
@@ -402,13 +374,12 @@ sub push_record {
    $this->{'NEXT'}->accept_record($record);
 }
 
-sub _get_next_operation {
-   my $this = shift;
-   return $this->{'NEXT'};
+sub push_line {
+   my ($this, $line) = @_;
+   $this->{'NEXT'}->accept_line($line);
 }
 
 sub load_operation {
-   my $class  = shift;
    my $script = shift;
 
    my $operation = $script;
@@ -444,11 +415,10 @@ sub load_operation {
 }
 
 sub is_recs_operation {
-  my $class = shift;
   my $script = shift;
 
   if ( $script =~ m/^recs-/ ) {
-    eval { $class->load_operation($script) };
+    eval { load_operation($script) };
     return 0 if ( $@ );
     return 1;
   }
@@ -457,15 +427,15 @@ sub is_recs_operation {
 }
 
 sub create_operation {
-   my $class  = shift;
    my $script = shift;
-   my @args   = @_;
+   my $args   = shift;
+   my $next   = shift || App::RecordStream::Stream::Printer->new();
 
-   my $module = $class->load_operation($script);
+   my $module = load_operation($script);
 
    my $op;
    eval {
-      $op = $module->new(\@args);
+      $op = $module->new($args, $next);
    };
 
    if ( $@ || $op->get_wants_help() ) {
@@ -527,25 +497,6 @@ sub domainlanguage_help {
    print $this->format_usage(App::RecordStream::DomainLanguage::usage());
 }
 
-sub _set_next_operation {
-   my $this = shift;
-   my $next = shift;
-
-   $this->{'NEXT'} = $next;
-}
-
-sub _set_extra_args {
-   my $this = shift;
-   my $args = shift;
-
-   $this->{'EXTRA_ARGS'} = $args;
-}
-
-sub _get_extra_args {
-   my $this = shift;
-   return $this->{'EXTRA_ARGS'};
-}
-
 # A static method for a single-line operation bootstrap.  Operation wrappers
 # can/should be a symlink to recs-operation itself or just this one line: use
 # App::RecordStream::Operation; App::RecordStream::Operation::main();
@@ -571,9 +522,18 @@ MESSAGE
   my @args = @ARGV;
   @ARGV = ();
 
-  my $op = App::RecordStream::Operation->create_operation($Script, @args);
+  my $op = App::RecordStream::Operation::create_operation($Script, \@args);
 
-  $op->run_operation();
+  if ( $op->wants_input() ) {
+    @ARGV = @args;
+    while(my $line = <>) {
+      chomp $line;
+      App::RecordStream::Operation::set_current_filename($ARGV);
+      if ( ! $op->accept_line($line) ) {
+          last;
+      }
+    }
+  }
   $op->finish();
 
   exit $op->get_exit_value();

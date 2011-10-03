@@ -5,9 +5,8 @@ our $VERSION = "3.4";
 use strict;
 use warnings;
 
-use base qw(App::RecordStream::Accumulator App::RecordStream::Operation App::RecordStream::ScreenPrinter);
+use base qw(App::RecordStream::Accumulator App::RecordStream::Operation);
 
-use App::RecordStream::OutputStream;
 use App::RecordStream::Record;
 
 # TODO: amling, this format is so ugly it hurts.  Think of something better.
@@ -299,10 +298,10 @@ sub stream_done {
    }
 
    for my $row (@table) {
-      $this->print_value(_format_row(\@w, sub { return ("-" x $_[1]); }, "+") . "\n");
-      $this->print_value(_format_row(\@w, sub { if($_[0] < @$row) { return $row->[$_[0]]; } return ""; }, "|") . "\n");
+      $this->push_line(_format_row(\@w, sub { return ("-" x $_[1]); }, "+"));
+      $this->push_line(_format_row(\@w, sub { if($_[0] < @$row) { return $row->[$_[0]]; } return ""; }, "|"));
    }
-   $this->print_value(_format_row(\@w, sub { return ("-" x $_[1]); }, "+") . "\n");
+   $this->push_line(_format_row(\@w, sub { return ("-" x $_[1]); }, "+"));
 }
 
 sub output_records {

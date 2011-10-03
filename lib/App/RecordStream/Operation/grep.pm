@@ -29,7 +29,7 @@ sub init {
    Getopt::Long::Configure('no_ignore_case');
    $this->parse_options($args, $spec);
 
-   my $expression = $executor_options->get_string($this->_get_extra_args());
+   my $expression = $executor_options->get_string($args);
    my $executor = App::RecordStream::Executor->new($expression);
 
    $this->{'ANTI_MATCH'} = $anti_match;
@@ -83,6 +83,8 @@ sub accept_record {
      $this->push_record($record);
      $this->{'FORCED_OUTPUT'}--;
    }
+
+   return 1;
 }
 
 sub stream_done {

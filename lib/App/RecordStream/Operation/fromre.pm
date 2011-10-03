@@ -15,10 +15,10 @@ sub init {
    );
 
    $this->parse_options($args, \%options);
-   if(!@{$this->_get_extra_args()}) {
+   if(!@$args) {
       die "Missing expression\n";
    }
-   $this->_set_pattern(shift @{$this->_get_extra_args()});
+   $this->_set_pattern(shift @$args);
 }
 
 sub _set_pattern {
@@ -48,26 +48,23 @@ sub get_field {
    }
 }
 
-sub run_operation {
-   my ($this) = @_;
+sub accept_line {
+   my $this = shift;
+   my $line = shift;
 
-   local @ARGV = @{$this->_get_extra_args()};
-   while(my $line = <>) {
-      chomp $line;
-      $this->update_current_filename($ARGV);
+   if(my @groups = ($line =~ $this->get_pattern())) {
+      my $record = App::RecordStream::Record->new();
+      my $index = 0;
 
-      if(my @groups = ($line =~ $this->get_pattern())) {
-         my $record = App::RecordStream::Record->new();
-         my $index = 0;
-
-         foreach my $value (@groups) {
-            ${$record->guess_key_from_spec($this->get_field($index))} =  $value;
-            ++$index;
-         }
-
-         $this->push_record($record);
+      foreach my $value (@groups) {
+         ${$record->guess_key_from_spec($this->get_field($index))} =  $value;
+         ++$index;
       }
+
+      $this->push_record($record);
    }
+
+   return 1;
 }
 
 sub add_help_types {

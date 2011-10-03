@@ -10,7 +10,6 @@ use base qw(App::RecordStream::Operation);
 use DBI;
 
 use App::RecordStream::DBHandle;
-use App::RecordStream::OutputStream;
 use App::RecordStream::Record;
 
 sub init {
@@ -28,7 +27,7 @@ sub init {
 
    $this->{'TABLE_NAME'} = $table_name;
 
-   my $dbh = App::RecordStream::DBHandle::get_dbh($this->_get_extra_args());
+   my $dbh = App::RecordStream::DBHandle::get_dbh($args);
    $this->{'DBH'} = $dbh;
 
    die("Must define --table or --sql\n") unless ( $table_name || $sql );
@@ -40,7 +39,11 @@ sub init {
    $this->{'SQL'} = $sql;
 }
 
-sub run_operation {
+sub wants_input {
+   return 0;
+}
+
+sub stream_done {
   my $this = shift;
 
   my $sth = $this->{'DBH'}->prepare($this->{'SQL'});

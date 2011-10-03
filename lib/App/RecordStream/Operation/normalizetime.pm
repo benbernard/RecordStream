@@ -84,6 +84,8 @@ sub accept_record {
 
    $record->{"n_$sanitized_key"} = $normalized_time;
    $this->push_record($record);
+
+   return 1;
 }
 
 sub add_help_types {

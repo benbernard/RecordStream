@@ -38,12 +38,17 @@ sub init {
    $this->{'FIELDS'}      = \@fields;
    $this->{'HEADER_LINE'} = $header_line;
    $this->{'PARSER'}      = new Text::CSV($csv_args);
+   $this->{'EXTRA_ARGS'}  = $args;
 }
 
-sub run_operation {
+sub wants_input {
+   return 0;
+}
+
+sub stream_done {
    my $this = shift;
 
-   my $files = $this->_get_extra_args();
+   my $files = $this->{'EXTRA_ARGS'};
 
    if ( scalar @$files > 0 ) {
       foreach my $file ( @$files ) {

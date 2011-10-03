@@ -5,30 +5,32 @@ our $VERSION = "3.4";
 use strict;
 use warnings;
 
-use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);
+use base qw(App::RecordStream::Operation);
 
 use App::RecordStream::Executor::Getopt;
 use App::RecordStream::Executor;
+
+# TODO: if we want --no-newline back we'll need to change push_line to push_text, make Stream::Base stateful (spooling text to parse lines to parse records), etc.
 
 sub init {
    my $this = shift;
    my $args = shift;
 
-   my $no_newline = 0;
+   my $chomp = 0;
    my $executor_options = App::RecordStream::Executor::Getopt->new();
    my $spec = {
-      "--no-newline"  => \$no_newline,
+      'chomp' => \$chomp,
       $executor_options->arguments(),
    };
 
    Getopt::Long::Configure('no_ignore_case');
    $this->parse_options($args, $spec);
 
-   my $expression = $executor_options->get_string($this->_get_extra_args());
+   my $expression = $executor_options->get_string($args);
    my $executor = App::RecordStream::Executor->new($expression);
 
-   $this->{'EXECUTOR'}   = $executor;
-   $this->{'NO_NEWLINE'} = $no_newline;
+   $this->{'EXECUTOR'} = $executor;
+   $this->{'CHOMP'} = $chomp;
 }
 
 sub accept_record {
@@ -38,11 +40,11 @@ sub accept_record {
    my $executor = $this->{'EXECUTOR'};
    my $value = $executor->execute_code($record);
 
-   my $output = $value . "\n";
-   if ( $this->{'NO_NEWLINE'} ) {
-      $output = $value;
-   }
-   $this->print_value($output);
+   chomp $value if($this->{'CHOMP'});
+
+   $this->push_line($value);
+
+   return 1;
 }
 
 sub add_help_types {
@@ -55,7 +57,7 @@ sub usage {
    my $this = shift;
 
    my $options = [
-      [ 'no-newline', 'Do not put a newline after each record\'s output' ],
+      ['chomp', 'Chomp eval results (to avoid duplicate newlines when already newline-terminated)'],
    ];
 
    my $args_string = $this->options_string($options);

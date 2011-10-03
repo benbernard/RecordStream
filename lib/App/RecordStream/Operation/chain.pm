@@ -5,15 +5,15 @@ our $VERSION = "3.4";
 use strict;
 use warnings;
 
-use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);
+use App::RecordStream::Operation;
+use App::RecordStream::Stream::Printer;
 
-use Data::Dumper;
+use base qw(App::RecordStream::Operation);
 
 sub init {
    my $this = shift;
    my $args = shift;
 
-   $DB::single=1;
    my ($show_chain, $dry_run);
    my $spec = {
       'show-chain' => \$show_chain,
@@ -23,21 +23,20 @@ sub init {
    Getopt::Long::Configure("require_order");
    $this->parse_options($args, $spec);
 
-   my $extra_args = $this->_get_extra_args();
-   return unless (@$extra_args);
+   return unless (@$args);
 
-   unless ( $this->is_recs_operation($extra_args->[0]) ) {
+   unless ( App::RecordStream::Operation::is_recs_operation($args->[0]) ) {
      die "First chained command must be standard recs command not shell command!\n";
    }
 
-   $this->{'SAVED_ARGS'} = [@$extra_args] if ( $show_chain );
+   $this->{'SAVED_ARGS'} = [@$args] if ( $show_chain );
 
    if ( $dry_run ) {
       $this->{'DRY_RUN'} = $dry_run;
       return;
    }
 
-   my $operations = $this->create_operations($extra_args);
+   my $operations = $this->create_operations($args);
 
    my ($first_operation, $last_operation, $continuation_pid) = $this->setup_operations($operations);
 
@@ -53,7 +52,7 @@ sub print_chain {
    my @current_command;
    my $was_shell = 0;
 
-   $this->print_value("Chain Starts with:\n");
+   $this->push_line("Chain Starts with:");
 
    my $indent = 1;
    my $last;
@@ -79,7 +78,7 @@ sub print_command {
 
    my $message = '';
    if ( defined $last ) {
-      if ( $this->is_recs_operation($last->[0]) && $this->is_recs_operation($current_command->[0]) ) {
+      if ( App::RecordStream::Operation::is_recs_operation($last->[0]) && App::RecordStream::Operation::is_recs_operation($current_command->[0]) ) {
          $message .= "Passed in memory to ";
       }
       else {
@@ -88,14 +87,14 @@ sub print_command {
       }
    }
 
-   $this->print_value('  ' x $$indent . $message);
+   my $prefix = '  ' x $$indent . $message;
 
-   if ( $this->is_recs_operation($current_command->[0]) ) {
-      $this->print_value("Recs command: " . join(' ', @$current_command) . "\n");
+   if ( App::RecordStream::Operation::is_recs_operation($current_command->[0]) ) {
+      $this->push_line($prefix . "Recs command: " . join(' ', @$current_command));
       return 0;
    }
    else {
-      $this->print_value("Shell command: " . join(' ', @$current_command) . "\n");
+      $this->push_line($prefix . "Shell command: " . join(' ', @$current_command));
       return 1;
    }
 }
@@ -104,11 +103,14 @@ sub setup_operations {
    my $this       = shift;
    my $operations = shift;
 
+   # others need this
+   $operations = [@$operations];
+
    my ($first_operation, $last_operation, $continuation_pid);
    while ( my $operation = shift @$operations ) {
-      if ( UNIVERSAL::isa($operation, 'ARRAY') ) {
+      if ( $operation->[0] eq 'SHELL' ) {
          my $in_continuation;
-         ($in_continuation, $continuation_pid) = $this->setup_fork($operation);
+         ($in_continuation, $continuation_pid) = $this->setup_fork($operation->[1]);
 
          if ( $in_continuation ) {
             $first_operation  = undef;
@@ -120,11 +122,14 @@ sub setup_operations {
             last;
          }
       }
+      elsif ( $operation->[0] eq 'RECS' ) {
+         # fall through
+      }
+      else {
+         die;
+      }
 
       $first_operation ||= $operation;
-      $last_operation  ||= $operation;
-
-      $last_operation->_set_next_operation($operation) unless ( $last_operation == $operation );
       $last_operation = $operation;
    }
 
@@ -159,11 +164,16 @@ sub add_operation {
    my $single_command = shift;
    my $operations     = shift;
 
-   if ( $this->is_recs_operation($single_command->[0]) ) {
-      push @$operations, App::RecordStream::Operation->create_operation(@$single_command);
+   my $idx = @$operations;
+   my $push_shim = App::RecordStream::Operation::chain::PushShim->new($operations, $idx);
+
+   if ( App::RecordStream::Operation::is_recs_operation($single_command->[0]) ) {
+      my ($sc1, @args) = @$single_command;
+      my $operation = App::RecordStream::Operation::create_operation($sc1, \@args, $push_shim);
+      push @$operations, ['RECS', $operation, \@args];
    }
    else {
-      push @$operations, [@$single_command];
+      push @$operations, ['SHELL', [@$single_command]];
    }
 }
 
@@ -193,7 +203,11 @@ sub setup_fork {
    return (0, $continuation_pid);
 }
 
-sub run_operation {
+sub wants_input {
+   return 0;
+}
+
+sub stream_done {
    my $this = shift;
 
    if ( my $args = $this->{'SAVED_ARGS'} ) {
@@ -204,19 +218,28 @@ sub run_operation {
       return;
    }
 
-   if ( my $head = $this->{'CHAIN_HEAD'} ) {
-      $head->run_operation();
+   my $head = $this->{'CHAIN_HEAD'};
+
+   if ( $head ) {
+      my $head_operation = $head->[1];
+      my $head_args = $head->[2];
+      if ( $head_operation->wants_input() ) {
+         local @ARGV = @$head_args;
+         while(my $line = <>) {
+            chomp $line;
+            App::RecordStream::Operation::set_current_filename($ARGV);
+            if ( ! $head_operation->accept_line($line) ) {
+                last;
+            }
+         }
+      }
+      $head_operation->finish();
    }
    else {
-      $this->print_value($_) while (<>);
-   }
-}
-
-sub finish {
-   my $this = shift;
-
-   if ( my $head = $this->{'CHAIN_HEAD'} ) {
-      $head->finish();
+      while(<>) {
+        chomp;
+        $this->push_line($_);
+      }
    }
 
    # wait for shell child (if we even have one)
@@ -242,7 +265,7 @@ sub get_exit_value {
    my $this = shift;
 
    if ( my $tail = $this->{'CHAIN_TAIL'} ) {
-      return $tail->get_exit_value();
+      return $tail->[1]->get_exit_value();
    }
 
    return 0;
@@ -292,6 +315,81 @@ Examples:
       recs-chain recs-frommultire 'data,time=(\\S+) (\\S+)' \\| recs-xform '\$r->{now} = time();' \
         | grep foo | sort | uniq | recs-chain recs-collate --a perc,90,data \\| recs-totable
 USAGE
+}
+
+package App::RecordStream::Operation::chain::PushShim;
+
+use App::RecordStream::Stream::Base;
+
+use base 'App::RecordStream::Stream::Base';
+
+sub new {
+   my $class = shift;
+   my $operations = shift;
+   my $idx = shift;
+
+   my $this = {
+      OPERATIONS => $operations,
+      IDX => $idx,
+   };
+
+   bless $this, $class;
+
+   return $this;
+}
+
+sub accept_record {
+   my $this = shift;
+   my $record = shift;
+
+   return $this->_get_delegate()->accept_record($record);
+}
+
+sub accept_line {
+   my $this = shift;
+   my $line = shift;
+
+   return $this->_get_delegate()->accept_line($line);
+}
+
+sub finish {
+   my $this = shift;
+
+   $this->_get_delegate()->finish();
+}
+
+sub _get_delegate {
+   my $this = shift;
+
+   my $delegate = $this->{'DELEGATE'};
+
+   if ( ! $delegate ) {
+      my $operations = $this->{'OPERATIONS'};
+      my $idx = $this->{'IDX'};
+      if ( $idx + 1 < @$operations ) {
+         my $next_operation = $operations->[$idx + 1];
+         if ( $next_operation->[0] eq 'RECS' ) {
+            # next operation is actually a recs operation, it must be
+            # in process with us, give it our output
+            $delegate = $next_operation->[1];
+         }
+         elsif ($next_operation->[0] eq 'SHELL' ) {
+            # next is shell, we're set up to print to it
+            $delegate = App::RecordStream::Stream::Printer->new();
+         }
+         else {
+            die;
+         }
+      }
+      else {
+         # at the end, we print out
+         $delegate = App::RecordStream::Stream::Printer->new();
+      }
+
+      $this->{'DELEGATE'} = $delegate;
+   }
+
+   return $delegate;
 }
 
 1;

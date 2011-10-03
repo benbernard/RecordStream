@@ -67,6 +67,8 @@ sub accept_record
     my $record = shift;
 
     $this->accept_record_aux(0, $record);
+
+    return 1;
 }
 
 sub accept_record_aux

@@ -4,7 +4,7 @@ our $VERSION = "3.4";
 
 use strict;
 
-use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);
+use base qw(App::RecordStream::Operation);
 
 use App::RecordStream::OutputStream;
 use App::RecordStream::Record;
@@ -13,12 +13,13 @@ sub init {
    my $this = shift;
    my $args = shift;
 
-   my $only_one    = 0;
+   my $limit = undef;
    my $key_groups  = App::RecordStream::KeyGroups->new();
    my $do_not_nest = 0;
    my $spec = {
-      "1"        => \$only_one,
-      "one"      => \$only_one,
+      "1"        => sub { $limit = 1; },
+      "one"      => sub { $limit = 1; },
+      "n=i"      => \$limit,
       'keys|k=s' => sub { $key_groups->add_groups($_[1]); },
       'nonested' => \$do_not_nest,
    };
@@ -29,40 +30,32 @@ sub init {
       $key_groups->add_groups('!.!returnrefs');
    }
 
-   $this->{'ONLY_ONE'}      = $only_one;
+   $this->{'LIMIT'}         = $limit;
    $this->{'KEY_GROUPS'}    = $key_groups;
-   $this->{'OUTPUT_STREAM'} = App::RecordStream::OutputStream->new();
    $this->{'NESTED_OUTPUT'} = not $do_not_nest;
 };
-
-sub run_operation {
-   my $this = shift;
-
-   my $input = $this->get_input_stream();
-
-   # This means that ONLY_ONE doens't work in recs-chain
-   if ( $this->{'ONLY_ONE'} ) {
-      $this->accept_record($input->get_record());
-      return;
-   }
-
-   while ( my $record = $input->get_record() ) {
-      $this->accept_record($record);
-   }
-}
-
 
 sub accept_record {
    my $this   = shift;
    my $record = shift;
 
+   my $limit = $this->{'LIMIT'};
+   if ( defined($limit) ) {
+       if ( $limit == 0 ) {
+           return 0;
+       }
+       $this->{'LIMIT'}--;
+   }
+
    my $specs = $this->{'KEY_GROUPS'}->get_keyspecs_for_record($record);
 
-   $this->print_value('-' x 70 . "\n");
+   $this->push_line('-' x 70);
    foreach my $key (sort @$specs) {
       my $value = ${$record->guess_key_from_spec($key)};
       $this->output_value('', $key, $value);
    }
+
+   return 1;
 }
 
 sub output_value {
@@ -73,25 +66,25 @@ sub output_value {
 
    if ( (ref($value) eq 'HASH') &&  $this->{'NESTED_OUTPUT'} ) {
       if ( scalar keys %$value > 0 ) {
-         $this->print_value($prefix . "$key = HASH:\n");
+         $this->push_line($prefix . "$key = HASH:");
          $this->output_hash($prefix . '   ', $value);
       }
       else {
-         $this->print_value($prefix . "$key = EMPTY HASH\n");
+         $this->push_line($prefix . "$key = EMPTY HASH");
       }
    }
    elsif ( ref($value) eq 'ARRAY' ) {
       if ( scalar @$value > 0 ) {
-         $this->print_value($prefix . "$key = ARRAY:\n");
+         $this->push_line($prefix . "$key = ARRAY:");
          $this->output_array($prefix . '   ', $value);
       }
       else {
-         $this->print_value($prefix . "$key = EMPTY ARAY\n");
+         $this->push_line($prefix . "$key = EMPTY ARAY");
       }
    }
    else {
-      my $value_string = $this->{'OUTPUT_STREAM'}->hashref_string($value);
-      $this->print_value($prefix . "$key = $value_string\n");
+      my $value_string = App::RecordStream::OutputStream::hashref_string($value);
+      $this->push_line($prefix . "$key = $value_string");
    }
 }
 
@@ -118,11 +111,6 @@ sub output_hash {
    }
 }
 
-sub should_stop {
-   my $this = shift;
-   return $this->{'ONLY_ONE'};
-}
-
 sub add_help_types {
    my $this = shift;
    $this->use_help_type('keyspecs');
@@ -137,6 +125,7 @@ sub usage {
       ['1|one', 'Only print the first record'],
       ['keys', 'Only print out specified keys, Maybe keyspecs may be keygroups, see --help-keys for more information'],
       ['nonested', 'Do not nest the output of hashes, keep each value on one line'],
+      ['n <n>', 'Only print n records'],
    ];
 
    my $args_string = $this->options_string($options);

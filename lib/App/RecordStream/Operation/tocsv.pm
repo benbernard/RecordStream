@@ -4,7 +4,7 @@ our $VERSION = "3.4";
 
 use strict;
 
-use base qw(App::RecordStream::Operation App::RecordStream::ScreenPrinter);
+use base qw(App::RecordStream::Operation);
 
 use App::RecordStream::Record;
 use Text::CSV;
@@ -24,7 +24,7 @@ sub init {
    $this->{'KEY_GROUPS'} = $key_groups;
 
    # Extra arguments are to handle new lines in field values
-   $this->{'CSV'}     = Text::CSV->new({ binary => 1, eol => $/ });
+   $this->{'CSV'}     = Text::CSV->new({ binary => 1 });
 
    $this->{'FIRST'}   = 1;
    $this->{'HEADERS'} = $header;
@@ -55,6 +55,8 @@ sub accept_record {
    }
 
    $this->output_values(\@values);
+
+   return 1;
 }
 
 sub output_values {
@@ -63,7 +65,7 @@ sub output_values {
 
    my $csv = $this->{'CSV'};
    $csv->combine(@$values);
-   $this->print_value($csv->string());
+   $this->push_line($csv->string());
 }
 
 sub add_help_types {

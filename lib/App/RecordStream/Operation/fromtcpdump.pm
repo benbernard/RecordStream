@@ -56,17 +56,19 @@ sub init {
 
    $this->parse_options($args, $spec);
 
-   if ( ! @{$this->_get_extra_args()} ) {
+   if ( ! @$args ) {
       die "Missing capture file\n";
    }
 
-   my $files = $this->_get_extra_args();
-
-   $this->{'FILES'} = $files;
+   $this->{'FILES'} = $args;
    $this->{'DATA'}  = $data;
 }
 
-sub run_operation {
+sub wants_input {
+   return 0;
+}
+
+sub stream_done {
    my $this = shift;
 
    foreach my $filename ( @{$this->{'FILES'}} ) {

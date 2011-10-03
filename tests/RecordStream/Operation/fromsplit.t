@@ -36,10 +36,10 @@ $output = <<OUTPUT;
 {"1":"bar","0":"foo","2":"","3":"baz"}
 {"1":"bar","0":"foo","2":"biz"}
 OUTPUT
-$tester->test_stdin(['--strict', '--delim', ' '], $input, $output);
+$tester->test_input(['--strict', '--delim', ' '], $input, $output);
 
 $output = <<OUTPUT;
 {"1":"bar","0":"foo","2":"baz"}
 {"1":"bar","0":"foo","2":"biz"}
 OUTPUT
-$tester->test_stdin(['--delim', '\s+'], $input, $output);
+$tester->test_input(['--delim', '\s+'], $input, $output);

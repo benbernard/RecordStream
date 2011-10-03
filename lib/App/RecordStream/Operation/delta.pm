@@ -27,7 +27,7 @@ sub accept_record
 {
    my $this   = shift;
    my $record = shift;
-my $last_record = $this->{'LAST_RECORD'}; 
+   my $last_record = $this->{'LAST_RECORD'}; 
    if ( $last_record ) {
       foreach my $key (@{$this->{'KEY_GROUPS'}->get_keyspecs($last_record)})
       {
@@ -44,6 +44,8 @@ my $last_record = $this->{'LAST_RECORD'};
    }
 
    $this->{'LAST_RECORD'} = $record;
+
+   return 1;
 }
 
 sub add_help_types {

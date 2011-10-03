@@ -55,23 +55,16 @@ sub get_field {
    }
 }
 
-sub run_operation {
-   my ($this) = @_;
-
-   local @ARGV = @{$this->_get_extra_args()};
-
+sub accept_line {
+   my $this = shift;
+   my $line = shift;
 
    if ($this->{'HEADER'}) {
-      my $line = <>;
-      chomp $line;
       my $delim = $this->get_delimiter();
       $this->add_field($_) for @{$this->get_values_for_line($line)};
+      delete $this->{'HEADER'};
    }
-
-   while(my $line = <>) {
-      chomp $line;
-      $this->update_current_filename($ARGV);
-
+   else {
       my $record = App::RecordStream::Record->new();
       my $index = 0;
 
@@ -82,6 +75,8 @@ sub run_operation {
 
       $this->push_record($record);
    }
+
+   return 1;
 }
 
 sub get_values_for_line {

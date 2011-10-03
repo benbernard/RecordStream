@@ -29,11 +29,17 @@ sub init {
    $this->{'ELEMENTS'} = { map { $_ => 1 } @elements };
    $this->{'NESTED'}   = $nested;
 
-   my $has_files = scalar @{$this->_get_extra_args()};
+   my $has_files = scalar @$args;
    $this->{'HAS_URIS'} = $has_files;
+
+   $this->{'EXTRA_ARGS'} = $args;
 }
 
-sub run_operation {
+sub wants_input {
+   return 0;
+}
+
+sub stream_done {
    my $this = shift;
 
    my $elements = $this->{'ELEMENTS'};
@@ -107,7 +113,7 @@ sub push_value {
 sub get_xml_string {
    my $this = shift;
 
-   my $uris = $this->_get_extra_args();
+   my $uris = $this->{'EXTRA_ARGS'};
 
    my $contents;
    if ( $this->{'HAS_URIS'} ) {

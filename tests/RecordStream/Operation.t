@@ -11,7 +11,8 @@ my $args_spec = {
    'foo=s' => \$foo,
 };
 
-$op->parse_options([ '--foo', 'bar', 'blah' ], $args_spec);
+my $args = [ '--foo', 'bar', 'blah' ];
+$op->parse_options($args, $args_spec);
 
 ok($foo eq 'bar', "Option parsing test");
-ok($op->_get_extra_args()->[0] eq 'blah', "Testing extra args");
+is_deeply($args, ['blah'], "Testing extra args");

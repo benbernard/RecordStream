@@ -17,15 +17,14 @@ Chain Starts with:
     Passed through a pipe to Shell command: bar
 SOLUTION
 
-my $op = App::RecordStream::Operation::chain->new([ '--n', 'recs-xform', '$r->rename("foo", "zoo");', $test_file, qw(| recs-sort --key zoo=-n  | recs-totable | recs-grep | bar) ]);
+my $keeper = App::RecordStream::Test::OperationHelper::Keeper->new();
+my $op = App::RecordStream::Operation::chain->new([ '--n', 'recs-xform', '$r->rename("foo", "zoo");', $test_file, qw(| recs-sort --key zoo=-n  | recs-totable | recs-grep | bar) ], $keeper);
 
 ok($op, "Chain initialized");
 
-my $output;
-$op->set_printer(sub { $output .= $_[0] });
-$op->run_operation();
+$op->finish();
 
-is($output, $solution, "Output matches expectation");
+is(join('', map { "$_\n" } @{$keeper->get_lines()}), $solution, "Output matches expectation");
 
 # I'm not sure how to best test this, other than going at it... The forking makes it very complicated to test this in memory.
 my $bin_dir = $ENV{'BASE_TEST_DIR'} . '/../bin';

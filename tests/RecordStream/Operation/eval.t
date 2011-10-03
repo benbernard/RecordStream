@@ -7,11 +7,11 @@ use warnings;
 BEGIN { use_ok( 'App::RecordStream::Operation::eval' ) };
 
 my $stream = <<STREAM;
-{"foo":1,"zoo":"biz1"}
-{"foo":2,"zoo":"biz2"}
-{"foo":3,"zoo":"biz3"}
-{"foo":4,"zoo":"biz4"}
-{"foo":5,"zoo":"biz5"}
+{"foo":1,"zoo":"biz1","boo":"boo1"}
+{"foo":2,"zoo":"biz2","boo":"boo2\\n"}
+{"foo":3,"zoo":"biz3","boo":"boo3"}
+{"foo":4,"zoo":"biz4","boo":"boo4\\n"}
+{"foo":5,"zoo":"biz5","boo":"boo5"}
 STREAM
 
 my $solution = <<SOLUTION;
@@ -24,16 +24,39 @@ SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
    'eval',
-   [ '$r->{foo} . " " . $r->{zoo}'],
+   ['$r->{foo} . " " . $r->{zoo}'],
    $stream,
    $solution,
 );
 
-$solution = '1 biz12 biz23 biz34 biz45 biz5';
+$solution = <<SOLUTION;
+boo1
+boo2
+
+boo3
+boo4
+
+boo5
+SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
    'eval',
-   [ '--no-newline', '$r->{foo} . " " . $r->{zoo}'],
+   ['$r->{boo}'],
+   $stream,
+   $solution,
+);
+
+$solution = <<SOLUTION;
+boo1
+boo2
+boo3
+boo4
+boo5
+SOLUTION
+
+App::RecordStream::Test::OperationHelper->test_output(
+   'eval',
+   ['--chomp', '$r->{boo}'],
    $stream,
    $solution,
 );

@@ -24,15 +24,15 @@ $output = <<OUTPUT;
 {"fname":"Matt","lname":"Groening"}
 {"fname":"David","lname":"Cohen"}
 OUTPUT
-$tester->test_stdin(['-f', 'fname,lname', '^Name: (.*) (.*)$'], $input, $output);
+$tester->test_input(['-f', 'fname,lname', '^Name: (.*) (.*)$'], $input, $output);
 $input = <<INPUT;
 A:A1 A2 A3
 INPUT
 $output = <<OUTPUT;
 {"a1":"A1","1":"A2","2":"A3"}
 OUTPUT
-$tester->test_stdin(['-f', 'a1', '^A:([^ ]*) ([^ ]*) ([^ ]*)$'], $input, $output);
+$tester->test_input(['-f', 'a1', '^A:([^ ]*) ([^ ]*) ([^ ]*)$'], $input, $output);
 $output = <<OUTPUT;
 {"0":"A1","1":"A2","2":"A3"}
 OUTPUT
-$tester->test_stdin(['^A:([^ ]*) ([^ ]*) ([^ ]*)$'], $input, $output);
+$tester->test_input(['^A:([^ ]*) ([^ ]*) ([^ ]*)$'], $input, $output);
