@@ -26,6 +26,7 @@ sub init {
    my $size = undef;
    my $cube = 0;
    my $cube_default = "ALL";
+   my $ignore_null_keys = 0;
    my $incremental = 0;
    my $list_aggregators = 0;
    my $aggregator = 0;
@@ -36,6 +37,7 @@ sub init {
    my $spec = {
       "key|k=s"           => sub { $key_groups->add_groups($_[1]); },
       "dlkey=s"           => sub { build_dlkey(\%dlkeys, $_[1]); },
+      "ignore-null=i"     => \$ignore_null_keys,
       "aggregator|a=s"    => sub { push @aggregators, split(/:/, $_[1]); },
       "dlaggregator=s"    => sub { build_dlaggregator(\%dlaggregators, $_[1]); },
       "size|sz|n=i"       => \$size,
@@ -70,6 +72,7 @@ sub init {
 
    $this->{'KEY_GROUPS'}         = $key_groups;
    $this->{'DLKEYS'}             = \%dlkeys;
+   $this->{'IGNORE_NULL'}        = $ignore_null_keys;
    $this->{'AGGREGATORS'}        = $aggregator_objects;
    $this->{'SIZE'}               = $size;
    $this->{'CUBE'}               = $cube;
@@ -120,6 +123,15 @@ sub accept_record {
 
    my $record_keys = $this->get_keys($record);
 
+   if ( $this->{'IGNORE_NULL'} ) {
+      for (my $i = 0; $i < @{$this->{'KEYS'}}; $i++) {
+         my $key = @{$this->{'KEYS'}}[$i];
+         if (!defined(@{$record_keys}[$i])) {
+            @{$record_keys}[$i] = "";
+         }
+      }
+   }
+
    if ( $this->{'CUBE'} ) {
       $this->deep_put([], $record_keys, $record);
    }
@@ -167,6 +179,7 @@ sub put {
    my $value = $lru_sheriff->find($key);
 
    my $aggregator_values;
+
 
    if ( !$value ) {
       $aggregator_values = App::RecordStream::Aggregator::map_initial($aggregators);
@@ -290,6 +303,7 @@ Arguments:
                                  key spec or key group
    --dlkey ...                   Specify a domain language key.  See "Domain
                                  Language Integration" below.
+   --ignore-null ...             Comma separated list of keys to ignore if they are null in records
    --dlaggregator ...            Specify a domain language aggregate.  See
                                  "Domain Language Integration" below.
    --aggregator|-a <aggregators> Colon separated list of aggregate field specifiers.
