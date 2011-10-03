@@ -8,6 +8,9 @@ use warnings;
 use Carp;
 use FindBin qw($Script $RealScript);
 use Getopt::Long;
+use Text::Autoformat;
+use Term::ReadKey;
+
 use App::RecordStream::InputStream;
 use App::RecordStream::Site;
 
@@ -97,6 +100,80 @@ sub init_help {
    };
 
    $this->add_help_types();
+}
+
+# Prints out unified options for usage.  $options is a hash with keys of the
+# argument spec and values of the description
+sub options_string {
+   my ($this, $options) = @_;
+
+   my $string = $this->_options_format($options);
+   $string .= "\n  Help Options:\n";
+
+   my $help_options = [];
+   foreach my $type (sort keys %{$this->{'HELP_TYPES'}}) {
+      my $info = $this->{'HELP_TYPES'}->{$type};
+      next unless ( $info->{'USE'} );
+
+      my $option_name = $info->{'OPTION_NAME'} || "help-$type";
+      my $description = $info->{'DESCRIPTION'};
+      push @$help_options, [$option_name, $description];
+   }
+
+   $DB::single =1;
+
+   $string .= $this->_options_format($help_options, 2);
+
+   # Remove trailing whitespace
+   while (chomp $string > 0) {}
+
+   return $string;
+}
+
+sub _options_format {
+   my ($this, $options, $indent_level) = @_;
+   $indent_level = 1 if ( not defined $indent_level );
+
+   my $max_length = 0;
+   foreach my $pair (@$options) {
+      my ($name) = @$pair;
+      my $name_length = length($name);
+      $max_length = $name_length if ( $name_length > $max_length);
+   }
+
+   my $string = '';
+
+   my $description_indent_level = ($indent_level * 3) + $max_length + 4;
+
+   foreach my $pair (@$options) {
+      my ($name, $description) = @$pair;
+      my $formatted            = $this->format_text($description, $description_indent_level);
+      my $description_prefix   = (' ' x ($indent_level * 3)) . '--' . $name;
+
+      my $name_max = $description_indent_level - 1;
+
+      if ( length($description_prefix) < $name_max ) {
+         $description_prefix .= ' ' x ($name_max - 1 - length($description_prefix));
+      }
+
+      $description_prefix .= '  ';
+
+      my $prefix_size = length($description_prefix);
+      $string .= $description_prefix;
+      $string .= substr $formatted, $prefix_size;
+   }
+
+   return $string;
+}
+
+sub format_text {
+   my ($this, $text, $left_indent) = @_;
+   $left_indent ||= 0;
+   return autoformat $text, {
+      left  => $left_indent + 1,
+      right => (Term::ReadKey::GetTerminalSize())[0],
+      all   => 1,
+   };
 }
 
 # this is a hook for subclasses
@@ -201,32 +278,58 @@ sub print_usage {
    #Remove all trailing newlines
    while (chomp $usage > 0) {}
 
-   print $usage . "\n\n";
-   print "Help Options:\n";
-   my $max_length = 0;
-   foreach my $type (sort keys %{$this->{'HELP_TYPES'}}) {
-      my $info = $this->{'HELP_TYPES'}->{$type};
-      next unless ( $info->{'USE'} );
-      my $option_name = $info->{'OPTION_NAME'} || "help-$type";
-      my $length      = length($option_name);
-      $max_length     = $length if ( $max_length < $length );
+   my $formatted_usage = $this->format_usage($usage);
+
+   #Remove all trailing newlines
+   while (chomp $formatted_usage > 0) {}
+
+   print $formatted_usage . "\n";
+}
+
+sub format_usage {
+   my ($this, $usage) = @_;
+
+   my $lines = [split("\n", $usage)];
+
+   my $output = '';
+   my $capturing      = 0;
+   my $accumulator    = 0;
+   my $current_indent = 0;
+
+   while(@$lines) {
+      my $line = shift @$lines;
+      chomp $line;
+      if ( $line =~ m/^\s*__FORMAT_TEXT__\s*$/ ) {
+         if ( $capturing ) {
+            $capturing = 0;
+            $output .= $this->format_text($accumulator, $current_indent);
+         }
+         else {
+            $capturing   = 1;
+
+            my $first_line = shift @$lines;
+            chomp $first_line;
+            my ($indention)  = $first_line =~ m/^(\s*)/;
+            $first_line =~ s/\s*//;
+            $current_indent = length($indention);
+            $accumulator = $first_line;
+         }
+      }
+      elsif ( $capturing ) {
+         if ( $line =~ m/^\s*$/ ) {
+            $accumulator .= "\n\n";
+         }
+         else {
+           $line =~ s/^\s*//;
+           $accumulator .= " $line";
+         }
+      }
+      else {
+         $output .= $line . "\n";
+      }
    }
 
-   $max_length += 2;
-
-   foreach my $type (sort keys %{$this->{'HELP_TYPES'}}) {
-      my $info = $this->{'HELP_TYPES'}->{$type};
-      next unless ( $info->{'USE'} );
-
-      my $option_name = $info->{'OPTION_NAME'} || "help-$type";
-      my $description = $info->{'DESCRIPTION'};
-
-      my $length       = length($option_name);
-      my $spaces_count = $max_length - $length;
-      my $padding      = ' ' x $spaces_count;
-
-      print "   --$option_name$padding$description\n";
-   }
+   return $output;
 }
 
 sub init {
@@ -285,7 +388,6 @@ sub push_record {
    my ($this, $record) = @_;
 
    if ( $this->{'FILENAME_KEY'} ) {
-     $DB::single =1;
      ${$record->guess_key_from_spec($this->{'FILENAME_KEY'})} = get_current_filename();
    }
 
@@ -383,6 +485,8 @@ sub all_help {
       next if ( $info->{'SKIP_IN_ALL'} );
       next if ( !$info->{'USE'} );
 
+      print "Help from: --help-$type:\n";
+
       $info->{'CODE'}->($this);
       print "\n"
    }
@@ -397,22 +501,22 @@ sub keys_help {
 
 sub snippet_help {
    my $this = shift;
-   print App::RecordStream::Executor::usage();
+   print $this->format_usage(App::RecordStream::Executor::usage());
 }
 
 sub keyspecs_help {
    my $this = shift;
-   print App::RecordStream::Record::keyspec_help();
+   print $this->format_usage(App::RecordStream::Record::keyspec_help());
 }
 
 sub keygroups_help {
    my $this = shift;
-   print App::RecordStream::KeyGroups::usage();
+   print $this->format_usage(App::RecordStream::KeyGroups::usage());
 }
 
 sub domainlanguage_help {
    my $this = shift;
-   print App::RecordStream::DomainLanguage::usage();
+   print $this->format_usage(App::RecordStream::DomainLanguage::usage());
 }
 
 sub _set_next_operation {

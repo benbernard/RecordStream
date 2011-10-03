@@ -74,15 +74,23 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      ['noheader|--nh', 'Do not output headers on the first line'],
+      ['key|-k <keyspec>', 'Comma separated keys to output.  Defaults to all fields in first record.  May be a keyspec, may be a keyspec group'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-tocsv <options> [files]
-  This script outputs csv formatted recs.
+   __FORMAT_TEXT__
+   This script outputs csv formatted recs.
+   __FORMAT_TEXT__
 
 Arguments:
-   --noheader|--nh    Do not output headers on the first line
-   --key|-k <keyspec> Comma separated keys to output.  Defaults to all
-                      fields in first record.  May be a keyspec, may be a
-                      keyspec group
+$args_string
 
 Examples
   # Print records to csv format with headers

@@ -9,8 +9,7 @@ use base qw(App::RecordStream::Operation);
 sub init {
    my $this = shift;
    my $args = shift;
-
-   my %options = (
+my %options = (
       "no-flush-regex|regex|re=s"   => sub { $this->add_regex($_[1], 0, 0); },
       "pre-flush-regex|pre=s"       => sub { $this->add_regex($_[1], 1, 0); },
       "post-flush-regex|post=s"     => sub { $this->add_regex($_[1], 0, 1); },
@@ -176,8 +175,23 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      [ 'no-flush-regex|--regex|--re <regex>', 'Add a normal regex.'],
+      [ 'pre-flush-regex|--pre <regex>', 'Add a regex that flushes before interpretting fields when matched.'],
+      [ 'post-flush-regex|--post <regex>', 'Add a regex that flushes after interpretting fields when matched.'],
+      [ 'double-flush-regex|--double <regex>', 'Add a regex that flushes both before and after interprettying fields when matched.'],
+      [ 'clobber', 'Do not flush records when a field from a match would clobber an already existing field and do not flush at EOF.'],
+      [ 'keep-all', 'Do not clear any fields on a flush.'],
+      [ 'keep <fields>', 'Do not clear this comma separated list of fields on a flush.'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-frommultire <args> [<files>]
+   __FORMAT_TEXT__
    Match multiple regexes against each line of input (or lines of <files>).
    Various parameters control when the accumulated fields are flushed to output
    as a record and which, if any, fields are cleared when the record is
@@ -186,28 +200,17 @@ Usage: recs-frommultire <args> [<files>]
    By default regexes do not necessarily flush on either side, would-be field
    collisions cause a flush, EOF causes a flush if any fields are set, and all
    fields are cleared on a flush.
+   __FORMAT_TEXT__
 
 Arguments:
-   --no-flush-regex|--regex|--re <regex>   Add a normal regex.
-   --pre-flush-regex|--pre <regex>         Add a regex that flushes before
-                                           interpretting fields when matched.
-   --post-flush-regex|--post <regex>       Add a regex that flushes after
-                                           interpretting fields when matched.
-   --double-flush-regex|--double <regex>   Add a regex that flushes both before
-                                           and after interprettying fields when
-                                           matched.
-   --clobber                               Do not flush records when a field
-                                           from a match would clobber an
-                                           already existing field and do not
-                                           flush at EOF.
-   --keep-all                              Do not clear any fields on a flush.
-   --keep <fields>                         Do not clear this comma separated
-                                           list of fields on a flush.
+$args_string
 
+   __FORMAT_TEXT__
    <regex> - Syntax is: '<KEY1>,<KEY2>=REGEX'.  KEY field names are optional.
    The key names may be key specs, see '--help-keyspecs' for more.  Field
    names may not be keygroups.  If field matches \$NUM, then that match number
    in the regex will be used as the field name
+   __FORMAT_TEXT__
 
 Examples:
    Typical use case one: parse several fields on separate lines

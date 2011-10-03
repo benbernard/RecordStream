@@ -219,23 +219,26 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      ['no-header|n', 'Do not print column headers'],
+      ['key|k <field name>', 'May be comma separated, may be specified multiple times.  Specifies the fields to put in the table.  May be a keyspec or a keygroup, see --help-keys'],
+      ['spreadsheet', 'Print out in a format suitable for excel.  1. Does not print line of -s after header 2. Separates by single character rather than series of spaces'],
+      ['delimiter <string>', 'Only useful with --spreadsheet, delimit with <string> rather than the default of a tab'],
+      ['clear', 'Put blanks in cells where all of the row so far matches the row above.'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-totable <args> [<files>]
+   __FORMAT_TEXT__
    Pretty prints a table of records to the screen.  Will read in the entire
    record stream to determine column size, and number of columns
+   __FORMAT_TEXT__
 
-   --no-header|n           Do not print column headers
-   --key|k <field name>    May be comma separated, may be specified multiple
-                           times.  Specifies the fields to put in the table.
-                           May be a keyspec or a keygroup, see --help-keys
-   --spreadsheet           Print out in a format suitable for excel.
-                           1. Does not print line of -s after header
-                           2. Separates by single character rather than series
-                               of spaces
-   --delimiter <string>    Only useful with --spreadsheet, delimit with
-                           <string> rather than the default of a tab
-   --clear                 Put blanks in cells where all of the row so far
-                           matches the row above.
+$args_string
 
 Examples:
    Display a table

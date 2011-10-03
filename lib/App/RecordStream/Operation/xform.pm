@@ -54,11 +54,21 @@ sub accept_record {
 sub add_help_types {
    my $this = shift;
    $this->use_help_type('snippet');
+   $this->use_help_type('keyspecs');
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      App::RecordStream::Executor::options_help(),
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-xform <args> <expr> [<files>]
+   __FORMAT_TEXT__
    <expr> is evaluated as perl on each record of input (or records from
    <files>) with \$r set to a App::RecordStream::Record object and \$line set to the current
    line number (starting at 1).  All records are printed back out (changed as
@@ -68,6 +78,9 @@ Usage: recs-xform <args> <expr> [<files>]
    be treated as records and outputed one to a line.  The values of the array
    may either be a hash ref or a App::RecordStream::Record object.  The original record will
    not be outputted in this case.
+   __FORMAT_TEXT__
+
+$args_string
 
 Examples:
    Add line number to records

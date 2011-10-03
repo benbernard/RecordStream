@@ -224,8 +224,22 @@ HELP_FULL
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      ['left', 'Do a left join'],
+      ['right', 'Do a right join'],
+      ['inner', 'Do an inner join (This is the default)'],
+      ['outer', 'Do an outer join'],
+      ['operation', 'An perl expression to evaluate for merging two records together, in place of the default behavior of db fields overwriting input fields. See "Operation" below.'],
+      ['accumulate-right', 'Accumulate all input records with the same key onto each db record matching that key. See "Accumulate Right" below.'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-join <args> <inputkey> <dbkey> <dbfile> [<files>]
+   __FORMAT_TEXT__
    Records of input (or records from <files>) are joined against records in
    <dbfile>, using field <inputkey> from input and field <dbkey> from <dbfile>.
    Each record from input may match 0, 1, or more records from <dbfile>. Each
@@ -237,20 +251,13 @@ Usage: recs-join <args> <inputkey> <dbkey> <dbfile> [<files>]
 
    dbkey and inputkey may be key specs, see '--help-keyspecs' for more
    information
+   __FORMAT_TEXT__
 
 Arguments:
-   --left              Do a left join
-   --right             Do a right join
-   --inner             Do an inner join (This is the default)
-   --outer             Do an outer join
-   --operation         An perl expression to evaluate for merging two records
-                       together, in place of the default behavior of db fields
-                       overwriting input fields. See "Operation" below.
-   --accumulate-right  Accumulate all input records with the same key onto each
-                       db record matching that key. See "Accumulate Right"
-                       below.
+$args_string
 
 Operation:
+   __FORMAT_TEXT__
    The expression provided is evaluated for every pair of db record and input
    record that have matching keys, in place of the default operation to
    overwrite input fields with db fields. The variable \$d is set to a
@@ -258,6 +265,7 @@ Operation:
    App::RecordStream::Record object for the input record. The \$d record is
    used for the result. Thus, if you provide an empty operation, the result
    will contain only fields from the db record.
+   __FORMAT_TEXT__
 
 Examples:
    Join type from STDIN and typeName from dbfile

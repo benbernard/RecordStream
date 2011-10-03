@@ -177,22 +177,28 @@ FULL_HELP
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      ['key|-k <key>', 'Single Key field containing the date/time may be a key spec, see \'--help-keyspecs\' for more info'],
+      ['epoch|-e', 'Assumes date/time field is expressed in epoch seconds (optional, defaults to non-epoch)'],
+      ['threshold|-n <time range>', 'Number of seconds in the range.  May also be a duration string like \'1 week\' or \'5 minutes\', parsable by Date::Manip'],
+      ['strict|-s', 'Apply strict normalization (defaults to non-strict)'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-normalizetime <args> [<files>]
+   __FORMAT_TEXT__
    Given a single key field containing a date/time value this recs processor
    will construct a normalized version of the value and place this new value
    into a field named "n_<key>" (where <key> is the key field appearing in
    the args).
+   __FORMAT_TEXT__
 
 Arguments:
-   --key|-k <key>                Single Key field containing the date/time
-                                 may be a key spec, see '--help-keyspecs' for more info
-   --epoch|-e                    Assumes date/time field is expressed in epoch seconds
-                                 (optional, defaults to non-epoch)
-   --threshold|-n <time range>   Number of seconds in the range.  May also be a
-                                 duration string like '1 week' or '5 minutes',
-                                 parsable by Date::Manip
-   --strict|-s                   Apply strict normalization (defaults to non-strict)
+$args_string
 
 Examples:
    # Tag records with normalized time in 5 minute buckets from the date field

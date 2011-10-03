@@ -726,37 +726,47 @@ sub AUTOLOAD
 sub keyspec_help {
    return <<KEYSPECS_HELP;
 KEY SPECS   
+   __FORMAT_TEXT__
    A key spec is short way of specifying a field with prefixes or regular
    expressions, it may also be nested into hashes and arrays.  Use a '/' to nest
    into a hash and a '#NUM' to index into an array (i.e. #2)
    
    An example is in order, take a record like this:
+   __FORMAT_TEXT__
    
      {"biz":["a","b","c"],"foo":{"bar 1":1},"zap":"blah1"}
      {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
      {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
    
+   __FORMAT_TEXT__
    In this case a key spec of 'foo/bar 1' would have the values 1,2, and 3
    in the respective records.
    
    Similarly, 'biz/#0' would have the value of 'a' for all 3 records
    
    You can also prefix key specs with '\@' to engage the fuzzy matching logic
+   __FORMAT_TEXT__
    
+   __FORMAT_TEXT__
    Fuzzy matching works like this in order, first key to match wins
+   __FORMAT_TEXT__
      1. Exact match ( eq )
      2. Prefix match ( m/^/ )
      3. Match anywehre in the key (m//)
    
+   __FORMAT_TEXT__
    So, in the above example '\@b/#2', the 'b' portion would expand to 'biz' and 2
    would be the index into the array, so all records would have the value of 'c'
    
    Simiarly, \@f/b would have values 1, 2, and 3
 
    You can escape / with a \\.  For example, if you have a record:
+   __FORMAT_TEXT__
    {"foo/bar":2}
 
+   __FORMAT_TEXT__
    You can address that key with foo\\/bar
+   __FORMAT_TEXT__
 KEYSPECS_HELP
 }
 

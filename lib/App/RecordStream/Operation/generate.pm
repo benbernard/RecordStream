@@ -76,9 +76,18 @@ sub add_help_types {
 
 sub usage
 {
+   my $this = shift;
+
+   my $options = [
+      [ 'passthrough', 'Emit input record in addition to generated records' ],
+      [ 'keychain <name>', 'Use \'name\' as the chain key (default is \'_chain\') may be a key spec, see \'--help-keyspecs\' for more info' ],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    my $usage = <<USAGE;
 Usage: recs-generate <args> <command> [<files>]
-
+   __FORMAT_TEXT__
    Executes <command> for each record to generate a record stream, which is
    then output with a chain link back to the original record.
 
@@ -88,6 +97,7 @@ Usage: recs-generate <args> <command> [<files>]
    one per line. Each such line is reconstituted as a App::RecordStream::Record, and the
    '_chain' key is added to the record before it is printed. The value of the
    '_chain' key is the record that was originally passed to the eval expression.
+   __FORMAT_TEXT__
 
    For instance.  If you did:
    recs-generate "recs-fromatomfeed http://...?key=\$r->{title}..."
@@ -99,20 +109,22 @@ Usage: recs-generate <args> <command> [<files>]
    then recs-generate would end up executing:
    recs-fromatomfeed http://...?key=foo...
 
+   __FORMAT_TEXT__
    and interpreting the result as a series of new line separated records.
 
    If the result from recs-fromatomfeed was something like:
+   __FORMAT_TEXT__
    { 'title' : 'zip' }
    { 'title' : 'zap' }
 
+   __FORMAT_TEXT__
    then recs-generate would add the chain link so the output would look like:
+   __FORMAT_TEXT__
    { 'title' : 'zip', 'chain' : { 'title' : 'foo' } }
    { 'title' : 'zap', 'chain' : { 'title' : 'foo' } }
 
 Arguments:
-   --passthrough     - Emit input record in addition to generated records
-   --keychain <name> - Use 'name' as the chain key (default is '_chain')
-                       may be a key spec, see '--help-keyspecs' for more info
+$args_string
 
 Examples:
    Chain recs from a feed to recs from a second feed and the print the titles.

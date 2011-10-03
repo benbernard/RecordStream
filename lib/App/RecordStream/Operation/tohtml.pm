@@ -105,17 +105,24 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      ['keys <keys>', 'Keys to print in the table.  May be specified multiple times, may be comma separated.  Default to all fields in the first record.  May be a keyspec or a keygroup, see \'--help-keys\' for more information'],
+      ['noheader', 'Do not print the header row'],
+      ['rowattributes', 'HTML attributes to put on the tr tags'],
+      ['cellattributes', 'HTML attributes to put on the td and th tag'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-totable <args> [<files>]
+   __FORMAT_TEXT__
    Prints out an html table for the records from input or from <files>.
+   __FORMAT_TEXT__
 
-   --keys <keys>     - Keys to print in the table.  May be specified multiple
-                       times, may be comma separated.  Default to all fields in
-                       the first record.  May be a keyspec or a keygroup, see
-                       '--help-keys' for more information
-   --noheader        - Do not print the header row
-   --rowattributes   - HTML attributes to put on the tr tags
-   --cellattributes  - HTML attributes to put on the td and th tag
+$args_string
 
 Examples:
    Print all fields

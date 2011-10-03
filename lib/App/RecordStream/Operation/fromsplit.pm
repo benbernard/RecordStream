@@ -106,18 +106,27 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      [ 'delim|-d <delim>', 'Delimiter to use for splitting input lines (default ',').'],
+      [ 'key|-k <key>', 'Comma separated list of key names.  May be specified multiple times, may be key specs'],
+      [ 'header', 'Take key names from the first line of input.'],
+      [ 'strict', 'Delimiter is not treated as a regex'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-fromsplit <args> [<files>]
+   __FORMAT_TEXT__
    Each line of input (or lines of <files>) is split on provided delimiter to
    produce an output record.  Keys are named numerically (0, 1, etc.) or as
    given by --key.
+   __FORMAT_TEXT__
 
 Arguments:
-   --delim|-d <delim> Delimiter to use for splitting input lines (default ',').
-   --key|-k <key>     Comma separated list of key names.  May be specified
-                      multiple times, may be key specs
-   --header           Take key names from the first line of input.
-   --strict           Delimiter is not treated as a regex
+$args_string
 
 Examples:
    Parse space separated keys x and y.

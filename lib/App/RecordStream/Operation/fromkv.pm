@@ -76,16 +76,26 @@ sub read_until {
 
 sub usage
 {
+   my $this = shift;
+
+   my $options = [
+      [ 'record-delim|r <delim>', 'Delimiter to for separating records (defaults to "END\\n").'],
+      [ 'entry-delim|e  <delim>', 'Delimiter to for separating entries within records (defaults to "\\n").'],
+      [ 'kv-delim|f   <delim>', 'Delimiter to for separating key/value pairs within an entry (defaults to " ").'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage : recs-fromkv <args> [<files>]
-  Records are generated from charactr input with the form "<record><record-delim><record>...".
-  Records have the form "<entry><entry-delim><entry>...".  Entries are pairs of the form
-  "<key><kv-delim><value>".
+   __FORMAT_TEXT__
+   Records are generated from charactr input with the form "<record><record-delim><record>...".
+   Records have the form "<entry><entry-delim><entry>...".  Entries are pairs of the form
+   "<key><kv-delim><value>".
+   __FORMAT_TEXT__
 
 Arguments:
-  --record-delim|r <delim>   Delimiter to for separating records (defaults to "END\\n").
-  --entry-delim|e  <delim>   Delimiter to for separating entries within records (defaults to "\\n").
-  --kv-delim|f   <delim>     Delimiter to for separating key/value pairs within an entry (defaults to " ").
+$args_string
 
 Examples:
   Parse memcached stat metrics into records

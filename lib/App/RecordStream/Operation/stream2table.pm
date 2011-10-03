@@ -62,12 +62,22 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      ['field <FIELD>', 'Field to use as the column key, may be a keyspec'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    my $usage =  <<USAGE;
 Usage: recs-stream2table <args> [<files>]
+   __FORMAT_TEXT__
    Transforms a list of records, combinging records based on a column, FIELD.
    In order, the values of the column will be added to the output records.
 
    Note: This script spools the stream into memory
+   __FORMAT_TEXT__
 
    This stream:
    { "column": "foo", "data": "foo1" }
@@ -79,15 +89,17 @@ Usage: recs-stream2table <args> [<files>]
    {"boo":{"data":"boo1"},"foo":{"data":"foo1"}}
    {"boo":{"data":"boo2"},"foo":{"data":"foo2"}}
 
+   __FORMAT_TEXT__
    Hint: use recs-flatten if you want those values to be in the top level of
    the record
 
    The full input record will be associated with the value of the FIELD.  The
    field itself will be removed from the nested record if the passed field is
    not a key spec.
+   __FORMAT_TEXT__
 
 Arguments:
-   --field <FIELD> Field to use as the column key, may be a keyspec
+$args_string
 
 Examples:
    # Transform a record stream with each stat on one line to a stream with one

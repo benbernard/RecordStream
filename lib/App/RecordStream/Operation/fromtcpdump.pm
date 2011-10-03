@@ -228,12 +228,21 @@ sub propagate_fields {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      [ 'data', 'Include raw data bytes of deepest packet level'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    my $ip_flag_names  = join(', ', keys %$IP_FLAGS);
    my $tcp_flag_names = join(', ', keys %$TCP_FLAGS);
    my $arp_opcodes    = join(', ', values %$ARP_OPCODES);
 
    return <<USAGE;
 Usage: recs-fromtcpdump <file1> <file2> ...
+   __FORMAT_TEXT__
    Runs tcpdump and puts out records, one for each packet.  Expects pcap
    files.  Will put the name of the originating capture file in the 'file'
    field.
@@ -247,6 +256,7 @@ Usage: recs-fromtcpdump <file1> <file2> ...
 
    By default, data output is surpressed due to poor interaction with terminal
    programs.
+   __FORMAT_TEXT__
 
    Flags will be parsed into hash of strings
    Possible IP flags: $ip_flag_names
@@ -256,6 +266,7 @@ Usage: recs-fromtcpdump <file1> <file2> ...
    Possible opcodes: $arp_opcodes
 
 Creating a pcap file:
+   __FORMAT_TEXT__
    Run a tcpdump command with -w FILE to produce a pcap file.  For instance:
    sudo tcpdump -w /var/tmp/capture.pcap
 
@@ -263,9 +274,10 @@ Creating a pcap file:
    sudo tcpdump -w capture.pcap -s4096 -S -tt
 
    See 'man tcpdump' for more information.
+   __FORMAT_TEXT__
 
 Arguments
-   --data - Include raw data bytes of deepest packet level
+$args_string
 
 Examples
    Get records for all packets

@@ -150,15 +150,23 @@ sub make_user_agent {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      [ 'elements <elements>', 'May be comma separated, may be specified multiple times.  Sets the elements to print records for'],
+      [ 'nested', 'search for elements at all levels of the xml document'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-fromxml <args> [<URIs>]
+   __FORMAT_TEXT__
    Reads either from STDIN or from the specified URIs.  Parses the xml
    documents, and creates records for the specified elements
+   __FORMAT_TEXT__
 
-   --elements <elements> - May be comma separated, may be specified multiple
-                           times.  Sets the elements to print records for
-   --nested              - search for elements at all levels of the xml
-                           document
+$args_string
 
 Examples:
    Create records for the bar element at the top level of myXMLDoc

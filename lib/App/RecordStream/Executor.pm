@@ -102,11 +102,14 @@ sub transform_code {
 sub usage {
    return <<USAGE;
 CODE SNIPPETS:
+   __FORMAT_TEXT__
     Recs code snippets are perl code, with one exception.  There a couple of
     variables predefined for you, and one piece of special syntax to assist in
     modifying hashes.
+   __FORMAT_TEXT__
 
 Special Variables:
+   __FORMAT_TEXT__
     \$r    - the current record object.  This may be used exactly like a hash,
     or you can use some of the special record functions, see App::RecordStream::Record for
     more information
@@ -119,8 +122,10 @@ Special Variables:
     useful if you're passing filenames directly to the recs script, piping from
     other recs scripts or from cat, for instance, will not have a useful
     filename.
+   __FORMAT_TEXT__
 
 Special Syntax
+   __FORMAT_TEXT__
     Use {{search_string}} to look for a string in the keys of a record, use /
     to nest keys.  You can nest into arrays by using an index.  If you are
     vivifying arrays (if the array doesn't exist, prefix your key with # so
@@ -129,6 +134,7 @@ Special Syntax
 
     This is exactly the same as a key spec that is always prefaced with a @,
     see 'man recs' for more info on key specs
+   __FORMAT_TEXT__
 
     For example: A record that looks like:
     { "foo" : { "bar 1" : 1 }, "zoo" : 2}
@@ -144,17 +150,22 @@ Special Syntax
     {{new_key/array_key/#0}} = 3 # creates an array within a hash within a hash
 
     # Index into an array
-    {{array_key/#3}} # The value of index 3 of the array ref under the
-                       'array_key' hash key.
+   __FORMAT_TEXT__
+    {{array_key/#3}} # The value of index 3 of the array ref under the 'array_key' hash key.
+   __FORMAT_TEXT__
 
+   __FORMAT_TEXT__
     This matching is a fuzzy keyspec matching, see --help-keyspecs for more
     details.
-
-Code In Files
-    Instead of putting the code snippet on the command line, if the code
-    argument is a filename instead, that file will be read and used as the 
-    snippet.
+   __FORMAT_TEXT__
 USAGE
+}
+
+sub options_help {
+   return (
+      ['e', 'a perl snippet to execute, optional'],
+      ['E', 'the name of a file to read as a perl snippet'],
+   );
 }
 
 1;

@@ -143,27 +143,31 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      ['drop', 'Drop the table before running create / insert commands.'],
+      ['table', 'Name of the table to work with defaults to \'recs\''],
+      ['debug', 'Print all the executed SQL'],
+      ['key', 'Can either be a name value pair or just a name.  Name value pairs should be fieldName=SQL Type.  If any fields are specified, they will be the only fields put into the db.  May be specified multiple times, may also be comma separated.  Type defaults to VARCHAR(255) Keys may be key specs, see \'--help-keyspecs\' for more'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    my $usage =  <<USAGE;
+   __FORMAT_TEXT__
    Recs to DB will dump a stream of input records into a database you specify.
    The record fields you want inserted should have the same keys as the column
    names in the database, and the records should be key-value pairs.
 
    This script will attempt to create the table, if it is not already present.
+   __FORMAT_TEXT__
 
-   --drop   - Drop the table before running create / insert commands.
-   --table  - Name of the table to work with defaults to 'recs'
-   --debug  - Print all the executed SQL
-   --key    - Can either be a name value pair or just a name.  Name value pairs
-              should be fieldName=SQL Type.  If any fields are specified, they
-              will be the only fields put into the db.  May be specified
-              multiple times, may also be comma separated.  Type defaults to
-              VARCHAR(255)
-              Keys may be key specs, see '--help-keyspecs' for more
+$args_string
 
 USAGE
 
    return $usage . App::RecordStream::DBHandle::usage() .  <<EXAMPLES;
-
 Examples:
    # Just put all the records into the recs table
    recs-todb --type sqlite --dbfile testDb --table recs

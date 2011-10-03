@@ -254,8 +254,18 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      ['show-chain', 'Before running the commands, print out what will happen in the chain'],
+      ['n', 'Do not run commands, implies --show-chain'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-chain <command> | <command> | ...
+   __FORMAT_TEXT__
    Creates an in-memory chain of recs operations.  This avoid serialization and
    deserialization of records at each step in a complex recs pipeline.  For
    ease of use the chain of recs commands main contain non-recs command,
@@ -269,10 +279,9 @@ Usage: recs-chain <command> | <command> | ...
    Arugments are specified in on the command line separated by pipes.  For most
    shells, you will need to escape the pipe character to avoid having the shell
    interpret the pipe as a shell pipe.
+   __FORMAT_TEXT__
 
-   --show-chain - Before running the commands, print out what will happen
-                  in the chain
-   -n           - Do not run commands, implies --show-chain
+$args_string
 
 Examples:
    Parse some fields, sort and collate, all in memory

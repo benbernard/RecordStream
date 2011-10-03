@@ -1,5 +1,4 @@
 package App::RecordStream::KeyGroups;
-
 our $VERSION = "3.4";
 
 use strict;
@@ -70,15 +69,18 @@ sub get_keyspecs {
 sub usage {
    return <<HELP;
 KEY GROUPS
+   __FORMAT_TEXT__
    SYNTAX: !regex!opt1!opt2...
    Key groups are a way of specifying multiple fields to a recs command with a
    single argument or function.  They are generally regexes, and have several
    options to control what fields they match.  By default you give a regex, and
    it will be matched against all first level keys of a record to come up with
    the record list.  For instance, in a record like this:
+   __FORMAT_TEXT__
 
    { 'zip': 1, 'zap': 2, 'foo': { 'bar': 3 } }
 
+   __FORMAT_TEXT__
    Key group: !z! would get the keys 'zip' and 'zap'
 
    You can have a literal '!' in your regex, just escape it with a \\.
@@ -90,6 +92,7 @@ KEY GROUPS
    (which has a value of a hash ref)
 
    Options on KeyGroups:
+   __FORMAT_TEXT__
       returnrefs, rr  - Return keys that have reference values (default:off)
       full, f         - Regex should match against full keys (recurse fully)
       depth=NUM,d=NUM - Only match keys at NUM depth (regex will match against

@@ -77,19 +77,27 @@ sub run_operation {
 }
 
 sub usage {
+   my $this = shift;
+
    my @fields = Proc::ProcessTable->new()->fields();
    my $all_fields = join (', ', @fields);
+
+   my $options = [
+      [ 'keys <fields>', 'Fields to output.  May be specified multiple times, may be comma separated.  Default to all fields These are Proc::ProcessTable keys, and thus may not be keyspecs or groups'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-fromps <args>
+   __FORMAT_TEXT__
    Prints out JSON records converted from the process table.
-
-   --keys <fields> - Fields to output.  May be specified multiple
-                     times, may be comma separated.  Default to all fields
-                     These are Proc::ProcessTable keys, and thus may not be
-                     keyspecs or groups
+   __FORMAT_TEXT__
 
 Default fields:
+   __FORMAT_TEXT__
    $all_fields
+   __FORMAT_TEXT__
 
 Examples:
    Get records for the process table

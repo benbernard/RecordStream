@@ -76,18 +76,27 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      [ 'key|-k <key>', 'Comma separated list of key names.  May be specified multiple times. may be a key spec, see \'man recs\' for more'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-fromre <args> <re> [<files>]
+   __FORMAT_TEXT__
    <re> is matched against each line of input (or lines of <files>).  Each
    successfully match results in one output record whose field values are the
    capture groups from the match.  Lines that do not match are ignored.  Keys
    are named numerically (0, 1, etc.) or as given by --key.
 
    For spliting on a delimeter, see recs-fromsplit.
+   __FORMAT_TEXT__
 
 Arguments:
-   --key|-k <key>   Comma separated list of key names.  May be specified multiple times.
-                    may be a key spec, see 'man recs' for more
+$args_string
 
 Examples:
    Parse greetings

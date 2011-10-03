@@ -45,24 +45,23 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      ['key <keyspec>', "May be comma separated, May be specified multiple times.  Each keyspec is a name or a name=sortType.  The name should be a field name to sort on.  The sort type should be either lexical or numeric.  Default sort type is lexical (can also use nat, lex, n, and l).  Additionallly, the sort type may be prefixed with '-' to indicate a decreasing sort order.  Additionally, the sort type may be postfixed with '*' to sort the special value 'ALL' to the end (useful for the output of recs-collate --cube).  See perldoc for App::RecordStream::Record for more on sort specs.  May be a key spec, see '--help-keyspecs' for more.  Cannot be a keygroup."],
+      ['reverse', 'Reverses the sort order'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-sort <args> [<files>]
+   __FORMAT_TEXT__
    Sorts records from input or from <files>.  You may sort on a list of keys,
    each key sorted lexically (alpha order) or numerically
+   __FORMAT_TEXT__
 
-   --key <keyspec> - May be comma separated, May be specified multiple times.
-                     Each keyspec is a name or a name=sortType.  The name
-                     should be a field name to sort on.  The sort type should
-                     be either lexical or numeric.  Default sort type is
-                     lexical (can also use nat, lex, n, and l).  Additionallly,
-                     the sort type may be prefixed with '-' to indicate a
-                     decreasing sort order.  Additionally, the sort type may be
-                     postfixed with "*" to sort the special value "ALL" to the
-                     end (useful for the output of recs-collate --cube).  See
-                     perldoc for App::RecordStream::Record for more on sort
-                     specs.  May be a key spec, see '--help-keyspecs' for more.
-                     Cannot be a keygroup.
-    --reverse      - Reverses the sort order
+$args_string
 
 Examples:
    Sort on the id field, a numeric

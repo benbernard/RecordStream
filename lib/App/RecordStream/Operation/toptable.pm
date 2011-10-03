@@ -480,18 +480,21 @@ sub add_help_types {
    $this->use_help_type('keys');
    $this->add_help_type(
       'full',
-      \&full_help,
+      sub { $this->full_help() },
       'Tutorial on toptable, with many examples'
    );
 }
 
 sub full_help {
-   print <<FULL_EXAMPLES;
+   my $this = shift;
+   print $this->format_usage(<<FULL_EXAMPLES);
 Full Help
 
+__FORMAT_TEXT__
 Lets first take a look at some examples:
 
 Lets take this stream, which is a portion of my recs-fromps:
+__FORMAT_TEXT__
 \$ recs-fromps --fields rss,pid,state,priority | recs-topn --key state -n 5 | tee /var/tmp/psrecs
 {"priority":0,"pid":1,"rss":471040,"state":"sleep"}
 {"priority":0,"pid":2,"rss":0,"state":"sleep"}
@@ -502,14 +505,18 @@ Lets take this stream, which is a portion of my recs-fromps:
 {"priority":0,"pid":28129,"rss":4784128,"state":"run"}
 {"priority":19,"pid":28171,"rss":405504,"state":"run"}
 
+__FORMAT_TEXT__
 Ok, Now lets get a table out of this, first we'll collate into some useful information:
+__FORMAT_TEXT__
 \$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count
 {"priority":0,"count":4,"state":"sleep"}
 {"priority":19,"count":1,"state":"sleep"}
 {"priority":0,"count":1,"state":"run"}
 {"priority":19,"count":2,"state":"run"}
 
+__FORMAT_TEXT__
 And lets get a table:
+__FORMAT_TEXT__
 \$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count | recs-toptable --x priority --y state
 +-----+--------+-+--+
 |     |priority|0|19|
@@ -521,11 +528,13 @@ And lets get a table:
 |sleep|        |4|1 |
 +-----+--------+-+--+
 
+__FORMAT_TEXT__
 So, you can see that the VALUES of priority and state are used as the columns /
 rows.  So that there is 1 process in state 'run' and priority 0, and 4 in state
 'sleep' and priority 0
 
 The --cube option on recs-collate also interacts very well with toptable:
+__FORMAT_TEXT__
 
 \$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube | recs-toptable --x priority --y state
 +-----+--------+-+--+---+
@@ -540,12 +549,14 @@ The --cube option on recs-collate also interacts very well with toptable:
 |sleep|        |4|1 |5  |
 +-----+--------+-+--+---+
 
+__FORMAT_TEXT__
 We added an ALL row and an ALL column.  So from this you can see that there are
 5 processes in priority 0, 3 processes in state 'run' and 8 processes all told
 in the table (the ALL, ALL intersection)
 
 Now lets see what happens when we have more than 1 left over field.  Lets also
 sum up the rss usage of the processes with -a sum,rss on recs-collate:
+__FORMAT_TEXT__
 
 \$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube -a sum,rss
 {"priority":0,"count":4,"state":"sleep","sum_rss":471040}
@@ -558,8 +569,10 @@ sum up the rss usage of the processes with -a sum,rss on recs-collate:
 {"priority":19,"count":3,"state":"ALL","sum_rss":8757248}
 {"priority":19,"count":2,"state":"run","sum_rss":8757248}
 
+__FORMAT_TEXT__
 So now we have 2 left over fields that aren't columns, count and sum_rss.  What
 happens to our table now:
+__FORMAT_TEXT__
 
 \$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube -a sum,rss | recs-toptable --x priority --y state
 +-----+--------+-------+-------+--------+
@@ -574,9 +587,11 @@ happens to our table now:
 |sleep|        |471040 |0      |471040  |
 +-----+--------+-------+-------+--------+
 
+__FORMAT_TEXT__
 We now have sum_rss values in this field.  What if we want the other field
 (count) displayed?  We just use --v-field to specify what value field to
 use:
+__FORMAT_TEXT__
 
 \$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube -a sum,rss | recs-toptable --x priority --y state --v count
 +-----+--------+-+--+---+
@@ -591,10 +606,12 @@ use:
 |sleep|        |4|1 |5  |
 +-----+--------+-+--+---+
 
+__FORMAT_TEXT__
 Ok, but what if we want to see both left over fields at the same time?  What we
 really want is to add a column or row for each of count and sum_rss.  (where
 the title of the row is count or sum_rss, not the values of the field).  We can
 do this by using the special FIELD specifier like so:
+__FORMAT_TEXT__
 
 \$ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube -a sum,rss | recs-toptable --x priority,FIELD --y state
 +-----+--------+-----+-------+-----+-------+-----+--------+
@@ -611,12 +628,14 @@ do this by using the special FIELD specifier like so:
 |sleep|        |4    |471040 |1    |0      |5    |471040  |
 +-----+--------+-----+-------+-----+-------+-----+--------+
 
+__FORMAT_TEXT__
 So, now in one table we can see all the intersections of state and priority
 values with the count and sum_rss fields.  Remember that the ALL field (row and
 column) are provided by the --cube functionality of recs-collate
 
 Now, say you want to pin value, lets just look at processes in state run for
 instance:
+__FORMAT_TEXT__
 
 \$ cat /var/tmp/psrecs | recs-collate --perfect --cube --key priority,state -a count -a sum,rss | recs-toptable --x priority,FIELD --y state -v sum_rss,count --pin state=run
 +-----+--------+-----+-------+-----+-------+-----+--------+
@@ -629,19 +648,36 @@ instance:
 |run  |        |1    |4784128|2    |8757248|3    |13541376|
 +-----+--------+-----+-------+-----+-------+-----+--------+
 
+__FORMAT_TEXT__
 As you can see, this is basically short hand for doing a recs-grep, the transformation to recs group would look like:
+__FORMAT_TEXT__
 
 \$ cat /var/tmp/psrecs | recs-collate --perfect --cube --key priority,state -a count -a sum,rss | recs-grep '\$r->{state} eq "run"' | recs-toptable --x priority,FIELD --y state -v sum_rss,count
 
+__FORMAT_TEXT__
 (which produces the same table as above).
+__FORMAT_TEXT__
 FULL_EXAMPLES
 }
 
 sub usage {
    my $this = shift;
 
+   my $options = [
+      ['x-field|x', 'Add a x field, values of the specified field will become columns in the table, may be a keyspec or a keygroup'],
+      ['y-field|y', 'Add a y field, values of the specified field will become rows in the table, may be a keyspec or a keygroup'],
+      ['v-field|v', 'Specify the value to display in the table, if multiple value fields are specified and FIELD is not placed in the x or y axes, then the last one wins, may be a keyspec or a keygroup.  If FIELD is in an axis, then --v specifies the fields to be included in that expansion'],
+      ['pin', 'Pin a field to a certain value, only display records matching that value, very similar to doing a recs-grep befor toptable.  Takes value of the form: field=pinnedValue, field may be a keyspec (not a keygroup)'],
+      ['sort', 'Take sort specifications to sort X values and Y values in headers.  See `recs-sort --help` for details of sort specifications, especially the * option to sort "ALL" to the end, e.g.  "some_field=lex*".'],
+      ['noheaders', 'Do not print row and column headers (removes blank rows and columns)'],
+      ['records|recs', 'Instead of printing table, output records, one per row of the table.'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-toptable <args> [<files>]
+   __FORMAT_TEXT__
    Creates a multi-dimensional pivot table with any number of x and y axises.
    There is additional help available through --full that includes examples
 
@@ -649,28 +685,9 @@ Usage: recs-toptable <args> [<files>]
 
    X and Y fields can take the special value 'FIELD' which uses unused field
    names as values for the FIELD dimension
+   __FORMAT_TEXT__
 
-   --x-field|x     Add a x field, values of the specified field will become
-                   columns in the table, may be a keyspec or a keygroup
-   --y-field|y     Add a y field, values of the specified field will become
-                   rows in the table, may be a keyspec or a keygroup
-   --v-field|v     Specify the value to display in the table, if multiple value
-                   fields are specified and FIELD is not placed in the x or y
-                   axes, then the last one wins, may be a keyspec or a keygroup.
-                   If FIELD is in an axis, then --v specifies the fields to be
-                   included in that expansion
-   --pin           Pin a field to a certain value, only display records matching
-                   that value, very similar to doing a recs-grep befor toptable.
-                   Takes value of the form: field=pinnedValue, field may be a
-                   keyspec (not a keygroup)
-   --sort          Take sort specifications to sort X values and Y values in
-                   headers.  See `recs-sort --help` for details of sort
-                   specifications, especially the * option to sort "ALL" to the
-                   end, e.g.  "some_field=lex*".
-   --noheaders     Do not print row and column headers (removes blank rows and
-                   columns)
-   --records|recs  Instead of printing table, output records, one per row of
-                   the table.
+$args_string
 
 Simple Examples (see --full for more detailed descriptions)
 

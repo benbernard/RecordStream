@@ -134,29 +134,36 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      [ '<n> <fields>', 'For this comma-separated list of fields flatten to depth n (1-9).'],
+      [ 'depth <nbr>', 'Change the default depth, negative being arbitrary depth (defaults to 1).'],
+      [ 'key <fields>', 'For this comma-separated list of fields flatten to the default depth (may NOT be a a key spec).'],
+      [ 'deep <fields>', 'For this comma-separated list of fields flatten to arbitrary depth.'],
+      [ 'separator <string>', 'Use this string to separate joined field names (defaults to "-").'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-flatten <args> [<files>]
+   __FORMAT_TEXT__
    Flatten nested structues in records.
 
    NOTE:  This script implements a strategy for dealing with nested structures
    that is almost always better handled by using keyspecs or keygroups.  It
    should, in general, be as easy or easier to use those concepts with the data
    manipulations you actually want to accomplish.
+   __FORMAT_TEXT__
 
 Arguments:
-   -<n> <fields>          For this comma-separated list of fields flatten to
-                          depth n (1-9).
-   --depth <nbr>          Change the default depth, negative being arbitrary
-                          depth (defaults to 1).
-   --key <fields>         For this comma-separated list of fields flatten to the
-                          default depth (may NOT be a a key spec).
-   --deep <fields>        For this comma-separated list of fields flatten to
-                          arbitrary depth.
-   --separator <string>   Use this string to separate joined field names
-                          (defaults to "-").
+$args_string
 
+   __FORMAT_TEXT__
     All field values may be keyspecs or keygroups, value of keyspec must not be
     an array element
+   __FORMAT_TEXT__
 
 Examples:
    Under

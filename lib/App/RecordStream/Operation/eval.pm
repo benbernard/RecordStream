@@ -52,16 +52,26 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      [ 'no-newline', 'Do not put a newline after each record\'s output' ],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    my $usage =  <<USAGE;
 Usage: recs-eval <args> <expr> [<files>]
+   __FORMAT_TEXT__
    <expr> is evaluated as perl on each record of input (or records from
    <files>) with \$r set to a App::RecordStream::Record object and \$line set
    to the current line number (starting at 1).  The result of each evaluation
    is printed on a line by itself (this is not a recs stream).  See
    App::RecordStream::Record for help on what the \$r object can do.  See
    --help-snippets for more information on code snippets
+   __FORMAT_TEXT__
 
-   --no-newline - Do not put a newline after each record's output
+$args_string
 
 Examples:
    Print the host field from each record.

@@ -115,30 +115,36 @@ sub add_help_types
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      [ 'dldeaggregator ...', 'Specify a domain language aggregate.  See "Domain Language Integration" below.'],
+      [ 'deaggregator|-d <deaggregators>', 'Colon separated list of aggregate field specifiers.  See "Deaggregates" section below.'],
+      [ 'list-deaggregators', 'Bail and output a list of deaggregators.'],
+      [ 'show-deaggregator <deaggregator>', 'Bail and output this deaggregator\'s detailed usage.'],
+   ];
+
+   my $args_string = $this->options_string($options);
    return <<USAGE
 Usage: recs-decollate <args> [<files>]
+   __FORMAT_TEXT__
    Decollate records of input (or records from <files>) into output records.
+   __FORMAT_TEXT__
 
 Arguments:
-   --dldeaggregator ...              Specify a domain language aggregate.  See
-                                     "Domain Language Integration" below.
-   --deaggregator|-d <deaggregators> Colon separated list of aggregate field
-                                     specifiers.  See "Deaggregates" section
-                                     below.
-
-Help / Usage Options:
-   --list-deaggregators               Bail and output a list of deaggregators.
-   --show-deaggregator <deaggregator> Bail and output this deaggregator's
-                                      detailed usage.
+$args_string
 
 Deaggregates:
+   __FORMAT_TEXT__
    Deaggregates are specified as <deaggregator>[,<arguments>].  See
    --list-deaggregators for a list of available deaggregators.
 
    In general, key name arguments to deaggregators may be key specs, but not
    key groups
+   __FORMAT_TEXT__
 
 Domain Lanuage Integration:
+   __FORMAT_TEXT__
 USAGE
    . App::RecordStream::DomainLanguage::short_usage()
    . <<USAGE
@@ -150,6 +156,7 @@ USAGE
    and a list of available functions.
 
    See the examples below for a more gentle introduction.
+   __FORMAT_TEXT__
 
 Examples:
    Split the "hosts" field into individual "host" fields

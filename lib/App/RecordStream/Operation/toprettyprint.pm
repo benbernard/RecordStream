@@ -131,17 +131,26 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      ['1|one', 'Only print the first record'],
+      ['keys', 'Only print out specified keys, Maybe keyspecs may be keygroups, see --help-keys for more information'],
+      ['nonested', 'Do not nest the output of hashes, keep each value on one line'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-toprettyprint [files]
-  Pretty print records, one key to a line, with a line of dashes (---)
-  separating records.  Especially useful for records with very large amounts of
-  keys
+   __FORMAT_TEXT__
+   Pretty print records, one key to a line, with a line of dashes (---)
+   separating records.  Especially useful for records with very large amounts of
+   keys
+   __FORMAT_TEXT__
 
 Arguments:
-   -1, --one  Only print the first record
-   --keys     Only print out specified keys, Maybe keyspecs may be keygroups,
-              see --help-keys for more information
-   --nonested Do not nest the output of hashes, keep each value on one line
+$args_string
 
 Examples
   # Pretty print records

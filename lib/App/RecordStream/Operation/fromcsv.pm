@@ -91,19 +91,26 @@ sub add_help_types {
 
 sub usage
 {
+   my $this = shift;
+
+   my $options = [
+      [ 'key|k <keys>', 'Comma separated list of field names.  May be specified multiple times, may be key specs' ],
+      [ 'header', 'Take field names from the first line of input' ],
+      [ 'strict', 'Do not trim whitespaces, allow loose quoting (quotes inside qutoes), or allow the use of escape characters when not strictly needed.  (not recommended, for most cases)' ],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-fromcsv <args> [<files>]
+   __FORMAT_TEXT__
    Each line of input (or lines of <files>) is split on csv to
    produce an output record.  Fields are named numerically (0, 1, etc.) or as
    given by --field.
+   __FORMAT_TEXT__
 
 Arguments:
-   --key|-k <keys> Comma separated list of field names.  May be specified
-                   multiple times, may be key specs
-   --header        Take field names from the first line of input.
-   --strict        Do not trim whitespaces, allow loose quoting (quotes inside
-                   qutoes), or allow the use of escape characters when not
-                   strictly needed.  (not recommended, for most cases)
+$args_string
 
 Examples:
    Parse csv separated fields x and y.

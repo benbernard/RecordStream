@@ -96,8 +96,17 @@ sub add_help_types {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+     ['keys', 'Keys to match records by, maybe specified multiple times, may be a keygroup or keyspec'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-annotate <args> <expr> [<files>]
+   __FORMAT_TEXT__
    <expr> is evaluated as perl on each record of input (or records from
    <files>) with \$r set to a App::RecordStream::Record object and \$line set
    to the current line number (starting at 1).  Records are analyzed for
@@ -106,17 +115,18 @@ Usage: recs-annotate <args> <expr> [<files>]
 
    Only use this script if you have --keys fields that are repeated, otherwise
    recs-xform will be faster
+   __FORMAT_TEXT__
 
 IMPORTANT SNIPPET NOTE
+   __FORMAT_TEXT__
    Because of the way annotations are recorded, you cannot use UNSHIFT or
    SPLICE on array refs that already exist in the record you are modifiying.
    Additinally, deletes, removes, unshifts, and other 'removing' operations
    will not apply to later records.  If you need this behavior, consider using
    recs-xform
+   __FORMAT_TEXT__
 
-   --keys - Keys to match records by, maybe specified multiple times, may be a
-            keygroup or keyspec
-
+$args_string
 
 Examples:
    # Annotate records with IPs with hostnames, only doing lookup once

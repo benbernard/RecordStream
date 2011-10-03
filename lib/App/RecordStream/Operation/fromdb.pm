@@ -53,14 +53,23 @@ sub run_operation {
 }
 
 sub usage {
+   my $this = shift;
+
+   my $options = [
+      [ 'table', 'Name of the table to dump, this is a shortcut for --sql \'SELECT * from tableName\''],
+      [ 'sql', 'SQL select statement to run'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    my $usage =  <<USAGE;
+   __FORMAT_TEXT__
    Recs from DB will execute a select statement on a database of your choice,
    and create a record stream from the results.  The keys of the record will be
    the column names and the values the row values.
+   __FORMAT_TEXT__
 
-   --table - Name of the table to dump, this is a shortcut for
-             --sql 'SELECT * from tableName'
-   --sql   - SQL select statement to run
+$args_string
 
 USAGE
 

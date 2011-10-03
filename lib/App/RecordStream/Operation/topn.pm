@@ -68,22 +68,27 @@ sub add_help_types {
 
 sub usage
 {
+   my $this = shift;
+
+   my $options = [
+      ['key <keyspec>', 'Comma separated list of fields.  May be specified multiple times.  May be a keyspec or keygroup, see \'--help-keys\' for more'],
+      ['topn | -n <number>', 'Number of records to output.  Default is 10.'],
+      ['delimiter <string>', 'String used internally to delimit values when performing a topn on a keyspec that inlcudeds multiple keys.  This value defaults to "9t%7Oz%]" which may - under unusual and bizarre corner cases - cause false positive key matches if your values contain this value.  You can set this to any string.'],
+   ];
+
+   my $args_string = $this->options_string($options);
+
    return <<USAGE;
 Usage: recs-topn <args> [<files>]
+   __FORMAT_TEXT__
    Outputs the top n records from input stream or from <files>.  You may
    segment the input stream based on a list of keys such that unique values
    of keys are treated as distinct input streams.  This enables
    top n listings per value groupings.  The key values need not be contiguous
    in the input record stream.
+   __FORMAT_TEXT__
 
-   --key <keyspec>       - Comma separated list of fields.  May be specified multiple times.
-                           May be a keyspec or keygroup, see '--help-keys' for more
-   --topn | -n <number>  - Number of records to output.  Default is 10.
-   --delimiter <string>  - String used internally to delimit values when performing a topn
-                           on a keyspec that inlcudeds multiple keys.  This value defaults
-                           to "9t%7Oz%]" which may - under unusual and bizarre corner
-                           cases - cause false positive key matches if your values contain
-                           this value.  You can set this to any string.
+$args_string
 
 Examples:
    Output just the top 5 records
