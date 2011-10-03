@@ -136,6 +136,7 @@ sub accept_record {
    my $line = '';
    foreach my $key (@{$this->{'FIELDS'}}) {
       my $value = ${$record->guess_key_from_spec($key)};
+      $value = 0 if not defined $value;
       $line .= "$value ";
    }
 

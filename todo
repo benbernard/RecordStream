@@ -19,6 +19,9 @@ recs-togchart - use google chart api, seems simplier than gnuplot, could support
 refactor Aggregator/Deaggregator loading/registry code since we'll need it for clumper (and annotater?) as well
 recs-xform - add option to send null $r at the end of the stream to allow final actions after spooling records
 --help - have --help fit on one screen for all scripts, (maybe 40 lines), with additionall help available through drifferent help types
+Executor - add executor::options_help to all scripts that need it.
+tonguplot - scrap and start over?
+Options help - remove --filename-key from certain scripts (tognuplot, tohtml, etc)
 
 Distribution Notes:
   Set up PPA for updates
