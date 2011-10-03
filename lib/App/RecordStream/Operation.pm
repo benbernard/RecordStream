@@ -150,13 +150,9 @@ sub _options_format {
       my $formatted            = $this->format_text($description, $description_indent_level);
       my $description_prefix   = (' ' x ($indent_level * 3)) . '--' . $name;
 
-      my $name_max = $description_indent_level - 1;
-
-      if ( length($description_prefix) < $name_max ) {
-         $description_prefix .= ' ' x ($name_max - 1 - length($description_prefix));
+      if ( length($description_prefix) < $description_indent_level ) {
+         $description_prefix .= ' ' x ($description_indent_level - length($description_prefix));
       }
-
-      $description_prefix .= '  ';
 
       my $prefix_size = length($description_prefix);
       $string .= $description_prefix;
@@ -319,7 +315,7 @@ sub format_usage {
             $output .= $this->format_text($accumulator, $current_indent);
          }
          else {
-            $capturing   = 1;
+            $capturing = 1;
 
             my $first_line = shift @$lines;
             chomp $first_line;

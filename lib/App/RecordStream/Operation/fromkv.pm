@@ -81,7 +81,7 @@ sub usage
    my $options = [
       [ 'record-delim|r <delim>', 'Delimiter to for separating records (defaults to "END\\n").'],
       [ 'entry-delim|e  <delim>', 'Delimiter to for separating entries within records (defaults to "\\n").'],
-      [ 'kv-delim|f   <delim>', 'Delimiter to for separating key/value pairs within an entry (defaults to " ").'],
+      [ 'kv-delim|f <delim>', 'Delimiter to for separating key/value pairs within an entry (defaults to " ").'],
    ];
 
    my $args_string = $this->options_string($options);

@@ -9,7 +9,7 @@ use base qw(App::RecordStream::Operation);
 sub init {
    my $this = shift;
    my $args = shift;
-my %options = (
+   my %options = (
       "no-flush-regex|regex|re=s"   => sub { $this->add_regex($_[1], 0, 0); },
       "pre-flush-regex|pre=s"       => sub { $this->add_regex($_[1], 1, 0); },
       "post-flush-regex|post=s"     => sub { $this->add_regex($_[1], 0, 1); },
