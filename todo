@@ -22,6 +22,7 @@ recs-xform - add option to send null $r at the end of the stream to allow final 
 Executor - add executor::options_help to all scripts that need it.
 tonguplot - scrap and start over?
 Options help - remove --filename-key from certain scripts (tognuplot, tohtml, etc)
+recs-streamparse - Terrible name... provide state machine line in frommultire but operating on records  see STREAMPARSE_EXAMPLE below for a usecase...
 
 Distribution Notes:
   Set up PPA for updates
@@ -97,6 +98,12 @@ RecordShell idea:
   14:45 <ben_bernard> so you only use ! or shell when you have to do the black magic
   14:49 <ben_bernard> what I would really like is sort of a programmatic shell
   14:49 <ben_bernard> like if I could get an interface that was like run this, but tell me the command name and what files were written to, oh and also here is your input stream
+
+STREAMPARSE_EXAMPLE
+
+Find in irc logs the number of times the first thing said after someone joined was me saying m/heh/:
+
+benbernard-desktop% cat \#ex_bow.log \#ex_ball_of_wax.log| recs-frommultire --post-flush 'date,user,message=(..:..) <.([^>]+)> (.*)' --post-flush 'date,user,event=(..:..) -!- (\S+) (.*)' | recs-grep '{{message}} || {{event}}=~m/has joined/; ' | recs-grep -v '{{message}} =~ m/\[..:..:..\]/' | recs-xform 'if ( {{event}} =~ m/has joined/ ) { $just_joined = join(",", {{user}}, $just_joined); } elsif ( {{message}} =~ m/heh/ && {{user}} =~ m/bernard/ && $just_joined ) { {{had_heh}} =$just_joined ; $just_joined = "" } elsif ( {{message}} && (! {{user}} =~ m/bernard/) ) { $just_joined = "" } ' | recs-grep '{{had_heh}}'  | recs-xform '%hash = map { $_ => 1 } split(",", {{had_heh}}); {{users}} = [keys %hash];' | recs-decollate -d unarray,users,user | recs-xform '$r->prune_to("user", "date"); {{user}} =~ s/_$//; {{user}} =~ s/_home$//'   | recs-collate --key user -a ct | recs-sort --key ct=n  | recs-grep '{{user}} ne "ben_bernard" && {{ct}} > 5' | rtt
 
 Keith's personal section
     fix die w/in getopt
