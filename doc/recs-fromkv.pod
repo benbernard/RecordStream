@@ -5,14 +5,16 @@ recs-fromkv
 =head1 recs-fromkv --help-all
 
  Usage : recs-fromkv <args> [<files>]
-   Records are generated from charactr input with the form "<record><record-delim><record>...".
-   Records have the form "<entry><entry-delim><entry>...".  Entries are pairs of the form
-   "<key><kv-delim><value>".
+    Records are generated from charactr input with the form "<record><record-delim><record>...". Records have the form "<entry><entry-delim><entry>...". Entries are pairs of the form "<key><kv-delim><value>".
  
  Arguments:
-   --record-delim|r <delim>   Delimiter to for separating records (defaults to "END\n").
-   --entry-delim|e  <delim>   Delimiter to for separating entries within records (defaults to "\n").
-   --kv-delim|f   <delim>     Delimiter to for separating key/value pairs within an entry (defaults to " ").
+    --record-delim|r <delim>     Delimiter to for separating records (defaults to "END\n").
+    --entry-delim|e  <delim>     Delimiter to for separating entries within records (defaults to "\n").
+    --kv-delim|f <delim>         Delimiter to for separating key/value pairs within an entry (defaults to " ").
+    --filename-key|fk <keyspec>  Add a key with the source filename (if no filename is applicable will put NONE)
+ 
+   Help Options:
+       --help  This help screen
  
  Examples:
    Parse memcached stat metrics into records
@@ -26,9 +28,6 @@ recs-fromkv
  
    Parse records separated by '%' with entries separated by '|' and pairs separated by '='
      recs-fromkv --kv-delim '=' --entry-delim '|' --record-delim '%'
- 
- Help Options:
-    --help  This help screen
 
 =head1 See Also
 

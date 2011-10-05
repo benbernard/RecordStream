@@ -7,15 +7,16 @@ recs-fromatomfeed
  Usage: recs-fromatomfeed <args> [<uris>]
     Produce records from atom feed entries.
  
-    Recs from atom feed will get entries from paginated atom feeds and create
-    a record stream from the results. The keys of the record will be the fields
-    in the atom field entry. Recs from atom feed will follow the 'next' link in
-    a feed to retrieve all entries.
+    Recs from atom feed will get entries from paginated atom feeds and create a record stream from the results. The keys of the record will be the fields in the atom field entry. Recs from atom feed will follow the 'next' link in a feed
+    to retrieve all entries.
  
+ Arguments:
+    --[no]follow                 Follow atom feed next links (or not). Defaults on.
+    --max=<n>                    Print at most <n> entries and then exit.
+    --filename-key|fk <keyspec>  Add a key with the source filename (if no filename is applicable will put NONE)
  
- Help / Usage Options:
-    --[no]follow                   Follow atom feed next links (or not).  Defaults on.
-    --max=<n>                      Print at most <n> entries and then exit.
+   Help Options:
+       --help  This help screen
  
  Examples:
     Dump an entire feed
@@ -24,9 +25,6 @@ recs-fromatomfeed
        recs-fromatomfeed --nofollow "http://my.xml.com"
     Dumps just the first 10 entries
        recs-fromatomfeed --max 10 "http://my.xml.com"
- 
- Help Options:
-    --help  This help screen
 
 =head1 See Also
 
