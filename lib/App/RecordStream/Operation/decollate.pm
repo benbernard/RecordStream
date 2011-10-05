@@ -146,11 +146,11 @@ Deaggregates:
    __FORMAT_TEXT__
 
 Domain Lanuage Integration:
-   __FORMAT_TEXT__
 USAGE
    . App::RecordStream::DomainLanguage::short_usage()
    . <<USAGE
 
+   __FORMAT_TEXT__
    Deaggregates may be specified using the recs domain language.
    --dldeaggregator requires the code evaluate as a deaggregator.
 
