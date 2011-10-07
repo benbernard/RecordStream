@@ -24,6 +24,8 @@ Options help - remove --filename-key from certain scripts (tognuplot, tohtml, et
 recs-streamparse - Terrible name... provide state machine line in frommultire but operating on records  see STREAMPARSE_EXAMPLE below for a usecase...
 recs-xform - -A and -B and -C for record context, available in $r->{1}, $r->{-1}, etc
 SQL equivalents (recs-grep for Select..WHERE, recs-collate for SELECT AGG() from... GROUP BY KEY) - not sure this is a great idea
+recs-sort - allow/demand/offer/whatever stable sort
+recs-decollate - flatten (do what flatten does, only for every field flatten would make, make a record instead, ala unhash)
 
 Aribritation Collation clumps
   - suportt week over week
