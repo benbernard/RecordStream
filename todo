@@ -23,6 +23,7 @@ Executor - add executor::options_help to all scripts that need it.
 tonguplot - scrap and start over?
 Options help - remove --filename-key from certain scripts (tognuplot, tohtml, etc)
 recs-streamparse - Terrible name... provide state machine line in frommultire but operating on records  see STREAMPARSE_EXAMPLE below for a usecase...
+recs-xform - -A and -B and -C for record context, available in $r->{1}, $r->{-1}, etc
 
 Distribution Notes:
   Set up PPA for updates
