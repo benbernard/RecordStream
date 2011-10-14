@@ -24,6 +24,7 @@ tonguplot - scrap and start over?
 Options help - remove --filename-key from certain scripts (tognuplot, tohtml, etc)
 recs-streamparse - Terrible name... provide state machine line in frommultire but operating on records  see STREAMPARSE_EXAMPLE below for a usecase...
 recs-xform - -A and -B and -C for record context, available in $r->{1}, $r->{-1}, etc
+SQL equivalents (recs-grep for Select..WHERE, recs-collate for SELECT AGG() from... GROUP BY KEY) - not sure this is a great idea
 
 Distribution Notes:
   Set up PPA for updates
@@ -37,7 +38,8 @@ recs-autojoin - join stream against itself
 
 Documentation - 
   perldocs other than Record
-  SQL equivalents (recs-grep for Select..WHERE, recs-collate for SELECT AGG() from... GROUP BY KEY)
+  setup and maintain github wiki.  it is a git repository, so you could have documentation generation also generate into that.. could also use the logo somewhere, maybe...
+
 
 Key groups:
   rerun field group for each record - may have an issue with recs-collate
