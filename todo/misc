@@ -9,7 +9,6 @@ recs-join - Join in sqlite for larger db streams
 recs-sort, recs-todb - need value options for keyspec groups
 recs-fromhtmltable - parse an html file, extract data from a table
 recs-collate - use Getopt::Long's multiple option values supports to provide easier aggregators, e.g.  something like --sum x
-recs-collate - option to ignore keys that have a null value for provided key field (eliminate silly recs-grep)
 recs-multiplex - divide incoming stream by a "thread/process" key, feeding to multiple copies of the "same" operation and dumping their outputs incrementally
 recs-annotate - memoized annotation of records based on a slice of keys
 recs-collate - use fastcollate when possible
