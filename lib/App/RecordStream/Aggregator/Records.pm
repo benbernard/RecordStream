@@ -55,11 +55,6 @@ sub long_usage
    exit 1;
 }
 
-sub returns_record
-{
-   return 0;
-}
-
 App::RecordStream::Aggregator::register_aggregator('records', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('recs', __PACKAGE__);
 

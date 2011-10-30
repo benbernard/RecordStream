@@ -100,7 +100,6 @@ sub _force
 }
 
 # TODO: amling, fake isa?
-# TODO: amling, make sure we have all methods from aggregator (returns_record?)
 
 # We can pretend to be an aggregator in a pinch
 

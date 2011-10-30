@@ -83,11 +83,6 @@ sub long_usage
    exit 1;
 }
 
-sub returns_record
-{
-   return 1;
-}
-
 App::RecordStream::Aggregator::register_aggregator('recformax', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('recformaximum', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('recordformax', __PACKAGE__);

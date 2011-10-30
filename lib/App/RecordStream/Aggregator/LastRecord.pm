@@ -39,11 +39,6 @@ sub long_usage
    exit 1;
 }
 
-sub returns_record
-{
-   return 1;
-}
-
 sub argct
 {
    return 0;
