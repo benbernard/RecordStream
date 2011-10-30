@@ -394,7 +394,7 @@ Examples:
    Count number of each x field in the entire file, including an "ALL" line.
       recs-collate --key x --aggregator count --cube
    Produce a cummulative sum of field profit up to each date
-      recs-collate --key date --adjcent --incremental --aggregator profit_to_date=sum,profit
+      recs-collate --key date --adjacent --incremental --aggregator profit_to_date=sum,profit
    Produce record count for each date, hour pair
       recs-collate --key date,hour --aggregator count
    Finds the maximum latency for each date, hour pair
