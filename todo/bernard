@@ -1,53 +1,9 @@
-more aggregators
-   linreg
-   weighted percentile [map] (may be difficult to decide integration with the domain language...)
-recs-frommultire
-   block mechanism
-      could be sed-esque script where there are primitives for shoving matched groups "into" a block in construction
-         could actually be a full perl domain language
-recs-join - Join in sqlite for larger db streams
-recs-sort, recs-todb - need value options for keyspec groups
-recs-fromhtmltable - parse an html file, extract data from a table
-recs-collate - use Getopt::Long's multiple option values supports to provide easier aggregators, e.g.  something like --sum x
-recs-collate - option to ignore keys that have a null value for provided key field (eliminate silly recs-grep)
-recs-multiplex - divide incoming stream by a "thread/process" key, feeding to multiple copies of the "same" operation and dumping their outputs incrementally
-recs-annotate - memoized annotation of records based on a slice of keys
-recs-collate - use fastcollate when possible
-recs-from* - Add ability to annotate record with filename
-recs-tognuplot - use a library rather than invoking gnuplot directly
-recs-togchart - use google chart api, seems simplier than gnuplot, could support more options? also look at 'Chart' on CPAN, maybe that instead?, could also support graph viz charts, see: http://code.google.com/apis/chart/image/docs/gallery/graphviz.html
-refactor Aggregator/Deaggregator loading/registry code since we'll need it for clumper (and annotater?) as well
-recs-xform - add option to send null $r at the end of the stream to allow final actions after spooling records
---help - have --help fit on one screen for all scripts, (maybe 40 lines), with additionall help available through drifferent help types
-Executor - add executor::options_help to all scripts that need it.
-tonguplot - scrap and start over?
-Options help - remove --filename-key from certain scripts (tognuplot, tohtml, etc)
-recs-streamparse - Terrible name... provide state machine line in frommultire but operating on records  see STREAMPARSE_EXAMPLE below for a usecase...
-recs-xform - -A and -B and -C for record context, available in $r->{1}, $r->{-1}, etc
-SQL equivalents (recs-grep for Select..WHERE, recs-collate for SELECT AGG() from... GROUP BY KEY) - not sure this is a great idea
-
 Distribution Notes:
   Set up PPA for updates
-
-Aribritation Collation clumps
-  - suportt week over week
-  - add new aggreators that expect 2 or some number of recs
-  - "clumper" could be a new type in the domain language allowing things like nested mechanisms easily
-
-recs-autojoin - join stream against itself
 
 Documentation - 
   perldocs other than Record
   setup and maintain github wiki.  it is a git repository, so you could have documentation generation also generate into that.. could also use the logo somewhere, maybe...
-
-
-Key groups:
-  rerun field group for each record - may have an issue with recs-collate
-  'Value attribute' ideas:
-      !REGEX!v=numeric
-      '!perc-(\d+)!v=Percentile: $1'
-      '!perc-!v-eval=Percentile {{field}}'
-  "Pretty-ify field names for toptable"
 
 RecordShell idea:
   14:34 <ben_bernard> my idea is basically you have like status files in a history tree
@@ -107,45 +63,3 @@ STREAMPARSE_EXAMPLE
 Find in irc logs the number of times the first thing said after someone joined was me saying m/heh/:
 
 benbernard-desktop% cat \#ex_bow.log \#ex_ball_of_wax.log| recs-frommultire --post-flush 'date,user,message=(..:..) <.([^>]+)> (.*)' --post-flush 'date,user,event=(..:..) -!- (\S+) (.*)' | recs-grep '{{message}} || {{event}}=~m/has joined/; ' | recs-grep -v '{{message}} =~ m/\[..:..:..\]/' | recs-xform 'if ( {{event}} =~ m/has joined/ ) { $just_joined = join(",", {{user}}, $just_joined); } elsif ( {{message}} =~ m/heh/ && {{user}} =~ m/bernard/ && $just_joined ) { {{had_heh}} =$just_joined ; $just_joined = "" } elsif ( {{message}} && (! {{user}} =~ m/bernard/) ) { $just_joined = "" } ' | recs-grep '{{had_heh}}'  | recs-xform '%hash = map { $_ => 1 } split(",", {{had_heh}}); {{users}} = [keys %hash];' | recs-decollate -d unarray,users,user | recs-xform '$r->prune_to("user", "date"); {{user}} =~ s/_$//; {{user}} =~ s/_home$//'   | recs-collate --key user -a ct | recs-sort --key ct=n  | recs-grep '{{user}} ne "ben_bernard" && {{ct}} > 5' | rtt
-
-Keith's personal section
-    fix die w/in getopt
-    --incr collate by time and by record count (--incr is by record count 1)
-        maybe even windowed incremental?
-            this would be expensive without allowing aggregators to remove points...
-            some aggregators are vaguely order dependent (last) so what removal even means for them is unclear
-            maybe we promised we'll only remove from the back?
-        threshold start for increment as well (start after 10 records, start after 10 seconds)
-    omfg, hierarchy stuff...
-    field group
-        for e.g.  recs-collate --default-agg sum=tp*
-    moving average aggregators
-        need a field and some need a "time" field
-    domain language short term
-        > *) operator overloading for DL::Value
-        > *) consider name('...', <valuation/agg>) alternative to current --dlk and --dla naming mechanism
-        >
-        > Also possible: --dlnamedaggregator (to separate named from unnamed) or
-        > inject_agg, etc. could take an optional name.
-    recs-collate
-        option shorthand for mr/ii adhoc aggregators, like
-            --mr-agg sum_x '{{x}}' '$a+$b'[ '$a']
-            --ii-agg sum_x 0 '$a+{{x}}'[ '$a']
-        note to implementor: how the fuck are we taking so many arguments?
-    refactor keys nightmare once and for all, this will include domain language keys (and help on them!)
-    domain language
-        brainstorming
-            map_agg(map_ex('"sum_$f" => sum($f)', grep_re('/^t/', fields())))
-                fields() is a VALUATION, returns an arrayref of fields
-                grep_re(SCALAR, VALUATION) is a valuation
-                grep_ex(SNIPPET, VALUATION) is a valuation
-                map_ex(SNIPPET, VALUATION) is a valuation
-                map_agg(VALUATION) is an aggregator, builds a map based on (per-record, sort of) aggregators specified by valuation
-                this is definitely more powerful shit, it's just very verbose and that short example is now huge
-            nested cubing aggregator
-                like a full collate w/in its slice
-                ugh, hash-taking functions (should ease the madness but at collision this is gonna be fucking tricky)
-                    maybe they register their OK keys to avoid matching too much?
-                    also, jesus, how do they define the "type" their arguments are?
-                    ARRAY[VALUATION]?
-                    HASH[AGG]?
