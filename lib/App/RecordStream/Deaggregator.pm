@@ -126,7 +126,6 @@ sub load_deaggregators_aux
          my $usage = $class->short_usage();
          print join(", ", @{$reverse{$class}}) . ": " . $usage . "\n";
       }
-      exit 1;
    }
 
    sub show_deaggregator
@@ -141,7 +140,6 @@ sub load_deaggregators_aux
       }
 
       print $class->long_usage();
-      exit 1;
    }
 }
 
