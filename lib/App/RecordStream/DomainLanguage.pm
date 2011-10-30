@@ -159,6 +159,16 @@ Function Library
       Example(s):
          To get the square of the "x" field:
             val(sub{ \$[0]->{x} ** 2 })
+
+   xform(<aggregator>, <snippet>)
+      __FORMAT_TEXT__
+      Takes an aggregator and a snippet and produces an aggregator the
+      represents invoking the snippet on the aggregator's result.
+      __FORMAT_TEXT__
+
+      Example(s):
+         To take the difference between the first and second time fields of the record collection:
+            xform(recs(), <<{{1/time}} - {{0/time}}>>)
 HELP
 }
 

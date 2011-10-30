@@ -168,4 +168,36 @@ sub _subset_agg
 App::RecordStream::DomainLanguage::Registry::register_fn(\&_subset_agg, 'subset_aggregator', 'SNIPPET', 'AGGREGATOR');
 App::RecordStream::DomainLanguage::Registry::register_fn(\&_subset_agg, 'subset_agg', 'SNIPPET', 'AGGREGATOR');
 
+sub _xform_agg
+{
+  my $aggregator = shift;
+  my $snippet = shift;
+
+  my $initial_sub = sub
+  {
+    return $aggregator->initial();
+  };
+
+  my $combine_sub = sub
+  {
+    my $cookie = shift;
+    my $record = shift;
+
+    return $aggregator->combine($cookie, $record);
+  };
+
+  my $squish_sub = sub
+  {
+    my $cookie = shift;
+
+    my $result = $aggregator->squish($cookie);
+
+    return $snippet->evaluate_as('SCALAR', {'$r' => $result});
+  };
+
+  return App::RecordStream::Aggregator::InjectInto::Subrefs->new($initial_sub, $combine_sub, $squish_sub);
+}
+
+App::RecordStream::DomainLanguage::Registry::register_fn(\&_xform_agg, 'xform', 'AGGREGATOR', 'SNIPPET');
+
 1;

@@ -304,6 +304,27 @@ my @tests =
     $CAST_FAILURE,
     $CAST_FAILURE,
   ],
+  [
+    [
+      "xform(recs(), <<{{#1/time}} - {{#0/time}}>>)",
+    ],
+    sub
+    {
+      my $aggr = shift;
+
+      my $cookie = $aggr->initial();
+
+      $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("time" => 1, "value" => 3));
+      $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("time" => 7, "value" => 7));
+      $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("time" => 10, "value" => 1));
+
+      my $value = $aggr->squish($cookie);
+
+      is_deeply($value, 6);
+    },
+    $CAST_FAILURE,
+    $CAST_FAILURE,
+  ],
 );
 
 for my $test (@tests)
