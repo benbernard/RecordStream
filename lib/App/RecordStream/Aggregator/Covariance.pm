@@ -26,11 +26,10 @@ sub squish
 
 sub long_usage
 {
-   while(my $line = <DATA>)
-   {
-      print $line;
-   }
-   exit 1;
+   return <<EOF;
+Usage: cov,<field1>,<field2>
+   Covariance of specified fields.
+EOF
 }
 
 sub short_usage
@@ -47,9 +46,3 @@ App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'covariance', 'VALUATION', 'VALUATION');
 
 1;
-
-__DATA__
-Usage: cov,<field1>,<field2>
-   Covariance of specified fields.
-
-This is computed as Cov(X, Y) = E[(X - E[X]) * (Y - E[Y])].

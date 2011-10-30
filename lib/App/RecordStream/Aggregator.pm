@@ -100,8 +100,8 @@ sub load_aggregators_aux
 
          if(@spec != $class->argct())
          {
-            $class->long_usage();
-            die "Aggregator " . $class . " long_usage implementation returns?!\n";
+            print $class->long_usage();
+            exit 1;
          }
 
          $ret{$name} = $class->new(@spec);
@@ -144,8 +144,7 @@ sub load_aggregators_aux
          exit 1;
       }
 
-      $class->long_usage();
-      print "Aggregator " . $class . " long_usage implementation returns?!\n";
+      print $class->long_usage();
       exit 1;
    }
 }

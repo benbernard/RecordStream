@@ -38,11 +38,10 @@ sub squish
 
 sub long_usage
 {
-   while(my $line = <DATA>)
-   {
-      print $line;
-   }
-   exit 1;
+   return <<EOF;
+Usage: linreg,<x field>,<y field>
+   Dump various status from a linear regression of y against x.
+EOF
 }
 
 sub short_usage
@@ -57,7 +56,3 @@ App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'linearregression', 'VALUATION', 'VALUATION');
 
 1;
-
-__DATA__
-Usage: linreg,<x field>,<y field>
-   Dump various status from a linear regression of y against x.

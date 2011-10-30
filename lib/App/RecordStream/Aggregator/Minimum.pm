@@ -37,9 +37,10 @@ sub short_usage
 
 sub long_usage
 {
-   print "Usage: min,<field>\n";
-   print "   Minimum value of specified field.\n";
-   exit 1;
+   return <<EOF;
+Usage: min,<field>
+   Minimum value of specified field.
+EOF
 }
 
 App::RecordStream::Aggregator::register_aggregator('minimum', __PACKAGE__);

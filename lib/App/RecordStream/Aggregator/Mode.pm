@@ -54,13 +54,11 @@ sub short_usage
 
 sub long_usage
 {
-   print <<USAGE;
+   print <<EOF;
 Usage: mode,<field>
    Finds the most common value for a field and returns it.
    Will load all values into memory.
-USAGE
-
-   exit 1
+EOF
 }
 
 App::RecordStream::Aggregator::register_aggregator('mode', __PACKAGE__);

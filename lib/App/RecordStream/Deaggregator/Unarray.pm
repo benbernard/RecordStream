@@ -52,9 +52,10 @@ sub deaggregate_field
 
 sub long_usage
 {
-   print "Usage: unarray,<old field>,<new field>\n";
-   print "   Split the array into individual \"element\" records\n";
-   exit 1;
+   return <<EOF;
+Usage: unarray,<old field>,<new field>
+   Split the array into individual \"element\" records
+EOF
 }
 
 sub short_usage

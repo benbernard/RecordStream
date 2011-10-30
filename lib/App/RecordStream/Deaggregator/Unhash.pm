@@ -62,9 +62,10 @@ sub deaggregate_field
 
 sub long_usage
 {
-   print "Usage: unhash,<old field>,<new key field>[,<new value field>]\n";
-   print "   Split the hash into key/value \"pair\" records\n";
-   exit 1;
+   return <<EOF;
+Usage: unhash,<old field>,<new key field>[,<new value field>]
+   Split the hash into key/value \"pair\" records
+EOF
 }
 
 sub short_usage

@@ -47,13 +47,11 @@ sub short_usage
 
 sub long_usage
 {
-   print <<USAGE;
+   return <<EOF;
 Usage: dct,<field>
    Finds the number of unique values for a field and returns it.  Will load all
    values into memory.
-USAGE
-
-   exit 1
+EOF
 }
 
 sub argct

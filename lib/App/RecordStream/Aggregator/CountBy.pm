@@ -44,16 +44,13 @@ sub short_usage
 
 sub long_usage
 {
-   print <<USAGE;
+   return <<EOF;
 Usage: cb,<field>
-
   Returns a list of uniq values associated with their counts.
 
   Unlike most other aggregators, the value of the field returned will actually
   be a hash, with keys of uniq fields, and values of the counts.
-USAGE
-
-   exit 1;
+EOF
 }
 
 sub argct

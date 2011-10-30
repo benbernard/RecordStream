@@ -36,9 +36,10 @@ sub argct
 
 sub long_usage
 {
-   print "Usage: count\n";
-   print "   Counts number of (non-unique) records.\n";
-   exit 1;
+   return <<EOF;
+Usage: count
+   Counts number of (non-unique) records.
+EOF
 }
 
 sub short_usage

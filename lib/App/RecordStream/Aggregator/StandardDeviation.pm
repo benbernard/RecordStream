@@ -26,11 +26,13 @@ sub squish
 
 sub long_usage
 {
-   while(my $line = <DATA>)
-   {
-      print $line;
-   }
-   exit 1;
+   return <<EOF;
+Usage: stddev,<field1>
+   Standard deviation of specified fields.
+
+   This is computed as StdDev(X) = sqrt(E[(X - E[X])^2]).  Standard deviation
+   is an indication of deviation from average value.
+EOF
 }
 
 sub short_usage
@@ -43,10 +45,3 @@ App::RecordStream::Aggregator::register_aggregator('stddev', __PACKAGE__);
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'stddev', 'VALUATION');
 
 1;
-
-__DATA__
-Usage: stddev,<field1>
-   Standard deviation of specified fields.
-
-This is computed as StdDev(X) = sqrt(E[(X - E[X])^2]).  Standard deviation is
-an indication of deviation from average value.

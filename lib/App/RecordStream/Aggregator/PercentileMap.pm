@@ -92,7 +92,7 @@ sub short_usage
 
 sub long_usage
 {
-   print <<USAGE;
+   print <<EOF;
 Usage: percmap,<percentiles>,<field>
    Finds the field values which <percentiles> percent of values are less than.
 
@@ -103,9 +103,7 @@ Usage: percmap,<percentiles>,<field>
 
    Output is a hash whose keys are percentiles and whose values are
    corresponding field values.
-USAGE
-
-   exit 1
+EOF
 }
 
 sub argct

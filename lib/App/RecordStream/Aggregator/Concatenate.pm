@@ -58,9 +58,10 @@ sub squish
 
 sub long_usage
 {
-   print "Usage: concat,<delimiter>,<field>\n";
-   print "   Concatenate values from specified field.\n";
-   exit 1;
+   return <<EOF;
+Usage: concat,<delimiter>,<field>
+   Concatenate values from specified field.
+EOF
 }
 
 sub short_usage
