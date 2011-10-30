@@ -14,7 +14,13 @@ sub init {
    my $args = shift;
 
    my $executor_options = App::RecordStream::Executor::Getopt->new();
+   my $before = 0;
+   my $after  = 0;
+
    my $spec = {
+      'B|before=n'  => \$before,
+      'A|after=n'   => \$after,
+      'C|context=n' => sub { $before = $_[1]; $after = $_[1]; },
       $executor_options->arguments(),
    };
 
@@ -22,17 +28,86 @@ sub init {
    $this->parse_options($args, $spec);
 
    my $expression = $executor_options->get_string($args);
-   my $executor = App::RecordStream::Executor->new($expression, 1);
+   my $executor = App::RecordStream::Executor->new($expression, 1, ['B','A']);
 
+   $this->{'BEFORE'}   = $before;
+   $this->{'AFTER'}    = $after;
    $this->{'EXECUTOR'} = $executor;
+
+   $this->{'BEFORE_ARRAY'} = [];
+   $this->{'AFTER_ARRAY'}  = [];
+   $this->{'CURRENT_RECORD'};
 }
 
 sub accept_record {
    my $this   = shift;
    my $record = shift;
 
+   my $before = $this->{'BEFORE'};
+   my $after  = $this->{'AFTER'};
+
+   if ( $before == 0 && $after == 0 ) {
+     return $this->run_record_with_context($record, [], []);
+   }
+
+   my $before_array   = $this->{'BEFORE_ARRAY'};
+   my $after_array    = $this->{'AFTER_ARRAY'};
+   my $current_record = $this->{'CURRENT_RECORD'};
+
+   push @$after_array, $record;
+
+   if ( scalar @$after_array > $after ) {
+      my $new_record = shift @$after_array;
+      
+      unshift @$before_array, $current_record if ( $current_record );
+      $current_record = $new_record;
+   }
+
+   pop @$before_array if ( scalar @$before_array > $before );
+
+   $this->{'CURRENT_RECORD'} = $current_record;
+
+   if ( !$current_record ) {
+      return 1;
+   }
+
+   return $this->run_record_with_context($current_record, $before_array, $after_array);
+}
+
+sub stream_done {
+   my $this = shift;
+   
+   my $after_array    = $this->{'AFTER_ARRAY'};
+
+   if ( scalar @$after_array > 0 ) {
+      my $before         = $this->{'BEFORE'};
+      my $before_array   = $this->{'BEFORE_ARRAY'};
+      my $current_record = $this->{'CURRENT_RECORD'};
+
+      while ( scalar @$after_array ) {
+         my $new_record = shift @$after_array;
+         unshift @$before_array, $current_record if ( $current_record );
+         $current_record = $new_record;
+
+         pop @$before_array if ( scalar @$before_array > $before );
+
+         $this->run_record_with_context($current_record, $before_array, $after_array);
+      }
+   }
+}
+
+sub run_record_with_context {
+   my $this   = shift;
+   my $record = shift;
+   my $before = shift;
+   my $after  = shift;
+
    my $executor = $this->{'EXECUTOR'};
-   $executor->execute_code($record);
+
+   # Must copy before and after due to autovivification in the case of:
+   # {{after}} = $A->[0]->{'foo'}
+   # (which is unintintional vivification into the array in stream_done)
+   $executor->execute_code($record, [@$before], [@$after]);
 
    my $value = $executor->get_last_record();
 
@@ -64,6 +139,9 @@ sub usage {
 
    my $options = [
       App::RecordStream::Executor::options_help(),
+      ['A NUM', 'Make NUM records after this one available in $A (closest record to current in first position)'],
+      ['B NUM', 'Make NUM records before this one available in $B (closest record to current in first position)'],
+      ['C NUM', 'Make NUM records after this one available in $A and $B, as per -A NUM and -B NUM'],
    ];
 
    my $args_string = $this->options_string($options);
@@ -87,16 +165,14 @@ $args_string
 Examples:
    Add line number to records
       recs-xform '\$r->{line} = \$line'
-   Rename field old to new
-      recs-xform '\$r->rename("old", "new")'
-   Delete fields a and b
-      recs-xform '\$r->remove("a", "b")'
+   Rename field old to new, remove field a
+      recs-xform '\$r->rename("old", "new"); \$r->remove("a");'
    Remove fields which are not "a", "b", or "c"
       recs-xform '\$r->prune_to("a", "b", "c")'
    Double records
-      recs-xform --ret '\$r = [{\%\$r}, {\%\$r}]'
-   Split the records on field a
-      recs-xform --ret '[map { {%\$r, "a" => \$_} } split(/,/, delete(\$r->{"a"}))]'
+      recs-xform '\$r = [{\%\$r}, {\%\$r}]'
+   Move a value from the previous record to the next record
+      recs-xform -B 1 '{{before_val}} = \$B->[0]'
 USAGE
 }
 

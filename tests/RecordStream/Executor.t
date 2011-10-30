@@ -30,6 +30,10 @@ use App::RecordStream::Record;
    my $executor5 = App::RecordStream::Executor->new('$global += 2; $global');
    is($executor5->execute_code($rec), 2, "Test Global variables 1");
    is($executor5->execute_code($rec2), 4, "Test Global variables 4");
+
+   my $executor6 = App::RecordStream::Executor->new('{{input}} = $input', 0, ['input']);
+   is($executor6->execute_code($rec, 'bar'), 'bar', "Test named input");
+   is($executor6->execute_code($rec2, 'foo'), 'foo', "Test named input2");
 }
 
 use App::RecordStream::Test::OperationHelper;

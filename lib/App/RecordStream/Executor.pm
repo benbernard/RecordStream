@@ -15,10 +15,10 @@ use App::RecordStream::Operation;
 use Getopt::Long;
 
 sub new {
-  my $class         = shift;
-  my $code          = shift;
-  my $output_record = shift;
-
+  my $class                     = shift;
+  my $code                      = shift;
+  my $output_record             = shift;
+  my $additional_argument_names = shift || [];
 
   my $this = {
      OUTPUT_RECORD => $output_record,
@@ -26,28 +26,32 @@ sub new {
 
   bless $this, $class;
 
-  $this->init($code);
+  $this->init($code, $additional_argument_names);
 
   return $this;
 }
 
 sub init {
-   my $this = shift;
-   my $code = shift;
+   my $this  = shift;
+   my $code  = shift;
+   my $names = shift;
 
    my $return_statement = '';
    if ( $this->{'OUTPUT_RECORD'} ) {
       $return_statement = '; $r;'
    }
 
-   $this->{'CODE'} = create_code_ref($this->transform_code($code) . $return_statement);
+   my $variable_names = join(',', map { "\$$_" } @$names);
+
+   $this->{'CODE'} = create_code_ref($this->transform_code($code) . $return_statement, $variable_names);
    if ( $@ ) {
       die "Could not compile code '$code':\n$@"
    }
 }
 
 sub create_code_ref {
-   my $__MY__code = shift;
+   my $__MY__code  = shift;
+   my $__MY__names = shift;
 
    return eval <<CODE;
 no strict;
@@ -66,7 +70,7 @@ sub __MY__set_record {
 }
 
 sub __MY__run_record { 
-  my (\$filename) = \@_;
+  my (\$filename, $__MY__names) = \@_;
   \$line++;
 
   $__MY__code;
@@ -76,10 +80,11 @@ sub __MY__run_record {
 CODE
 }
 
-sub execute_code  {
-   my ($get, $set, $run) = @{$_[0]->{'CODE'}};
-   $set->($_[1]);
-   return $run->(App::RecordStream::Operation::get_current_filename());
+sub execute_code {
+   my ($executor, $record, @args) = @_;
+   my ($get, $set, $run) = @{$executor->{'CODE'}};
+   $set->($record);
+   return $run->(App::RecordStream::Operation::get_current_filename(), @args);
 }
 
 sub get_last_record {

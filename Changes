@@ -6,6 +6,7 @@
       Added --filename-key option to all scripts
       Added linearreg aggregator
       Added --ignore-nulls flag to recs-collate
+      Adding -B, -A, -C to xform
 
 3.5_01 - Minor CPAN Changes
 
