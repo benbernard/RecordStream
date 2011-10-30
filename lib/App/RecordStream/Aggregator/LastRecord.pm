@@ -34,9 +34,10 @@ sub short_usage
 
 sub long_usage
 {
-   print "Usage: last_record\n";
-   print "   Last record seen.\n";
-   exit 1;
+   return <<EOF;
+Usage: last_record
+   Last record seen.
+EOF
 }
 
 sub returns_record

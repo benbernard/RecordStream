@@ -99,8 +99,8 @@ sub load_deaggregators_aux
       }
       if(!(grep { $_ == @spec } @$argct))
       {
-         $class->long_usage();
-         die "Deaggregator " . $class . " long_usage implementation returns?!\n";
+         print $class->long_usage();
+         exit 1;
       }
 
       return $class->new(@spec);
@@ -126,7 +126,6 @@ sub load_deaggregators_aux
          my $usage = $class->short_usage();
          print join(", ", @{$reverse{$class}}) . ": " . $usage . "\n";
       }
-      exit 1;
    }
 
    sub show_deaggregator
@@ -140,9 +139,7 @@ sub load_deaggregators_aux
          exit 1;
       }
 
-      $class->long_usage();
-      print "Deaggregator " . $class . " long_usage implementation returns?!\n";
-      exit 1;
+      print $class->long_usage();
    }
 }
 

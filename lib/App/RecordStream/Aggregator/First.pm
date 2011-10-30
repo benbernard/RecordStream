@@ -30,9 +30,10 @@ sub short_usage
 
 sub long_usage
 {
-   print "Usage: first,<field>\n";
-   print "   First value of specified field.\n";
-   exit 1;
+   return <<EOF;
+Usage: first,<field>
+   First value of specified field.
+EOF
 }
 
 App::RecordStream::Aggregator::register_aggregator('first', __PACKAGE__);

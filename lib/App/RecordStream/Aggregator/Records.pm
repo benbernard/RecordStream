@@ -50,9 +50,10 @@ sub short_usage
 
 sub long_usage
 {
-   print "Usage: records\n";
-   print "   An arrayref of all records.\n";
-   exit 1;
+   return <<EOF;
+Usage: records
+   An arrayref of all records.
+EOF
 }
 
 sub returns_record

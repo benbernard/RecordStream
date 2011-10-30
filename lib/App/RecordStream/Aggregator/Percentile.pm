@@ -74,15 +74,13 @@ sub short_usage
 
 sub long_usage
 {
-   print <<USAGE;
+   print <<EOF;
 Usage: per,<percentile>,<field>
    Finds the field value which <percentile> percent of values are less than.
 
    This is computed by creating an array of all values, sorting, and indexing into it at the
    floor((percentile / 100) * length) point
-USAGE
-
-   exit 1
+EOF
 }
 
 sub argct

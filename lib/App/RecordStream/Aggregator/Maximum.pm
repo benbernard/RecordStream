@@ -37,9 +37,10 @@ sub short_usage
 
 sub long_usage
 {
-   print "Usage: max,<field>\n";
-   print "   Maximum value of specified field.\n";
-   exit 1;
+   return <<EOF;
+Usage: max,<field>
+   Maximum value of specified field.
+EOF
 }
 
 App::RecordStream::Aggregator::register_aggregator('maximum', __PACKAGE__);

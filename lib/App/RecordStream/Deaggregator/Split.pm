@@ -74,9 +74,10 @@ sub deaggregate_field
 
 sub long_usage
 {
-   print "Usage: split,<old field>,<delimiter>,<new field>\n";
-   print "   Split the old field to create a new one.\n";
-   exit 1;
+   return <<EOF;
+Usage: split,<old field>,<delimiter>,<new field>
+   Split the old field to create a new one.
+EOF
 }
 
 sub short_usage

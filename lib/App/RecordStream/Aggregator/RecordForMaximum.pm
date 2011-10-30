@@ -78,9 +78,10 @@ sub short_usage
 
 sub long_usage
 {
-   print "Usage: recformax,<field>\n";
-   print "   The record corresponding to the maximum value of specified field.\n";
-   exit 1;
+   return <<EOF;
+Usage: recformax,<field>
+   The record corresponding to the maximum value of specified field.
+EOF
 }
 
 sub returns_record

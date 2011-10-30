@@ -46,9 +46,10 @@ sub squish
 
 sub long_usage
 {
-   print "Usage: uconcat,<delimiter>,<field>\n";
-   print "   Concatenate unique values from specified field.\n";
-   exit 1;
+   return <<EOF;
+Usage: uconcat,<delimiter>,<field>
+   Concatenate unique values from specified field.
+EOF
 }
 
 sub short_usage

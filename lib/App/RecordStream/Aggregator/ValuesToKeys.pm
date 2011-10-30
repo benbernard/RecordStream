@@ -29,7 +29,7 @@ sub reduce {
 }
 
 sub long_usage {
-   print <<USAGE;
+   return <<EOF;
 Usage: valuestokeys,<keyfield>,<valuefield>
   Take the specified keyfield, use its value as the key for the value of value
   field..  For instance:
@@ -41,8 +41,7 @@ Usage: valuestokeys,<keyfield>,<valuefield>
 
   with the aggregator 'vk,k,t'.  Repeated keyfield values will clobber earlier
   instances
-USAGE
-   exit 1;
+EOF
 }
 
 sub short_usage {

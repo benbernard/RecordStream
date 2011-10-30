@@ -78,9 +78,10 @@ sub short_usage
 
 sub long_usage
 {
-   print "Usage: recformin,<field>\n";
-   print "   The record corresponding to the minimum value of specified field.\n";
-   exit 1;
+   return <<EOF;
+Usage: recformin,<field>
+   The record corresponding to the minimum value of specified field.
+EOF
 }
 
 sub returns_record

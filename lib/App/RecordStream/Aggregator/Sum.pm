@@ -24,9 +24,10 @@ sub reduce
 
 sub long_usage
 {
-   print "Usage: sum,<field>\n";
-   print "   Sums specified field.\n";
-   exit 1;
+   return <<EOF;
+Usage: sum,<field>
+   Sums specified field.
+EOF
 }
 
 sub short_usage

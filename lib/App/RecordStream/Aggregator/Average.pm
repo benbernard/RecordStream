@@ -26,9 +26,10 @@ sub squish
 
 sub long_usage
 {
-   print "Usage: avg,<field>\n";
-   print "   Average of specified field.\n";
-   exit 1;
+   return <<EOF;
+Usage: avg,<field>
+   Average of specified field.
+EOF
 }
 
 sub short_usage

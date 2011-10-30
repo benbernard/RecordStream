@@ -36,9 +36,10 @@ sub short_usage
 
 sub long_usage
 {
-   print "Usage: first\n";
-   print "   Returns the first record.\n";
-   exit 1;
+   return <<EOF;
+Usage: first
+   Returns the first record.
+EOF
 }
 
 sub argct

@@ -26,11 +26,13 @@ sub squish
 
 sub long_usage
 {
-   while(my $line = <DATA>)
-   {
-      print $line;
-   }
-   exit 1;
+   return <<EOF;
+Usage: var,<field1>
+   Variance of specified fields.
+
+   This is computed as Var(X) = E[(X - E[X])^2].  Variance is an indication of
+   deviation from average value.
+EOF
 }
 
 sub short_usage
@@ -45,10 +47,3 @@ App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'variance', 'VALUATION');
 
 1;
-
-__DATA__
-Usage: var,<field1>
-   Variance of specified fields.
-
-This is computed as Var(X) = E[(X - E[X])^2].  Variance is an indication of
-deviation from average value.
