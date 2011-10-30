@@ -40,11 +40,6 @@ Usage: last_record
 EOF
 }
 
-sub returns_record
-{
-   return 1;
-}
-
 sub argct
 {
    return 0;

@@ -20,4 +20,4 @@ $cookies = App::RecordStream::Aggregator::map_combine($aggrs, $cookies, $rec2);
 
 my $values = App::RecordStream::Aggregator::map_squish($aggrs, $cookies);
 
-is_deeply($values, {"sum_x" => 4, "sumy" => 6, "count" => 2, biz => { zap => 2}, uuu => { liz_x => 1, liz_y => 2}});
+is_deeply($values, {"sum_x" => 4, "sumy" => 6, "count" => 2, biz => { zap => 2}, uuu => { liz => {x => 1, y => 2}}});

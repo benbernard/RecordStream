@@ -84,11 +84,6 @@ Usage: recformin,<field>
 EOF
 }
 
-sub returns_record
-{
-   return 1;
-}
-
 App::RecordStream::Aggregator::register_aggregator('recformin', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('recforminimum', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('recordformin', __PACKAGE__);

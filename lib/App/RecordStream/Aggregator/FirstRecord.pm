@@ -47,11 +47,6 @@ sub argct
    return 0;
 }
 
-sub returns_record
-{
-   return 1;
-}
-
 App::RecordStream::Aggregator::register_aggregator('firstrecord', __PACKAGE__);
 App::RecordStream::Aggregator::register_aggregator('firstrec', __PACKAGE__);
 

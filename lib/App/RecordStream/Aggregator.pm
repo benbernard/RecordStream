@@ -182,17 +182,7 @@ sub map_squish
    {
       my $aggregator = $aggrs->{$name};
       my $value = $aggregator->squish($cookies->{$name});
-      if ( $aggregator->returns_record() )
-      {
-         foreach my $key ( keys %$value )
-         {
-            ${$return_record->guess_key_from_spec("$name\_$key")} = $value->{$key};
-         }
-      }
-      else
-      {
-         ${$return_record->guess_key_from_spec($name)} = $value;
-      }
+      ${$return_record->guess_key_from_spec($name)} = $value;
    }
 
    return $return_record;
