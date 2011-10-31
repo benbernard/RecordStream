@@ -10,14 +10,6 @@ use App::RecordStream::DomainLanguage::Registry;
 
 use base qw(App::RecordStream::Aggregator::InjectInto);
 
-sub new
-{
-  my $class = shift;
-  my @args  = @_;
-
-  return $class->SUPER::new(@args);
-}
-
 sub combine
 {
   my $this   = shift;

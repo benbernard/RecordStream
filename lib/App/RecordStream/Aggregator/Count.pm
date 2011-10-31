@@ -11,12 +11,6 @@ use App::RecordStream::DomainLanguage::Registry;
 
 use base 'App::RecordStream::Aggregator::MapReduce';
 
-sub new
-{
-  my ($class, @args) = @_;
-  return $class->SUPER::new(@args);
-}
-
 sub map
 {
   return 1;
