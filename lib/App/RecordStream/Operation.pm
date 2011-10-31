@@ -484,7 +484,7 @@ sub snippet_help {
 
 sub keyspecs_help {
    my $this = shift;
-   print $this->format_usage(App::RecordStream::Record::keyspec_help());
+   print $this->format_usage(App::RecordStream::KeySpec::keyspec_help());
 }
 
 sub keygroups_help {
