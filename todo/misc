@@ -10,9 +10,7 @@ recs-sort, recs-todb - need value options for keyspec groups
 recs-fromhtmltable - parse an html file, extract data from a table
 recs-collate - use Getopt::Long's multiple option values supports to provide easier aggregators, e.g.  something like --sum x
 recs-multiplex - divide incoming stream by a "thread/process" key, feeding to multiple copies of the "same" operation and dumping their outputs incrementally
-recs-annotate - memoized annotation of records based on a slice of keys
 recs-collate - use fastcollate when possible
-recs-from* - Add ability to annotate record with filename
 recs-tognuplot - use a library rather than invoking gnuplot directly
 recs-togchart - use google chart api, seems simplier than gnuplot, could support more options? also look at 'Chart' on CPAN, maybe that instead?, could also support graph viz charts, see: http://code.google.com/apis/chart/image/docs/gallery/graphviz.html
 refactor Aggregator/Deaggregator loading/registry code since we'll need it for clumper (and annotater?) as well
