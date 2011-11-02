@@ -31,9 +31,16 @@ use App::RecordStream::Record;
    is($executor5->execute_code($rec), 2, "Test Global variables 1");
    is($executor5->execute_code($rec2), 4, "Test Global variables 4");
 
-   my $executor6 = App::RecordStream::Executor->new('{{input}} = $input', 0, ['input']);
-   is($executor6->execute_code($rec, 'bar'), 'bar', "Test named input");
-   is($executor6->execute_code($rec2, 'foo'), 'foo', "Test named input2");
+   my $args = {
+     assign_input => {
+       code => '{{input}} = $input',
+       arg_names => [qw(r input)],
+     },
+   };
+
+   my $executor6 = App::RecordStream::Executor->new($args);
+   is($executor6->execute_method('assign_input', $rec, 'bar'), 'bar', "Test named input");
+   is($executor6->execute_method('assign_input', $rec2, 'foo'), 'foo', "Test named input2");
 }
 
 use App::RecordStream::Test::OperationHelper;

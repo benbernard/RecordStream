@@ -267,7 +267,12 @@ sub print_usage {
    my $message = shift;
 
    if ( $message ) {
-      print "$message\n";
+      chomp $message;
+      warn "$message\n";
+
+      if ( $message =~ m/FATAL/ ) {
+        return;
+      }
    }
 
    my $usage = $this->usage();

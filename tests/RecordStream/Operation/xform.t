@@ -111,3 +111,86 @@ App::RecordStream::Test::OperationHelper->do_match(
     $input,
     $output
 );
+
+
+$input = <<INPUT;
+{"a":"a1","b":"b1"}
+{"a":"a2","b":"b1"}
+INPUT
+
+$output = <<OUTPUT;
+{"foo":"bar"}
+{"a":"a1c","b":"b1"}
+{"a":"a2c","b":"b1"}
+OUTPUT
+App::RecordStream::Test::OperationHelper->do_match(
+    'xform',
+    ['--pre', 'push_output({foo=>"bar"})', '{{a}} .= "c"'],
+    $input,
+    $output
+);
+
+$output = <<OUTPUT;
+{"a":"a1c","b":"b1"}
+{"a":"a2c","b":"b1"}
+{"foo":"bar"}
+OUTPUT
+App::RecordStream::Test::OperationHelper->do_match(
+    'xform',
+    ['--post', 'push_output({foo=>"bar"})', '{{a}} .= "c"'],
+    $input,
+    $output
+);
+
+$output = <<OUTPUT;
+{"a":"a1c","b":"b1"}
+{"a":"a2c","b":"b1"}
+{"foo":"bar","a":"c"}
+OUTPUT
+App::RecordStream::Test::OperationHelper->do_match(
+    'xform',
+    ['--post', 'push_input({foo=>"bar"})', '{{a}} .= "c"'],
+    $input,
+    $output
+);
+
+$output = <<OUTPUT;
+{"a":"a1","b":"b1","foo":"zipper"}
+{"a":"a2","b":"b1","foo":"zipper"}
+OUTPUT
+App::RecordStream::Test::OperationHelper->do_match(
+    'xform',
+    ['--pre', '$foo = "zipper"', '{{foo}} .= $foo'],
+    $input,
+    $output
+);
+
+$output = <<OUTPUT;
+{"a":"a2","b":"b1","foo":"zipper"}
+OUTPUT
+App::RecordStream::Test::OperationHelper->do_match(
+    'xform',
+    ['if(!$later){push_output();$later=1}; {{foo}} = "zipper"'],
+    $input,
+    $output
+);
+
+$output = <<OUTPUT;
+{"foo":"bar","a":"c"}
+OUTPUT
+App::RecordStream::Test::OperationHelper->do_match(
+    'xform',
+    ['--post', 'push_input({foo=>"bar"})', '{{a}} = "c"'],
+    '',
+    $output
+);
+
+$output = <<OUTPUT;
+{"foo":"bar","a":"c"}
+OUTPUT
+App::RecordStream::Test::OperationHelper->do_match(
+    'xform',
+    ['--pre', 'push_input({foo=>"bar"})', '{{a}} = "c"'],
+    '',
+    $output
+);

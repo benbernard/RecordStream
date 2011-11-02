@@ -26,7 +26,7 @@ sub init {
    $this->parse_options($args, $spec);
 
    my $expression = $executor_options->get_string($args);
-   my $executor = App::RecordStream::Executor->new($expression, 1);
+   my $executor = App::RecordStream::Executor->new($expression . ';$r');
 
    if ( ! $key_groups->has_any_group() ) {
       die "Must specify at least one --key, maybe you want recs-xform instead?\n";
@@ -65,9 +65,8 @@ sub accept_record {
    my $hash = create_recorder({$record->as_hash()}, $store);
 
    my $new_record = App::RecordStream::Record->new($hash);
-   $executor->execute_code($new_record);
 
-   my $returned_record = $executor->get_last_record();
+   my $returned_record = $executor->execute_code($new_record);
 
    $this->{'ANNOTATIONS'}->{$synthetic_key} = $store;
 

@@ -14,81 +14,214 @@ use App::RecordStream::Operation;
 
 use Getopt::Long;
 
+my $NEXT_ID = 0;
+my $DEFAULT_METHOD_NAME = '__MY__DEFAULT';
+
+# snippets is of the form:
+# name => {
+#   arg_names => ['a', 'b'],
+#
+#   # one of these:
+#   code => 'code string',
+# }
+#
 sub new {
-  my $class                     = shift;
-  my $code                      = shift;
-  my $output_record             = shift;
-  my $additional_argument_names = shift || [];
+  my $class         = shift;
+  my $snippets      = shift;
+
+  if ( ref($snippets) ne 'HASH' ) {
+     my $code = <<CODE;
+\$filename = App::RecordStream::Operation::get_current_filename();
+\$line++;
+$snippets;
+CODE
+
+     $snippets = {
+        $DEFAULT_METHOD_NAME => {
+           code => $code,
+           arg_names => ['r'],
+        },
+     };
+  }
 
   my $this = {
-     OUTPUT_RECORD => $output_record,
+     ID            => $NEXT_ID,
+     SNIPPETS      => $snippets,
   };
+
+  $NEXT_ID++;
 
   bless $this, $class;
 
-  $this->init($code, $additional_argument_names);
+  $this->init();
 
   return $this;
 }
 
 sub init {
    my $this  = shift;
-   my $code  = shift;
-   my $names = shift;
+   $this->create_safe_package();
+}
 
-   my $return_statement = '';
-   if ( $this->{'OUTPUT_RECORD'} ) {
-      $return_statement = '; $r;'
+sub create_snippets {
+   my $this = shift;
+
+   my $code = '';
+
+   foreach my $name (keys %{$this->{'SNIPPETS'}} ) {
+      my $arg_names = $this->{'SNIPPETS'}->{$name}->{'arg_names'};
+      my $args_spec = '';
+
+      if ( $arg_names ) {
+         $args_spec = 'my (';
+         $args_spec .= join(',', map { "\$$_"} @$arg_names);
+         $args_spec .= ') = @_;';
+      }
+
+      my $method_name = $this->get_method_name($name);
+      my $snippet = $this->transform_code($this->{'SNIPPETS'}->{$name}->{'code'});
+
+      $code .= <<CODE;
+sub $method_name {
+   $args_spec
+
+   $snippet
+}
+CODE
    }
 
-   my $variable_names = join(',', map { "\$$_" } @$names);
+   return $code;
+}
 
-   $this->{'CODE'} = create_code_ref($this->transform_code($code) . $return_statement, $variable_names);
+sub get_method_name {
+   my $this = shift;
+   my $name = shift;
+
+   return '__MY__' . $name;
+}
+
+sub get_safe_package_name {
+   my $this = shift;
+   return '__MY__SafeCompartment_' . $this->{'ID'};
+}
+
+sub create_safe_package {
+   my $this = shift;
+   my $package_name = $this->get_safe_package_name();
+   my $snippets = $this->create_snippets();
+
+   my $code = <<CODE;
+package $package_name;
+
+$snippets
+
+1;
+CODE
+
+   eval_safe_package($code);
    if ( $@ ) {
-      die "Could not compile code '$code':\n$@"
+      die $@;
+   }
+
+   foreach my $name (keys %{$this->{'SNIPPETS'}}) {
+      my $method_name = $this->get_method_name($name);
+      my $code_ref = \&{$package_name . '::' . $method_name};
+      $this->{'SNIPPETS'}->{$name}->{'CODE_REF'} = $code_ref;
    }
 }
 
-sub create_code_ref {
-   my $__MY__code  = shift;
-   my $__MY__names = shift;
+sub clear_vars {
+   my $this = shift;
 
-   return eval <<CODE;
+   my $package_name = $this->get_safe_package_name();
+
+   my %method_names = map { $this->get_method_name($_) => 1 } keys %{$this->{'SNIPPETS'}};
+
+   {
+      no strict;
+      no warnings;
+
+      foreach my $variable (keys %{$package_name . '::'}) {
+         next if ( exists $method_names{$variable} );
+         delete %{$package_name . '::'}->{$variable};
+      }
+   }
+}
+
+sub set_scalar {
+   my $this = shift;
+   my $name = shift;
+   my $val = shift;
+
+   my $package_name = $this->get_safe_package_name();
+
+   {
+      no strict;
+      no warnings;
+
+      *{$package_name . '::' . $name} = \$val;
+   }
+}
+
+sub get_scalar {
+   my $this = shift;
+   my $name = shift;
+
+   my $package_name = $this->get_safe_package_name();
+
+   {
+      no strict;
+      no warnings;
+
+      return ${$package_name . '::' . $name};
+   }
+}
+
+sub set_executor_method {
+   my $this = shift;
+   my $name = shift;
+   my $ref = shift;
+
+   my $package_name = $this->get_safe_package_name();
+
+   {
+      no strict;
+      no warnings;
+
+      *{$package_name . "::" . $name} = $ref;
+   }
+}
+
+sub get_code_ref {
+   my $this = shift;
+   my $name = shift;
+   $this->{'SNIPPETS'}->{$name}->{'CODE_REF'};
+}
+
+sub eval_safe_package {
+   my $__MY__code = shift;
+
+   my $code =  <<CODE;
 no strict;
 no warnings;
-package __MY__SafeCompartment;
 
-my \$line = 0;
-my \$r;
-
-sub __MY__get_record {
-   return \$r;
-}
-
-sub __MY__set_record {
-   (\$r) = (\@_);
-}
-
-sub __MY__run_record { 
-  my (\$filename, $__MY__names) = \@_;
-  \$line++;
-
-  $__MY__code;
-}
-
-[\\\&__MY__get_record, \\\&__MY__set_record, \\\&__MY__run_record];
+$__MY__code
 CODE
+
+   eval $code;
+   if ($@) {
+      die $@;
+   }
 }
 
 sub execute_code {
-   my ($executor, $record, @args) = @_;
-   my ($get, $set, $run) = @{$executor->{'CODE'}};
-   $set->($record);
-   return $run->(App::RecordStream::Operation::get_current_filename(), @args);
+   my ($this, @args) = @_;
+   return $this->execute_method($DEFAULT_METHOD_NAME, @args);
 }
 
-sub get_last_record {
-   return $_[0]->{'CODE'}->[0]->();
+sub execute_method {
+   my ($this, $name, @args) = @_;
+   return $this->get_code_ref($name)->(@args);
 }
 
 sub transform_code {
