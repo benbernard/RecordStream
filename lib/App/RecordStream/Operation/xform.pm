@@ -10,143 +10,143 @@ use App::RecordStream::Executor::Getopt;
 use App::RecordStream::Executor;
 
 sub init {
-   my $this = shift;
-   my $args = shift;
+  my $this = shift;
+  my $args = shift;
 
-   my $executor_options = App::RecordStream::Executor::Getopt->new();
-   my $before = 0;
-   my $after  = 0;
+  my $executor_options = App::RecordStream::Executor::Getopt->new();
+  my $before = 0;
+  my $after  = 0;
 
-   my $spec = {
-      'B|before=n'  => \$before,
-      'A|after=n'   => \$after,
-      'C|context=n' => sub { $before = $_[1]; $after = $_[1]; },
-      $executor_options->arguments(),
-   };
+  my $spec = {
+    'B|before=n'  => \$before,
+    'A|after=n'   => \$after,
+    'C|context=n' => sub { $before = $_[1]; $after = $_[1]; },
+    $executor_options->arguments(),
+  };
 
-   Getopt::Long::Configure('no_ignore_case');
-   $this->parse_options($args, $spec);
+  Getopt::Long::Configure('no_ignore_case');
+  $this->parse_options($args, $spec);
 
-   my $expression = $executor_options->get_string($args);
-   my $executor = App::RecordStream::Executor->new($expression, 1, ['B','A']);
+  my $expression = $executor_options->get_string($args);
+  my $executor = App::RecordStream::Executor->new($expression, 1, ['B','A']);
 
-   $this->{'BEFORE'}   = $before;
-   $this->{'AFTER'}    = $after;
-   $this->{'EXECUTOR'} = $executor;
+  $this->{'BEFORE'}   = $before;
+  $this->{'AFTER'}    = $after;
+  $this->{'EXECUTOR'} = $executor;
 
-   $this->{'BEFORE_ARRAY'} = [];
-   $this->{'AFTER_ARRAY'}  = [];
-   $this->{'CURRENT_RECORD'};
+  $this->{'BEFORE_ARRAY'} = [];
+  $this->{'AFTER_ARRAY'}  = [];
+  $this->{'CURRENT_RECORD'};
 }
 
 sub accept_record {
-   my $this   = shift;
-   my $record = shift;
+  my $this   = shift;
+  my $record = shift;
 
-   my $before = $this->{'BEFORE'};
-   my $after  = $this->{'AFTER'};
+  my $before = $this->{'BEFORE'};
+  my $after  = $this->{'AFTER'};
 
-   if ( $before == 0 && $after == 0 ) {
-     return $this->run_record_with_context($record, [], []);
-   }
+  if ( $before == 0 && $after == 0 ) {
+    return $this->run_record_with_context($record, [], []);
+  }
 
-   my $before_array   = $this->{'BEFORE_ARRAY'};
-   my $after_array    = $this->{'AFTER_ARRAY'};
-   my $current_record = $this->{'CURRENT_RECORD'};
+  my $before_array   = $this->{'BEFORE_ARRAY'};
+  my $after_array    = $this->{'AFTER_ARRAY'};
+  my $current_record = $this->{'CURRENT_RECORD'};
 
-   push @$after_array, $record;
+  push @$after_array, $record;
 
-   if ( scalar @$after_array > $after ) {
-      my $new_record = shift @$after_array;
-      
-      unshift @$before_array, $current_record if ( $current_record );
-      $current_record = $new_record;
-   }
+  if ( scalar @$after_array > $after ) {
+    my $new_record = shift @$after_array;
 
-   pop @$before_array if ( scalar @$before_array > $before );
+    unshift @$before_array, $current_record if ( $current_record );
+    $current_record = $new_record;
+  }
 
-   $this->{'CURRENT_RECORD'} = $current_record;
+  pop @$before_array if ( scalar @$before_array > $before );
 
-   if ( !$current_record ) {
-      return 1;
-   }
+  $this->{'CURRENT_RECORD'} = $current_record;
 
-   return $this->run_record_with_context($current_record, $before_array, $after_array);
+  if ( !$current_record ) {
+    return 1;
+  }
+
+  return $this->run_record_with_context($current_record, $before_array, $after_array);
 }
 
 sub stream_done {
-   my $this = shift;
-   
-   my $after_array    = $this->{'AFTER_ARRAY'};
+  my $this = shift;
 
-   if ( scalar @$after_array > 0 ) {
-      my $before         = $this->{'BEFORE'};
-      my $before_array   = $this->{'BEFORE_ARRAY'};
-      my $current_record = $this->{'CURRENT_RECORD'};
+  my $after_array    = $this->{'AFTER_ARRAY'};
 
-      while ( scalar @$after_array ) {
-         my $new_record = shift @$after_array;
-         unshift @$before_array, $current_record if ( $current_record );
-         $current_record = $new_record;
+  if ( scalar @$after_array > 0 ) {
+    my $before         = $this->{'BEFORE'};
+    my $before_array   = $this->{'BEFORE_ARRAY'};
+    my $current_record = $this->{'CURRENT_RECORD'};
 
-         pop @$before_array if ( scalar @$before_array > $before );
+    while ( scalar @$after_array ) {
+      my $new_record = shift @$after_array;
+      unshift @$before_array, $current_record if ( $current_record );
+      $current_record = $new_record;
 
-         $this->run_record_with_context($current_record, $before_array, $after_array);
-      }
-   }
+      pop @$before_array if ( scalar @$before_array > $before );
+
+      $this->run_record_with_context($current_record, $before_array, $after_array);
+    }
+  }
 }
 
 sub run_record_with_context {
-   my $this   = shift;
-   my $record = shift;
-   my $before = shift;
-   my $after  = shift;
+  my $this   = shift;
+  my $record = shift;
+  my $before = shift;
+  my $after  = shift;
 
-   my $executor = $this->{'EXECUTOR'};
+  my $executor = $this->{'EXECUTOR'};
 
-   # Must copy before and after due to autovivification in the case of:
-   # {{after}} = $A->[0]->{'foo'}
-   # (which is unintintional vivification into the array in stream_done)
-   $executor->execute_code($record, [@$before], [@$after]);
+  # Must copy before and after due to autovivification in the case of:
+  # {{after}} = $A->[0]->{'foo'}
+  # (which is unintintional vivification into the array in stream_done)
+  $executor->execute_code($record, [@$before], [@$after]);
 
-   my $value = $executor->get_last_record();
+  my $value = $executor->get_last_record();
 
-   if ( ref($value) eq 'ARRAY' ) {
-     foreach my $new_record (@$value) {
-       if ( ref($new_record) eq 'HASH' ) {
-         $this->push_record(App::RecordStream::Record->new($new_record));
-       }
-       else {
-         $this->push_record($new_record);
-       }
-     }
-   }
-   else {
-     $this->push_record($value);
-   }
+  if ( ref($value) eq 'ARRAY' ) {
+    foreach my $new_record (@$value) {
+      if ( ref($new_record) eq 'HASH' ) {
+        $this->push_record(App::RecordStream::Record->new($new_record));
+      }
+      else {
+        $this->push_record($new_record);
+      }
+    }
+  }
+  else {
+    $this->push_record($value);
+  }
 
-   return 1;
+  return 1;
 }
 
 sub add_help_types {
-   my $this = shift;
-   $this->use_help_type('snippet');
-   $this->use_help_type('keyspecs');
+  my $this = shift;
+  $this->use_help_type('snippet');
+  $this->use_help_type('keyspecs');
 }
 
 sub usage {
-   my $this = shift;
+  my $this = shift;
 
-   my $options = [
-      App::RecordStream::Executor::options_help(),
-      ['A NUM', 'Make NUM records after this one available in $A (closest record to current in first position)'],
-      ['B NUM', 'Make NUM records before this one available in $B (closest record to current in first position)'],
-      ['C NUM', 'Make NUM records after this one available in $A and $B, as per -A NUM and -B NUM'],
-   ];
+  my $options = [
+    App::RecordStream::Executor::options_help(),
+    ['A NUM', 'Make NUM records after this one available in $A (closest record to current in first position)'],
+    ['B NUM', 'Make NUM records before this one available in $B (closest record to current in first position)'],
+    ['C NUM', 'Make NUM records after this one available in $A and $B, as per -A NUM and -B NUM'],
+  ];
 
-   my $args_string = $this->options_string($options);
+  my $args_string = $this->options_string($options);
 
-   return <<USAGE;
+  return <<USAGE;
 Usage: recs-xform <args> <expr> [<files>]
    __FORMAT_TEXT__
    <expr> is evaluated as perl on each record of input (or records from
