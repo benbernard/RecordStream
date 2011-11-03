@@ -7,6 +7,8 @@
       Added linearreg aggregator
       Added --ignore-nulls flag to recs-collate
       Adding -B, -A, -C to xform
+      Added --post and --pre snippets to xform
+      Added push_input and push_output helper functions to xform snippets
 
 3.5_01 - Minor CPAN Changes
 
