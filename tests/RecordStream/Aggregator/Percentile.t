@@ -14,14 +14,14 @@ ok($aggr = App::RecordStream::Aggregator::Percentile->new(100, "x"), "Initialize
 is(percentile_100_values($aggr), 100, "100th percentile of 1-100");
 
 sub percentile_100_values {
-   my $aggr = shift;
+  my $aggr = shift;
 
-   my $cookie = $aggr->initial();
+  my $cookie = $aggr->initial();
 
-   foreach my $n (1..100)
-   {
-      $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => $n));
-   }
+  foreach my $n (1..100)
+  {
+    $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => $n));
+  }
 
-   return $aggr->squish($cookie);
+  return $aggr->squish($cookie);
 }

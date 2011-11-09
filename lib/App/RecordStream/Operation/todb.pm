@@ -15,42 +15,42 @@ use App::RecordStream::DBHandle;
 use App::RecordStream::Record;
 
 sub init {
-   my $this = shift;
-   my $args = shift;
+  my $this = shift;
+  my $args = shift;
 
-   my ($drop_table, $table_name, $debug);
+  my ($drop_table, $table_name, $debug);
 
-   my %fields_hash;
-   tie %fields_hash, 'Tie::IxHash';
+  my %fields_hash;
+  tie %fields_hash, 'Tie::IxHash';
 
-   my $fields = \%fields_hash;
+  my $fields = \%fields_hash;
 
-   my $spec = {
-      'drop'     => \$drop_table,
-      'table=s'  => \$table_name,
-      'debug'    => \$debug,
-      'key|k|fields|f=s' => sub { shift; add_field($fields, shift) },
-   };
+  my $spec = {
+    'drop'     => \$drop_table,
+    'table=s'  => \$table_name,
+    'debug'    => \$debug,
+    'key|k|fields|f=s' => sub { shift; add_field($fields, shift) },
+  };
 
-   Getopt::Long::Configure("pass_through");
-   $this->parse_options($args, $spec);
+  Getopt::Long::Configure("pass_through");
+  $this->parse_options($args, $spec);
 
-   $table_name = 'recs' unless $table_name;
+  $table_name = 'recs' unless $table_name;
 
-   $this->{'TABLE_NAME'} = $table_name;
-   $this->{'DEBUG'}      = $debug;
-   $this->{'FIELDS'}     = $fields;
+  $this->{'TABLE_NAME'} = $table_name;
+  $this->{'DEBUG'}      = $debug;
+  $this->{'FIELDS'}     = $fields;
 
-   $this->{'DBH'} = App::RecordStream::DBHandle::get_dbh($args);
+  $this->{'DBH'} = App::RecordStream::DBHandle::get_dbh($args);
 
-   if ( $drop_table ) {
-      my $dbh = $this->{'DBH'};
-      eval {
-         $this->dbh_do( "DROP TABLE ".$dbh->quote_identifier($table_name));
-      };
-   }
+  if ( $drop_table ) {
+    my $dbh = $this->{'DBH'};
+    eval {
+      $this->dbh_do( "DROP TABLE ".$dbh->quote_identifier($table_name));
+    };
+  }
 
-   $this->{'FIRST'} = 1;
+  $this->{'FIRST'} = 1;
 }
 
 
@@ -58,105 +58,105 @@ sub accept_record {
   my $this   = shift;
   my $record = shift;
 
-   if ( $this->{'FIRST'} ) {
-      $this->add_fields($record);
-      $this->create_table();
-      $this->{'FIRST'} = 0;
-   }
+  if ( $this->{'FIRST'} ) {
+    $this->add_fields($record);
+    $this->create_table();
+    $this->{'FIRST'} = 0;
+  }
 
-   $this->add_row($record);
+  $this->add_row($record);
 
-   return 1;
+  return 1;
 }
 
 sub add_fields {
-   my $this   = shift;
-   my $record = shift;
-   my $fields = $this->{'FIELDS'};
+  my $this   = shift;
+  my $record = shift;
+  my $fields = $this->{'FIELDS'};
 
-   return if ( scalar keys %$fields > 0 );
+  return if ( scalar keys %$fields > 0 );
 
-   foreach my $key ( $record->keys() ) {
-      $fields->{$key} = 0;
-   }
+  foreach my $key ( $record->keys() ) {
+    $fields->{$key} = 0;
+  }
 }
 
 sub add_row {
-   my $this   = shift;
-   my $record = shift;
+  my $this   = shift;
+  my $record = shift;
 
-   my $dbh    = $this->{'DBH'};
-   my $name   = $this->{'TABLE_NAME'};
-   my $fields = $this->{'FIELDS'};
+  my $dbh    = $this->{'DBH'};
+  my $name   = $this->{'TABLE_NAME'};
+  my $fields = $this->{'FIELDS'};
 
-   $name = $dbh->quote_identifier($name);
+  $name = $dbh->quote_identifier($name);
 
-   my @keys = keys %$fields;
+  my @keys = keys %$fields;
 
-   my $columns_string = join(',', map {$dbh->quote_identifier($_);} @keys);
+  my $columns_string = join(',', map {$dbh->quote_identifier($_);} @keys);
 
-   my $values = '';
+  my $values = '';
 
-   foreach my $key (@keys) {
-      my $value = ${$record->guess_key_from_spec($key)};
-      $value = '' if !defined($value);
-      $value = substr($value, 0, 255) if ( ! $fields->{$key} );
-      $values .= $dbh->quote($value) . ",";
-   }
+  foreach my $key (@keys) {
+    my $value = ${$record->guess_key_from_spec($key)};
+    $value = '' if !defined($value);
+    $value = substr($value, 0, 255) if ( ! $fields->{$key} );
+    $values .= $dbh->quote($value) . ",";
+  }
 
-   chop $values;
+  chop $values;
 
-   my $sql = "INSERT INTO $name ($columns_string) VALUES ($values)";
-   $this->dbh_do($sql);
+  my $sql = "INSERT INTO $name ($columns_string) VALUES ($values)";
+  $this->dbh_do($sql);
 }
 
 sub create_table {
-   my $this   = shift;
+  my $this   = shift;
 
-   my $dbh    = $this->{'DBH'};
-   my $name   = $this->{'TABLE_NAME'};
-   my $fields = $this->{'FIELDS'};
+  my $dbh    = $this->{'DBH'};
+  my $name   = $this->{'TABLE_NAME'};
+  my $fields = $this->{'FIELDS'};
 
-   $name = $dbh->quote_identifier($name);
+  $name = $dbh->quote_identifier($name);
 
-   my $increment_name = 'AUTO_INCREMENT';
-   my $db_type = $dbh->get_info( 17 ); # SQL_DBMS_NAME
-   $increment_name = 'AUTOINCREMENT' if ( $db_type eq 'SQLite' );
+  my $increment_name = 'AUTO_INCREMENT';
+  my $db_type = $dbh->get_info( 17 ); # SQL_DBMS_NAME
+  $increment_name = 'AUTOINCREMENT' if ( $db_type eq 'SQLite' );
 
-   my $sql = "CREATE TABLE $name ( id INTEGER PRIMARY KEY $increment_name, ";
+  my $sql = "CREATE TABLE $name ( id INTEGER PRIMARY KEY $increment_name, ";
 
-   foreach my $name (keys %$fields) {
-      my $type = $fields->{$name} || 'VARCHAR(255)';
-      $name = $dbh->quote_identifier($name);
-      $sql .= " $name $type,";
-   }
+  foreach my $name (keys %$fields) {
+    my $type = $fields->{$name} || 'VARCHAR(255)';
+    $name = $dbh->quote_identifier($name);
+    $sql .= " $name $type,";
+  }
 
-   chop $sql;
-   $sql .= " )";
+  chop $sql;
+  $sql .= " )";
 
-   eval {
-     $this->dbh_do($sql);
-   };
+  eval {
+    $this->dbh_do($sql);
+  };
 }
 
 sub add_help_types {
-   my $this = shift;
-   $this->use_help_type('keyspecs');
+  my $this = shift;
+  $this->use_help_type('keyspecs');
 }
 
 sub usage {
-   my $this = shift;
+  my $this = shift;
 
-   my $options = [
-      ['drop', 'Drop the table before running create / insert commands.'],
-      ['table', 'Name of the table to work with defaults to \'recs\''],
-      ['debug', 'Print all the executed SQL'],
-      ['key', 'Can either be a name value pair or just a name.  Name value pairs should be fieldName=SQL Type.  If any fields are specified, they will be the only fields put into the db.  May be specified multiple times, may also be comma separated.  Type defaults to VARCHAR(255) Keys may be key specs, see \'--help-keyspecs\' for more'],
-   ];
+  my $options = [
+    ['drop', 'Drop the table before running create / insert commands.'],
+    ['table', 'Name of the table to work with defaults to \'recs\''],
+    ['debug', 'Print all the executed SQL'],
+    ['key', 'Can either be a name value pair or just a name.  Name value pairs should be fieldName=SQL Type.  If any fields are specified, they will be the only fields put into the db.  May be specified multiple times, may also be comma separated.  Type defaults to VARCHAR(255) Keys may be key specs, see \'--help-keyspecs\' for more'],
+  ];
 
-   my $args_string = $this->options_string($options);
+  my $args_string = $this->options_string($options);
 
-   my $usage =  <<USAGE;
+  my $usage =  <<USAGE;
    __FORMAT_TEXT__
    Recs to DB will dump a stream of input records into a database you specify.
    The record fields you want inserted should have the same keys as the column
@@ -165,11 +165,11 @@ sub usage {
    This script will attempt to create the table, if it is not already present.
    __FORMAT_TEXT__
 
-$args_string
+   $args_string
 
 USAGE
 
-   return $usage . App::RecordStream::DBHandle::usage() .  <<EXAMPLES;
+  return $usage . App::RecordStream::DBHandle::usage() .  <<EXAMPLES;
 Examples:
    # Just put all the records into the recs table
    recs-todb --type sqlite --dbfile testDb --table recs
@@ -181,29 +181,29 @@ EXAMPLES
 }
 
 sub add_field {
-   my $hash  = shift;
-   my $arg  = shift;
+  my $hash  = shift;
+  my $arg  = shift;
 
-   my @specs;
+  my @specs;
 
-   push @specs, split(',', $arg);
+  push @specs, split(',', $arg);
 
-   foreach my $spec ( @specs ) {
-      my ($field,$sql_spec) = split('=', $spec);
-      $hash->{$field} = $sql_spec;
-   }
+  foreach my $spec ( @specs ) {
+    my ($field,$sql_spec) = split('=', $spec);
+    $hash->{$field} = $sql_spec;
+  }
 }
 
 sub dbh_do {
-   my $this = shift;
-   my $sql  = shift;
-   my $dbh = $this->{'DBH'};
+  my $this = shift;
+  my $sql  = shift;
+  my $dbh = $this->{'DBH'};
 
-   if ( $this->{'DEBUG'} ) {
-     print "Running: $sql\n";
-   }
+  if ( $this->{'DEBUG'} ) {
+    print "Running: $sql\n";
+  }
 
-   $dbh->do($sql);
+  $dbh->do($sql);
 }
 
 1;

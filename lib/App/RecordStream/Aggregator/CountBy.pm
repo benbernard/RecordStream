@@ -16,35 +16,35 @@ use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
 sub initial
 {
-   return {};
+  return {};
 }
 
 sub combine_field
 {
-   my $this   = shift;
-   my $cookie = shift;
-   my $value  = shift;
+  my $this   = shift;
+  my $cookie = shift;
+  my $value  = shift;
 
-   $cookie->{$value}++;
-   return $cookie;
+  $cookie->{$value}++;
+  return $cookie;
 }
 
 sub squish
 {
-   my $this   = shift;
-   my $cookie = shift;
+  my $this   = shift;
+  my $cookie = shift;
 
-   return $cookie;
+  return $cookie;
 }
 
 sub short_usage
 {
-   return "counts by unique value for a field";
+  return "counts by unique value for a field";
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: cb,<field>
   Returns a list of uniq values associated with their counts.
 
@@ -55,7 +55,7 @@ EOF
 
 sub argct
 {
-   return 1;
+  return 1;
 }
 
 App::RecordStream::Aggregator::register_aggregator('countby', __PACKAGE__);

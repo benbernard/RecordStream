@@ -12,69 +12,69 @@ use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
 sub new
 {
-   my $class      = shift;
-   my $percentile = shift;
-   my $field      = shift;
+  my $class      = shift;
+  my $percentile = shift;
+  my $field      = shift;
 
-   my $this = $class->SUPER::new($field);
-   $this->{'percentile'} = $percentile;
+  my $this = $class->SUPER::new($field);
+  $this->{'percentile'} = $percentile;
 
-   return $this;
+  return $this;
 }
 
 sub new_from_valuation
 {
-   my $class      = shift;
-   my $percentile = shift;
-   my $valuation  = shift;
+  my $class      = shift;
+  my $percentile = shift;
+  my $valuation  = shift;
 
-   my $this = $class->SUPER::new_from_valuation($valuation);
-   $this->{'percentile'} = $percentile;
+  my $this = $class->SUPER::new_from_valuation($valuation);
+  $this->{'percentile'} = $percentile;
 
-   return $this;
+  return $this;
 }
 
 sub initial {
-   return [];
+  return [];
 }
 
 sub combine_field
 {
-   my $this   = shift;
-   my $cookie = shift;
-   my $value  = shift;
+  my $this   = shift;
+  my $cookie = shift;
+  my $value  = shift;
 
-   push @$cookie, $value;
-   return $cookie;
+  push @$cookie, $value;
+  return $cookie;
 }
 
 sub squish
 {
-   my $this   = shift;
-   my $cookie = shift;
+  my $this   = shift;
+  my $cookie = shift;
 
-   my $percentile = $this->{'percentile'};
+  my $percentile = $this->{'percentile'};
 
-   my @sorted = sort { $a <=> $b } @$cookie;
+  my @sorted = sort { $a <=> $b } @$cookie;
 
-   my $index = int( (scalar @sorted) * ($percentile / 100));
+  my $index = int( (scalar @sorted) * ($percentile / 100));
 
-   if ( $index == scalar @sorted )
-   {
-      $index--;
-   }
+  if ( $index == scalar @sorted )
+  {
+    $index--;
+  }
 
-   return $sorted[$index];
+  return $sorted[$index];
 }
 
 sub short_usage
 {
-   return "value of pXX for field";
+  return "value of pXX for field";
 }
 
 sub long_usage
 {
-   print <<EOF;
+  print <<EOF;
 Usage: per,<percentile>,<field>
    Finds the field value which <percentile> percent of values are less than.
 
@@ -85,7 +85,7 @@ EOF
 
 sub argct
 {
-   return 2;
+  return 2;
 }
 
 App::RecordStream::Aggregator::register_aggregator('percentile', __PACKAGE__);

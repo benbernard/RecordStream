@@ -22,17 +22,17 @@ foo   zoo
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'totable',
-   [],
-   $stream,
-   $solution,
+  'totable',
+  [],
+  $stream,
+  $solution,
 );
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'totable',
-   ['--key', '!oo!'],
-   $stream,
-   $solution,
+  'totable',
+  ['--key', '!oo!'],
+  $stream,
+  $solution,
 );
 
 my $solution2 = <<SOLUTION;
@@ -44,10 +44,10 @@ my $solution2 = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'totable',
-   [qw(--no-header)],
-   $stream,
-   $solution2,
+  'totable',
+  [qw(--no-header)],
+  $stream,
+  $solution2,
 );
 
 my $solution3 = <<SOLUTION;
@@ -61,10 +61,10 @@ foo
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'totable',
-   [qw(--k !foo!)],
-   $stream,
-   $solution3,
+  'totable',
+  [qw(--k !foo!)],
+  $stream,
+  $solution3,
 );
 
 my $solution4 = <<SOLUTION;
@@ -77,10 +77,10 @@ foo	zoo
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'totable',
-   [qw(--spreadsheet)],
-   $stream,
-   $solution4,
+  'totable',
+  [qw(--spreadsheet)],
+  $stream,
+  $solution4,
 );
 
 my $solution5 = <<SOLUTION;
@@ -93,9 +93,9 @@ footzoo
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'totable',
-   [qw(--spreadsheet --delim t)],
-   $stream,
-   $solution5,
+  'totable',
+  [qw(--spreadsheet --delim t)],
+  $stream,
+  $solution5,
 );
 

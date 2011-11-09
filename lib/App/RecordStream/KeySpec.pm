@@ -351,7 +351,7 @@ sub _guess_key_recurse {
 
 sub keyspec_help {
   return <<KEYSPECS_HELP;
-KEY SPECS
+  KEY SPECS
    __FORMAT_TEXT__
    A key spec is short way of specifying a field with prefixes or regular
    expressions, it may also be nested into hashes and arrays.  Use a '/' to nest

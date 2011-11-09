@@ -74,10 +74,10 @@ my $table1a = <<TABLE;
 TABLE
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'toptable',
-   ['--x', 'a,b', '--y', 'c,d'],
-   $stream1,
-   $table1a,
+  'toptable',
+  ['--x', 'a,b', '--y', 'c,d'],
+  $stream1,
+  $table1a,
 );
 
 my $table1a_records = <<RECORDS;
@@ -93,10 +93,10 @@ my $table1a_records = <<RECORDS;
 RECORDS
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'toptable',
-   ['--x', 'a,b', '--y', 'c,d', '--records'],
-   $stream1,
-   $table1a_records,
+  'toptable',
+  ['--x', 'a,b', '--y', 'c,d', '--records'],
+  $stream1,
+  $table1a_records,
 );
 
 my $table1b = <<TABLE;
@@ -116,10 +116,10 @@ my $table1b = <<TABLE;
 TABLE
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'toptable',
-   ['--x', 'a,b', '--y', 'c', '--p', 'd=1'],
-   $stream1,
-   $table1b,
+  'toptable',
+  ['--x', 'a,b', '--y', 'c', '--p', 'd=1'],
+  $stream1,
+  $table1b,
 );
 
 my $table1c = <<TABLE;
@@ -147,10 +147,10 @@ my $table1c = <<TABLE;
 TABLE
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'toptable',
-   ['--x', 'a,b', '--y', 'c,d', '--pin', 'a=0'],
-   $stream1,
-   $table1c,
+  'toptable',
+  ['--x', 'a,b', '--y', 'c,d', '--pin', 'a=0'],
+  $stream1,
+  $table1c,
 );
 
 my $stream2 = <<STREAM;
@@ -207,18 +207,18 @@ TABLE
 
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'toptable',
-   ['--x', 'b,FIELD', '--y', 'c,a'],
-   $stream2,
-   $table2,
+  'toptable',
+  ['--x', 'b,FIELD', '--y', 'c,a'],
+  $stream2,
+  $table2,
 );
 
 # Test Keygroups
 App::RecordStream::Test::OperationHelper->test_output(
-   'toptable',
-   ['--x', '!b!,FIELD', '--y', '!^(a|c)$!', '--v', '!avg_d|ct!'],
-   $stream2,
-   $table2,
+  'toptable',
+  ['--x', '!b!,FIELD', '--y', '!^(a|c)$!', '--v', '!avg_d|ct!'],
+  $stream2,
+  $table2,
 );
 
 my $pin_records = <<RECORDS;
@@ -228,8 +228,8 @@ my $pin_records = <<RECORDS;
 RECORDS
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'toptable',
-   ['--x', 'a,b', '--y', 'c,d', '--pin', 'c=2', '--records'],
-   $stream1,
-   $pin_records,
+  'toptable',
+  ['--x', 'a,b', '--y', 'c,d', '--pin', 'c=2', '--records'],
+  $stream1,
+  $pin_records,
 );

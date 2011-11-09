@@ -11,58 +11,58 @@ use base 'App::RecordStream::Deaggregator::Field';
 
 sub new
 {
-   my $class = shift;
-   my $old_field = shift;
-   my $new_key_field = shift;
-   my $new_value_field = shift;
+  my $class = shift;
+  my $old_field = shift;
+  my $new_key_field = shift;
+  my $new_value_field = shift;
 
-   my $this = $class->SUPER::new($old_field);
+  my $this = $class->SUPER::new($old_field);
 
-   $this->{'new_key_field'} = $new_key_field;
-   $this->{'new_value_field'} = $new_value_field;
+  $this->{'new_key_field'} = $new_key_field;
+  $this->{'new_value_field'} = $new_value_field;
 
-   return $this;
+  return $this;
 }
 
 sub new_from_valuation
 {
-   my $class = shift;
-   my $valuation = shift;
-   my $new_key_field = shift;
-   my $new_value_field = shift;
+  my $class = shift;
+  my $valuation = shift;
+  my $new_key_field = shift;
+  my $new_value_field = shift;
 
-   my $this = $class->SUPER::new_from_valuation($valuation);
+  my $this = $class->SUPER::new_from_valuation($valuation);
 
-   $this->{'new_key_field'} = $new_key_field;
-   $this->{'new_value_field'} = $new_value_field;
+  $this->{'new_key_field'} = $new_key_field;
+  $this->{'new_value_field'} = $new_value_field;
 
-   return $this;
+  return $this;
 }
 
 sub deaggregate_field
 {
-    my $this = shift;
-    my $hashref = shift;
+  my $this = shift;
+  my $hashref = shift;
 
-    my @ret;
+  my @ret;
 
-    for my $key (sort(keys(%$hashref)))
+  for my $key (sort(keys(%$hashref)))
+  {
+    my $record = {};
+    $record->{$this->{'new_key_field'}} = $key;
+    if(defined($this->{'new_value_field'}))
     {
-        my $record = {};
-        $record->{$this->{'new_key_field'}} = $key;
-        if(defined($this->{'new_value_field'}))
-        {
-            $record->{$this->{'new_value_field'}} = $hashref->{$key};
-        }
-        push @ret, $record;
+      $record->{$this->{'new_value_field'}} = $hashref->{$key};
     }
+    push @ret, $record;
+  }
 
-    return \@ret;
+  return \@ret;
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: unhash,<old field>,<new key field>[,<new value field>]
    Split the hash into key/value \"pair\" records
 EOF
@@ -70,12 +70,12 @@ EOF
 
 sub short_usage
 {
-   return "split the provided hash";
+  return "split the provided hash";
 }
 
 sub argct
 {
-   return [2, 3];
+  return [2, 3];
 }
 
 App::RecordStream::Deaggregator::register_deaggregator('unhash', __PACKAGE__);

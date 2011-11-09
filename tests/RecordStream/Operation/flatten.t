@@ -28,22 +28,22 @@ my $solution3 = <<SOLUTION3;
 SOLUTION3
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'flatten',
-   [ qw(--deep foo) ],
-   $stream,
-   $solution,
+  'flatten',
+  [ qw(--deep foo) ],
+  $stream,
+  $solution,
 );
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'flatten',
-   [ qw(--field foo) ],
-   $stream,
-   $solution2,
+  'flatten',
+  [ qw(--field foo) ],
+  $stream,
+  $solution2,
 );
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'flatten',
-   [ qw(--depth 2 --field foo) ],
-   $stream,
-   $solution3,
+  'flatten',
+  [ qw(--depth 2 --field foo) ],
+  $stream,
+  $solution3,
 );

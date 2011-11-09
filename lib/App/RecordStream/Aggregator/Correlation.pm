@@ -17,16 +17,16 @@ use base 'App::RecordStream::Aggregator::Ord2Bivariate';
 
 sub squish
 {
-   my ($this, $cookie) = @_;
+  my ($this, $cookie) = @_;
 
-   my ($sum1, $sumx, $sumy, $sumxy, $sumx2, $sumy2) = @$cookie;
+  my ($sum1, $sumx, $sumy, $sumxy, $sumx2, $sumy2) = @$cookie;
 
-   return ($sumxy * $sum1 - $sumx * $sumy) / sqrt(($sumx2 * $sum1 - $sumx ** 2) * ($sumy2 * $sum1 - $sumy ** 2));
+  return ($sumxy * $sum1 - $sumx * $sumy) / sqrt(($sumx2 * $sum1 - $sumx ** 2) * ($sumy2 * $sum1 - $sumy ** 2));
 }
 
 sub long_usage
 {
-   return <<EOF
+  return <<EOF
 Usage: corr,<field1>,<field2>
    Correlation of specified fields.
 
@@ -39,7 +39,7 @@ EOF
 
 sub short_usage
 {
-   return "find correlation of provided fields";
+  return "find correlation of provided fields";
 }
 
 App::RecordStream::Aggregator::register_aggregator('corr', __PACKAGE__);

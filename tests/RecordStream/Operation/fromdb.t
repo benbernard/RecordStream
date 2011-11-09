@@ -17,10 +17,10 @@ my $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'fromdb',
-   [ qw(--dbfile tests/files/sqliteDB --table recs) ],
-   '',
-   $solution,
+  'fromdb',
+  [ qw(--dbfile tests/files/sqliteDB --table recs) ],
+  '',
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -31,9 +31,9 @@ $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'fromdb',
-   [ qw(--dbfile tests/files/sqliteDB --sql), 'select * from recs where foo > 5' ],
-   '',
-   $solution,
+  'fromdb',
+  [ qw(--dbfile tests/files/sqliteDB --sql), 'select * from recs where foo > 5' ],
+  '',
+  $solution,
 );
 

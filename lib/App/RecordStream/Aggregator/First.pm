@@ -16,21 +16,21 @@ use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
 sub combine_field
 {
-   my $this   = shift;
-   my $cookie = shift;
-   my $value  = shift;
+  my $this   = shift;
+  my $cookie = shift;
+  my $value  = shift;
 
-   return defined($cookie) ? $cookie : $value;
+  return defined($cookie) ? $cookie : $value;
 }
 
 sub short_usage
 {
-   return "first value for a field";
+  return "first value for a field";
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: first,<field>
    First value of specified field.
 EOF

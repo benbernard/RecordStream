@@ -5,69 +5,69 @@ use strict;
 use warnings;
 
 sub new {
-   my $class = shift;
-   my @args  = @_;
+  my $class = shift;
+  my @args  = @_;
 
-   my $this = {
-      KEY_GROUPS => [],
-   };
+  my $this = {
+    KEY_GROUPS => [],
+  };
 
-   bless $this, $class;
+  bless $this, $class;
 
-   $this->add_groups($_) foreach @args;
+  $this->add_groups($_) foreach @args;
 
-   return $this;
+  return $this;
 };
 
 sub has_any_group {
-   my $this   = shift;
-   return (scalar @{$this->{'KEY_GROUPS'}}) > 0;
+  my $this   = shift;
+  return (scalar @{$this->{'KEY_GROUPS'}}) > 0;
 }
 
 sub add_groups {
-   my $this   = shift;
-   my $groups = shift;
+  my $this   = shift;
+  my $groups = shift;
 
-   foreach my $group_spec (split(',', $groups)) {
-      my $group;
-      if ( $group_spec =~ m/^!/ ) {
-         $group = App::RecordStream::KeyGroups::Group->new($group_spec);
-      }
-      else {
-         $group = App::RecordStream::KeyGroups::KeySpec->new($group_spec);
-      }
+  foreach my $group_spec (split(',', $groups)) {
+    my $group;
+    if ( $group_spec =~ m/^!/ ) {
+      $group = App::RecordStream::KeyGroups::Group->new($group_spec);
+    }
+    else {
+      $group = App::RecordStream::KeyGroups::KeySpec->new($group_spec);
+    }
 
-      push @{$this->{'KEY_GROUPS'}}, $group;
-   }
+    push @{$this->{'KEY_GROUPS'}}, $group;
+  }
 }
 
 sub get_keyspecs_for_record {
-   my $this   = shift;
-   my $record = shift;
+  my $this   = shift;
+  my $record = shift;
 
-   my @specs;
+  my @specs;
 
-   foreach my $group ( @{$this->{'KEY_GROUPS'}} ) {
-      push @specs, @{$group->get_fields($record)};
-   }
+  foreach my $group ( @{$this->{'KEY_GROUPS'}} ) {
+    push @specs, @{$group->get_fields($record)};
+  }
 
-   return \@specs;
+  return \@specs;
 }
 
 # This is a cached version
 sub get_keyspecs {
-   my $this   = shift;
-   my $record = shift;
+  my $this   = shift;
+  my $record = shift;
 
-   if ( !$this->{'KEY_SPECS'} ) {
-      $this->{'KEY_SPECS'} = $this->get_keyspecs_for_record($record);
-   }
+  if ( !$this->{'KEY_SPECS'} ) {
+    $this->{'KEY_SPECS'} = $this->get_keyspecs_for_record($record);
+  }
 
-   return $this->{'KEY_SPECS'};
+  return $this->{'KEY_SPECS'};
 }
 
 sub usage {
-   return <<HELP;
+  return <<HELP;
 KEY GROUPS
    __FORMAT_TEXT__
    SYNTAX: !regex!opt1!opt2...
@@ -106,25 +106,25 @@ HELP
 package App::RecordStream::KeyGroups::KeySpec;
 
 sub new {
-   my $class = shift;
-   my $spec  = shift;
+  my $class = shift;
+  my $spec  = shift;
 
-   my $this = {
-      SPEC => $spec,
-   };
+  my $this = {
+    SPEC => $spec,
+  };
 
-   return bless $this, $class;
+  return bless $this, $class;
 }
 
 sub get_fields {
-   my $this   = shift;
-   my $record = shift;
+  my $this   = shift;
+  my $record = shift;
 
-   if ( $record->has_key_spec($this->{'SPEC'}) ) {
-      return [join('/', @{$record->get_key_list_for_spec($this->{'SPEC'})})];
-   }
+  if ( $record->has_key_spec($this->{'SPEC'}) ) {
+    return [join('/', @{$record->get_key_list_for_spec($this->{'SPEC'})})];
+  }
 
-   return [];
+  return [];
 }
 
 1;
@@ -132,182 +132,182 @@ sub get_fields {
 package App::RecordStream::KeyGroups::Group;
 
 my $VALID_OPTIONS = {
-   d          => 'depth',
-   depth      => 'depth',
-   s          => 'sort',
-   'sort'     => 'sort',
-   f          => 'full_match',
-   full       => 'full_match',
-   rr         => 'return_refs',
-   returnrefs => 'return_refs'
+  d          => 'depth',
+  depth      => 'depth',
+  s          => 'sort',
+  'sort'     => 'sort',
+  f          => 'full_match',
+  full       => 'full_match',
+  rr         => 'return_refs',
+  returnrefs => 'return_refs'
 };
 
 sub new {
-   my $class      = shift;
-   my $group_spec = shift;
+  my $class      = shift;
+  my $group_spec = shift;
 
-   my $this = {
-   };
+  my $this = {
+  };
 
-   bless $this, $class;
+  bless $this, $class;
 
-   $this->parse_group($group_spec);
-   return $this;
+  $this->parse_group($group_spec);
+  return $this;
 }
 
 sub get_fields {
-   my $this   = shift;
-   my $record = shift;
+  my $this   = shift;
+  my $record = shift;
 
-   my @specs;
-   my $regex = $this->{'REGEX'};
-   foreach my $spec (@{$this->get_specs($record)}) {
-      if ( $spec =~ m/$regex/ ) {
-         push @specs, $spec;
-      }
-   }
+  my @specs;
+  my $regex = $this->{'REGEX'};
+  foreach my $spec (@{$this->get_specs($record)}) {
+    if ( $spec =~ m/$regex/ ) {
+      push @specs, $spec;
+    }
+  }
 
-   #TODO: deal with sorts
-   if ( $this->has_option('sort') ) {
-      @specs = sort @specs;
-   }
-   return \@specs;
+  #TODO: deal with sorts
+  if ( $this->has_option('sort') ) {
+    @specs = sort @specs;
+  }
+  return \@specs;
 }
 
 sub get_specs {
-   my $this   = shift;
-   my $record = shift;
+  my $this   = shift;
+  my $record = shift;
 
-   my $min_depth = 1;
-   my $max_depth = 1;
+  my $min_depth = 1;
+  my $max_depth = 1;
 
-   if ( $this->has_option('full_match') ) {
-      $max_depth = -1;
+  if ( $this->has_option('full_match') ) {
+    $max_depth = -1;
 
-   }
-   elsif ( $this->has_option('depth') ) {
-      my $depth = $this->option_value('depth');
-      $min_depth = $depth;
-      $max_depth = $depth;
-   }
+  }
+  elsif ( $this->has_option('depth') ) {
+    my $depth = $this->option_value('depth');
+    $min_depth = $depth;
+    $max_depth = $depth;
+  }
 
-   my $paths = [];
-   $this->_get_paths({%$record}, 1, $min_depth, $max_depth, [], $paths);
-   return [map { join('/', @$_) } @$paths];
+  my $paths = [];
+  $this->_get_paths({%$record}, 1, $min_depth, $max_depth, [], $paths);
+  return [map { join('/', @$_) } @$paths];
 }
 
 sub _get_paths {
-   my $this          = shift;
-   my $data          = shift;
-   my $current_depth = shift;
-   my $min_depth     = shift;
-   my $max_depth     = shift;
-   my $current_keys  = shift;
-   my $found_paths   = shift;
+  my $this          = shift;
+  my $data          = shift;
+  my $current_depth = shift;
+  my $min_depth     = shift;
+  my $max_depth     = shift;
+  my $current_keys  = shift;
+  my $found_paths   = shift;
 
-   if ( $current_depth >= $min_depth ) {
-      if ( ref($data) eq '' || $this->has_option('return_refs') ) {
-         push @$found_paths, [@$current_keys];
-      }
-   }
+  if ( $current_depth >= $min_depth ) {
+    if ( ref($data) eq '' || $this->has_option('return_refs') ) {
+      push @$found_paths, [@$current_keys];
+    }
+  }
 
-   if ( ref($data) eq 'ARRAY' ) {
-      my $index = -1;
-      foreach my $value ( @$data ) {
-         $index++;
-         if ( $current_depth <= $max_depth || $max_depth == -1 ) {
-            $this->_get_paths($value, 
-                              $current_depth+1, 
-                              $min_depth, 
-                              $max_depth, 
-                              [@$current_keys, "\#index"], 
-                              $found_paths);
-         }
+  if ( ref($data) eq 'ARRAY' ) {
+    my $index = -1;
+    foreach my $value ( @$data ) {
+      $index++;
+      if ( $current_depth <= $max_depth || $max_depth == -1 ) {
+        $this->_get_paths($value, 
+          $current_depth+1, 
+          $min_depth, 
+          $max_depth, 
+          [@$current_keys, "\#index"], 
+          $found_paths);
       }
-   }
-   if ( ref($data) eq 'HASH') {
-      foreach my $key (keys %$data) {
-         if ( $current_depth <= $max_depth || $max_depth == -1 ) {
-            $this->_get_paths($data->{$key}, 
-                              $current_depth+1, 
-                              $min_depth, 
-                              $max_depth, 
-                              [@$current_keys, $key], 
-                              $found_paths);
-         }
+    }
+  }
+  if ( ref($data) eq 'HASH') {
+    foreach my $key (keys %$data) {
+      if ( $current_depth <= $max_depth || $max_depth == -1 ) {
+        $this->_get_paths($data->{$key}, 
+          $current_depth+1, 
+          $min_depth, 
+          $max_depth, 
+          [@$current_keys, $key], 
+          $found_paths);
       }
-   }
+    }
+  }
 }
 
 sub parse_group {
-   my $this = shift;
-   my $spec = shift;
+  my $this = shift;
+  my $spec = shift;
 
-   if ( '!' ne substr($spec, 0, 1) ) {
-      die "Malformed group spec: '$spec', does not start with '!'\n";
-   }
+  if ( '!' ne substr($spec, 0, 1) ) {
+    die "Malformed group spec: '$spec', does not start with '!'\n";
+  }
 
-   if ( length($spec) < 2 ) {
-      die "Malformed group spec: '$spec', does not have enough length\n";
-   }
+  if ( length($spec) < 2 ) {
+    die "Malformed group spec: '$spec', does not have enough length\n";
+  }
 
-   my $regex              = '';
-   my $last_char          = '';
-   my $found_end          = 0;
-   my $start_option_index = 1;
+  my $regex              = '';
+  my $last_char          = '';
+  my $found_end          = 0;
+  my $start_option_index = 1;
 
-   for (my $index = 1; $index < length($spec); $index++) {
-      $start_option_index++;
-      my $current_char = substr($spec, $index, 1);
+  for (my $index = 1; $index < length($spec); $index++) {
+    $start_option_index++;
+    my $current_char = substr($spec, $index, 1);
 
-      if ( $current_char eq '!' ) {
-         if ( $last_char ne '\\' ) {
-            $last_char = $current_char;
-            $found_end = 1;
-            last;
-         }
+    if ( $current_char eq '!' ) {
+      if ( $last_char ne '\\' ) {
+        $last_char = $current_char;
+        $found_end = 1;
+        last;
       }
-      $last_char = $current_char;
-      $regex .= $current_char;
-      next;
-   }
+    }
+    $last_char = $current_char;
+    $regex .= $current_char;
+    next;
+  }
 
-   die "Malformed group spec: Did not find terminating '!' in '$spec'\n" if ( ! $found_end );
+  die "Malformed group spec: Did not find terminating '!' in '$spec'\n" if ( ! $found_end );
 
-   my $options_string = substr($spec, $start_option_index);
-   my $options = {};
+  my $options_string = substr($spec, $start_option_index);
+  my $options = {};
 
-   foreach my $option_group (split('!', $options_string)) {
-      my ($option, $value) = split('=', $option_group);
-      if ( my $normalized_option = $VALID_OPTIONS->{$option} ) {
-         if ( exists $options->{$normalized_option} ) {
-            die "Already specified option '$option'.  Bad option: '$option_group' in '$spec'\n";
-         }
-         else {
-            $options->{$normalized_option} = $value;
-         }
+  foreach my $option_group (split('!', $options_string)) {
+    my ($option, $value) = split('=', $option_group);
+    if ( my $normalized_option = $VALID_OPTIONS->{$option} ) {
+      if ( exists $options->{$normalized_option} ) {
+        die "Already specified option '$option'.  Bad option: '$option_group' in '$spec'\n";
       }
       else {
-         die "Malformed group spec: Unrecognized option: '$option' in '$spec'\n";
+        $options->{$normalized_option} = $value;
       }
-   }
+    }
+    else {
+      die "Malformed group spec: Unrecognized option: '$option' in '$spec'\n";
+    }
+  }
 
-   $this->{'REGEX'}   = $regex;
-   $this->{'OPTIONS'} = $options;
+  $this->{'REGEX'}   = $regex;
+  $this->{'OPTIONS'} = $options;
 }
 
 sub has_option {
-   my $this   = shift;
-   my $option = shift;
+  my $this   = shift;
+  my $option = shift;
 
-   return exists $this->{'OPTIONS'}->{$option};
+  return exists $this->{'OPTIONS'}->{$option};
 }
 
 sub option_value {
-   my $this   = shift;
-   my $option = shift;
+  my $this   = shift;
+  my $option = shift;
 
-   return $this->{'OPTIONS'}->{$option};
+  return $this->{'OPTIONS'}->{$option};
 }
 
 1;

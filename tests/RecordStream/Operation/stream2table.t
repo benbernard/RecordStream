@@ -16,8 +16,8 @@ my $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'stream2table',
-   ['--field', 'column'],
-   $stream,
-   $solution,
+  'stream2table',
+  ['--field', 'column'],
+  $stream,
+  $solution,
 );

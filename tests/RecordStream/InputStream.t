@@ -9,11 +9,11 @@ BEGIN { use_ok( 'App::RecordStream::InputStream' ) };
 use App::RecordStream::Record;
 
 my $hash = App::RecordStream::Record->new(
-   'foo' => 'bar',
-   'zoo' => {
-      'blah' => 'biz',
-      'far'  => [ 'fing', 'fang', 'foom' ],
-   }
+  'foo' => 'bar',
+  'zoo' => {
+    'blah' => 'biz',
+    'far'  => [ 'fing', 'fang', 'foom' ],
+  }
 );
 
 my $json = '{"foo":"bar","zoo":{"blah":"biz","far":["fing","fang","foom"]}}';

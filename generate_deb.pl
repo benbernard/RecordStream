@@ -11,23 +11,23 @@ my $all       = 1;
 my $clean     = 0;
 
 GetOptions(
-   '--just-cpan' => sub { $all = 0; $make_cpan=1 },
-   '--clean'     => \$clean,
+  '--just-cpan' => sub { $all = 0; $make_cpan=1 },
+  '--clean'     => \$clean,
 );
 
 my $DIST_DIR = 'deb-dist';
 
 my $CLEAN_COMMANDS = {
-   #debian    => 'rm -rf debian',
-   Makefile  => 'make clean',
-   $DIST_DIR => "rm -rf $DIST_DIR",
+  #debian    => 'rm -rf debian',
+  Makefile  => 'make clean',
+  $DIST_DIR => "rm -rf $DIST_DIR",
 };
 
 cleanup($CLEAN_COMMANDS);
 
 if ( $clean ) {
-   print "Clean only, bailing!\n";
-   exit 0;
+  print "Clean only, bailing!\n";
+  exit 0;
 }
 
 run_command('./generate_manifest.sh');
@@ -51,14 +51,14 @@ chdir $dir;
 run_command('dh-make-perl -e ppa@benjaminbernard.com --arch all --depends gnuplot -i \'.*/fast-recs-collate/.*\'');
 
 if ($?) {
-   die "failed running dh-make-perl!";
+  die "failed running dh-make-perl!";
 }
 
 run_command('sed -e \'s/perl\///g\' -i debian/control');
 run_command('debuild -i -us -uc -A -b');
 
 if ($?) {
-   die "failed running debuild!";
+  die "failed running debuild!";
 }
 
 chdir '..';
@@ -68,31 +68,31 @@ run_command("cp $deb ../");
 run_command("cp $deb ../libapp-recordstream.deb");
 
 sub cleanup {
-   my $commands = shift;
+  my $commands = shift;
 
-   foreach my $file (keys %$commands) {
-      my $command = $commands->{$file};
-      if ( -e $file ) {
-         run_command($command);
-      }
-   }
+  foreach my $file (keys %$commands) {
+    my $command = $commands->{$file};
+    if ( -e $file ) {
+      run_command($command);
+    }
+  }
 }
 
 sub find_one_glob {
   my $glob = shift;
   my @found = glob($glob);
-  
+
   if ( scalar @found > 1 ) {
-     die "Found more than one file: " . join(' ', @found) . " for glob $glob in dir: " . $ENV{PWD};
+    die "Found more than one file: " . join(' ', @found) . " for glob $glob in dir: " . $ENV{PWD};
   }
 
   if ( scalar @found == 0 ) {
-     die "Found no files for glob: $glob in dir: $ENV{PWD}";
+    die "Found no files for glob: $glob in dir: $ENV{PWD}";
   }
 
   return $found[0];
 }
 
 sub run_command {
-   return BuildTools::run_command(@_);
+  return BuildTools::run_command(@_);
 }

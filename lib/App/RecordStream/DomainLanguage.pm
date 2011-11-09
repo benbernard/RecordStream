@@ -4,11 +4,11 @@ use strict;
 use warnings;
 
 sub usage {
-   return "DOMAIN LANGUAGE\n" . short_usage() . _long_usage();
+  return "DOMAIN LANGUAGE\n" . short_usage() . _long_usage();
 }
 
 sub short_usage {
-   return <<HELP;
+  return <<HELP;
    __FORMAT_TEXT__
    The normal mechanism for specifying keys and aggregators allows one to
    concisely instantiate the objects that back them in the platform and is
@@ -30,7 +30,7 @@ HELP
 }
 
 sub _long_usage {
-   return <<HELP;
+  return <<HELP;
 
 Special Syntax
    __FORMAT_TEXT__

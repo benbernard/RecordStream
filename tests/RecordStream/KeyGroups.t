@@ -63,12 +63,12 @@ ok($@ =~ m/Malformed group spec/, "error on missing !s");
 my $key_groups = App::RecordStream::KeyGroups->new('!foo!', '!bar!f');
 
 my $expected = {
-   KEY_GROUPS => [
-      { REGEX   => 'foo', 
-        OPTIONS => {} },
-      { REGEX   => 'bar', 
-        OPTIONS => {'full_match' => undef} },
-   ],
+  KEY_GROUPS => [
+    { REGEX   => 'foo', 
+      OPTIONS => {} },
+    { REGEX   => 'bar', 
+      OPTIONS => {'full_match' => undef} },
+  ],
 };
 
 is_deeply($key_groups, $expected, "Basic Keygroup specification");

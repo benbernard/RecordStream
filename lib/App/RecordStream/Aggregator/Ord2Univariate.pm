@@ -16,28 +16,28 @@ use base 'App::RecordStream::Aggregator::MapReduce::Field';
 
 sub map_field
 {
-   my ($this, $x) = @_;
+  my ($this, $x) = @_;
 
-   return [1,
-           $x,
-           $x * $x];
+  return [1,
+          $x,
+          $x * $x];
 }
 
 sub reduce
 {
-   my ($this, $cookie, $cookie2) = @_;
+  my ($this, $cookie, $cookie2) = @_;
 
-   my ($sum1_1, $sumx_1, $sumx2_1) = @$cookie;
-   my ($sum1_2, $sumx_2, $sumx2_2) = @$cookie2;
+  my ($sum1_1, $sumx_1, $sumx2_1) = @$cookie;
+  my ($sum1_2, $sumx_2, $sumx2_2) = @$cookie2;
 
-   return [$sum1_1  + $sum1_2,
-           $sumx_1  + $sumx_2,
-           $sumx2_1 + $sumx2_2];
+  return [$sum1_1  + $sum1_2,
+          $sumx_1  + $sumx_2,
+          $sumx2_1 + $sumx2_2];
 }
 
 sub squish
 {
-   die "Ord2Univariate subclass doesn't implement squish\n";
+  die "Ord2Univariate subclass doesn't implement squish\n";
 }
 
 1;

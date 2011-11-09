@@ -9,183 +9,183 @@ use warnings;
 
 sub load_aggregators
 {
-   for my $inc (@INC)
-   {
-      load_aggregators_aux($inc . "/App/RecordStream/Aggregator", "App/RecordStream/Aggregator");
-   }
+  for my $inc (@INC)
+  {
+    load_aggregators_aux($inc . "/App/RecordStream/Aggregator", "App/RecordStream/Aggregator");
+  }
 
-   # Now load aggregators from sites, overriding lower priority with higher priority
-   App::RecordStream::Site::bootstrap();
-   my @sites = sort { $a->{'priority'} <=> $b->{'priority'} } App::RecordStream::Site::list_sites();
-   for my $site (@sites)
-   {
-      for my $inc (@INC)
-      {
-         my $rel = $site->{'path'} . "::Aggregator";
-         $rel =~ s!::!\/!g;
-         my $root = "$inc/$rel";
-         load_aggregators_aux($root, $rel);
-      }
-   }
+  # Now load aggregators from sites, overriding lower priority with higher priority
+  App::RecordStream::Site::bootstrap();
+  my @sites = sort { $a->{'priority'} <=> $b->{'priority'} } App::RecordStream::Site::list_sites();
+  for my $site (@sites)
+  {
+    for my $inc (@INC)
+    {
+      my $rel = $site->{'path'} . "::Aggregator";
+      $rel =~ s!::!\/!g;
+      my $root = "$inc/$rel";
+      load_aggregators_aux($root, $rel);
+    }
+  }
 }
 
 sub load_aggregators_aux
 {
-   my ($root, $rel) = @_;
+  my ($root, $rel) = @_;
 
-   if(opendir(DIR, $root))
-   {
-      my @ents = readdir(DIR);
-      closedir(DIR);
-      for my $ent (@ents)
+  if(opendir(DIR, $root))
+  {
+    my @ents = readdir(DIR);
+    closedir(DIR);
+    for my $ent (@ents)
+    {
+      if($ent eq "." || $ent eq "..")
       {
-         if($ent eq "." || $ent eq "..")
-         {
-            next;
-         }
-
-         if($ent =~ /\.pm$/)
-         {
-            require $rel . "/" . $ent;
-            next;
-         }
-
-         load_aggregators_aux($root . "/" . $ent, $rel . "/" . $ent);
+        next;
       }
-   }
+
+      if($ent =~ /\.pm$/)
+      {
+        require $rel . "/" . $ent;
+        next;
+      }
+
+      load_aggregators_aux($root . "/" . $ent, $rel . "/" . $ent);
+    }
+  }
 }
 
 {
-   my %registry;
+  my %registry;
 
-   sub register_aggregator
-   {
-      my ($name, $class) = @_;
+  sub register_aggregator
+  {
+    my ($name, $class) = @_;
 
-      $registry{$name} = $class;
-   }
+    $registry{$name} = $class;
+  }
 
-   sub make_aggregators
-   {
-      my (@specs) = @_;
+  sub make_aggregators
+  {
+    my (@specs) = @_;
 
-      my %ret;
+    my %ret;
 
-      for my $spec (@specs)
+    for my $spec (@specs)
+    {
+      my $name;
+      if($spec =~ /^(.*)=(.*)$/)
       {
-         my $name;
-         if($spec =~ /^(.*)=(.*)$/)
-         {
-            $name = $1;
-            $spec = $2;
-         }
-
-         my @spec = split(/,/, $spec);
-         if(!defined($name))
-         {
-            $name = join("_", map { my $n = $_; $n =~ s!/!_!; $n } @spec);
-         }
-
-         if(!@spec)
-         {
-            die "Bad aggregator spec: " . $spec . "\n";
-         }
-
-         my $aggr_name = shift(@spec);
-         my $class = $registry{$aggr_name};
-         if(!$class)
-         {
-            die "Bad aggregator: " . $aggr_name . "\n";
-         }
-
-         if(@spec != $class->argct())
-         {
-            print $class->long_usage();
-            exit 1;
-         }
-
-         $ret{$name} = $class->new(@spec);
+        $name = $1;
+        $spec = $2;
       }
 
-      return \%ret;
-   }
-
-   sub list_aggregators
-   {
-      my %reverse;
-      my @classes;
-      for my $name (sort(keys(%registry)))
+      my @spec = split(/,/, $spec);
+      if(!defined($name))
       {
-         my $class = $registry{$name};
-         my $ar = $reverse{$class};
-         if(!$ar)
-         {
-            $reverse{$class} = $ar = [];
-            push @classes, $class;
-         }
-         push @$ar, $name;
+        $name = join("_", map { my $n = $_; $n =~ s!/!_!; $n } @spec);
       }
-      for my $class (@classes)
+
+      if(!@spec)
       {
-         my $usage = $class->short_usage();
-         print join(", ", @{$reverse{$class}}) . ": " . $usage . "\n";
+        die "Bad aggregator spec: " . $spec . "\n";
       }
-   }
 
-   sub show_aggregator
-   {
-      my ($aggr_name) = @_;
-
+      my $aggr_name = shift(@spec);
       my $class = $registry{$aggr_name};
       if(!$class)
       {
-         print "Bad aggregator: " . $aggr_name . "\n";
-         exit 1;
+        die "Bad aggregator: " . $aggr_name . "\n";
       }
 
-      print $class->long_usage();
-   }
+      if(@spec != $class->argct())
+      {
+        print $class->long_usage();
+        exit 1;
+      }
+
+      $ret{$name} = $class->new(@spec);
+    }
+
+    return \%ret;
+  }
+
+  sub list_aggregators
+  {
+    my %reverse;
+    my @classes;
+    for my $name (sort(keys(%registry)))
+    {
+      my $class = $registry{$name};
+      my $ar = $reverse{$class};
+      if(!$ar)
+      {
+        $reverse{$class} = $ar = [];
+        push @classes, $class;
+      }
+      push @$ar, $name;
+    }
+    for my $class (@classes)
+    {
+      my $usage = $class->short_usage();
+      print join(", ", @{$reverse{$class}}) . ": " . $usage . "\n";
+    }
+  }
+
+  sub show_aggregator
+  {
+    my ($aggr_name) = @_;
+
+    my $class = $registry{$aggr_name};
+    if(!$class)
+    {
+      print "Bad aggregator: " . $aggr_name . "\n";
+      exit 1;
+    }
+
+    print $class->long_usage();
+  }
 }
 
 sub map_initial
 {
-   my ($aggrs) = @_;
+  my ($aggrs) = @_;
 
-   my %ret;
-   for my $name (keys(%$aggrs))
-   {
-      $ret{$name} = $aggrs->{$name}->initial();
-   }
+  my %ret;
+  for my $name (keys(%$aggrs))
+  {
+    $ret{$name} = $aggrs->{$name}->initial();
+  }
 
-   return \%ret;
+  return \%ret;
 }
 
 sub map_combine
 {
-   my ($aggrs, $cookies, $record) = @_;
+  my ($aggrs, $cookies, $record) = @_;
 
-   my %ret;
-   for my $name (keys(%$aggrs))
-   {
-      $ret{$name} = $aggrs->{$name}->combine($cookies->{$name}, $record);
-   }
+  my %ret;
+  for my $name (keys(%$aggrs))
+  {
+    $ret{$name} = $aggrs->{$name}->combine($cookies->{$name}, $record);
+  }
 
-   return \%ret;
+  return \%ret;
 }
 
 sub map_squish
 {
-   my ($aggrs, $cookies) = @_;
+  my ($aggrs, $cookies) = @_;
 
-   my $return_record = App::RecordStream::Record->new();
-   for my $name (keys(%$aggrs))
-   {
-      my $aggregator = $aggrs->{$name};
-      my $value = $aggregator->squish($cookies->{$name});
-      ${$return_record->guess_key_from_spec($name)} = $value;
-   }
+  my $return_record = App::RecordStream::Record->new();
+  for my $name (keys(%$aggrs))
+  {
+    my $aggregator = $aggrs->{$name};
+    my $value = $aggregator->squish($cookies->{$name});
+    ${$return_record->guess_key_from_spec($name)} = $value;
+  }
 
-   return $return_record;
+  return $return_record;
 }
 
 1;

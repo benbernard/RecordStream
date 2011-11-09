@@ -18,10 +18,10 @@ my $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'topn',
-   [ '--key', 'foo', '-n', 1 ],
-   $stream,
-   $solution,
+  'topn',
+  [ '--key', 'foo', '-n', 1 ],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -33,15 +33,15 @@ $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'topn',
-   [ '--key', 'foo', '-n', 2 ],
-   $stream,
-   $solution,
+  'topn',
+  [ '--key', 'foo', '-n', 2 ],
+  $stream,
+  $solution,
 );
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'topn',
-   [ '--key', '!fo!', '-n', 2 ],
-   $stream,
-   $solution,
+  'topn',
+  [ '--key', '!fo!', '-n', 2 ],
+  $stream,
+  $solution,
 );

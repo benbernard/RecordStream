@@ -8,7 +8,7 @@ ok($op, "Constructor worked");
 
 my ($foo);
 my $args_spec = {
-   'foo=s' => \$foo,
+  'foo=s' => \$foo,
 };
 
 my $args = [ '--foo', 'bar', 'blah' ];

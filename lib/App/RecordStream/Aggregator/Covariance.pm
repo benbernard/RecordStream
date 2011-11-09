@@ -17,16 +17,16 @@ use base 'App::RecordStream::Aggregator::Ord2Bivariate';
 
 sub squish
 {
-   my ($this, $cookie) = @_;
+  my ($this, $cookie) = @_;
 
-   my ($sum1, $sumx, $sumy, $sumxy, $sumx2, $sumy2) = @$cookie;
+  my ($sum1, $sumx, $sumy, $sumxy, $sumx2, $sumy2) = @$cookie;
 
-   return ($sumxy / $sum1) - ($sumx / $sum1) * ($sumy / $sum1);
+  return ($sumxy / $sum1) - ($sumx / $sum1) * ($sumy / $sum1);
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: cov,<field1>,<field2>
    Covariance of specified fields.
 EOF
@@ -34,7 +34,7 @@ EOF
 
 sub short_usage
 {
-   return "find covariance of provided fields";
+  return "find covariance of provided fields";
 }
 
 App::RecordStream::Aggregator::register_aggregator('cov', __PACKAGE__);

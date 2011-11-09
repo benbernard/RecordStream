@@ -13,23 +13,23 @@ use base 'App::RecordStream::Aggregator::Ord2Univariate';
 
 sub squish
 {
-   my ($this, $cookie) = @_;
+  my ($this, $cookie) = @_;
 
-   my ($sum1, $sumx, $sumx2) = @$cookie;
+  my ($sum1, $sumx, $sumx2) = @$cookie;
 
-   my $var = ($sumx2 / $sum1) - ($sumx / $sum1) ** 2;
-   return
-   {
-       'ct' => $sum1,
+  my $var = ($sumx2 / $sum1) - ($sumx / $sum1) ** 2;
+  return
+  {
+    'ct' => $sum1,
 
-       'sum' => $sumx,
-       'avg' => $sumx / $sum1,
+    'sum' => $sumx,
+    'avg' => $sumx / $sum1,
 
-       'sum2' => $sumx2,
-       'avg2' => $sumx2 / $sum1,
-       'var' => $var,
-       'stddev' => sqrt($var),
-   };
+    'sum2' => $sumx2,
+    'avg2' => $sumx2 / $sum1,
+    'var' => $var,
+    'stddev' => sqrt($var),
+  };
 }
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'ord2map', 'VALUATION');

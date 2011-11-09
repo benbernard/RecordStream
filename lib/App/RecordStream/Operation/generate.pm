@@ -15,79 +15,79 @@ use App::RecordStream::Record;
 use App::RecordStream::Executor;
 
 sub init {
-   my $this = shift;
-   my $args = shift;
+  my $this = shift;
+  my $args = shift;
 
-   my $keychain = '_chain';
-   my $passthrough = 0;
-   my $executor_options = App::RecordStream::Executor::Getopt->new();
+  my $keychain = '_chain';
+  my $passthrough = 0;
+  my $executor_options = App::RecordStream::Executor::Getopt->new();
 
-   my $spec = {
-      'keychain=s'  => \$keychain,
-      'passthrough' => \$passthrough,
-      $executor_options->arguments(),
-   };
+  my $spec = {
+    'keychain=s'  => \$keychain,
+    'passthrough' => \$passthrough,
+    $executor_options->arguments(),
+  };
 
-   Getopt::Long::Configure('no_ignore_case');
-   $this->parse_options($args, $spec);
+  Getopt::Long::Configure('no_ignore_case');
+  $this->parse_options($args, $spec);
 
-   my $expression = $executor_options->get_string($args);
-   my $executor = App::RecordStream::Executor->new($expression);
+  my $expression = $executor_options->get_string($args);
+  my $executor = App::RecordStream::Executor->new($expression);
 
-   $this->{'KEYCHAIN'}    = $keychain;
-   $this->{'PASSTHROUGH'} = $passthrough;
-   $this->{'EXECUTOR'} = $executor;
+  $this->{'KEYCHAIN'}    = $keychain;
+  $this->{'PASSTHROUGH'} = $passthrough;
+  $this->{'EXECUTOR'} = $executor;
 }
 
 sub accept_record {
-   my $this = shift;
-   my $record = shift;
+  my $this = shift;
+  my $record = shift;
 
-   $this->push_record($record) if $this->{'PASSTHROUGH'};
+  $this->push_record($record) if $this->{'PASSTHROUGH'};
 
-   my $interpolated_command = $this->{'EXECUTOR'}->execute_code($record);
+  my $interpolated_command = $this->{'EXECUTOR'}->execute_code($record);
 
-   if ($@) {
-      chomp $@;
-      warn "# $0 interpolating command threw: " . $@ . "\n";
-      return 1;
-   }
+  if ($@) {
+    chomp $@;
+    warn "# $0 interpolating command threw: " . $@ . "\n";
+    return 1;
+  }
 
-   my $pid = open(my $pipe, "-|", $interpolated_command);
+  my $pid = open(my $pipe, "-|", $interpolated_command);
 
-   if (!$pid) {
-      warn "# $0 open(..., \"$interpolated_command |\") failed: $!\n";
-      return 1;
-   }
+  if (!$pid) {
+    warn "# $0 open(..., \"$interpolated_command |\") failed: $!\n";
+    return 1;
+  }
 
-   my $generator_stream = App::RecordStream::InputStream->new(FH => $pipe);
+  my $generator_stream = App::RecordStream::InputStream->new(FH => $pipe);
 
-   while(my $generated_record = $generator_stream->get_record()) {
-      ${$generated_record->guess_key_from_spec($this->{'KEYCHAIN'})} = $record->as_hashref();
-      $this->push_record($generated_record);
-   }
-   # App::RecordStream::InputStream closes the file handle for us
+  while(my $generated_record = $generator_stream->get_record()) {
+    ${$generated_record->guess_key_from_spec($this->{'KEYCHAIN'})} = $record->as_hashref();
+    $this->push_record($generated_record);
+  }
+  # App::RecordStream::InputStream closes the file handle for us
 
-   return 1;
+  return 1;
 }
 
 sub add_help_types {
-   my $this = shift;
-   $this->use_help_type('keyspecs');
+  my $this = shift;
+  $this->use_help_type('keyspecs');
 }
 
 sub usage
 {
-   my $this = shift;
+  my $this = shift;
 
-   my $options = [
-      [ 'passthrough', 'Emit input record in addition to generated records' ],
-      [ 'keychain <name>', 'Use \'name\' as the chain key (default is \'_chain\') may be a key spec, see \'--help-keyspecs\' for more info' ],
-   ];
+  my $options = [
+    [ 'passthrough', 'Emit input record in addition to generated records' ],
+    [ 'keychain <name>', 'Use \'name\' as the chain key (default is \'_chain\') may be a key spec, see \'--help-keyspecs\' for more info' ],
+  ];
 
-   my $args_string = $this->options_string($options);
+  my $args_string = $this->options_string($options);
 
-   my $usage = <<USAGE;
+  my $usage = <<USAGE;
 Usage: recs-generate <args> <command> [<files>]
    __FORMAT_TEXT__
    Executes <command> for each record to generate a record stream, which is
@@ -133,7 +133,7 @@ Examples:
       recs-fromatomfeed "http://..." | recs-generate "recs-fromatomfeed http://...?key=\$r->{title}" | recs-eval 'join("\t", \$r->{title}, \$r->{chain}->{title})'
 USAGE
 
-   return $usage;
+return $usage;
 }
 
 1;

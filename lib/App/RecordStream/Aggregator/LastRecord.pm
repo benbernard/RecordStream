@@ -12,29 +12,29 @@ use base qw(App::RecordStream::Aggregator::InjectInto);
 
 sub new
 {
-   my $class = shift;
-   my @args  = @_;
+  my $class = shift;
+  my @args  = @_;
 
-   return $class->SUPER::new(@args);
+  return $class->SUPER::new(@args);
 }
 
 sub combine
 {
-   my $this   = shift;
-   my $cookie = shift;
-   my $record  = shift;
+  my $this   = shift;
+  my $cookie = shift;
+  my $record  = shift;
 
-   return $record;
+  return $record;
 }
 
 sub short_usage
 {
-   return "last record seen";
+  return "last record seen";
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: last_record
    Last record seen.
 EOF
@@ -42,7 +42,7 @@ EOF
 
 sub argct
 {
-   return 0;
+  return 0;
 }
 
 App::RecordStream::Aggregator::register_aggregator('lastrecord', __PACKAGE__);

@@ -17,16 +17,16 @@ use base 'App::RecordStream::Aggregator::Ord2Univariate';
 
 sub squish
 {
-   my ($this, $cookie) = @_;
+  my ($this, $cookie) = @_;
 
-   my ($sum1, $sumx, $sumx2) = @$cookie;
+  my ($sum1, $sumx, $sumx2) = @$cookie;
 
-   return $sumx / $sum1;
+  return $sumx / $sum1;
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: avg,<field>
    Average of specified field.
 EOF
@@ -34,7 +34,7 @@ EOF
 
 sub short_usage
 {
-   return "averages provided field";
+  return "averages provided field";
 }
 
 App::RecordStream::Aggregator::register_aggregator('average', __PACKAGE__);

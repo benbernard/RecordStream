@@ -24,10 +24,10 @@ $output = <<OUTPUT;
 OUTPUT
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'annotate',
-   [qw(--keys priority), '{{zap}} = bar'],
-   $input,
-   $output
+  'annotate',
+  [qw(--keys priority), '{{zap}} = bar'],
+  $input,
+  $output
 );
 
 $output = <<OUTPUT;
@@ -40,10 +40,10 @@ $output = <<OUTPUT;
 OUTPUT
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'annotate',
-   [qw(--keys priority), 'push @{ {{zip}} }, qw(bar biz)'],
-   $input,
-   $output
+  'annotate',
+  [qw(--keys priority), 'push @{ {{zip}} }, qw(bar biz)'],
+  $input,
+  $output
 );
 
 $output = <<OUTPUT;
@@ -56,10 +56,10 @@ $output = <<OUTPUT;
 OUTPUT
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'annotate',
-   [qw(--keys priority), '{{zip/#0}} = "bar"'],
-   $input,
-   $output
+  'annotate',
+  [qw(--keys priority), '{{zip/#0}} = "bar"'],
+  $input,
+  $output
 );
 
 $output = <<OUTPUT;
@@ -72,9 +72,9 @@ $output = <<OUTPUT;
 OUTPUT
 
 App::RecordStream::Test::OperationHelper->new(
-   'annotate',
-   [qw(--keys priority), '{{foo/biz}} = "bar"'],
-   $input,
-   $output
+  'annotate',
+  [qw(--keys priority), '{{foo/biz}} = "bar"'],
+  $input,
+  $output
 );
 

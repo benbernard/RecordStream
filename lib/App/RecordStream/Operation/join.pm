@@ -11,172 +11,172 @@ use App::RecordStream::InputStream;
 use App::RecordStream::Record;
 
 sub init {
-   my $this = shift;
-   my $args = shift;
+  my $this = shift;
+  my $args = shift;
 
-   my $left             = 0;
-   my $right            = 0;
-   my $inner            = 0;
-   my $outer            = 0;
-   my $operation        = "";
-   my $accumulate_right = 0;
+  my $left             = 0;
+  my $right            = 0;
+  my $inner            = 0;
+  my $outer            = 0;
+  my $operation        = "";
+  my $accumulate_right = 0;
 
-   my $spec = {
-      "help"             => \&usage,
-      "left"             => \$left,
-      "right"            => \$right,
-      "inner"            => \$inner,
-      "outer"            => \$outer,
-      "operation=s"      => \$operation,
-      "accumulate-right" => \$accumulate_right,
-   };
+  my $spec = {
+    "help"             => \&usage,
+    "left"             => \$left,
+    "right"            => \$right,
+    "inner"            => \$inner,
+    "outer"            => \$outer,
+    "operation=s"      => \$operation,
+    "accumulate-right" => \$accumulate_right,
+  };
 
-   $this->parse_options($args, $spec);
+  $this->parse_options($args, $spec);
 
-   if ( ! @$args ) {
-      die("You must provide inputkey");
-   }
+  if ( ! @$args ) {
+    die("You must provide inputkey");
+  }
 
-   my $inputkey = shift @$args;
+  my $inputkey = shift @$args;
 
-   die("You must provide dbkey") unless (@$args);
+  die("You must provide dbkey") unless (@$args);
 
-   my $dbkey = shift @$args;
+  my $dbkey = shift @$args;
 
-   usage("You must provide dbfile") unless (@$args);
+  usage("You must provide dbfile") unless (@$args);
 
-   my $dbfile = shift @$args;
+  my $dbfile = shift @$args;
 
-   $this->{'ACCUMULATE_RIGHT'} = $accumulate_right;
-   $this->{'DB_KEY'}           = $dbkey;
-   $this->{'INPUT_KEY'}        = $inputkey;
-   $this->{'KEEP_LEFT'}        = $left || $outer;
-   $this->{'KEEP_RIGHT'}       = $right || $outer;
+  $this->{'ACCUMULATE_RIGHT'} = $accumulate_right;
+  $this->{'DB_KEY'}           = $dbkey;
+  $this->{'INPUT_KEY'}        = $inputkey;
+  $this->{'KEEP_LEFT'}        = $left || $outer;
+  $this->{'KEEP_RIGHT'}       = $right || $outer;
 
 
-   if ( $operation ) {
-      $this->{'OPERATION'} = App::RecordStream::Executor->transform_code($operation);
-   }
+  if ( $operation ) {
+    $this->{'OPERATION'} = App::RecordStream::Executor->transform_code($operation);
+  }
 
-   $this->create_db($dbfile, $dbkey);
+  $this->create_db($dbfile, $dbkey);
 
-   $this->{'KEYS_PRINTED'} = {};
+  $this->{'KEYS_PRINTED'} = {};
 }
 
 sub create_db {
-   my $this = shift;
-   my $file = shift;
-   my $key  = shift;
+  my $this = shift;
+  my $file = shift;
+  my $key  = shift;
 
-   my $db_stream = App::RecordStream::InputStream->new('FILE' => $file);
-   my %db;
-   my $record;
+  my $db_stream = App::RecordStream::InputStream->new('FILE' => $file);
+  my %db;
+  my $record;
 
-   while($record = $db_stream->get_record()) {
-      my $value = $this->value_for_key($record, $key);
+  while($record = $db_stream->get_record()) {
+    my $value = $this->value_for_key($record, $key);
 
-      $db{$value} = [] unless ( $db{$value} );
-      push @{$db{$value}}, $record;
-   }
+    $db{$value} = [] unless ( $db{$value} );
+    push @{$db{$value}}, $record;
+  }
 
-   $this->{'DB'} = \%db;
+  $this->{'DB'} = \%db;
 }
 
 sub value_for_key {
-   my $this   = shift;
-   my $record = shift;
-   my $key    = shift;
+  my $this   = shift;
+  my $record = shift;
+  my $key    = shift;
 
-   return ${$record->guess_key_from_spec($key, 0)};
+  return ${$record->guess_key_from_spec($key, 0)};
 }
 
 sub accept_record {
-   my $this   = shift;
-   my $record = shift;
+  my $this   = shift;
+  my $record = shift;
 
-   my $value = $this->value_for_key($record, $this->{'INPUT_KEY'});
+  my $value = $this->value_for_key($record, $this->{'INPUT_KEY'});
 
-   my $db = $this->{'DB'};
+  my $db = $this->{'DB'};
 
-   if(my $db_records = $db->{$value}) {
-      foreach my $db_record (@$db_records) {
-         if ($this->{'ACCUMULATE_RIGHT'}) {
-            if ($this->{'OPERATION'}) {
-               $this->run_expression($db_record, $record);
+  if(my $db_records = $db->{$value}) {
+    foreach my $db_record (@$db_records) {
+      if ($this->{'ACCUMULATE_RIGHT'}) {
+        if ($this->{'OPERATION'}) {
+          $this->run_expression($db_record, $record);
+        }
+        else {
+          foreach my $this_key (keys %$record) {
+            if (!exists($db_record->{$this_key})) {
+              $db_record->{$this_key} = $record->{$this_key};
             }
-            else {
-               foreach my $this_key (keys %$record) {
-                  if (!exists($db_record->{$this_key})) {
-                     $db_record->{$this_key} = $record->{$this_key};
-                  }
-               }
-            }
-         }
-         else {
-            if ($this->{'OPERATION'}) {
-               my $output_record = App::RecordStream::Record->new(%$db_record);
-               $this->run_expression($output_record, $record);
-               $this->push_record($output_record);
-            }
-            else {
-               $this->push_record(App::RecordStream::Record->new(%$record, %$db_record));
-            }
-
-            if ($this->{'KEEP_LEFT'}) {
-               $this->{'KEYS_PRINTED'}->{$value} = 1;
-            }
-         }
+          }
+        }
       }
-   }
-   elsif ($this->{'KEEP_RIGHT'}) {
-      $this->push_record($record);
-   }
+      else {
+        if ($this->{'OPERATION'}) {
+          my $output_record = App::RecordStream::Record->new(%$db_record);
+          $this->run_expression($output_record, $record);
+          $this->push_record($output_record);
+        }
+        else {
+          $this->push_record(App::RecordStream::Record->new(%$record, %$db_record));
+        }
 
-   return 1;
+        if ($this->{'KEEP_LEFT'}) {
+          $this->{'KEYS_PRINTED'}->{$value} = 1;
+        }
+      }
+    }
+  }
+  elsif ($this->{'KEEP_RIGHT'}) {
+    $this->push_record($record);
+  }
+
+  return 1;
 }
 
 # TODO: shove down into executor
 sub run_expression {
-   my $__MY__this = shift;
-   my $d    = shift;
-   my $i    = shift;
+  my $__MY__this = shift;
+  my $d    = shift;
+  my $i    = shift;
 
-   no strict;
-   no warnings;
-   eval $__MY__this->{'OPERATION'};
+  no strict;
+  no warnings;
+  eval $__MY__this->{'OPERATION'};
 
-   if ( $@ ) {
-     warn "Code died with $@\n";
-   }
+  if ( $@ ) {
+    warn "Code died with $@\n";
+  }
 }
 
 sub stream_done {
-   my $this = shift;
-   if ($this->{'KEEP_LEFT'}) {
-      foreach my $db_records (values %{$this->{'DB'}}) {
-         foreach my $db_record (@$db_records) {
-            my $value = $this->value_for_key($db_record, $this->{'DB_KEY'});
-            if (!exists($this->{'KEYS_PRINTED'}->{$value})) {
-               $this->push_record($db_record);
-            }
-         }
+  my $this = shift;
+  if ($this->{'KEEP_LEFT'}) {
+    foreach my $db_records (values %{$this->{'DB'}}) {
+      foreach my $db_record (@$db_records) {
+        my $value = $this->value_for_key($db_record, $this->{'DB_KEY'});
+        if (!exists($this->{'KEYS_PRINTED'}->{$value})) {
+          $this->push_record($db_record);
+        }
       }
-   }
+    }
+  }
 }
 
 sub add_help_types {
-   my $this = shift;
-   $this->use_help_type('keyspecs');
-   $this->use_help_type('snippet');
-   $this->add_help_type(
-      'full',
-      \&full_help,
-      'Help on join types and accumulate-right'
-   );
+  my $this = shift;
+  $this->use_help_type('keyspecs');
+  $this->use_help_type('snippet');
+  $this->add_help_type(
+    'full',
+    \&full_help,
+    'Help on join types and accumulate-right'
+  );
 }
 
 sub full_help {
-   print <<HELP_FULL;
+  print <<HELP_FULL;
 Join Types
    For instance, if you did:
    recs-join type typeName dbfile fromfile
@@ -225,20 +225,20 @@ HELP_FULL
 }
 
 sub usage {
-   my $this = shift;
+  my $this = shift;
 
-   my $options = [
-      ['left', 'Do a left join'],
-      ['right', 'Do a right join'],
-      ['inner', 'Do an inner join (This is the default)'],
-      ['outer', 'Do an outer join'],
-      ['operation', 'An perl expression to evaluate for merging two records together, in place of the default behavior of db fields overwriting input fields. See "Operation" below.'],
-      ['accumulate-right', 'Accumulate all input records with the same key onto each db record matching that key. See "Accumulate Right" below.'],
-   ];
+  my $options = [
+    ['left', 'Do a left join'],
+    ['right', 'Do a right join'],
+    ['inner', 'Do an inner join (This is the default)'],
+    ['outer', 'Do an outer join'],
+    ['operation', 'An perl expression to evaluate for merging two records together, in place of the default behavior of db fields overwriting input fields. See "Operation" below.'],
+    ['accumulate-right', 'Accumulate all input records with the same key onto each db record matching that key. See "Accumulate Right" below.'],
+  ];
 
-   my $args_string = $this->options_string($options);
+  my $args_string = $this->options_string($options);
 
-   return <<USAGE;
+  return <<USAGE;
 Usage: recs-join <args> <inputkey> <dbkey> <dbfile> [<files>]
    __FORMAT_TEXT__
    Records of input (or records from <files>) are joined against records in

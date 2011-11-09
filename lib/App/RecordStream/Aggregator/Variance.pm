@@ -17,16 +17,16 @@ use base 'App::RecordStream::Aggregator::Ord2Univariate';
 
 sub squish
 {
-   my ($this, $cookie) = @_;
+  my ($this, $cookie) = @_;
 
-   my ($sum1, $sumx, $sumx2) = @$cookie;
+  my ($sum1, $sumx, $sumx2) = @$cookie;
 
-   return ($sumx2 / $sum1) - ($sumx / $sum1) ** 2;
+  return ($sumx2 / $sum1) - ($sumx / $sum1) ** 2;
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: var,<field1>
    Variance of specified fields.
 
@@ -37,7 +37,7 @@ EOF
 
 sub short_usage
 {
-   return "find variance of provided field";
+  return "find variance of provided field";
 }
 
 App::RecordStream::Aggregator::register_aggregator('var', __PACKAGE__);

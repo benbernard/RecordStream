@@ -11,48 +11,48 @@ use base 'App::RecordStream::Deaggregator::Field';
 
 sub new
 {
-   my $class = shift;
-   my $old_field = shift;
-   my $new_field = shift;
+  my $class = shift;
+  my $old_field = shift;
+  my $new_field = shift;
 
-   my $this = $class->SUPER::new($old_field);
+  my $this = $class->SUPER::new($old_field);
 
-   $this->{'new_field'} = $new_field;
+  $this->{'new_field'} = $new_field;
 
-   return $this;
+  return $this;
 }
 
 sub new_from_valuation
 {
-   my $class = shift;
-   my $valuation = shift;
-   my $new_field = shift;
+  my $class = shift;
+  my $valuation = shift;
+  my $new_field = shift;
 
-   my $this = $class->SUPER::new_from_valuation($valuation);
+  my $this = $class->SUPER::new_from_valuation($valuation);
 
-   $this->{'new_field'} = $new_field;
+  $this->{'new_field'} = $new_field;
 
-   return $this;
+  return $this;
 }
 
 sub deaggregate_field
 {
-    my $this = shift;
-    my $values = shift;
+  my $this = shift;
+  my $values = shift;
 
-    my @ret;
+  my @ret;
 
-    for my $value (@$values)
-    {
-        push @ret, {$this->{'new_field'} => $value};
-    }
+  for my $value (@$values)
+  {
+    push @ret, {$this->{'new_field'} => $value};
+  }
 
-    return \@ret;
+  return \@ret;
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: unarray,<old field>,<new field>
    Split the array into individual \"element\" records
 EOF
@@ -60,12 +60,12 @@ EOF
 
 sub short_usage
 {
-   return "split the provided array";
+  return "split the provided array";
 }
 
 sub argct
 {
-   return 2;
+  return 2;
 }
 
 App::RecordStream::Deaggregator::register_deaggregator('unarray', __PACKAGE__);

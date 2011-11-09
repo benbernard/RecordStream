@@ -1,5 +1,3 @@
-# vim: set sw=3:
-
 # This class handles the execution of "perl" code from the commandline on a
 # record.  Handles magic of variable hiding and also special syntax issues.
 
@@ -30,23 +28,23 @@ sub new {
   my $snippets      = shift;
 
   if ( ref($snippets) ne 'HASH' ) {
-     my $code = <<CODE;
-\$filename = App::RecordStream::Operation::get_current_filename();
-\$line++;
-$snippets;
+    my $code = <<CODE;
+      \$filename = App::RecordStream::Operation::get_current_filename();
+      \$line++;
+      $snippets;
 CODE
 
-     $snippets = {
-        $DEFAULT_METHOD_NAME => {
-           code => $code,
-           arg_names => ['r'],
-        },
-     };
+    $snippets = {
+      $DEFAULT_METHOD_NAME => {
+        code => $code,
+        arg_names => ['r'],
+      },
+    };
   }
 
   my $this = {
-     ID            => $NEXT_ID,
-     SNIPPETS      => $snippets,
+    ID            => $NEXT_ID,
+    SNIPPETS      => $snippets,
   };
 
   $NEXT_ID++;
@@ -59,58 +57,58 @@ CODE
 }
 
 sub init {
-   my $this  = shift;
-   $this->create_safe_package();
+  my $this  = shift;
+  $this->create_safe_package();
 }
 
 sub create_snippets {
-   my $this = shift;
+  my $this = shift;
 
-   my $code = '';
+  my $code = '';
 
-   foreach my $name (keys %{$this->{'SNIPPETS'}} ) {
-      my $arg_names = $this->{'SNIPPETS'}->{$name}->{'arg_names'};
-      my $args_spec = '';
+  foreach my $name (keys %{$this->{'SNIPPETS'}} ) {
+    my $arg_names = $this->{'SNIPPETS'}->{$name}->{'arg_names'};
+    my $args_spec = '';
 
-      if ( $arg_names ) {
-         $args_spec = 'my (';
-         $args_spec .= join(',', map { "\$$_"} @$arg_names);
-         $args_spec .= ') = @_;';
-      }
+    if ( $arg_names ) {
+      $args_spec = 'my (';
+      $args_spec .= join(',', map { "\$$_"} @$arg_names);
+      $args_spec .= ') = @_;';
+    }
 
-      my $method_name = $this->get_method_name($name);
-      my $snippet = $this->transform_code($this->{'SNIPPETS'}->{$name}->{'code'});
+    my $method_name = $this->get_method_name($name);
+    my $snippet = $this->transform_code($this->{'SNIPPETS'}->{$name}->{'code'});
 
-      $code .= <<CODE;
+    $code .= <<CODE;
 sub $method_name {
    $args_spec
 
    $snippet
 }
 CODE
-   }
+  }
 
-   return $code;
+  return $code;
 }
 
 sub get_method_name {
-   my $this = shift;
-   my $name = shift;
+  my $this = shift;
+  my $name = shift;
 
-   return '__MY__' . $name;
+  return '__MY__' . $name;
 }
 
 sub get_safe_package_name {
-   my $this = shift;
-   return '__MY__SafeCompartment_' . $this->{'ID'};
+  my $this = shift;
+  return '__MY__SafeCompartment_' . $this->{'ID'};
 }
 
 sub create_safe_package {
-   my $this = shift;
-   my $package_name = $this->get_safe_package_name();
-   my $snippets = $this->create_snippets();
+  my $this = shift;
+  my $package_name = $this->get_safe_package_name();
+  my $snippets = $this->create_snippets();
 
-   my $code = <<CODE;
+  my $code = <<CODE;
 package $package_name;
 
 $snippets
@@ -118,19 +116,19 @@ $snippets
 1;
 CODE
 
-   eval_safe_package($code);
-   if ( $@ ) {
-      die $@;
-   }
+  eval_safe_package($code);
+  if ( $@ ) {
+    die $@;
+  }
 
-   foreach my $name (keys %{$this->{'SNIPPETS'}}) {
-      my $method_name = $this->get_method_name($name);
-      my $code_ref = \&{$package_name . '::' . $method_name};
-      $this->{'SNIPPETS'}->{$name}->{'CODE_REF'} = $code_ref;
-   }
+  foreach my $name (keys %{$this->{'SNIPPETS'}}) {
+    my $method_name = $this->get_method_name($name);
+    my $code_ref = \&{$package_name . '::' . $method_name};
+    $this->{'SNIPPETS'}->{$name}->{'CODE_REF'} = $code_ref;
+  }
 }
 
-sub clear_vars {
+ sub clear_vars {
    my $this = shift;
 
    my $package_name = $this->get_safe_package_name();
@@ -138,17 +136,17 @@ sub clear_vars {
    my %method_names = map { $this->get_method_name($_) => 1 } keys %{$this->{'SNIPPETS'}};
 
    {
-      no strict;
-      no warnings;
+     no strict;
+     no warnings;
 
-      foreach my $variable (keys %{$package_name . '::'}) {
-         next if ( exists $method_names{$variable} );
-         delete %{$package_name . '::'}->{$variable};
-      }
+     foreach my $variable (keys %{$package_name . '::'}) {
+       next if ( exists $method_names{$variable} );
+       delete %{$package_name . '::'}->{$variable};
+     }
    }
-}
+ }
 
-sub set_scalar {
+ sub set_scalar {
    my $this = shift;
    my $name = shift;
    my $val = shift;
@@ -156,28 +154,28 @@ sub set_scalar {
    my $package_name = $this->get_safe_package_name();
 
    {
-      no strict;
-      no warnings;
+     no strict;
+     no warnings;
 
-      *{$package_name . '::' . $name} = \$val;
+     *{$package_name . '::' . $name} = \$val;
    }
-}
+ }
 
-sub get_scalar {
+ sub get_scalar {
    my $this = shift;
    my $name = shift;
 
    my $package_name = $this->get_safe_package_name();
 
    {
-      no strict;
-      no warnings;
+     no strict;
+     no warnings;
 
-      return ${$package_name . '::' . $name};
+     return ${$package_name . '::' . $name};
    }
-}
+ }
 
-sub set_executor_method {
+ sub set_executor_method {
    my $this = shift;
    my $name = shift;
    my $ref = shift;
@@ -185,20 +183,20 @@ sub set_executor_method {
    my $package_name = $this->get_safe_package_name();
 
    {
-      no strict;
-      no warnings;
+     no strict;
+     no warnings;
 
-      *{$package_name . "::" . $name} = $ref;
+     *{$package_name . "::" . $name} = $ref;
    }
-}
+ }
 
-sub get_code_ref {
+ sub get_code_ref {
    my $this = shift;
    my $name = shift;
    $this->{'SNIPPETS'}->{$name}->{'CODE_REF'};
-}
+ }
 
-sub eval_safe_package {
+ sub eval_safe_package {
    my $__MY__code = shift;
 
    my $code =  <<CODE;
@@ -208,38 +206,38 @@ no warnings;
 $__MY__code
 CODE
 
-   eval $code;
-   if ($@) {
-      die $@;
-   }
+  eval $code;
+  if ($@) {
+    die $@;
+  }
 }
 
 sub execute_code {
-   my ($this, @args) = @_;
-   return $this->execute_method($DEFAULT_METHOD_NAME, @args);
+  my ($this, @args) = @_;
+  return $this->execute_method($DEFAULT_METHOD_NAME, @args);
 }
 
 sub execute_method {
-   my ($this, $name, @args) = @_;
-   return $this->get_code_ref($name)->(@args);
+  my ($this, $name, @args) = @_;
+  return $this->get_code_ref($name)->(@args);
 }
 
 sub transform_code {
-   my $this = shift;
-   my $code = shift;
+  my $this = shift;
+  my $code = shift;
 
-   while ( $code =~ m/{{(.*?)}}/ ) {
-      my $specifier = $1;
-      my $guessing_code = '${$r->guess_key_from_spec(qq{\@' . $specifier . '})}';
-      $code =~ s/{{.*?}}/$guessing_code/;
-   }
+  while ( $code =~ m/{{(.*?)}}/ ) {
+    my $specifier = $1;
+    my $guessing_code = '${$r->guess_key_from_spec(qq{\@' . $specifier . '})}';
+    $code =~ s/{{.*?}}/$guessing_code/;
+  }
 
-   return $code;
+  return $code;
 }
 
 sub usage {
-   return <<USAGE;
-CODE SNIPPETS:
+  return <<USAGE;
+   CODE SNIPPETS:
    __FORMAT_TEXT__
     Recs code snippets are perl code, with one exception.  There a couple of
     variables predefined for you, and one piece of special syntax to assist in
@@ -284,25 +282,25 @@ Special Syntax
     # Even assign to values (set the foo key to the value 1)
     {{foo}} = 1
 
-   # And auto, vivify
+    # And auto, vivify
     {{new_key/array_key/#0}} = 3 # creates an array within a hash within a hash
 
     # Index into an array
     {{array_key/#3}} # The value of index 3 of the array ref under the
-                       'array_key' hash key.
+    'array_key' hash key.
 
-   __FORMAT_TEXT__
+    __FORMAT_TEXT__
     This matching is a fuzzy keyspec matching, see --help-keyspecs for more
     details.
-   __FORMAT_TEXT__
+    __FORMAT_TEXT__
 USAGE
 }
 
 sub options_help {
-   return (
-      ['e', 'a perl snippet to execute, optional'],
-      ['E', 'the name of a file to read as a perl snippet'],
-   );
+  return (
+    ['e', 'a perl snippet to execute, optional'],
+    ['E', 'the name of a file to read as a perl snippet'],
+  );
 }
 
 1;

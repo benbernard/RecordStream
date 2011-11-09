@@ -12,87 +12,87 @@ use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
 sub _make_percentiles
 {
-   my $percentiles = shift;
+  my $percentiles = shift;
 
-   if(ref($percentiles) eq "ARRAY")
-   {
-      return $percentiles;
-   }
+  if(ref($percentiles) eq "ARRAY")
+  {
+    return $percentiles;
+  }
 
-   # be careful, split(' ', ...) is extreme magic split, not split on one space
-   return [split(' ', $percentiles)];
+  # be careful, split(' ', ...) is extreme magic split, not split on one space
+  return [split(' ', $percentiles)];
 }
 
 sub new
 {
-   my $class       = shift;
-   my $percentiles = shift;
-   my $field       = shift;
+  my $class       = shift;
+  my $percentiles = shift;
+  my $field       = shift;
 
-   my $this = $class->SUPER::new($field);
-   $this->{'percentiles'} = _make_percentiles($percentiles);
+  my $this = $class->SUPER::new($field);
+  $this->{'percentiles'} = _make_percentiles($percentiles);
 
-   return $this;
+  return $this;
 }
 
 sub new_from_valuation
 {
-   my $class       = shift;
-   my $percentiles = shift;
-   my $valuation   = shift;
+  my $class       = shift;
+  my $percentiles = shift;
+  my $valuation   = shift;
 
-   my $this = $class->SUPER::new_from_valuation($valuation);
-   $this->{'percentiles'} = _make_percentiles($percentiles);
+  my $this = $class->SUPER::new_from_valuation($valuation);
+  $this->{'percentiles'} = _make_percentiles($percentiles);
 
-   return $this;
+  return $this;
 }
 
 sub initial {
-   return [];
+  return [];
 }
 
 sub combine_field
 {
-   my $this   = shift;
-   my $cookie = shift;
-   my $value  = shift;
+  my $this   = shift;
+  my $cookie = shift;
+  my $value  = shift;
 
-   push @$cookie, $value;
-   return $cookie;
+  push @$cookie, $value;
+  return $cookie;
 }
 
 sub squish
 {
-   my $this   = shift;
-   my $cookie = shift;
+  my $this   = shift;
+  my $cookie = shift;
 
-   my @sorted = sort { $a <=> $b } @$cookie;
+  my @sorted = sort { $a <=> $b } @$cookie;
 
-   my %ret;
+  my %ret;
 
-   for my $percentile (@{$this->{'percentiles'}})
-   {
-       my $index = int((scalar @sorted) * ($percentile / 100));
+  for my $percentile (@{$this->{'percentiles'}})
+  {
+    my $index = int((scalar @sorted) * ($percentile / 100));
 
-       if($index == scalar(@sorted))
-       {
-           $index--;
-       }
+    if($index == scalar(@sorted))
+    {
+      $index--;
+    }
 
-       $ret{$percentile} = $sorted[$index];
-   }
+    $ret{$percentile} = $sorted[$index];
+  }
 
-   return \%ret;
+  return \%ret;
 }
 
 sub short_usage
 {
-   return "map of percentile values for field";
+  return "map of percentile values for field";
 }
 
 sub long_usage
 {
-   print <<EOF;
+  print <<EOF;
 Usage: percmap,<percentiles>,<field>
    Finds the field values which <percentiles> percent of values are less than.
 
@@ -108,7 +108,7 @@ EOF
 
 sub argct
 {
-   return 2;
+  return 2;
 }
 
 App::RecordStream::Aggregator::register_aggregator('percentilemap', __PACKAGE__);

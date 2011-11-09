@@ -18,10 +18,10 @@ my $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'join',
-   [ qw(foo foo tests/files/join1) ],
-   $stream,
-   $solution,
+  'join',
+  [ qw(foo foo tests/files/join1) ],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -32,10 +32,10 @@ $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'join',
-   [ qw(foo foo tests/files/join1 --left) ],
-   $stream,
-   $solution,
+  'join',
+  [ qw(foo foo tests/files/join1 --left) ],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -47,10 +47,10 @@ $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'join',
-   [ qw(foo foo tests/files/join1 --right) ],
-   $stream,
-   $solution,
+  'join',
+  [ qw(foo foo tests/files/join1 --right) ],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -60,9 +60,9 @@ $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'join',
-   [ qw(foo foo tests/files/join1 --operation), '$d->{zipper} = 1' ],
-   $stream,
-   $solution,
+  'join',
+  [ qw(foo foo tests/files/join1 --operation), '$d->{zipper} = 1' ],
+  $stream,
+  $solution,
 );
 

@@ -13,52 +13,52 @@ use base 'App::RecordStream::Aggregator::MapReduce::Field';
 
 sub new
 {
-   my $class = shift;
-   my $delim = shift;
-   my $field = shift;
+  my $class = shift;
+  my $delim = shift;
+  my $field = shift;
 
-   my $this = $class->SUPER::new($field);
-   $this->{'delim'} = $delim;
+  my $this = $class->SUPER::new($field);
+  $this->{'delim'} = $delim;
 
-   return $this;
+  return $this;
 }
 
 sub new_from_valuation
 {
-   my $class     = shift;
-   my $delim     = shift;
-   my $valuation = shift;
+  my $class     = shift;
+  my $delim     = shift;
+  my $valuation = shift;
 
-   my $this = $class->SUPER::new_from_valuation($valuation);
-   $this->{'delim'} = $delim;
+  my $this = $class->SUPER::new_from_valuation($valuation);
+  $this->{'delim'} = $delim;
 
-   return $this;
+  return $this;
 }
 
 sub map_field
 {
-   my ($this, $value) = @_;
+  my ($this, $value) = @_;
 
-   return [$value];
+  return [$value];
 }
 
 sub reduce
 {
-   my ($this, $cookie, $cookie2) = @_;
+  my ($this, $cookie, $cookie2) = @_;
 
-   return [@$cookie, @$cookie2];
+  return [@$cookie, @$cookie2];
 }
 
 sub squish
 {
-   my ($this, $cookie) = @_;
+  my ($this, $cookie) = @_;
 
-   return join($this->{'delim'}, @$cookie);
+  return join($this->{'delim'}, @$cookie);
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: concat,<delimiter>,<field>
    Concatenate values from specified field.
 EOF
@@ -66,12 +66,12 @@ EOF
 
 sub short_usage
 {
-   return "concatenate values from provided field";
+  return "concatenate values from provided field";
 }
 
 sub argct
 {
-   return 2;
+  return 2;
 }
 
 App::RecordStream::Aggregator::register_aggregator('concatenate', __PACKAGE__);

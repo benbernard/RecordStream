@@ -16,21 +16,21 @@ use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
 sub combine_field
 {
-   my $this   = shift;
-   my $cookie = shift;
-   my $value  = shift;
+  my $this   = shift;
+  my $cookie = shift;
+  my $value  = shift;
 
-   return $value;
+  return $value;
 }
 
 sub short_usage
 {
-   return "last value for a field";
+  return "last value for a field";
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: last,<field>
    Last value of specified field.
 EOF

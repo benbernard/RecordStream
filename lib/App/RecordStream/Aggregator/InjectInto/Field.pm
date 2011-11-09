@@ -13,66 +13,66 @@ use base qw(App::RecordStream::Aggregator::InjectInto);
 
 sub new
 {
-   my $class = shift;
-   my $field = shift;
+  my $class = shift;
+  my $field = shift;
 
-   return new_from_valuation($class, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($field));
+  return new_from_valuation($class, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($field));
 }
 
 sub new_from_valuation
 {
-   my $class = shift;
-   my $valuation = shift;
+  my $class = shift;
+  my $valuation = shift;
 
-   my $this =
-   {
-      'valuation' => $valuation,
-   };
+  my $this =
+  {
+    'valuation' => $valuation,
+  };
 
-   bless $this, $class;
+  bless $this, $class;
 
-   return $this;
+  return $this;
 }
 
 sub initial
 {
-   return undef;
+  return undef;
 }
 
 sub combine
 {
-   my $this   = shift;
-   my $cookie = shift;
-   my $record = shift;
+  my $this   = shift;
+  my $cookie = shift;
+  my $record = shift;
 
-   my $value = $this->get_valuation()->evaluate_record($record);
+  my $value = $this->get_valuation()->evaluate_record($record);
 
-   if ( defined $value )
-   {
-      return $this->combine_field($cookie, $value);
-   }
-   else
-   {
-      return $cookie;
-   }
+  if ( defined $value )
+  {
+    return $this->combine_field($cookie, $value);
+  }
+  else
+  {
+    return $cookie;
+  }
 }
 
 sub get_valuation
 {
-    my $this = shift;
-    return $this->{'valuation'};
+  my $this = shift;
+  return $this->{'valuation'};
 }
 
 sub squish
 {
-   my ($this, $cookie) = @_;
+  my ($this, $cookie) = @_;
 
-   return $cookie;
+  return $cookie;
 }
 
 sub argct
 {
-   return 1;
+  return 1;
 }
 
 1;

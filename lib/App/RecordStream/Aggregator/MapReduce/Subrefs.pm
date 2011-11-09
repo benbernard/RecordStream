@@ -9,42 +9,42 @@ use base 'App::RecordStream::Aggregator::MapReduce';
 
 sub new
 {
-   my $class = shift;
-   my $map = shift;
-   my $reduce = shift;
-   my $squish = shift;
+  my $class = shift;
+  my $map = shift;
+  my $reduce = shift;
+  my $squish = shift;
 
-   my $this =
-   {
-      'map' => $map,
-      'reduce' => $reduce,
-      'squish' => $squish,
-   };
+  my $this =
+  {
+    'map' => $map,
+    'reduce' => $reduce,
+    'squish' => $squish,
+  };
 
-   bless $this, $class;
+  bless $this, $class;
 
-   return $this;
+  return $this;
 }
 
 sub map
 {
-   my $this = shift;
+  my $this = shift;
 
-   return $this->{'map'}->(@_);
+  return $this->{'map'}->(@_);
 }
 
 sub reduce
 {
-   my $this = shift;
+  my $this = shift;
 
-   return $this->{'reduce'}->(@_);
+  return $this->{'reduce'}->(@_);
 }
 
 sub squish
 {
-   my $this = shift;
+  my $this = shift;
 
-   return $this->{'squish'}->(@_);
+  return $this->{'squish'}->(@_);
 }
 
 1;

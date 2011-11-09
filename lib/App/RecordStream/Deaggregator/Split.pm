@@ -11,70 +11,70 @@ use base 'App::RecordStream::Deaggregator::Field';
 
 sub new
 {
-   my $class = shift;
-   my $old_field = shift;
-   my $delim = shift;
-   my $new_field = shift;
+  my $class = shift;
+  my $old_field = shift;
+  my $delim = shift;
+  my $new_field = shift;
 
-   my $this = $class->SUPER::new($old_field);
+  my $this = $class->SUPER::new($old_field);
 
-   $this->{'delim'} = make_delim($delim);
-   $this->{'new_field'} = $new_field;
+  $this->{'delim'} = make_delim($delim);
+  $this->{'new_field'} = $new_field;
 
-   return $this;
+  return $this;
 }
 
 sub new_from_valuation
 {
-   my $class = shift;
-   my $valuation = shift;
-   my $delim = shift;
-   my $new_field = shift;
+  my $class = shift;
+  my $valuation = shift;
+  my $delim = shift;
+  my $new_field = shift;
 
-   my $this = $class->SUPER::new_from_valuation($valuation);
+  my $this = $class->SUPER::new_from_valuation($valuation);
 
-   $this->{'delim'} = $delim; # not make_delim, let the domain language sort it out!
-   $this->{'new_field'} = $new_field;
+  $this->{'delim'} = $delim; # not make_delim, let the domain language sort it out!
+  $this->{'new_field'} = $new_field;
 
-   return $this;
+  return $this;
 }
 
 sub make_delim
 {
-    my $delim = shift;
+  my $delim = shift;
 
-    if($delim =~ /^\/(.*)\/$/)
-    {
-        return qr/$1/;
-    }
-    elsif($delim =~ /^\/(.*)\/i$/)
-    {
-        return qr/$1/i;
-    }
-    else
-    {
-        return qr/\Q$delim\E/;
-    }
+  if($delim =~ /^\/(.*)\/$/)
+  {
+    return qr/$1/;
+  }
+  elsif($delim =~ /^\/(.*)\/i$/)
+  {
+    return qr/$1/i;
+  }
+  else
+  {
+    return qr/\Q$delim\E/;
+  }
 }
 
 sub deaggregate_field
 {
-    my $this = shift;
-    my $values = shift;
+  my $this = shift;
+  my $values = shift;
 
-    my @ret;
+  my @ret;
 
-    for my $value (split($this->{'delim'}, $values, -1))
-    {
-        push @ret, {$this->{'new_field'} => $value};
-    }
+  for my $value (split($this->{'delim'}, $values, -1))
+  {
+    push @ret, {$this->{'new_field'} => $value};
+  }
 
-    return \@ret;
+  return \@ret;
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: split,<old field>,<delimiter>,<new field>
    Split the old field to create a new one.
 EOF
@@ -82,12 +82,12 @@ EOF
 
 sub short_usage
 {
-   return "split the provided field";
+  return "split the provided field";
 }
 
 sub argct
 {
-   return 3;
+  return 3;
 }
 
 App::RecordStream::Deaggregator::register_deaggregator('split', __PACKAGE__);

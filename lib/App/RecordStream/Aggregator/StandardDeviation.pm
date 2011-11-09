@@ -17,16 +17,16 @@ use base 'App::RecordStream::Aggregator::Ord2Univariate';
 
 sub squish
 {
-   my ($this, $cookie) = @_;
+  my ($this, $cookie) = @_;
 
-   my ($sum1, $sumx, $sumx2) = @$cookie;
+  my ($sum1, $sumx, $sumx2) = @$cookie;
 
-   return sqrt(($sumx2 / $sum1) - ($sumx / $sum1) ** 2);
+  return sqrt(($sumx2 / $sum1) - ($sumx / $sum1) ** 2);
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: stddev,<field1>
    Standard deviation of specified fields.
 
@@ -37,7 +37,7 @@ EOF
 
 sub short_usage
 {
-   return "find standard deviation of provided field";
+  return "find standard deviation of provided field";
 }
 
 App::RecordStream::Aggregator::register_aggregator('stddev', __PACKAGE__);

@@ -16,96 +16,96 @@ use App::RecordStream::Record;
 
 sub init
 {
-   my $this = shift;
-   my $args = shift;
+  my $this = shift;
+  my $args = shift;
 
-   my $follow = 1;
-   my $max    = undef;
+  my $follow = 1;
+  my $max    = undef;
 
-   my %options =
-   (
-      "follow!" => \$follow,
-      'max=s'   => \$max,
-   );
+  my %options =
+  (
+    "follow!" => \$follow,
+    'max=s'   => \$max,
+  );
 
-   $this->parse_options($args, \%options);
+  $this->parse_options($args, \%options);
 
-   $this->{'FOLLOW'} = $follow;
-   $this->{'MAX'}    = $max;
-   $this->{'URLS'}   = $args;
+  $this->{'FOLLOW'} = $follow;
+  $this->{'MAX'}    = $max;
+  $this->{'URLS'}   = $args;
 }
 
 sub wants_input
 {
-   return 0;
+  return 0;
 }
 
 sub stream_done
 {
-   my ($this) = @_;
+  my ($this) = @_;
 
-   my $ua = $this->make_user_agent();
+  my $ua = $this->make_user_agent();
 
-   my $request = HTTP::Request->new();
-   $request->method('GET');
+  my $request = HTTP::Request->new();
+  $request->method('GET');
 
-   my @urls = @{$this->{'URLS'}};
+  my @urls = @{$this->{'URLS'}};
 
-   my $count = 0;
-URL:
-   while (my $url = shift @urls)
-   {
-      $this->update_current_filename($url);
-      $request->uri($url);
-      my $response = $ua->request($request);
+  my $count = 0;
+  URL:
+  while (my $url = shift @urls)
+  {
+    $this->update_current_filename($url);
+    $request->uri($url);
+    my $response = $ua->request($request);
 
-      if (!$response->is_success)
+    if (!$response->is_success)
+    {
+      warn "# $0 GET $url failed: " . $response->message;
+      $this->_set_exit_value(1);
+      next;
+    }
+
+    my $xml = XMLin($response->content,
+      forcearray => [ 'entry', 'link' ],
+      keyattr => [ 'rel' ]);
+
+    foreach my $entry (@{$xml->{entry}})
+    {
+      $count++;
+      my $record = App::RecordStream::Record->new(%$entry);
+      $this->push_record($record);
+      if (defined $this->{'MAX'} && $count >= $this->{'MAX'})
       {
-         warn "# $0 GET $url failed: " . $response->message;
-         $this->_set_exit_value(1);
-         next;
+        last URL;
       }
+    }
 
-      my $xml = XMLin($response->content,
-                      forcearray => [ 'entry', 'link' ],
-                      keyattr => [ 'rel' ]);
-
-      foreach my $entry (@{$xml->{entry}})
-      {
-         $count++;
-         my $record = App::RecordStream::Record->new(%$entry);
-         $this->push_record($record);
-         if (defined $this->{'MAX'} && $count >= $this->{'MAX'})
-         {
-            last URL;
-         }
-      }
-
-      # Follow the feed 'next' link if present. It is a proposed part
-      # of the standard - see http://www.ietf.org/rfc/rfc5005.txt
-      if ($this->{'FOLLOW'} && exists $xml->{link}->{next})
-      {
-         unshift @urls, $xml->{link}->{next}->{href};
-      }
-   }
+    # Follow the feed 'next' link if present. It is a proposed part
+    # of the standard - see http://www.ietf.org/rfc/rfc5005.txt
+    if ($this->{'FOLLOW'} && exists $xml->{link}->{next})
+    {
+      unshift @urls, $xml->{link}->{next}->{href};
+    }
+  }
 }
 
 sub make_user_agent {
-    return LWP::UserAgent->new();
+  return LWP::UserAgent->new();
 }
 
 sub usage
 {
-   my $this = shift;
+  my $this = shift;
 
-   my $options = [
-      [ '[no]follow', 'Follow atom feed next links (or not).  Defaults on.'],
-      [ 'max=<n>', 'Print at most <n> entries and then exit.'],
-   ];
+  my $options = [
+    [ '[no]follow', 'Follow atom feed next links (or not).  Defaults on.'],
+    [ 'max=<n>', 'Print at most <n> entries and then exit.'],
+  ];
 
-   my $args_string = $this->options_string($options);
+  my $args_string = $this->options_string($options);
 
-   return <<USAGE;
+  return <<USAGE;
 Usage: recs-fromatomfeed <args> [<uris>]
    __FORMAT_TEXT__
    Produce records from atom feed entries.

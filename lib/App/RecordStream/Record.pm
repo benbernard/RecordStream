@@ -164,115 +164,115 @@ use Data::Dumper;
 
 my %comparators =
 (
-   ""        => \&cmp_lex,
-   "l"       => \&cmp_lex,
-   "lex"     => \&cmp_lex,
-   "lexical" => \&cmp_lex,
+  ""        => \&cmp_lex,
+  "l"       => \&cmp_lex,
+  "lex"     => \&cmp_lex,
+  "lexical" => \&cmp_lex,
 
-   # Ugh, "natural" is really the wrong name for numeric, I would expect
-   # natural to handle any sequence of text and numbers.  Unfortunately, this
-   # alias is sort of grandfathered in.
-   "n"       => \&cmp_nat,
-   "nat"     => \&cmp_nat,
-   "natural" => \&cmp_nat,
+  # Ugh, "natural" is really the wrong name for numeric, I would expect
+  # natural to handle any sequence of text and numbers.  Unfortunately, this
+  # alias is sort of grandfathered in.
+  "n"       => \&cmp_nat,
+  "nat"     => \&cmp_nat,
+  "natural" => \&cmp_nat,
 
-   # add more accurate "numeric" alias
-   "num"     => \&cmp_nat,
-   "numeric" => \&cmp_nat,
+  # add more accurate "numeric" alias
+  "num"     => \&cmp_nat,
+  "numeric" => \&cmp_nat,
 );
 
 sub cmp_lex
 {
-   my ($this, $that) = @_;
-   return ($this cmp $that);
+  my ($this, $that) = @_;
+  return ($this cmp $that);
 }
 
 sub cmp_nat
 {
-   my ($this, $that) = @_;
-   return ($this <=> $that);
+  my ($this, $that) = @_;
+  return ($this <=> $that);
 }
 
 sub get_comparators
 {
-   return [map { get_comparator($_) } @_];
+  return [map { get_comparator($_) } @_];
 }
 
 {
-   sub get_comparator
-   {
-      my ($comparator, $field) = get_comparator_and_field(@_);
+  sub get_comparator
+  {
+    my ($comparator, $field) = get_comparator_and_field(@_);
 
-      return $comparator;
-   }
+    return $comparator;
+  }
 
-   sub get_comparator_and_field
-   {
-      my $spec = shift;
+  sub get_comparator_and_field
+  {
+    my $spec = shift;
 
-      my ($field, $direction, $comparator_name, $all_hack);
+    my ($field, $direction, $comparator_name, $all_hack);
 
-      if ( $spec =~ m/=/ )
+    if ( $spec =~ m/=/ )
+    {
+      ($field, $direction, $comparator_name, $all_hack) = $spec =~ /^(.*)=([-+]?)(.*?)(\*?)$/;
+    }
+    else
+    {
+      ($field, $direction, $comparator_name, $all_hack) = ($spec, undef, 'lexical', '');
+    }
+
+    $direction = '+' unless ( $direction );
+    $all_hack = $all_hack ? 1 : 0;
+
+    my $func = $comparators{$comparator_name};
+    die "Not a valid comparator: $comparator_name" unless ( $func );
+
+    my $comparator = sub {
+      my ($this, $that) = @_;
+
+      my $val = undef;
+
+      if ( $all_hack )
       {
-         ($field, $direction, $comparator_name, $all_hack) = $spec =~ /^(.*)=([-+]?)(.*?)(\*?)$/;
+        my $this_value = ${$this->guess_key_from_spec($field)};
+        my $that_value = ${$that->guess_key_from_spec($field)};
+        if ( $this_value eq 'ALL' && $that_value ne 'ALL' )
+        {
+          $val = 1;
+        }
+        if ( $this_value ne 'ALL' && $that_value eq 'ALL' )
+        {
+          $val = -1;
+        }
+        if ( $this_value eq 'ALL' && $that_value eq 'ALL' )
+        {
+          return 0;
+        }
       }
-      else
+
+      if ( ! defined $val )
       {
-         ($field, $direction, $comparator_name, $all_hack) = ($spec, undef, 'lexical', '');
+        $val = $func->(${$this->guess_key_from_spec($field)}, ${$that->guess_key_from_spec($field)});
       }
 
-      $direction = '+' unless ( $direction );
-      $all_hack = $all_hack ? 1 : 0;
+      if ( $direction eq '-' )
+      {
+        return -$val;
+      }
 
-      my $func = $comparators{$comparator_name};
-      die "Not a valid comparator: $comparator_name" unless ( $func );
+      return $val;
+    };
 
-      my $comparator = sub {
-         my ($this, $that) = @_;
-
-         my $val = undef;
-
-         if ( $all_hack )
-         {
-            my $this_value = ${$this->guess_key_from_spec($field)};
-            my $that_value = ${$that->guess_key_from_spec($field)};
-            if ( $this_value eq 'ALL' && $that_value ne 'ALL' )
-            {
-               $val = 1;
-            }
-            if ( $this_value ne 'ALL' && $that_value eq 'ALL' )
-            {
-               $val = -1;
-            }
-            if ( $this_value eq 'ALL' && $that_value eq 'ALL' )
-            {
-               return 0;
-            }
-         }
-
-         if ( ! defined $val )
-         {
-            $val = $func->(${$this->guess_key_from_spec($field)}, ${$that->guess_key_from_spec($field)});
-         }
-
-         if ( $direction eq '-' )
-         {
-            return -$val;
-         }
-
-         return $val;
-      };
-
-      return ($comparator, $field);
-   }
+    return ($comparator, $field);
+  }
 }
 
 sub sort
 {
-   my $records = shift;
-   my @specs   = @_;
+  my $records = shift;
+  my @specs   = @_;
 
-   return CORE::sort { $a->cmp($b, @specs) } @$records;
+  return CORE::sort { $a->cmp($b, @specs) } @$records;
 }
 
 ### Actual class
@@ -281,95 +281,95 @@ our $AUTOLOAD;
 
 sub new
 {
-   my $class = shift;
+  my $class = shift;
 
-   if ( scalar @_ == 1 ) {
-     my $arg = $_[0];
-     if ( UNIVERSAL::isa($arg, 'HASH') ) {
-       bless $arg, $class;
-       return $arg;
-     }
-   }
+  if ( scalar @_ == 1 ) {
+    my $arg = $_[0];
+    if ( UNIVERSAL::isa($arg, 'HASH') ) {
+      bless $arg, $class;
+      return $arg;
+    }
+  }
 
-   my $this = { @_ };
-   bless $this, $class;
+  my $this = { @_ };
+  bless $this, $class;
 
-   return $this;
+  return $this;
 }
 
 sub keys
 {
-   my ($this) = @_;
-   return CORE::keys(%$this);
+  my ($this) = @_;
+  return CORE::keys(%$this);
 }
 
 sub exists
 {
-   my ($this, $field) = @_;
-   return exists($this->{$field});
+  my ($this, $field) = @_;
+  return exists($this->{$field});
 }
 
 sub get
 {
-   my ($this, $field) = @_;
-   return $this->{$field};
+  my ($this, $field) = @_;
+  return $this->{$field};
 }
 
 sub set
 {
-   my ($this, $field, $val) = @_;
+  my ($this, $field, $val) = @_;
 
-   my $old = $this->{$field};
-   $this->{$field} = $val;
+  my $old = $this->{$field};
+  $this->{$field} = $val;
 
-   return $old;
+  return $old;
 }
 
 sub remove
 {
-   my ($this, @fields) = @_;
+  my ($this, @fields) = @_;
 
-   my @old;
-   for my $field (@fields)
-   {
-      push @old, delete $this->{$field};
-   }
+  my @old;
+  for my $field (@fields)
+  {
+    push @old, delete $this->{$field};
+  }
 
-   return @old;
+  return @old;
 }
 
 sub prune_to
 {
-   my ($this, @ok) = @_;
+  my ($this, @ok) = @_;
 
-   my %ok = map { ($_ => 1) } @ok;
-   for my $field (CORE::keys(%$this))
-   {
-      if(!exists($ok{$field}))
-      {
-         delete $this->{$field};
-      }
-   }
+  my %ok = map { ($_ => 1) } @ok;
+  for my $field (CORE::keys(%$this))
+  {
+    if(!exists($ok{$field}))
+    {
+      delete $this->{$field};
+    }
+  }
 }
 
 sub rename
 {
-   my ($this, $old, $new) = @_;
+  my ($this, $old, $new) = @_;
 
-   $this->set($new, $this->get($old));
-   $this->remove($old);
+  $this->set($new, $this->get($old));
+  $this->remove($old);
 }
 
 sub as_hash
 {
-   my ($this) = @_;
-   return %$this;
+  my ($this) = @_;
+  return %$this;
 }
 
 sub as_hashref
 {
-   my ($this) = @_;
-   return {%$this};
+  my ($this) = @_;
+  return {%$this};
 }
 
 sub TO_JSON {
@@ -378,68 +378,68 @@ sub TO_JSON {
 }
 
 sub has_key_spec {
-   my ($this, $spec) = @_;
-   my $spec_obj = App::RecordStream::KeySpec->new($spec);
-   return $spec_obj->has_key_spec($this);
+  my ($this, $spec) = @_;
+  my $spec_obj = App::RecordStream::KeySpec->new($spec);
+  return $spec_obj->has_key_spec($this);
 }
 
 sub guess_key_from_spec {
-   return App::RecordStream::KeySpec::find_key(@_);
+  return App::RecordStream::KeySpec::find_key(@_);
 }
 
 sub get_key_list_for_spec {
-   my ($this, $spec) = @_;
+  my ($this, $spec) = @_;
 
-   my $spec_obj = App::RecordStream::KeySpec->new($spec);
-   return $spec_obj->get_key_list_for_spec($this);
+  my $spec_obj = App::RecordStream::KeySpec->new($spec);
+  return $spec_obj->get_key_list_for_spec($this);
 }
 
 {
-   my $key_groups = {};
-   sub get_keys_for_group {
-      my ($this, $group_string, $rerun) = @_;
+  my $key_groups = {};
+  sub get_keys_for_group {
+    my ($this, $group_string, $rerun) = @_;
 
-      my $group = $key_groups->{$group_string};
-      if ( ! $group ) {
-         my $new_group                = App::RecordStream::KeyGroups->new($group_string);
-         $key_groups->{$group_string} = $new_group;
-         $group                       = $new_group;
-      }
+    my $group = $key_groups->{$group_string};
+    if ( ! $group ) {
+      my $new_group                = App::RecordStream::KeyGroups->new($group_string);
+      $key_groups->{$group_string} = $new_group;
+      $group                       = $new_group;
+    }
 
-      if ( $rerun ) {
-         return $group->get_keyspecs_for_record($this);
-      }
-      else {
-         return $group->get_keyspecs($this);
-      }
-   }
+    if ( $rerun ) {
+      return $group->get_keyspecs_for_record($this);
+    }
+    else {
+      return $group->get_keyspecs($this);
+    }
+  }
 }
 
 sub get_group_values {
-   my ($this, $group, $rerun) = @_;
+  my ($this, $group, $rerun) = @_;
 
-   my $specs  = $this->get_keys_for_group($group, $rerun);
-   my $values = [];
+  my $specs  = $this->get_keys_for_group($group, $rerun);
+  my $values = [];
 
-   foreach my $spec (@$specs) {
-      push @$values, ${$this->guess_key_from_spec($spec)};
-   }
+  foreach my $spec (@$specs) {
+    push @$values, ${$this->guess_key_from_spec($spec)};
+  }
 
-   return $values;
+  return $values;
 }
 
 sub cmp
 {
-   my ($this, $that, @keys) = @_;
+  my ($this, $that, @keys) = @_;
 
-   my $comparators = get_comparators(@keys);
+  my $comparators = get_comparators(@keys);
 
-   foreach my $comparator (@$comparators) {
-      my $val = $comparator->($this, $that);
-      return $val if ( $val != 0 );
-   }
+  foreach my $comparator (@$comparators) {
+    my $val = $comparator->($this, $that);
+    return $val if ( $val != 0 );
+  }
 
-   return 0;
+  return 0;
 }
 
 sub DESTROY {
@@ -447,21 +447,21 @@ sub DESTROY {
 
 sub AUTOLOAD
 {
-   my $this = shift;
+  my $this = shift;
 
-   $AUTOLOAD =~ s/^.*://;
+  $AUTOLOAD =~ s/^.*://;
 
-   if($AUTOLOAD =~ /^get_(.*)$/)
-   {
-      return get($this, $1, @_);
-   }
+  if($AUTOLOAD =~ /^get_(.*)$/)
+  {
+    return get($this, $1, @_);
+  }
 
-   if($AUTOLOAD =~ /^set_(.*)$/)
-   {
-      return set($this, $1, @_);
-   }
+  if($AUTOLOAD =~ /^set_(.*)$/)
+  {
+    return set($this, $1, @_);
+  }
 
-   die "No such method " . $AUTOLOAD . " for " . ref($this) . "\n";
+  die "No such method " . $AUTOLOAD . " for " . ref($this) . "\n";
 }
 
 1;

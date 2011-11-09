@@ -18,16 +18,16 @@ do_test(1, 7, 3, 1);
 
 sub do_test
 {
-   my ($min, @n) = @_;
+  my ($min, @n) = @_;
 
-   my $cookie = $aggr->initial();
+  my $cookie = $aggr->initial();
 
-   foreach my $n (@n)
-   {
-      $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => $n));
-   }
+  foreach my $n (@n)
+  {
+    $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => $n));
+  }
 
-   my $value = $aggr->squish($cookie);
+  my $value = $aggr->squish($cookie);
 
-   is($value, $min, "min of " . join(", ", @n));
+  is($value, $min, "min of " . join(", ", @n));
 }

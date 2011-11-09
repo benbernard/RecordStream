@@ -9,27 +9,27 @@ use base ('App::RecordStream::DomainLanguage::Valuation');
 
 sub new
 {
-    my $class = shift;
-    my $subref = shift;
+  my $class = shift;
+  my $subref = shift;
 
-    my $this =
-    {
-        'SUBREF' => $subref,
-    };
+  my $this =
+  {
+    'SUBREF' => $subref,
+  };
 
-    bless $this, $class;
+  bless $this, $class;
 
-    return $this;
+  return $this;
 }
 
 sub evaluate_record
 {
-    my $this = shift;
-    my $r = shift;
+  my $this = shift;
+  my $r = shift;
 
-    my $subref = $this->{'SUBREF'};
+  my $subref = $this->{'SUBREF'};
 
-    return $subref->($r);
+  return $subref->($r);
 }
 
 1;

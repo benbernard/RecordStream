@@ -10,36 +10,36 @@ use base 'App::RecordStream::Deaggregator::Base';
 
 sub new
 {
-   my $class = shift;
-   my $field = shift;
+  my $class = shift;
+  my $field = shift;
 
-   return new_from_valuation($class, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($field));
+  return new_from_valuation($class, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($field));
 }
 
 sub new_from_valuation
 {
-   my $class = shift;
-   my $valuation = shift;
+  my $class = shift;
+  my $valuation = shift;
 
-   my $this =
-   {
-      'valuation' => $valuation,
-   };
-   bless $this, $class;
+  my $this =
+  {
+    'valuation' => $valuation,
+  };
+  bless $this, $class;
 
-   return $this;
+  return $this;
 }
 
 sub deaggregate
 {
-    my $this = shift;
-    my $record = shift;
+  my $this = shift;
+  my $record = shift;
 
-    my $valuation = $this->{'valuation'};
+  my $valuation = $this->{'valuation'};
 
-    my $value = $valuation->evaluate_record($record);
+  my $value = $valuation->evaluate_record($record);
 
-    return $this->deaggregate_field($value);
+  return $this->deaggregate_field($value);
 }
 
 1;

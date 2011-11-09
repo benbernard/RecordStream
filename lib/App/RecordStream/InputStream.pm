@@ -86,151 +86,151 @@ require App::RecordStream::Operation;
 my $ONE_OF = [qw(FH STRING FILE)];
 
 my $ARGUMENTS = {
-   FH     => 0,
-   STRING => 0,
-   FILE   => 0,
-   NEXT   => 0,
+  FH     => 0,
+  STRING => 0,
+  FILE   => 0,
+  NEXT   => 0,
 };
 
 sub new_magic {
-   my $class = shift;
-   my $files = shift || \@ARGV;
+  my $class = shift;
+  my $files = shift || \@ARGV;
 
-   if ( scalar @$files > 0 ) {
-      return $class->new_from_files($files);
-   }
+  if ( scalar @$files > 0 ) {
+    return $class->new_from_files($files);
+  }
 
-   return $class->new(FH => \*STDIN);
+  return $class->new(FH => \*STDIN);
 }
 
 sub new_from_files {
-   my $class = shift;
-   my $files = shift;
+  my $class = shift;
+  my $files = shift;
 
-   my $last_stream;
+  my $last_stream;
 
-   foreach my $file ( reverse @$files )  {
-      unless ( -e $file && -r $file ) {
-         die "File does not exist or is not readable: $file\n";
-      }
+  foreach my $file ( reverse @$files )  {
+    unless ( -e $file && -r $file ) {
+      die "File does not exist or is not readable: $file\n";
+    }
 
-      my $new_stream = $class->new(FILE => $file, NEXT => $last_stream);
-      $last_stream   = $new_stream;
-   }
+    my $new_stream = $class->new(FILE => $file, NEXT => $last_stream);
+    $last_stream   = $new_stream;
+  }
 
-   return $last_stream;
+  return $last_stream;
 }
 
 sub new {
-   my $class = shift;
-   my %args  = @_;
+  my $class = shift;
+  my %args  = @_;
 
-   my $this = {};
+  my $this = {};
 
-   foreach my $key (keys %$ARGUMENTS) {
-      my $value = $args{$key};
-      $this->{$key} = $value;
+  foreach my $key (keys %$ARGUMENTS) {
+    my $value = $args{$key};
+    $this->{$key} = $value;
 
-      if ( $ARGUMENTS->{$key} ) {
-         die "Did not supply required argument: $key" unless ( $value );
-      }
-   }
+    if ( $ARGUMENTS->{$key} ) {
+      die "Did not supply required argument: $key" unless ( $value );
+    }
+  }
 
-   bless $this, $class;
+  bless $this, $class;
 
-   $this->_init();
-   return $this;
+  $this->_init();
+  return $this;
 }
 
 sub _init {
-   my $this = shift;
+  my $this = shift;
 
-   my $found = {};
+  my $found = {};
 
-   foreach my $arg (@$ONE_OF) {
-      if ( $this->{$arg} ) {
-         $found->{$arg} = $this->{$arg};
-      }
-   }
+  foreach my $arg (@$ONE_OF) {
+    if ( $this->{$arg} ) {
+      $found->{$arg} = $this->{$arg};
+    }
+  }
 
-   if ( scalar keys %$found > 1 ) {
-      die "Must specify only one of " . join(' ', keys %$found);
-   }
+  if ( scalar keys %$found > 1 ) {
+    die "Must specify only one of " . join(' ', keys %$found);
+  }
 
-   unless ( scalar keys %$found == 1 ) {
-      die "Must specify one of " . join(' ', @$ONE_OF);
-   }
+  unless ( scalar keys %$found == 1 ) {
+    die "Must specify one of " . join(' ', @$ONE_OF);
+  }
 
-   if ( $this->get_string() ) {
-      $this->{'FH'} = IO::String->new($this->get_string());
-   }
+  if ( $this->get_string() ) {
+    $this->{'FH'} = IO::String->new($this->get_string());
+  }
 
-   my $file = $this->get_file();
-   if ( $file ) {
-      open(my $fh, '<', $file) or die "Cannot open $file: $!";
-      $this->{'FH'} = $fh;
-   }
+  my $file = $this->get_file();
+  if ( $file ) {
+    open(my $fh, '<', $file) or die "Cannot open $file: $!";
+    $this->{'FH'} = $fh;
+  }
 }
 
 sub get_file {
-   my $this = shift;
-   return $this->{'FILE'};
+  my $this = shift;
+  return $this->{'FILE'};
 }
 
 sub get_string {
-   my $this = shift;
-   return $this->{'STRING'};
+  my $this = shift;
+  return $this->{'STRING'};
 }
 
 # Performance! :(
 sub get_fh {
-   return $_[0]->{'FH'};
+  return $_[0]->{'FH'};
 }
 
 sub get_record {
-   my $this = shift;
+  my $this = shift;
 
-   if ( $this->is_done() ) {
-      return $this->call_next_record();
-   }
+  if ( $this->is_done() ) {
+    return $this->call_next_record();
+  }
 
-   my $fh   = $this->get_fh();
+  my $fh   = $this->get_fh();
 
-   my $line   = <$fh>;
+  my $line   = <$fh>;
 
-   if ( ! $line ) {
-      close $fh;
-      $this->set_done();
+  if ( ! $line ) {
+    close $fh;
+    $this->set_done();
 
-      # This is ugly, reaching into the other class
-      App::RecordStream::Operation::set_current_filename($this->get_filename());
+    # This is ugly, reaching into the other class
+    App::RecordStream::Operation::set_current_filename($this->get_filename());
 
-      return $this->call_next_record();
-   }
+    return $this->call_next_record();
+  }
 
-   # Direct bless done in the name of performance
-   my $record = decode_json($line);
-   bless $record, 'App::RecordStream::Record';
+  # Direct bless done in the name of performance
+  my $record = decode_json($line);
+  bless $record, 'App::RecordStream::Record';
 
-   return $record;
+  return $record;
 }
 
 sub call_next_record {
-   my $this = shift;
+  my $this = shift;
 
-   my $next = $this->get_next();
+  my $next = $this->get_next();
 
-   unless ( $next ) {
-      return undef;
-   }
+  unless ( $next ) {
+    return undef;
+  }
 
-   # Prevent a deep recursion with many passed files
-   if ( $next && $next->is_done() ) {
-     $next = $next->get_next();
-     $this->{'NEXT'} = $next;
-   }
+  # Prevent a deep recursion with many passed files
+  if ( $next && $next->is_done() ) {
+    $next = $next->get_next();
+    $this->{'NEXT'} = $next;
+  }
 
-   return $next->get_record();
+  return $next->get_record();
 }
 
 sub get_filename {
@@ -243,14 +243,14 @@ sub get_filename {
     return 'UNKNOWN';
   }
   elsif ( $this->get_next() ) {
-      return $this->get_next()->get_filename();
+    return $this->get_next()->get_filename();
   }
 
 }
 
 sub get_next {
-   my $this = shift;
-   return $this->{'NEXT'};
+  my $this = shift;
+  return $this->{'NEXT'};
 }
 
 sub is_done {
@@ -258,8 +258,8 @@ sub is_done {
 }
 
 sub set_done {
-   my $this = shift;
-   $this->{'DONE'} = 1;
+  my $this = shift;
+  $this->{'DONE'} = 1;
 }
 
 1;

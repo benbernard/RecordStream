@@ -10,8 +10,8 @@ use Cwd ('abs_path');
 my $debug = shift;
 
 if ( $debug ) {
-   $ENV{'DEBUG_CLASS'} = $debug;
-   $Test::Harness::switches = '-w -d';
+  $ENV{'DEBUG_CLASS'} = $debug;
+  $Test::Harness::switches = '-w -d';
 }
 
 
@@ -28,8 +28,8 @@ $ENV{'BASE_TEST_DIR'} = "$dir/tests";
 my $file = shift;
 
 if ( $file ) {
-   runtests($file);
-   exit;
+  runtests($file);
+  exit;
 }
 
 my @files = `find $dir/tests -name '*.t'`;

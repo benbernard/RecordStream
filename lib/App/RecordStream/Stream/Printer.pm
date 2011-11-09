@@ -6,12 +6,12 @@ use base 'App::RecordStream::Stream::Base';
 
 sub accept_line
 {
-    my $this = shift;
-    my $line = shift;
+  my $this = shift;
+  my $line = shift;
 
-    print "$line\n";
+  print "$line\n";
 
-    return 1;
+  return 1;
 }
 
 1;

@@ -16,28 +16,28 @@ use base qw(App::RecordStream::Aggregator::InjectInto::Field);
 
 sub combine_field
 {
-   my $this   = shift;
-   my $cookie = shift;
-   my $value  = shift;
+  my $this   = shift;
+  my $cookie = shift;
+  my $value  = shift;
 
-   return $value unless ( defined $cookie );
+  return $value unless ( defined $cookie );
 
-   if ( $cookie > $value )
-   {
-      return $value;
-   }
+  if ( $cookie > $value )
+  {
+    return $value;
+  }
 
-   return $cookie;
+  return $cookie;
 }
 
 sub short_usage
 {
-   return "minimum value for a field";
+  return "minimum value for a field";
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: min,<field>
    Minimum value of specified field.
 EOF

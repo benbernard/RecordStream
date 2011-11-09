@@ -24,17 +24,17 @@ foo,zoo
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'tocsv',
-   [],
-   $stream,
-   $solution,
+  'tocsv',
+  [],
+  $stream,
+  $solution,
 );
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'tocsv',
-   ['--key', '!oo!'],
-   $stream,
-   $solution,
+  'tocsv',
+  ['--key', '!oo!'],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -46,10 +46,10 @@ $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'tocsv',
-   ['--noheader'],
-   $stream,
-   $solution,
+  'tocsv',
+  ['--noheader'],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -62,8 +62,8 @@ foo
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'tocsv',
-   ['--key', 'foo'],
-   $stream,
-   $solution,
+  'tocsv',
+  ['--key', 'foo'],
+  $stream,
+  $solution,
 );

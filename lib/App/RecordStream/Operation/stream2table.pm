@@ -6,36 +6,36 @@ use warnings;
 use base qw(App::RecordStream::Operation);
 
 sub init {
-   my $this = shift;
-   my $args = shift;
+  my $this = shift;
+  my $args = shift;
 
-   my $field;
-   my $spec = {
-      "field|f=s" => \$field,
-   };
+  my $field;
+  my $spec = {
+    "field|f=s" => \$field,
+  };
 
-   $this->parse_options($args, $spec);
+  $this->parse_options($args, $spec);
 
-   die "You must specify a --field option\n" unless defined($field);
+  die "You must specify a --field option\n" unless defined($field);
 
-   $this->{'FIELD'} = $field;
-   $this->{'REMOVE_FIELD'} = (not ($field =~ m![/@]!));
+  $this->{'FIELD'} = $field;
+  $this->{'REMOVE_FIELD'} = (not ($field =~ m![/@]!));
 }
 
 sub accept_record {
-   my $this   = shift;
-   my $record = shift;
+  my $this   = shift;
+  my $record = shift;
 
-   my $key = ${$record->guess_key_from_spec($this->{'FIELD'})};
+  my $key = ${$record->guess_key_from_spec($this->{'FIELD'})};
 
-   if ( $this->{'REMOVE_FIELD'} ) {
-     $record->remove($this->{'FIELD'});
-   }
+  if ( $this->{'REMOVE_FIELD'} ) {
+    $record->remove($this->{'FIELD'});
+  }
 
-   $this->{'HASH'}->{$key} ||= [];
-   push @{$this->{'HASH'}->{$key}}, $record;
+  $this->{'HASH'}->{$key} ||= [];
+  push @{$this->{'HASH'}->{$key}}, $record;
 
-   return 1;
+  return 1;
 }
 
 sub stream_done {
@@ -59,20 +59,20 @@ sub stream_done {
 }
 
 sub add_help_types {
-   my $this = shift;
-   $this->use_help_type('keyspecs');
+  my $this = shift;
+  $this->use_help_type('keyspecs');
 }
 
 sub usage {
-   my $this = shift;
+  my $this = shift;
 
-   my $options = [
-      ['field <FIELD>', 'Field to use as the column key, may be a keyspec'],
-   ];
+  my $options = [
+    ['field <FIELD>', 'Field to use as the column key, may be a keyspec'],
+  ];
 
-   my $args_string = $this->options_string($options);
+  my $args_string = $this->options_string($options);
 
-   my $usage =  <<USAGE;
+  my $usage =  <<USAGE;
 Usage: recs-stream2table <args> [<files>]
    __FORMAT_TEXT__
    Transforms a list of records, combinging records based on a column, FIELD.

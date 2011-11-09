@@ -13,30 +13,30 @@ use base 'App::RecordStream::Aggregator::MapReduce';
 
 sub new
 {
-   my ($class, @args) = @_;
-   return $class->SUPER::new(@args);
+  my ($class, @args) = @_;
+  return $class->SUPER::new(@args);
 }
 
 sub map
 {
-   return 1;
+  return 1;
 }
 
 sub reduce
 {
-   my ($this, $cookie, $cookie2) = @_;
+  my ($this, $cookie, $cookie2) = @_;
 
-   return $cookie + $cookie2;
+  return $cookie + $cookie2;
 }
 
 sub argct
 {
-   return 0;
+  return 0;
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: count
    Counts number of (non-unique) records.
 EOF
@@ -44,7 +44,7 @@ EOF
 
 sub short_usage
 {
-   return "counts (non-unique) records";
+  return "counts (non-unique) records";
 }
 
 App::RecordStream::Aggregator::register_aggregator('count', __PACKAGE__);

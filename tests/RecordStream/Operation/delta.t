@@ -19,16 +19,16 @@ my $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'delta',
-   [ '--key', 'foo' ],
-   $stream,
-   $solution,
+  'delta',
+  [ '--key', 'foo' ],
+  $stream,
+  $solution,
 );
 
 # Test keyspec
 App::RecordStream::Test::OperationHelper->do_match(
-   'delta',
-   [ '--key', '!fo!' ],
-   $stream,
-   $solution,
+  'delta',
+  [ '--key', '!fo!' ],
+  $stream,
+  $solution,
 );

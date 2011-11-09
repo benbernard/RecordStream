@@ -12,21 +12,21 @@ $ENV{'PERL5LIB'} .= ':lib';
 my @scripts = BuildTools::get_bin_scripts();
 
 foreach my $script (@scripts) {
-   generate_pod("bin/$script");
+  generate_pod("bin/$script");
 }
 
 sub generate_pod {
-   my $script = shift;
+  my $script = shift;
 
-   print "Generating pod documentation for $script\n";
+  print "Generating pod documentation for $script\n";
 
-   my $script_base = basename($script);
+  my $script_base = basename($script);
 
-   my @help = `$script --help-all 2>/dev/null`;
+  my @help = `$script --help-all 2>/dev/null`;
 
-   open(my $fh, '>', "doc/$script_base.pod") or die "Could not open doc/$script.pod: $!";
+  open(my $fh, '>', "doc/$script_base.pod") or die "Could not open doc/$script.pod: $!";
 
-   print $fh <<HEADER;
+  print $fh <<HEADER;
 =head1 NAME
 
 $script_base
@@ -35,11 +35,11 @@ $script_base
 
 HEADER
 
-   foreach my $line (@help) {
-      print  $fh " " . $line;
-   }
+  foreach my $line (@help) {
+    print  $fh " " . $line;
+  }
 
-   print $fh <<FOOTER;
+  print $fh <<FOOTER;
 
 =head1 See Also
 
@@ -57,5 +57,5 @@ HEADER
 
 FOOTER
 
-   close $fh;
+  close $fh;
 }

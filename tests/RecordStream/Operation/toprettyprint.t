@@ -30,10 +30,10 @@ zoo = "biz5"
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'toprettyprint',
-   [],
-   $stream,
-   $solution,
+  'toprettyprint',
+  [],
+  $stream,
+  $solution,
 );
 
 my $solution2 = <<SOLUTION;
@@ -43,10 +43,10 @@ zoo = "biz1"
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'toprettyprint',
-   [qw(--one)],
-   $stream,
-   $solution2,
+  'toprettyprint',
+  [qw(--one)],
+  $stream,
+  $solution2,
 );
 
 $stream = <<NESTED;
@@ -62,10 +62,10 @@ zoo = "biz5"
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'toprettyprint',
-   ['--one'],
-   $stream,
-   $solution4,
+  'toprettyprint',
+  ['--one'],
+  $stream,
+  $solution4,
 );
 
 my $solution5 = <<SOLUTION;
@@ -76,10 +76,10 @@ zoo = "biz5"
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'toprettyprint',
-   ['--one', '--nonested'],
-   $stream,
-   $solution5,
+  'toprettyprint',
+  ['--one', '--nonested'],
+  $stream,
+  $solution5,
 );
 
 $stream = <<NESTED;
@@ -97,8 +97,8 @@ zoo = "biz5"
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'toprettyprint',
-   ['--one'],
-   $stream,
-   $solution6,
+  'toprettyprint',
+  ['--one'],
+  $stream,
+  $solution6,
 );

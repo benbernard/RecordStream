@@ -9,54 +9,54 @@ use base qw(App::RecordStream::Aggregator::Aggregation);
 
 sub new
 {
-   my $class = shift;
+  my $class = shift;
 
-   my $this = { };
-   bless $this, $class;
+  my $this = { };
+  bless $this, $class;
 
-   return $this;
+  return $this;
 }
 
 sub initial
 {
-   return undef;
+  return undef;
 }
 
 sub combine
 {
-   my ($this, $cookie, $record) = @_;
+  my ($this, $cookie, $record) = @_;
 
-   my $cookie2 = $this->map($record);
+  my $cookie2 = $this->map($record);
 
-   # treat undef on either side as empty and return the other
-   if(!defined($cookie))
-   {
-       return $cookie2;
-   }
-   if(!defined($cookie2))
-   {
-       return $cookie;
-   }
+  # treat undef on either side as empty and return the other
+  if(!defined($cookie))
+  {
+    return $cookie2;
+  }
+  if(!defined($cookie2))
+  {
+    return $cookie;
+  }
 
-   # if they're both non-undef then combine them
-   return $this->reduce($cookie, $cookie2);
+  # if they're both non-undef then combine them
+  return $this->reduce($cookie, $cookie2);
 }
 
 sub squish
 {
-   my ($this, $cookie) = @_;
+  my ($this, $cookie) = @_;
 
-   return $cookie;
+  return $cookie;
 }
 
 sub map
 {
-   die "MapReduce subclass did not implement map.\n";
+  die "MapReduce subclass did not implement map.\n";
 }
 
 sub reduce
 {
-   die "MapReduce subclass did not implement reduce.\n";
+  die "MapReduce subclass did not implement reduce.\n";
 }
 
 1;

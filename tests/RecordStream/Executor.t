@@ -41,11 +41,11 @@ use App::RecordStream::Record;
    my $executor6 = App::RecordStream::Executor->new($args);
    is($executor6->execute_method('assign_input', $rec, 'bar'), 'bar', "Test named input");
    is($executor6->execute_method('assign_input', $rec2, 'foo'), 'foo', "Test named input2");
-}
+ }
 
-use App::RecordStream::Test::OperationHelper;
+ use App::RecordStream::Test::OperationHelper;
 
-my $output = <<OUTPUT;
+ my $output = <<OUTPUT;
 {"line":1,"foo":1,"zap":"blah1","fn":"tests/files/testFile2"}
 {"line":2,"foo":2,"zap":"blah2","fn":"tests/files/testFile2"}
 {"line":3,"foo":3,"zap":"blah3","fn":"tests/files/testFile2"}
@@ -58,10 +58,10 @@ OUTPUT
 
 # Probably shouldn't use xform here, but I need a full context to test
 # $filename and line substition
-use App::RecordStream::Operation::xform;
-App::RecordStream::Test::OperationHelper->do_match(
-  'xform',
-  ['{{fn}} = $filename; {{line}} = $line;', 'tests/files/testFile2', 'tests/files/testFile3'],
-  '',
-  $output
-);
+ use App::RecordStream::Operation::xform;
+ App::RecordStream::Test::OperationHelper->do_match(
+   'xform',
+   ['{{fn}} = $filename; {{line}} = $line;', 'tests/files/testFile2', 'tests/files/testFile3'],
+   '',
+   $output
+ );

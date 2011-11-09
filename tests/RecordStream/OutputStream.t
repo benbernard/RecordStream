@@ -9,11 +9,11 @@ use App::RecordStream::Record;
 use App::RecordStream::InputStream;
 
 my $rec = App::RecordStream::Record->new(
-   'foo' => 'bar',
-   'zoo' => {
-      'blah' => 'biz',
-      'far'  => [ 'fing', 'fang', 'foom' ],
-   }
+  'foo' => 'bar',
+  'zoo' => {
+    'blah' => 'biz',
+    'far'  => [ 'fing', 'fang', 'foom' ],
+  }
 );
 
 my $output_string = App::RecordStream::OutputStream::hashref_string($rec);

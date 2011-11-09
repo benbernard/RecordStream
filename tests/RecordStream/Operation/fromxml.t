@@ -16,10 +16,10 @@ my $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'fromxml',
-   [qw(--element logdir --element address --nested file:tests/files/xml1)],
-   '',
-   $solution,
+  'fromxml',
+  [qw(--element logdir --element address --nested file:tests/files/xml1)],
+  '',
+  $solution,
 );
 
 my $solution2 = <<SOLUTION;
@@ -29,8 +29,8 @@ my $solution2 = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'fromxml',
-   [qw(--element server file:tests/files/xml1)],
-   '',
-   $solution2,
+  'fromxml',
+  [qw(--element server file:tests/files/xml1)],
+  '',
+  $solution2,
 );

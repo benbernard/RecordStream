@@ -28,23 +28,23 @@ my $reverse = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'sort', 
-   [qw(--key foo=n)], 
-   $stream, 
-   $solution
+  'sort', 
+  [qw(--key foo=n)], 
+  $stream, 
+  $solution
 );
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'sort', 
-   [qw(--key foo=-n)], 
-   $stream, 
-   $reverse
+  'sort', 
+  [qw(--key foo=-n)], 
+  $stream, 
+  $reverse
 );
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'sort', 
-   [qw(--key foo=n --reverse)], 
-   $stream, 
-   $reverse
+  'sort', 
+  [qw(--key foo=n --reverse)], 
+  $stream, 
+  $reverse
 );
 

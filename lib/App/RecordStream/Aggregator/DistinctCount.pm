@@ -13,41 +13,41 @@ use base qw(App::RecordStream::Aggregator::Aggregation);
 
 sub new
 {
-   my $class = shift;
-   my $field = shift;
+  my $class = shift;
+  my $field = shift;
 
-   return new_from_valuation($class, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($field));
+  return new_from_valuation($class, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($field));
 }
 
 sub new_from_valuation
 {
-   my $class = shift;
-   my ($valuation) = @_;
+  my $class = shift;
+  my ($valuation) = @_;
 
-   my $this =
-   {
-      'valuation' => $valuation,
-   };
-   bless $this, $class;
+  my $this =
+  {
+    'valuation' => $valuation,
+  };
+  bless $this, $class;
 
-   return $this;
+  return $this;
 }
 
 sub squish
 {
-   my ($this, $cookie) = @_;
+  my ($this, $cookie) = @_;
 
-   return scalar(keys(%$cookie));
+  return scalar(keys(%$cookie));
 }
 
 sub short_usage
 {
-   return "count unique values from provided field";
+  return "count unique values from provided field";
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: dct,<field>
    Finds the number of unique values for a field and returns it.  Will load all
    values into memory.
@@ -56,23 +56,23 @@ EOF
 
 sub argct
 {
-   return 1;
+  return 1;
 }
 
 sub initial
 {
-   return {};
+  return {};
 }
 
 sub combine
 {
-   my ($this, $cookie, $record) = @_;
+  my ($this, $cookie, $record) = @_;
 
-   my $value = $this->{'valuation'}->evaluate_record($record);
+  my $value = $this->{'valuation'}->evaluate_record($record);
 
-   $cookie->{$value} = 1;
+  $cookie->{$value} = 1;
 
-   return $cookie;
+  return $cookie;
 }
 
 App::RecordStream::Aggregator::register_aggregator('dcount', __PACKAGE__);

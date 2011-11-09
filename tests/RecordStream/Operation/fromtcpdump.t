@@ -4,19 +4,19 @@ use strict;
 use warnings;
 
 BEGIN {
-   eval { 
-      require Net::Pcap;
-   };
+  eval { 
+    require Net::Pcap;
+  };
 
-   if ( $@ ) {
-      require Test::More;
-      import Test::More skip_all => 'Missing Net::Pcap';
-   }
-   else {
-      require Test::More;
-      import Test::More qw(no_plan);
-      use_ok( 'App::RecordStream::Operation::fromtcpdump' );
-   }
+  if ( $@ ) {
+    require Test::More;
+    import Test::More skip_all => 'Missing Net::Pcap';
+  }
+  else {
+    require Test::More;
+    import Test::More qw(no_plan);
+    use_ok( 'App::RecordStream::Operation::fromtcpdump' );
+  }
 };
 
 my $solution = <<SOLUTION;
@@ -25,8 +25,8 @@ my $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'fromtcpdump',
-   ['tests/files/test-capture1.pcap'],
-   '',
-   $solution,
+  'fromtcpdump',
+  ['tests/files/test-capture1.pcap'],
+  '',
+  $solution,
 );

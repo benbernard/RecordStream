@@ -12,31 +12,31 @@ use base qw(App::RecordStream::Aggregator::InjectInto);
 
 sub new
 {
-   my $class = shift;
-   my @args  = @_;
+  my $class = shift;
+  my @args  = @_;
 
-   return $class->SUPER::new(@args);
+  return $class->SUPER::new(@args);
 }
 
 sub combine
 {
-   my $this   = shift;
-   my $cookie = shift;
-   my $record  = shift;
+  my $this   = shift;
+  my $cookie = shift;
+  my $record  = shift;
 
-   return $record unless ( defined $cookie );
+  return $record unless ( defined $cookie );
 
-   return $cookie;
+  return $cookie;
 }
 
 sub short_usage
 {
-   return "first record";
+  return "first record";
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: first
    Returns the first record.
 EOF
@@ -44,7 +44,7 @@ EOF
 
 sub argct
 {
-   return 0;
+  return 0;
 }
 
 App::RecordStream::Aggregator::register_aggregator('firstrecord', __PACKAGE__);

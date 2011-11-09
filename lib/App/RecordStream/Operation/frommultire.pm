@@ -7,193 +7,193 @@ use strict;
 use base qw(App::RecordStream::Operation);
 
 sub init {
-   my $this = shift;
-   my $args = shift;
-   my %options = (
-      "no-flush-regex|regex|re=s"   => sub { $this->add_regex($_[1], 0, 0); },
-      "pre-flush-regex|pre=s"       => sub { $this->add_regex($_[1], 1, 0); },
-      "post-flush-regex|post=s"     => sub { $this->add_regex($_[1], 0, 1); },
-      "double-flush-regex|double=s" => sub { $this->add_regex($_[1], 1, 1); },
-      "clobber"                     => sub { $this->_set_clobber(1); },
-      "keep-all"                    => sub { $this->_set_keep_all(1); },
-      "keep=s"                      => sub { $this->add_keep(split(/,/, $_[1])); },
-   );
+  my $this = shift;
+  my $args = shift;
+  my %options = (
+    "no-flush-regex|regex|re=s"   => sub { $this->add_regex($_[1], 0, 0); },
+    "pre-flush-regex|pre=s"       => sub { $this->add_regex($_[1], 1, 0); },
+    "post-flush-regex|post=s"     => sub { $this->add_regex($_[1], 0, 1); },
+    "double-flush-regex|double=s" => sub { $this->add_regex($_[1], 1, 1); },
+    "clobber"                     => sub { $this->_set_clobber(1); },
+    "keep-all"                    => sub { $this->_set_keep_all(1); },
+    "keep=s"                      => sub { $this->add_keep(split(/,/, $_[1])); },
+  );
 
-   $this->parse_options($args, \%options);
+  $this->parse_options($args, \%options);
 
-   $this->{'RECORD'} = App::RecordStream::Record->new();
+  $this->{'RECORD'} = App::RecordStream::Record->new();
 }
 
 sub add_regex {
-   my ($this, $string, $pre_flush, $post_flush) = @_;
+  my ($this, $string, $pre_flush, $post_flush) = @_;
 
-   $this->{'REGEXES'} ||= [];
+  $this->{'REGEXES'} ||= [];
 
-   my $fields = [];
-   if($string =~ /^([^=]*)=(.*)$/) {
-      $fields = [split(/,/, $1)];
-      $string = $2;
-   }
+  my $fields = [];
+  if($string =~ /^([^=]*)=(.*)$/) {
+    $fields = [split(/,/, $1)];
+    $string = $2;
+  }
 
-   push @{$this->{'REGEXES'}}, [$string, $fields, $pre_flush, $post_flush]
+  push @{$this->{'REGEXES'}}, [$string, $fields, $pre_flush, $post_flush]
 }
 
 sub _get_regexes {
-   my ($this) = @_;
-   return $this->{'REGEXES'} || [];
+  my ($this) = @_;
+  return $this->{'REGEXES'} || [];
 }
 
 sub _set_clobber {
-   my ($this, $value) = @_;
-   $this->{'CLOBBER'} = $value;
+  my ($this, $value) = @_;
+  $this->{'CLOBBER'} = $value;
 }
 
 sub get_clobber {
-   my ($this) = @_;
-   return $this->{'CLOBBER'} || 0;
+  my ($this) = @_;
+  return $this->{'CLOBBER'} || 0;
 }
 
 sub _set_keep_all {
-   my ($this, $value) = @_;
-   $this->{'KEEP_ALL'} = $value;
+  my ($this, $value) = @_;
+  $this->{'KEEP_ALL'} = $value;
 }
 
 sub get_keep_all {
-   my ($this) = @_;
-   return $this->{'KEEP_ALL'} || 0;
+  my ($this) = @_;
+  return $this->{'KEEP_ALL'} || 0;
 }
 
 sub add_keep {
-   my $this = shift;
-   $this->{'KEEP'} ||= {};
-   for my $field (@_) {
-      $this->{'KEEP'}->{$field} = 1;
-   }
+  my $this = shift;
+  $this->{'KEEP'} ||= {};
+  for my $field (@_) {
+    $this->{'KEEP'}->{$field} = 1;
+  }
 }
 
 sub check_keep {
-   my ($this, $field) = @_;
+  my ($this, $field) = @_;
 
-   $this->{'KEEP'} ||= {};
-   return $this->get_keep_all() || exists($this->{'KEEP'}->{$field});
+  $this->{'KEEP'} ||= {};
+  return $this->get_keep_all() || exists($this->{'KEEP'}->{$field});
 }
 
 sub accept_line {
-   my $this = shift;
-   my $line = shift;
+  my $this = shift;
+  my $line = shift;
 
-   my $regex_index = 0;
-   for my $regex (@{$this->_get_regexes()}) {
-      my ($string, $fields, $pre_flush, $post_flush) = @$regex;
-      my $field_prefix = "$regex_index-";
+  my $regex_index = 0;
+  for my $regex (@{$this->_get_regexes()}) {
+    my ($string, $fields, $pre_flush, $post_flush) = @$regex;
+    my $field_prefix = "$regex_index-";
 
-      if(my @groups = ($line =~ $string)) {
-         my $pairs = $this->get_field_value_pairs(\@groups, $fields, $field_prefix);
-         if(!$this->get_clobber()) {
-            foreach my $pair ( @$pairs ) {
-               my ($name, $value) = @$pair;
-               if(defined ${$this->{'RECORD'}->guess_key_from_spec($name)}) {
-                  $pre_flush = 1;
-               }
-            }
-         }
-
-         if($pre_flush) {
-            $this->flush_record();
-         }
-
-         foreach my $pair ( @$pairs ) {
-            my ($name, $value) = @$pair;
-            ${$this->{'RECORD'}->guess_key_from_spec($name)} = $value;
-         }
-
-         if($post_flush) {
-            $this->flush_record();
-         }
+    if(my @groups = ($line =~ $string)) {
+      my $pairs = $this->get_field_value_pairs(\@groups, $fields, $field_prefix);
+      if(!$this->get_clobber()) {
+        foreach my $pair ( @$pairs ) {
+          my ($name, $value) = @$pair;
+          if(defined ${$this->{'RECORD'}->guess_key_from_spec($name)}) {
+            $pre_flush = 1;
+          }
+        }
       }
-      ++$regex_index;
-   }
 
-   return 1;
+      if($pre_flush) {
+        $this->flush_record();
+      }
+
+      foreach my $pair ( @$pairs ) {
+        my ($name, $value) = @$pair;
+        ${$this->{'RECORD'}->guess_key_from_spec($name)} = $value;
+      }
+
+      if($post_flush) {
+        $this->flush_record();
+      }
+    }
+    ++$regex_index;
+  }
+
+  return 1;
 }
 
 sub stream_done {
-   my $this = shift;
-   my $record = $this->{'RECORD'};
+  my $this = shift;
+  my $record = $this->{'RECORD'};
 
-   if(!$this->get_clobber() && scalar($record->keys())) {
-      $this->flush_record();
-   }
+  if(!$this->get_clobber() && scalar($record->keys())) {
+    $this->flush_record();
+  }
 }
 
 sub get_field_value_pairs {
-   my ($this, $groups, $fields, $prefix) = @_;
+  my ($this, $groups, $fields, $prefix) = @_;
 
-   my @field_names;
-   my %groups_used;
+  my @field_names;
+  my %groups_used;
 
-   for(my $i = 0; $i < @$fields; ++$i) {
-      my $field = $fields->[$i];
-      my $field_name;
-      if($field =~ /^\$(\d+)$/) {
-         my $n = $1 - 1;
-         $field_name = $groups->[$n];
-         $groups_used{$n} = 1;
-      }
-      else {
-         $field_name = $field;
-      }
-      push @field_names, $field_name;
-   }
+  for(my $i = 0; $i < @$fields; ++$i) {
+    my $field = $fields->[$i];
+    my $field_name;
+    if($field =~ /^\$(\d+)$/) {
+      my $n = $1 - 1;
+      $field_name = $groups->[$n];
+      $groups_used{$n} = 1;
+    }
+    else {
+      $field_name = $field;
+    }
+    push @field_names, $field_name;
+  }
 
-   my @pairs;
-   my $pair_index = 0;
-   for(my $i = 0; $i < @$groups; ++$i) {
-      if($groups_used{$i}) {
-          next;
-      }
-      my $field_name = ($pair_index < @field_names) ? $field_names[$pair_index] : ($prefix . $pair_index);
-      push @pairs, [$field_name, $groups->[$i]];
-      $pair_index++;
-   }
+  my @pairs;
+  my $pair_index = 0;
+  for(my $i = 0; $i < @$groups; ++$i) {
+    if($groups_used{$i}) {
+      next;
+    }
+    my $field_name = ($pair_index < @field_names) ? $field_names[$pair_index] : ($prefix . $pair_index);
+    push @pairs, [$field_name, $groups->[$i]];
+    $pair_index++;
+  }
 
-   return \@pairs;
+  return \@pairs;
 }
 
 sub flush_record {
-   my $this = shift;
-   my $record = $this->{'RECORD'};
-   my $record2 = App::RecordStream::Record->new();
-   for my $field ($record->keys()) {
-      if($this->check_keep($field)) {
-         $record2->set($field, $record->get($field));
-      }
-   }
-   $this->push_record($record);
-   $this->{'RECORD'} = $record2;
+  my $this = shift;
+  my $record = $this->{'RECORD'};
+  my $record2 = App::RecordStream::Record->new();
+  for my $field ($record->keys()) {
+    if($this->check_keep($field)) {
+      $record2->set($field, $record->get($field));
+    }
+  }
+  $this->push_record($record);
+  $this->{'RECORD'} = $record2;
 }
 
 sub add_help_types {
-   my $this = shift;
-   $this->use_help_type('keyspecs');
+  my $this = shift;
+  $this->use_help_type('keyspecs');
 }
 
 sub usage {
-   my $this = shift;
+  my $this = shift;
 
-   my $options = [
-      [ 'no-flush-regex|--regex|--re <regex>', 'Add a normal regex.'],
-      [ 'pre-flush-regex|--pre <regex>', 'Add a regex that flushes before interpretting fields when matched.'],
-      [ 'post-flush-regex|--post <regex>', 'Add a regex that flushes after interpretting fields when matched.'],
-      [ 'double-flush-regex|--double <regex>', 'Add a regex that flushes both before and after interprettying fields when matched.'],
-      [ 'clobber', 'Do not flush records when a field from a match would clobber an already existing field and do not flush at EOF.'],
-      [ 'keep-all', 'Do not clear any fields on a flush.'],
-      [ 'keep <fields>', 'Do not clear this comma separated list of fields on a flush.'],
-   ];
+  my $options = [
+    [ 'no-flush-regex|--regex|--re <regex>', 'Add a normal regex.'],
+    [ 'pre-flush-regex|--pre <regex>', 'Add a regex that flushes before interpretting fields when matched.'],
+    [ 'post-flush-regex|--post <regex>', 'Add a regex that flushes after interpretting fields when matched.'],
+    [ 'double-flush-regex|--double <regex>', 'Add a regex that flushes both before and after interprettying fields when matched.'],
+    [ 'clobber', 'Do not flush records when a field from a match would clobber an already existing field and do not flush at EOF.'],
+    [ 'keep-all', 'Do not clear any fields on a flush.'],
+    [ 'keep <fields>', 'Do not clear this comma separated list of fields on a flush.'],
+  ];
 
-   my $args_string = $this->options_string($options);
+  my $args_string = $this->options_string($options);
 
-   return <<USAGE;
+  return <<USAGE;
 Usage: recs-frommultire <args> [<files>]
    __FORMAT_TEXT__
    Match multiple regexes against each line of input (or lines of <files>).

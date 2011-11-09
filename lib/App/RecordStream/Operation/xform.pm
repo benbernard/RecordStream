@@ -79,12 +79,12 @@ sub create_executor {
 
   # Initialize the annonymous sub refs to contain $this
   $executor->set_executor_method('push_input', sub {
-    $this->push_input(@_);
-  });
+      $this->push_input(@_);
+    });
 
   $executor->set_executor_method('push_output', sub {
-    $this->push_output(@_);
-  });
+      $this->push_output(@_);
+    });
 
   return $executor;
 }
@@ -296,7 +296,7 @@ Usage: recs-xform <args> <expr> [<files>]
    suppress the outputting of the current record
    __FORMAT_TEXT__
 
-$args_string
+   $args_string
 
 Examples:
    Add line number to records

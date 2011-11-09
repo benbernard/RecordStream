@@ -13,40 +13,40 @@ use base qw(App::RecordStream::Aggregator::Aggregation);
 
 sub new
 {
-   my $class = shift;
-   my $delim = shift;
-   my $field = shift;
+  my $class = shift;
+  my $delim = shift;
+  my $field = shift;
 
-   return new_from_valuation($class, $delim, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($field));
+  return new_from_valuation($class, $delim, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($field));
 }
 
 sub new_from_valuation
 {
-   my $class = shift;
-   my $delim = shift;
-   my $valuation = shift;
+  my $class = shift;
+  my $delim = shift;
+  my $valuation = shift;
 
-   my $this =
-   {
-      'valuation' => $valuation,
-      'delim' => $delim,
-   };
+  my $this =
+  {
+    'valuation' => $valuation,
+    'delim' => $delim,
+  };
 
-   bless $this, $class;
+  bless $this, $class;
 
-   return $this;
+  return $this;
 }
 
 sub squish
 {
-   my ($this, $cookie) = @_;
+  my ($this, $cookie) = @_;
 
-   return join($this->{'delim'}, sort(keys(%$cookie)));
+  return join($this->{'delim'}, sort(keys(%$cookie)));
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: uconcat,<delimiter>,<field>
    Concatenate unique values from specified field.
 EOF
@@ -54,28 +54,28 @@ EOF
 
 sub short_usage
 {
-   return "concatenate unique values from provided field";
+  return "concatenate unique values from provided field";
 }
 
 sub argct
 {
-   return 2;
+  return 2;
 }
 
 sub initial
 {
-   return {};
+  return {};
 }
 
 sub combine
 {
-   my ($this, $cookie, $record) = @_;
+  my ($this, $cookie, $record) = @_;
 
-   my $value = $this->{'valuation'}->evaluate_record($record);
+  my $value = $this->{'valuation'}->evaluate_record($record);
 
-   $cookie->{$value} = 1;
+  $cookie->{$value} = 1;
 
-   return $cookie;
+  return $cookie;
 }
 
 App::RecordStream::Aggregator::register_aggregator('uconcatenate', __PACKAGE__);

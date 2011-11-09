@@ -34,10 +34,10 @@ Wrote graph file: TEMP_TEST_OUTPUT.png
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'tognuplot',
-   ['--dump-to-screen', '--key', 'ct', '--lines', '--file', 'TEMP_TEST_OUTPUT.png'],
-   $stream,
-   $solution,
+  'tognuplot',
+  ['--dump-to-screen', '--key', 'ct', '--lines', '--file', 'TEMP_TEST_OUTPUT.png'],
+  $stream,
+  $solution,
 );
 
 unlink 'TEMP_TEST_OUTPUT.png'

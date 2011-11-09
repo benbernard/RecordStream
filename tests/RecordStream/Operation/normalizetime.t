@@ -22,10 +22,10 @@ my $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'normalizetime',
-   [ qw(--strict --n 60 --key date) ],
-   $stream,
-   $solution,
+  'normalizetime',
+  [ qw(--strict --n 60 --key date) ],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -38,10 +38,10 @@ $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'normalizetime',
-   [ qw(--n 60 --key date) ],
-   $stream,
-   $solution,
+  'normalizetime',
+  [ qw(--n 60 --key date) ],
+  $stream,
+  $solution,
 );
 
 $stream = <<STREAM;
@@ -61,9 +61,9 @@ $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'normalizetime',
-   [ qw(--n 60 --key date --epoch) ],
-   $stream,
-   $solution,
+  'normalizetime',
+  [ qw(--n 60 --key date --epoch) ],
+  $stream,
+  $solution,
 );
 

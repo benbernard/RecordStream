@@ -17,14 +17,14 @@ use base 'App::RecordStream::Aggregator::MapReduce::Field';
 
 sub reduce
 {
-   my ($this, $cookie, $cookie2) = @_;
+  my ($this, $cookie, $cookie2) = @_;
 
-   return $cookie + $cookie2;
+  return $cookie + $cookie2;
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: sum,<field>
    Sums specified field.
 EOF
@@ -32,7 +32,7 @@ EOF
 
 sub short_usage
 {
-   return "sums provided field";
+  return "sums provided field";
 }
 
 App::RecordStream::Aggregator::register_aggregator('sum', __PACKAGE__);

@@ -21,16 +21,16 @@ do_test('J', 'J', 'A', 'G', 'J', 'G', 'A', 'H', 'I');
 
 sub do_test
 {
-   my ($ans, @v) = @_;
+  my ($ans, @v) = @_;
 
-   my $cookie = $aggr->initial();
+  my $cookie = $aggr->initial();
 
-   foreach my $v (@v)
-   {
-      $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => $v));
-   }
+  foreach my $v (@v)
+  {
+    $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => $v));
+  }
 
-   my $value = $aggr->squish($cookie);
+  my $value = $aggr->squish($cookie);
 
-   is($value, $ans, "first of " . join(", ", @v));
+  is($value, $ans, "first of " . join(", ", @v));
 }

@@ -23,10 +23,10 @@ my $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'eval',
-   ['$r->{foo} . " " . $r->{zoo}'],
-   $stream,
-   $solution,
+  'eval',
+  ['$r->{foo} . " " . $r->{zoo}'],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -40,10 +40,10 @@ boo5
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'eval',
-   ['$r->{boo}'],
-   $stream,
-   $solution,
+  'eval',
+  ['$r->{boo}'],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -55,8 +55,8 @@ boo5
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'eval',
-   ['--chomp', '$r->{boo}'],
-   $stream,
-   $solution,
+  'eval',
+  ['--chomp', '$r->{boo}'],
+  $stream,
+  $solution,
 );

@@ -41,18 +41,18 @@ my $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'tohtml',
-   [],
-   $stream,
-   $solution,
+  'tohtml',
+  [],
+  $stream,
+  $solution,
 );
 
 # KeyGroup test
 App::RecordStream::Test::OperationHelper->test_output(
-   'tohtml',
-   ['--key', '!.!'],
-   $stream,
-   $solution,
+  'tohtml',
+  ['--key', '!.!'],
+  $stream,
+  $solution,
 );
 
 my $solution2 = <<SOLUTION;
@@ -79,10 +79,10 @@ my $solution2 = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'tohtml',
-   [qw(--fields foo)],
-   $stream,
-   $solution2,
+  'tohtml',
+  [qw(--fields foo)],
+  $stream,
+  $solution2,
 );
 
 my $solution3 = <<SOLUTION;
@@ -111,10 +111,10 @@ my $solution3 = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'tohtml',
-   [qw(--noheader)],
-   $stream,
-   $solution3,
+  'tohtml',
+  [qw(--noheader)],
+  $stream,
+  $solution3,
 );
 
 my $solution4 = <<SOLUTION;
@@ -147,8 +147,8 @@ my $solution4 = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
-   'tohtml',
-   [qw(--row bar=zap --cell biz=bam)],
-   $stream,
-   $solution4,
+  'tohtml',
+  [qw(--row bar=zap --cell biz=bam)],
+  $stream,
+  $solution4,
 );

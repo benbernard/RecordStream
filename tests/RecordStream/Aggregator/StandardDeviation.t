@@ -13,7 +13,7 @@ my $cookie = $aggr->initial();
 
 foreach my $n (1, 3, 7)
 {
-   $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => $n));
+  $cookie = $aggr->combine($cookie, App::RecordStream::Record->new("x" => $n));
 }
 
 my $value = $aggr->squish($cookie);

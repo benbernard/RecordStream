@@ -15,30 +15,30 @@ use base 'App::RecordStream::Aggregator::Ord2Bivariate';
 
 sub squish
 {
-   my ($this, $cookie) = @_;
+  my ($this, $cookie) = @_;
 
-   my ($sum1, $sumx, $sumy, $sumxy, $sumx2, $sumy2) = @$cookie;
+  my ($sum1, $sumx, $sumy, $sumxy, $sumx2, $sumy2) = @$cookie;
 
-   my $beta = ($sumxy * $sum1 - $sumx * $sumy) / ($sumx2 * $sum1 - $sumx ** 2);
-   my $alpha = ($sumy - $beta * $sumx) / $sum1;
+  my $beta = ($sumxy * $sum1 - $sumx * $sumy) / ($sumx2 * $sum1 - $sumx ** 2);
+  my $alpha = ($sumy - $beta * $sumx) / $sum1;
 
-   my $sbeta_numerator = ($sumy2 + $alpha ** 2 * $sum1 + $beta ** 2 * $sumx2 - 2 * $alpha * $sumy + 2 * $alpha * $beta * $sumx - 2 * $beta * $sumxy) / ($sum1 - 2);
-   my $sbeta_denominator = $sumx2 - $sumx * $sumx / $sum1;
-   my $sbeta = sqrt($sbeta_numerator / $sbeta_denominator);
-   my $salpha = $sbeta * sqrt($sumx2 / $sum1);
+  my $sbeta_numerator = ($sumy2 + $alpha ** 2 * $sum1 + $beta ** 2 * $sumx2 - 2 * $alpha * $sumy + 2 * $alpha * $beta * $sumx - 2 * $beta * $sumxy) / ($sum1 - 2);
+  my $sbeta_denominator = $sumx2 - $sumx * $sumx / $sum1;
+  my $sbeta = sqrt($sbeta_numerator / $sbeta_denominator);
+  my $salpha = $sbeta * sqrt($sumx2 / $sum1);
 
-   return
-   {
-      'alpha' => $alpha,
-      'beta' => $beta,
-      'beta_se' => $sbeta,
-      'alpha_se' => $salpha,
-   };
+  return
+  {
+    'alpha' => $alpha,
+    'beta' => $beta,
+    'beta_se' => $sbeta,
+    'alpha_se' => $salpha,
+  };
 }
 
 sub long_usage
 {
-   return <<EOF;
+  return <<EOF;
 Usage: linreg,<x field>,<y field>
    Dump various status from a linear regression of y against x.
 EOF
@@ -46,7 +46,7 @@ EOF
 
 sub short_usage
 {
-   return "perform a linear regression of provided fields, dumping various statistics";
+  return "perform a linear regression of provided fields, dumping various statistics";
 }
 
 App::RecordStream::Aggregator::register_aggregator('linreg', __PACKAGE__);

@@ -4,75 +4,75 @@ use strict;
 use warnings;
 
 sub new {
-    my $class = shift;
+  my $class = shift;
 
-    my $this = {
-        'STRINGS' => [],
-    };
+  my $this = {
+    'STRINGS' => [],
+  };
 
-    bless $this, $class;
+  bless $this, $class;
 
-    return $this;
+  return $this;
 }
 
 sub arguments {
-    my $this = shift;
+  my $this = shift;
 
-    return (
-        'e=s' => sub { $this->push_string($_[1]); },
-        'E=s' => sub { $this->push_file($_[1]); },
-    );
+  return (
+    'e=s' => sub { $this->push_string($_[1]); },
+    'E=s' => sub { $this->push_file($_[1]); },
+  );
 }
 
 sub get_strings {
-    my $this = shift;
-    my $args = shift;
+  my $this = shift;
+  my $args = shift;
 
-    my $strings = $this->{'STRINGS'};
-    if(!@$strings) {
-        if(!@$args) {
-            die "Missing expression.\n";
-        }
-        push @$strings, shift @$args;
+  my $strings = $this->{'STRINGS'};
+  if(!@$strings) {
+    if(!@$args) {
+      die "Missing expression.\n";
     }
+    push @$strings, shift @$args;
+  }
 
-    return @$strings;
+  return @$strings;
 }
 
 sub get_string {
-    my $this = shift;
+  my $this = shift;
 
-    return join("", $this->get_strings(@_));
+  return join("", $this->get_strings(@_));
 }
 
 sub push_string {
-    my $this = shift;
-    my $string = shift;
+  my $this = shift;
+  my $string = shift;
 
-    push @{$this->{'STRINGS'}}, $string;
+  push @{$this->{'STRINGS'}}, $string;
 }
 
 sub push_file {
-    my $this = shift;
-    my $file = shift;
+  my $this = shift;
+  my $file = shift;
 
-    my $string = $this->_slurp($file);
+  my $string = $this->_slurp($file);
 
-    push @{$this->{'STRINGS'}}, $string;
+  push @{$this->{'STRINGS'}}, $string;
 }
 
 sub _slurp {
-   my $this = shift;
-   my $file = shift;
+  my $this = shift;
+  my $file = shift;
 
-   local $/;
-   undef $/;
+  local $/;
+  undef $/;
 
-   open (my $fh, '<', $file) or die "Could not open code snippet file: $file: $!";
-   my $code = <$fh>;
-   close $fh;
+  open (my $fh, '<', $file) or die "Could not open code snippet file: $file: $!";
+  my $code = <$fh>;
+  close $fh;
 
-   return $code;
+  return $code;
 }
 
 1;

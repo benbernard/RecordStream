@@ -18,10 +18,10 @@ my $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'grep',
-   [ '$r->{foo} > 2' ],
-   $stream,
-   $solution,
+  'grep',
+  [ '$r->{foo} > 2' ],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -30,10 +30,10 @@ $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'grep',
-   [ '-v', '$r->{foo} > 2', ],
-   $stream,
-   $solution,
+  'grep',
+  [ '-v', '$r->{foo} > 2', ],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -42,10 +42,10 @@ $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'grep',
-   [ '-A', 1, '$r->{foo} == 3', ],
-   $stream,
-   $solution,
+  'grep',
+  [ '-A', 1, '$r->{foo} == 3', ],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -54,10 +54,10 @@ $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'grep',
-   [ '-B', 1, '$r->{foo} == 3', ],
-   $stream,
-   $solution,
+  'grep',
+  [ '-B', 1, '$r->{foo} == 3', ],
+  $stream,
+  $solution,
 );
 
 $solution = <<SOLUTION;
@@ -67,8 +67,8 @@ $solution = <<SOLUTION;
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
-   'grep',
-   [ '-C', 1, '$r->{foo} == 3', ],
-   $stream,
-   $solution,
+  'grep',
+  [ '-C', 1, '$r->{foo} == 3', ],
+  $stream,
+  $solution,
 );
