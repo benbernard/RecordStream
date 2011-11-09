@@ -1,0 +1,5 @@
+from script for extracting data from html pages.
+
+could do stuff like from html table... could extract info for anchor tags, tags with a class, css selectors, etc...
+
+not sure on the name... xpath is a sorta hard syntax
