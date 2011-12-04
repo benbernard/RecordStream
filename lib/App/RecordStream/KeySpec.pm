@@ -93,7 +93,7 @@ sub _guess_key_name_raw {
       return $1;
     }
     else {
-      die "Cannot select non-numeric index: $search_string for array: " . Dumper($data);
+      die "Cannot select non-numeric index: $search_string (did you forget to prefix with a '#'?) for array: " . Dumper($data);
     }
   }
 
