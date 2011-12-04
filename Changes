@@ -1,3 +1,5 @@
+3.6_01 - Minor distro changes
+
 3.6 - Added recs-annotate
       Added recs-decollate
       recs-fromsplit - get trailing empty fields on lines, now
@@ -20,7 +22,7 @@
       Support for generating .deb install file
       Additional alias for -a corr
       Added ord2map alias
-      
+
 3.4_01 3.4_02 - Minor changes for CPAN Compatability
 
 3.4 - Updated modules names from Recs::* to App::RecordStream

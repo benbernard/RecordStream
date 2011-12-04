@@ -33,13 +33,6 @@ bin/recs-totable
 bin/recs-xform
 BuildTools.recbuildtool
 Changes
-debian.bak/changelog
-debian.bak/compat
-debian.bak/control
-debian.bak/copyright
-debian.bak/libapp-recordstream-perl.docs
-debian.bak/rules
-debian.bak/watch
 distro_command_notes
 doc/Examples.pod
 doc/RecordStreamStory.pod
@@ -181,6 +174,7 @@ lib/App/RecordStream/Operation/totable.pm
 lib/App/RecordStream/Operation/xform.pm
 lib/App/RecordStream/OutputStream.pm
 libapp-recordstream-perl_3.5-01-1_all.deb
+libapp-recordstream-perl_3.6-1_all.deb
 lib/App/RecordStream/Record.pm
 lib/App/RecordStream/Site.pm
 lib/App/RecordStream/Stream/Base.pm
