@@ -57,6 +57,7 @@ sub init {
 
     # new style clumping
     "clumper|c=s"       => sub { push @clumpers, ['CLUMPER', App::RecordStream::Clumper->make_clumper($_[1])]; },
+    "dlclumper|C=s"     => sub { push @clumpers, ['CLUMPER', build_dlclumper($_[1])]; },
 
     # aggregation
     "aggregator|a=s"    => sub { push @aggregators, $_[1]; },
@@ -129,6 +130,12 @@ sub build_dlaggregator {
   }
 
   $dlaggregators_ref->{$name} = App::RecordStream::DomainLanguage::Snippet->new($string)->evaluate_as('AGGREGATOR');
+}
+
+sub build_dlclumper {
+  my $string = shift;
+
+  return App::RecordStream::DomainLanguage::Snippet->new($string)->evaluate_as('CLUMPER');
 }
 
 sub _get_cb_and_cookie {
@@ -269,6 +276,7 @@ sub usage {
     [ 'cube', 'See "Cubing" section in --help-more.'],
     [ 'incremental', 'Output a record every time an input record is added to a clump (instead of everytime a clump is flushed).'],
     [ 'clumper ...', 'Use this clumper to group records.  May be specified multiple times.  See --help-clumping.'],
+    [ 'dlclumper ...', 'Use this domain language clumper to group records.  May be specified multiple times.  See --help-clumping.'],
     [ 'list-aggregators', 'Bail and output a list of aggregators' ],
     [ 'show-aggregator <aggregator>', 'Bail and output this aggregator\'s detailed usage.'],
   ];
