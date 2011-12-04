@@ -5,16 +5,15 @@ our $VERSION = "3.4";
 use strict;
 use warnings;
 
-use Data::Dumper;
 use GD::Graph::lines;
 use GD::Graph::bars;
 use GD::Graph::points;
 use base qw(App::RecordStream::Operation);
 
 my $GD_TYPES = {
-  'line' => 'lines',
+  'line'    => 'lines',
   'scatter' => 'points',
-  'bar' => 'bars'
+  'bar'     => 'bars'
 };
 
 sub init {
@@ -30,6 +29,8 @@ sub init {
   my $width = 600;
   my $height = 300;
 
+  my $dump_use_spec;
+
   my $key_groups = App::RecordStream::KeyGroups->new();
 
   my $cmdspec = {
@@ -41,30 +42,50 @@ sub init {
     'png-file=s'         => \$png_file,
     'type=s'             => \$graph_type,
     'width=i'            => \$width,
-    'height=i'           => \$height
+    'height=i'           => \$height,
+    'dump-use-spec'      => \$dump_use_spec
   };
   $this->parse_options($args, $cmdspec);
 
   if ( ! $GD_TYPES->{$graph_type} ) {
-    print "Unsupported graph type: $graph_type\n";
+    die "Unsupported graph type: $graph_type\n";
   }
 
-  $this->{'LABEL_X'} = $label_x;
-  $this->{'LABEL_Y'} = $label_y;
-  $this->{'TITLE'} = $title;
-  $this->{'GDGRAPH_OPTIONS'} = \@additional_options;
-  $this->{'KEYGROUPS'} = $key_groups;
-  $this->{'FIRST_RECORD'} = 1;
-  $this->{'GRAPH_TYPE'} = $graph_type;
-  $this->{'WIDTH'} = $width;
-  $this->{'HEIGHT'} = $height;
-  $this->{'PNG_FILE'} = $png_file;
+  $this->{'DUMP_USE_SPEC'}    = $dump_use_spec;
+
+  $this->{'LABEL_X'}          = $label_x;
+  $this->{'LABEL_Y'}          = $label_y;
+  $this->{'TITLE'}            = $title unless !$this->{'TITLE'};
+
+  $this->{'GDGRAPH_OPTIONS'}  = \@additional_options;
+  $this->{'KEYGROUPS'}        = $key_groups;
+  $this->{'FIRST_RECORD'}     = 1;
+
+  $this->{'GRAPH_TYPE'}       = $graph_type;
+  $this->{'WIDTH'}            = $width;
+  $this->{'HEIGHT'}           = $height;
+  $this->{'PNG_FILE'}         = $png_file;
+
+  if ( $dump_use_spec ) {
+    $this->push_line('x label: '.$title) unless !$this->{'LABEL_X'};
+    $this->push_line('y label: '.$title) unless !$this->{'LABEL_Y'};
+    $this->push_line('title: '.$title) unless !$this->{'TITLE'};
+    $this->push_line('type: '.$graph_type);
+    $this->push_line('width: '.$width);
+    $this->push_line('height: '.$height);
+    $this->push_line('output file: '.$png_file);
+  }
 }
 
 sub init_fields {
   my ($this, $record) = @_;
 
   my $specs = $this->{'KEYGROUPS'}->get_keyspecs($record);
+  if ( $this->{'DUMP_USE_SPEC'} ) {
+    foreach my $sfield (@{$specs}) {
+      $this->push_line('field: '.$sfield);
+    }
+  }
   $this->{'FIELDS'} = $specs;
 
   $this->{'PLOTDATA'} = ();
@@ -82,8 +103,13 @@ sub accept_record {
     $this->init_fields($record);
   }
 
+  my @record_spec;
   foreach my $key (@{$this->{'FIELDS'}}) {
     push @{$this->{'PLOTDATA'}->{$key}}, $record->{$key};
+    push @record_spec, $record->{$key};
+  }
+  if ( $this->{'DUMP_USE_SPEC'} ) {
+    $this->push_line(join(' ',@record_spec));
   }
 
   return 1;
@@ -96,19 +122,17 @@ sub stream_done {
   my $w = $this->{'WIDTH'};
   my $h = $this->{'HEIGHT'};
 
-  if ( $this->{'GRAPH_TYPE'} eq 'scatter' ) {
-    $gdhnd = GD::Graph::points->new($w,$h);
-  } elsif ( $this->{'GRAPH_TYPE'} eq 'line' ) {
-    $gdhnd = GD::Graph::lines->new($w,$h);
-  } elsif ( $this->{'GRAPH_TYPE'} eq 'bar' ) {
-    $gdhnd = GD::Graph::bars->new($w,$h);
-  }
+  my $gtype = 'GD::Graph::'.$GD_TYPES->{$this->{'GRAPH_TYPE'}};
+  $gdhnd = $gtype->new($w,$h);
 
   $gdhnd->set(
-    title => $this->{'TITLE'},
     x_label => $this->{'LABEL_X'},
     y_label => $this->{'LABEL_Y'}
   );
+
+  if ( $this->{'TITLE'} ) {
+    $gdhnd->set( title => $this->{'TITLE'} );
+  }
 
   foreach my $kv (@{$this->{'GDGRAPH_OPTIONS'}}) {
     $gdhnd->set( $kv->[0] => $kv->[1] );
@@ -131,10 +155,11 @@ sub stream_done {
     print "could not plot data\n";
     exit;
   }
-  open(IMG, '>'.$this->{'PNG_FILE'}) or die $!;
+  open(IMG, '>', $this->{'PNG_FILE'}) or die "Could not open file for writing $this->{PNG_FILE}: $!";
   binmode IMG;
   print IMG $gd->png;
   close IMG;
+
 }
 
 sub add_help_types {
@@ -148,13 +173,16 @@ sub usage {
   my $this = shift;
 
   my $options = [
-    ['command|-c option=val', 'Specify custom command for GD::Graph'],
+    ['key|-k|--key <keyspec>', 'Specify keys that correlate to keys in JSON data'],
+    ['option|-o option=val', 'Specify custom command for GD::Graph'],
     ['label-x <val>', 'Specify X-axis label'],
     ['label-y <val>', 'Specify Y-axis label'],
     ['width <val>', 'Specify width'],
     ['height <val>', 'Specify height'],
     ['graph-title <val>', 'Specify graph title'],
-    ['png-file <val>', 'Specify output PNG file']
+    ['type <val>', 'Specify different graph type other than scatter (supported: line, bar)'],
+    ['png-file <val>', 'Specify output PNG filename'],
+    ['dump-use-spec <val>', 'Dump GD usage (used mainly for testing)']
   ];
 
   my $args_string = $this->options_string($options);
@@ -168,6 +196,19 @@ Usage: recs-togdgraph <args> [<files>]
 Args:
 $args_string
 
+Examples:
+  for a plain point graph:
+
+  recs-togdgraph --keys uid,ct --png-file login-graph.png --graph-title '# of logins' --label-x user --label-y logins
+
+  togdgraph also accepts any GD::Graph options with the --option command...
+  for a pink background with yellow label text if that really is your thing:
+
+  recs-togdgraph --keys uid,ct --option boxclr=pink --label-y 'logins' --label-x 'user' --option labelclr=yellow
+
+  however, for a different graph type such as line or bar, specify with --type:
+
+  recs-togdgraph --keys uid,ct --type line
 USAGE
 }
 
