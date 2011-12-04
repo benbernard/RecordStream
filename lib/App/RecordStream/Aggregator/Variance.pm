@@ -40,8 +40,8 @@ sub short_usage
   return "find variance of provided field";
 }
 
-App::RecordStream::Aggregator::register_aggregator('var', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('variance', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('var', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('variance', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'var', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'variance', 'VALUATION');

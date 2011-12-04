@@ -11,7 +11,7 @@ BEGIN { use_ok("App::RecordStream::Test::DistinctCountHelper"); }
 BEGIN { use_ok("App::RecordStream::Test::LastHelper"); }
 BEGIN { use_ok("App::RecordStream::Test::UniqConcatHelper"); }
 
-App::RecordStream::Aggregator::load_aggregators();
+App::RecordStream::Aggregator->load_implementations();
 
 my $NO_CHECK = 'NO_CHECK';
 my $CAST_FAILURE = 'CAST_FAILURE';

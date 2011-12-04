@@ -39,8 +39,8 @@ sub argct
   return 0;
 }
 
-App::RecordStream::Aggregator::register_aggregator('firstrecord', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('firstrec', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('firstrecord', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('firstrec', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_ctor(__PACKAGE__, 'firstrecord');
 App::RecordStream::DomainLanguage::Registry::register_ctor(__PACKAGE__, 'firstrec');

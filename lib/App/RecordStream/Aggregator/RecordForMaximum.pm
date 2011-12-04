@@ -84,10 +84,10 @@ Usage: recformax,<field>
 EOF
 }
 
-App::RecordStream::Aggregator::register_aggregator('recformax', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('recformaximum', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('recordformax', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('recordformaximum', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('recformax', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('recformaximum', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('recordformax', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('recordformaximum', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'recformax', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'recformaximum', 'VALUATION');

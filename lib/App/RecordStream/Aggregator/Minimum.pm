@@ -43,8 +43,8 @@ Usage: min,<field>
 EOF
 }
 
-App::RecordStream::Aggregator::register_aggregator('minimum', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('min', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('minimum', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('min', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'minimum', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'min', 'VALUATION');

@@ -35,7 +35,7 @@ sub short_usage
   return "sums provided field";
 }
 
-App::RecordStream::Aggregator::register_aggregator('sum', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('sum', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'sum', 'VALUATION');
 

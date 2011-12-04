@@ -125,6 +125,23 @@ sub deaggregate
   return shift->_force('DEAGGREGATOR')->deaggregate(@_);
 }
 
+# We can pretend to be a clumper in a pinch
+
+sub clumper_begin
+{
+  return shift->_force('CLUMPER')->clumper_begin(@_);
+}
+
+sub clumper_push_record
+{
+  return shift->_force('CLUMPER')->clumper_push_record(@_);
+}
+
+sub clumper_end
+{
+  return shift->_force('CLUMPER')->clumper_end(@_);
+}
+
 # We can pretend to be a valuation in a pinch
 
 sub evaluate_record
@@ -144,6 +161,10 @@ sub cast_or_die
   elsif($type eq 'DEAGGREGATOR')
   {
     return cast_deagg_or_die($obj);
+  }
+  elsif($type eq 'CLUMPER')
+  {
+    return cast_clumper_or_die($obj);
   }
   elsif($type eq 'VALUATION')
   {
@@ -263,12 +284,46 @@ sub cast_deagg_or_die
     return $obj;
   }
 
-  if(blessed($obj) && $obj->isa('App::RecordStream::DomainLanguage::Valuation'))
+  my $s = "unknown";
+  if(blessed($obj))
   {
-    die "Valuation found where aggregator expected";
+    $s = ref($obj);
   }
 
-  die "Could not turn unknown into a deaggregator";
+  die "Could not turn $s into a deaggregator";
+}
+
+sub cast_clumper_or_die
+{
+  my $obj = shift;
+
+  if(blessed($obj) && $obj->isa('App::RecordStream::DomainLanguage::Value'))
+  {
+    my @clumper = $obj->get_possibilities('CLUMPER');
+    if(@clumper > 1)
+    {
+      die "Multiple clumpers for " . $obj->get_description();
+    }
+    if(@clumper == 1)
+    {
+      return $clumper[0];
+    }
+
+    die "No usable possibilities for " . $obj->get_description();
+  }
+
+  if(blessed($obj) && $obj->isa('App::RecordStream::Clumper::Base'))
+  {
+    return $obj;
+  }
+
+  my $s = "unknown";
+  if(blessed($obj))
+  {
+    $s = ref($obj);
+  }
+
+  die "Could not turn $s into a clumper";
 }
 
 sub cast_scalar_or_die

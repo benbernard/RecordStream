@@ -42,9 +42,9 @@ sub short_usage
   return "find correlation of provided fields";
 }
 
-App::RecordStream::Aggregator::register_aggregator('corr', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('correl', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('correlation', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('corr', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('correl', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('correlation', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'corr', 'VALUATION', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'correl', 'VALUATION', 'VALUATION');

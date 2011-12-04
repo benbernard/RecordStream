@@ -58,8 +58,8 @@ sub argct
   return 1;
 }
 
-App::RecordStream::Aggregator::register_aggregator('countby', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('cb', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('countby', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('cb', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'countby', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'cb', 'VALUATION');

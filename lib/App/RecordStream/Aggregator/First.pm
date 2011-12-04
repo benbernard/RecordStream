@@ -36,7 +36,7 @@ Usage: first,<field>
 EOF
 }
 
-App::RecordStream::Aggregator::register_aggregator('first', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('first', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'first', 'VALUATION');
 

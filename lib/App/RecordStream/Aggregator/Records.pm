@@ -56,8 +56,8 @@ Usage: records
 EOF
 }
 
-App::RecordStream::Aggregator::register_aggregator('records', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('recs', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('records', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('recs', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_ctor(__PACKAGE__, 'records');
 App::RecordStream::DomainLanguage::Registry::register_ctor(__PACKAGE__, 'recs');

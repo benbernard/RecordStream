@@ -9,81 +9,100 @@ use base qw(App::RecordStream::Operation);
 
 use App::RecordStream::Aggregator::Last;
 use App::RecordStream::Aggregator;
-use App::RecordStream::DomainLanguage;
+use App::RecordStream::Clumper::CubeKeyPerfect;
+use App::RecordStream::Clumper::KeyLRU;
+use App::RecordStream::Clumper::KeyPerfect;
+use App::RecordStream::Clumper;
 use App::RecordStream::DomainLanguage::Executor;
 use App::RecordStream::DomainLanguage::Library;
+use App::RecordStream::DomainLanguage::Valuation::KeySpec;
 use App::RecordStream::DomainLanguage::Value;
-use App::RecordStream::LRUSheriff;
+use App::RecordStream::DomainLanguage;
+use App::RecordStream::Operation::collate::BaseClumperCallback;
+use App::RecordStream::Operation::collate::WrappedClumperCallback;
 
 sub init {
   my $this = shift;
   my $args = shift;
 
-  App::RecordStream::Aggregator::load_aggregators();
+  App::RecordStream::Aggregator->load_implementations();
+  App::RecordStream::Clumper->load_implementations();
 
-  my @aggregators;
-  my %dlaggregators;
+  # options for old-style clumping
   my $size = undef;
   my $cube = 0;
   my $cube_default = "ALL";
-  my $ignore_null_keys = 0;
+
+  my @clumpers;
+
+  # aggregation
+  my @aggregators;
+  my %dlaggregators;
   my $incremental = 0;
+
+  # help
   my $list_aggregators = 0;
   my $aggregator = 0;
-
-  my $key_groups = App::RecordStream::KeyGroups->new();
-  my %dlkeys;
+  my $list_clumpers = 0;
+  my $clumper = 0;
 
   my $spec = {
-    "key|k=s"           => sub { $key_groups->add_groups($_[1]); },
-    "dlkey=s"           => sub { build_dlkey(\%dlkeys, $_[1]); },
-    "ignore-null"       => \$ignore_null_keys,
-    "aggregator|a=s"    => sub { push @aggregators, split(/:/, $_[1]); },
-    "dlaggregator=s"    => sub { build_dlaggregator(\%dlaggregators, $_[1]); },
+    # old style clumping
+    "key|k=s"           => sub { push @clumpers, ['KEYGROUP', $_[1]]; },
+    "dlkey=s"           => sub { push @clumpers, ['VALUATION', build_dlkey($_[1])]; },
     "size|sz|n=i"       => \$size,
     "adjacent|1"        => sub { $size = 1; },
-    "cube|c"            => \$cube,
+    "cube"              => \$cube,
     "cube-default=s"    => \$cube_default,
+
+    # new style clumping
+    "clumper|c=s"       => sub { push @clumpers, ['CLUMPER', App::RecordStream::Clumper->make_clumper($_[1])]; },
+
+    # aggregation
+    "aggregator|a=s"    => sub { push @aggregators, split(/:/, $_[1]); },
+    "dlaggregator=s"    => sub { build_dlaggregator(\%dlaggregators, $_[1]); },
     "incremental|i"     => \$incremental,
+
+    # help
     "list-aggregators"  => \$list_aggregators,
     "show-aggregator=s" => \$aggregator,
-
-    #Perfect kept for cli backwards compatability (it is default now)
-    "perfect|p"         => sub { $size = undef; },
+    "list-clumpers"     => \$list_clumpers,
+    "show-clumper=s"    => \$clumper,
   };
 
   $this->parse_options($args, $spec);
 
+  # check help first
+
   if ( $list_aggregators ) {
-    die sub { App::RecordStream::Aggregator::list_aggregators(); };
+    die sub { App::RecordStream::Aggregator->list_implementations(); };
   }
 
   if ( $aggregator ) {
-    die sub { App::RecordStream::Aggregator::show_aggregator($aggregator) };
+    die sub { App::RecordStream::Aggregator->show_implementation($aggregator) };
   }
 
-  die "Must specify --key or --dlkey or --aggregator or --dlaggregator\n" unless ( $key_groups->has_any_group() || %dlkeys || @aggregators || %dlaggregators );
+  if ( $list_clumpers ) {
+    die sub { App::RecordStream::Clumper->list_implementations(); };
+  }
 
-  my $aggregator_objects = App::RecordStream::Aggregator::make_aggregators(@aggregators);
+  if ( $clumper ) {
+    die sub { App::RecordStream::Clumper->show_implementation($clumper) };
+  }
+
+  my $aggregator_objects = App::RecordStream::Aggregator->make_aggregators(@aggregators);
 
   $aggregator_objects = {%$aggregator_objects, %dlaggregators};
 
-  my $lru_sheriff = App::RecordStream::LRUSheriff->new();
-
-  $this->{'KEY_GROUPS'}         = $key_groups;
-  $this->{'DLKEYS'}             = \%dlkeys;
-  $this->{'IGNORE_NULL'}        = $ignore_null_keys;
-  $this->{'AGGREGATORS'}        = $aggregator_objects;
-  $this->{'SIZE'}               = $size;
-  $this->{'CUBE'}               = $cube;
-  $this->{'INCREMENTAL'}        = $incremental;
-  $this->{'LRU_SHERIFF'}        = $lru_sheriff;
-  $this->{'CUBE_DEFAULT'}       = $cube_default;
-  $this->{'SEEN_RECORD'}        = 0;
+  $this->{'CLUMPER_CALLBACK'} = App::RecordStream::Operation::collate::BaseClumperCallback->new($aggregator_objects, $incremental, sub { $this->push_record($_[0]); });
+  $this->{'CLUMPER_CALLBACK_COOKIE'} = undef;
+  $this->{'CLUMPERS_TBD'} = \@clumpers;
+  $this->{'KEY_CLUMPER_SIZE'} = $size;
+  $this->{'KEY_CLUMPER_CUBE'} = $cube;
+  $this->{'KEY_CLUMPER_CUBE_DEFAULT'} = $cube_default;
 }
 
 sub build_dlkey {
-  my $dlkeys_ref = shift;
   my $string = shift;
 
   my $name;
@@ -91,10 +110,10 @@ sub build_dlkey {
     $name = $1;
   }
   else {
-    die "Bad domain language key option: " . $string;
+    die "Bad domain language key option (missing '=' to separate name and code): " . $string;
   }
 
-  $dlkeys_ref->{$name} = App::RecordStream::DomainLanguage::Snippet->new($string)->evaluate_as('VALUATION');
+  return ($name, App::RecordStream::DomainLanguage::Snippet->new($string)->evaluate_as('VALUATION'));
 }
 
 sub build_dlaggregator {
@@ -106,169 +125,107 @@ sub build_dlaggregator {
     $name = $1;
   }
   else {
-    die "Bad domain language aggregator option: " . $string;
+    die "Bad domain language aggregator option (missing '=' to separate name and code): " . $string;
   }
 
   $dlaggregators_ref->{$name} = App::RecordStream::DomainLanguage::Snippet->new($string)->evaluate_as('AGGREGATOR');
+}
+
+sub _get_cb_and_cookie {
+  my $this = shift;
+
+  my $cb = $this->{'CLUMPER_CALLBACK'};
+  my $cookie = $this->{'CLUMPER_CALLBACK_COOKIE'};
+  if ( !defined($cookie) ) {
+    $cookie = $this->{'CLUMPER_CALLBACK_COOKIE'} = $cb->clumper_callback_begin({});
+  }
+
+  return ($cb, $cookie);
 }
 
 sub accept_record {
   my $this   = shift;
   my $record = shift;
 
-  if ( !$this->{'SEEN_RECORD'} ) {
-    $this->{'SEEN_RECORD'} = 1;
-    $this->{'KEYS'} = $this->{'KEY_GROUPS'}->get_keyspecs($record);
-  }
+  my $clumpers = $this->{'CLUMPERS_TBD'};
+  while ( @$clumpers ) {
+    my $clumper_tuple = pop @$clumpers;
+    my ($type, @rest) = @$clumper_tuple;
 
-  my $record_keys = $this->get_keys($record);
+    my $cb = $this->{'CLUMPER_CALLBACK'};
 
-  if ( $this->{'IGNORE_NULL'} ) {
-    for (my $i = 0; $i < @{$this->{'KEYS'}}; $i++) {
-      my $key = @{$this->{'KEYS'}}[$i];
-      if (!defined(@{$record_keys}[$i])) {
-        @{$record_keys}[$i] = "";
+    if (0) {
+    }
+    elsif ( $type eq 'KEYGROUP' ) {
+      my ($group_spec) = @rest;
+
+      my $key_groups = App::RecordStream::KeyGroups->new();
+      $key_groups->add_groups($group_spec);
+      my $keys = $key_groups->get_keyspecs($record);
+
+      for my $spec (@$keys)
+      {
+        $cb = $this->_wrap_key_cb($spec, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($spec), $cb);
       }
     }
+    elsif ( $type eq 'VALUATION' ) {
+      my ($name, $val) = @rest;
+
+      $cb = $this->_wrap_key_cb($name, $val, $cb);
+    }
+    elsif ( $type eq 'CLUMPER' ) {
+      my ($clumper) = @rest;
+
+      $cb = App::RecordStream::Operation::collate::WrappedClumperCallback->new($clumper, $cb);
+    }
+    else {
+      die "Internal error";
+    }
+
+    $this->{'CLUMPER_CALLBACK'} = $cb;
   }
 
-  if ( $this->{'CUBE'} ) {
-    $this->deep_put([], $record_keys, $record);
-  }
-  else {
-    $this->put($record_keys, $record);
-  }
+  my ($cb, $cookie) = $this->_get_cb_and_cookie();
+
+  $cb->clumper_callback_push_record($cookie, $record);
 
   return 1;
 }
 
-sub canonicalize {
+sub _wrap_key_cb {
   my $this = shift;
-  my $keys = shift;
-  return join("\x1E", @$keys);
-}
+  my $name = shift;
+  my $val = shift;
+  my $cb = shift;
 
-sub deep_put {
-  my $this         = shift;
-  my $search_keys  = shift;
-  my $record_keys  = shift;
-  my $record       = shift;
+  my $size = $this->{'KEY_CLUMPER_SIZE'};
+  my $cube = $this->{'KEY_CLUMPER_CUBE'};
+  my $cube_default = $this->{'KEY_CLUMPER_CUBE_DEFAULT'};
 
-  if(@$search_keys == @$record_keys)
-  {
-    $this->put([@$search_keys], $record);
-    return;
+  my $clumper;
+  if ( $cube ) {
+    if ( defined($size) ) {
+      die "--cube with --size (or --adjacent) is no longer a thing (and it never made sense)";
+    }
+    $clumper = App::RecordStream::Clumper::CubeKeyPerfect->new_from_valuation($name, $val);
   }
-
-  push @$search_keys, $this->{'CUBE_DEFAULT'};
-  $this->deep_put($search_keys, $record_keys, $record);
-  pop @$search_keys;
-
-  push @$search_keys, $record_keys->[scalar @$search_keys];
-  $this->deep_put($search_keys, $record_keys, $record);
-  pop @$search_keys;
-}
-
-sub put {
-  my $this        = shift;
-  my $record_keys = shift;
-  my $record      = shift;
-
-  my $lru_sheriff = $this->{'LRU_SHERIFF'};
-  my $aggregators  = $this->{'AGGREGATORS'};
-
-  my $key   = $this->canonicalize($record_keys);
-  my $value = $lru_sheriff->find($key);
-
-  my $aggregator_values;
-
-
-  if ( !$value ) {
-    $aggregator_values = App::RecordStream::Aggregator::map_initial($aggregators);
-    $value             = [$aggregator_values, $record_keys];
-
-    $lru_sheriff->put($key, $value);
+  elsif ( defined($size) ) {
+    $clumper = App::RecordStream::Clumper::KeyLRU->new_from_valuation($name, $val, $size);
   }
   else {
-    $aggregator_values = $value->[0];
+    $clumper = App::RecordStream::Clumper::KeyPerfect->new_from_valuation($name, $val);
   }
 
-  $value->[0] = App::RecordStream::Aggregator::map_combine($aggregators, $aggregator_values, $record);
-
-  if ( $this->{'INCREMENTAL'} ) {
-    $this->output(@$value);
-  }
-
-
-  if ( defined($this->{'SIZE'}) ) {
-    $this->purge();
-  }
+  return App::RecordStream::Operation::collate::WrappedClumperCallback->new($clumper, $cb);
 }
 
 sub stream_done {
   my $this = shift;
-  $this->purge(0);
+
+  my ($cb, $cookie) = $this->_get_cb_and_cookie();
+
+  $cb->clumper_callback_end($cookie);
 }
-
-sub purge {
-  my $this = shift;
-  my $size = shift;
-
-  if ( not defined $size ) {
-    $size = $this->{'SIZE'};
-  }
-
-  my @goners = $this->{'LRU_SHERIFF'}->purgenate($size);
-  if ( !$this->{'INCREMENTAL'} ) {
-    foreach my $value (@goners) {
-      $this->output(@$value);
-    }
-  }
-}
-
-sub output {
-  my $this              = shift;
-  my $aggregaotr_values = shift;
-  my $record_keys       = shift;
-
-  my $aggregators  = $this->{'AGGREGATORS'};
-
-  my $record = App::RecordStream::Aggregator::map_squish($aggregators, $aggregaotr_values);
-
-  my $next_value_index = 0;
-
-  # first key groups
-  my $keys = $this->{'KEYS'};
-  for my $key (@$keys) {
-    ${$record->guess_key_from_spec($key)} = $record_keys->[$next_value_index++];
-  }
-
-  # then domain language keys
-  for my $dlkey (sort(keys(%{$this->{'DLKEYS'}}))) {
-    $record->{$dlkey} = $record_keys->[$next_value_index++];
-  }
-
-  $this->push_record($record);
-}
-
-
-sub get_keys {
-  my $this   = shift;
-  my $record = shift;
-
-  # first key groups
-  my @keys = map { ${$record->guess_key_from_spec($_)} } @{$this->{'KEYS'}};
-
-  # then domain language keys
-  for my $dlkey (sort(keys(%{$this->{'DLKEYS'}}))) {
-    my $dlkey_valuation = $this->{'DLKEYS'}->{$dlkey};
-    my $dlkey_value = $dlkey_valuation->evaluate_record($record);
-    push @keys, $dlkey_value;
-  }
-
-  return \@keys;
-}
-
 
 sub print_usage {
   my $this    = shift;
@@ -288,9 +245,10 @@ sub add_help_types {
   $this->use_help_type('keygroups');
   $this->use_help_type('keys');
   $this->use_help_type('domainlanguage');
+  $this->use_help_type('clumping');
   $this->add_help_type(
     'aggregators',
-    sub { App::RecordStream::Aggregator::list_aggregators(); },
+    sub { App::RecordStream::Aggregator->list_implementations(); },
     'List the aggregators'
   );
   $this->add_help_type(
@@ -308,14 +266,11 @@ sub usage {
     [ 'dlkey ...', 'Specify a domain language key.  See "Domain Language Integration" below.'],
     [ 'dlaggregator ...', 'Specify a domain language aggregate.  See "Domain Language Integration" below.'],
     [ 'aggregator|-a <aggregators>', 'Colon separated list of aggregate field specifiers.  See "Aggregates" section below.'],
-    [ 'size|--sz|-n <number>', 'Number of running clumps to keep.'],
-    [ 'adjacent|-1', 'Only group together adjacent records.  Avoids spooling records into memeory'],
-    [ 'cube', 'See "Cubing" section below.'],
-    [ 'cube-default', 'See "Cubing" section below.'],
+    [ 'cube', 'See "Cubing" section in --help-more.'],
     [ 'incremental', 'Output a record every time an input record is added to a clump (instead of everytime a clump is flushed).'],
+    [ 'clumper ...', 'Use this clumper to group records.  May be specified multiple times.  See --help-clumping.'],
     [ 'list-aggregators', 'Bail and output a list of aggregators' ],
     [ 'show-aggregator <aggregator>', 'Bail and output this aggregator\'s detailed usage.'],
-    [ 'ignore-null', 'Ignore undefined or non-existant keys in records'],
   ];
 
   my $args_string = $this->options_string($options);

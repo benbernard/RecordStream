@@ -78,7 +78,7 @@ sub argct
   return [2, 3];
 }
 
-App::RecordStream::Deaggregator::register_deaggregator('unhash', __PACKAGE__);
+App::RecordStream::Deaggregator->register_implementation('unhash', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'unhash', 'VALUATION', 'SCALAR');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'unhash', 'VALUATION', 'SCALAR', 'SCALAR');

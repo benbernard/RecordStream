@@ -11,6 +11,7 @@ use Getopt::Long;
 use Text::Autoformat;
 use Term::ReadKey;
 
+use App::RecordStream::Clumper;
 use App::RecordStream::DomainLanguage;
 use App::RecordStream::Executor;
 use App::RecordStream::KeyGroups;
@@ -85,6 +86,12 @@ sub init_help {
       SKIP_IN_ALL => 0,
       CODE        => \&domainlanguage_help,
       DESCRIPTION => 'Help on the recs domain language, a [very complicated] way of specifying valuations (which act like keys) or aggregators',
+    },
+    clumping => {
+      USE         => 0,
+      SKIP_IN_ALL => 0,
+      CODE        => \&clumping_help,
+      DESCRIPTION => 'Help on clumping, a generalization of collate\'s grouping mechanisms',
     },
   };
 
@@ -500,6 +507,11 @@ sub keygroups_help {
 sub domainlanguage_help {
   my $this = shift;
   print $this->format_usage(App::RecordStream::DomainLanguage::usage());
+}
+
+sub clumping_help {
+  my $this = shift;
+  print $this->format_usage(App::RecordStream::Clumper::usage());
 }
 
 # A static method for a single-line operation bootstrap.  Operation wrappers

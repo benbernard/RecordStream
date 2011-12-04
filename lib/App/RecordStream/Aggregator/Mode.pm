@@ -61,7 +61,7 @@ Usage: mode,<field>
 EOF
 }
 
-App::RecordStream::Aggregator::register_aggregator('mode', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('mode', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'mode', 'VALUATION');
 

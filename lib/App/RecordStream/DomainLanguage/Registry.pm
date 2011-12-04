@@ -105,6 +105,11 @@ sub evaluate
       $value->add_possibility('DEAGGREGATOR', $arg);
       $done = 1;
     }
+    if(blessed($arg) && $arg->isa('App::RecordStream::Clumper::Base'))
+    {
+      $value->add_possibility('CLUMPER', $arg);
+      $done = 1;
+    }
     if($done)
     {
       push @value_args, $value;
@@ -146,6 +151,11 @@ sub evaluate
     if(blessed($result) && $result->isa('App::RecordStream::Deaggregator::Base'))
     {
       $ret->add_possibility('DEAGGREGATOR', $result);
+      $done = 1;
+    }
+    if(blessed($result) && $result->isa('App::RecordStream::Clumper::Base'))
+    {
+      $ret->add_possibility('CLUMPER', $result);
       $done = 1;
     }
     if($done)
