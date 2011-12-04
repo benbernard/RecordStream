@@ -228,7 +228,7 @@ sub transform_code {
 
   while ( $code =~ m/{{(.*?)}}/ ) {
     my $specifier = $1;
-    my $guessing_code = '${$r->guess_key_from_spec(qq{\@' . $specifier . '})}';
+    my $guessing_code = '${App::RecordStream::KeySpec::find_key($r, qq{\@' . $specifier . '})}';
     $code =~ s/{{.*?}}/$guessing_code/;
   }
 
