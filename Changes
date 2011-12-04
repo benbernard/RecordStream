@@ -9,6 +9,7 @@
       Adding -B, -A, -C to xform
       Added --post and --pre snippets to xform
       Added push_input and push_output helper functions to xform snippets
+      Added xform dl aggregator
 
 3.5_01 - Minor CPAN Changes
 
