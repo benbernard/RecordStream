@@ -18,7 +18,7 @@ EOF
 
 sub short_usage
 {
-  return "clump records by a key";
+  return "clump records by a key, additionally cubing them";
 }
 
 sub get_values
