@@ -7,11 +7,9 @@ Build-Depends-Indep: libdate-manip-perl, libdbd-sqlite3-perl, libdbi-perl,
  libnet-pcap-perl, libnetpacket-perl, libproc-processtable-perl,
  libtext-csv-perl, libtie-ixhash-perl, libwww-perl, libxml-simple-perl,
  libtext-autoformat-perl
-
 Maintainer: Ben Bernard <ppa@benjaminbernard.com>
 Standards-Version: 3.8.3
 Homepage: http://search.cpan.org/dist/App-RecordStream/
-
 Package: libapp-recordstream-perl
 Architecture: all
 Depends: ${misc:Depends}, ${perl:Depends}, gnuplot, libdate-manip-perl,
