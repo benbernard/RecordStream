@@ -35,7 +35,7 @@ sub init
 
   if($list_deaggregators)
   {
-    die sub { App::RecordStream::Deaggregator->list_implementations(); };
+    die sub { print App::RecordStream::Deaggregator->list_implementations(); };
   }
 
   if($deaggregator)
@@ -111,7 +111,7 @@ sub add_help_types
   $this->use_help_type('domainlanguage');
   $this->add_help_type(
     'deaggregators',
-    sub { App::RecordStream::Deaggregator->list_implementations(); },
+    sub { print App::RecordStream::Deaggregator->list_implementations(); },
     'List the deaggregators'
   );
 }

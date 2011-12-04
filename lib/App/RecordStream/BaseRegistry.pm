@@ -119,11 +119,13 @@ sub load_implementations_aux
       }
       push @$ar, $name;
     }
+    my $ret = "";
     for my $class (@classes)
     {
       my $usage = $class->short_usage();
-      print join(", ", @{$reverse{$class}}) . ": " . $usage . "\n";
+      $ret .= join(", ", @{$reverse{$class}}) . ": " . $usage . "\n";
     }
+    return $ret;
   }
 
   sub show_implementation

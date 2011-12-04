@@ -76,7 +76,7 @@ sub init {
   # check help first
 
   if ( $list_aggregators ) {
-    die sub { App::RecordStream::Aggregator->list_implementations(); };
+    die sub { print App::RecordStream::Aggregator->list_implementations(); };
   }
 
   if ( $aggregator ) {
@@ -84,7 +84,7 @@ sub init {
   }
 
   if ( $list_clumpers ) {
-    die sub { App::RecordStream::Clumper->list_implementations(); };
+    die sub { print App::RecordStream::Clumper->list_implementations(); };
   }
 
   if ( $clumper ) {
@@ -255,7 +255,7 @@ sub add_help_types {
   $this->use_help_type('clumping');
   $this->add_help_type(
     'aggregators',
-    sub { App::RecordStream::Aggregator->list_implementations(); },
+    sub { print App::RecordStream::Aggregator->list_implementations(); },
     'List the aggregators'
   );
   $this->add_help_type(
