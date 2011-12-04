@@ -264,6 +264,7 @@ sub usage {
     ['lines', 'Draw lines between points, may specify more than 2 key, each field is a line'],
     ['bargraph', 'Draw a bar graph, each field is a bar, may specify than 2 key, each field is a bar'],
     ['gnuplot-command', 'Location of gnuplot binary if not on path'],
+    ['dump-to-screen', 'Instead of making a graph, dump the generated gnuplot script to STDOUT'],
   ];
 
   my $args_string = $this->options_string($options);
