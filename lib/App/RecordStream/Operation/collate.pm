@@ -59,7 +59,7 @@ sub init {
     "clumper|c=s"       => sub { push @clumpers, ['CLUMPER', App::RecordStream::Clumper->make_clumper($_[1])]; },
 
     # aggregation
-    "aggregator|a=s"    => sub { push @aggregators, split(/:/, $_[1]); },
+    "aggregator|a=s"    => sub { push @aggregators, $_[1]; },
     "dlaggregator=s"    => sub { build_dlaggregator(\%dlaggregators, $_[1]); },
     "incremental|i"     => \$incremental,
 
