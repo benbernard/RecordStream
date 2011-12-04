@@ -1,3 +1,6 @@
+filename in input records
+    right now we can jam filename on output records as they go out, what about faking it on input records as they come in?
+timestamp on input/output records
 fix die w/in getopt
 --incr collate by time and by record count (--incr is by record count 1)
     maybe even windowed incremental?
