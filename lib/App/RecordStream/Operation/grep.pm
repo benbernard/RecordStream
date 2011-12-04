@@ -26,7 +26,6 @@ sub init {
     $executor_options->arguments(),
   };
 
-  Getopt::Long::Configure('no_ignore_case');
   $this->parse_options($args, $spec);
 
   my $expression = $executor_options->get_string($args);

@@ -10,8 +10,6 @@ use warnings;
 
 use App::RecordStream::Operation;
 
-use Getopt::Long;
-
 my $NEXT_ID = 0;
 my $DEFAULT_METHOD_NAME = '__MY__DEFAULT';
 

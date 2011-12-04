@@ -231,6 +231,7 @@ sub parse_options {
   $options_spec->{'--filename-key|fk=s'} = \($this->{'FILENAME_KEY'});
 
 
+  Getopt::Long::Configure('no_ignore_case');
   local @ARGV = @$args;
   unless (GetOptions(%$options_spec)) {
     # output usage if there was a problem with option parsing

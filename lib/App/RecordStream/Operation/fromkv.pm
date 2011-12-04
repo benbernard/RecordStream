@@ -9,8 +9,6 @@ use base qw(App::RecordStream::Operation);
 use strict;
 use warnings;
 
-use Getopt::Long;
-
 sub init {
   my $this = shift;
   my $args = shift;
