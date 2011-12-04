@@ -49,7 +49,7 @@ sub init {
   my $spec = {
     # old style clumping
     "key|k=s"           => sub { push @clumpers, ['KEYGROUP', $_[1]]; },
-    "dlkey=s"           => sub { push @clumpers, ['VALUATION', build_dlkey($_[1])]; },
+    "dlkey|K=s"         => sub { push @clumpers, ['VALUATION', build_dlkey($_[1])]; },
     "size|sz|n=i"       => \$size,
     "adjacent|1"        => sub { $size = 1; },
     "cube"              => \$cube,
@@ -60,7 +60,7 @@ sub init {
 
     # aggregation
     "aggregator|a=s"    => sub { push @aggregators, $_[1]; },
-    "dlaggregator=s"    => sub { build_dlaggregator(\%dlaggregators, $_[1]); },
+    "dlaggregator|A=s"  => sub { build_dlaggregator(\%dlaggregators, $_[1]); },
     "incremental|i"     => \$incremental,
 
     # help
@@ -263,8 +263,8 @@ sub usage {
 
   my $options = [
     [ 'key|-k <keys>', 'Comma separated list of key fields.  May be a key spec or key group'],
-    [ 'dlkey ...', 'Specify a domain language key.  See "Domain Language Integration" below.'],
-    [ 'dlaggregator ...', 'Specify a domain language aggregate.  See "Domain Language Integration" below.'],
+    [ 'dlkey|-K ...', 'Specify a domain language key.  See "Domain Language Integration" below.'],
+    [ 'dlaggregator|-A ...', 'Specify a domain language aggregate.  See "Domain Language Integration" below.'],
     [ 'aggregator|-a <aggregators>', 'Colon separated list of aggregate field specifiers.  See "Aggregates" section below.'],
     [ 'cube', 'See "Cubing" section in --help-more.'],
     [ 'incremental', 'Output a record every time an input record is added to a clump (instead of everytime a clump is flushed).'],
