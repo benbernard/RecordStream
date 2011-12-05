@@ -31,7 +31,6 @@ sub init {
   # options for old-style clumping
   my $size = undef;
   my $cube = 0;
-  my $cube_default = "ALL";
 
   my @clumpers;
 
@@ -53,7 +52,6 @@ sub init {
     "size|sz|n=i"       => \$size,
     "adjacent|1"        => sub { $size = 1; },
     "cube"              => \$cube,
-    "cube-default=s"    => \$cube_default,
 
     # new style clumping
     "clumper|c=s"       => sub { push @clumpers, ['CLUMPER', App::RecordStream::Clumper->make_clumper($_[1])]; },
@@ -100,7 +98,6 @@ sub init {
   $this->{'CLUMPERS_TBD'} = \@clumpers;
   $this->{'KEY_CLUMPER_SIZE'} = $size;
   $this->{'KEY_CLUMPER_CUBE'} = $cube;
-  $this->{'KEY_CLUMPER_CUBE_DEFAULT'} = $cube_default;
 }
 
 sub build_dlkey {
@@ -207,7 +204,6 @@ sub _wrap_key_cb {
 
   my $size = $this->{'KEY_CLUMPER_SIZE'};
   my $cube = $this->{'KEY_CLUMPER_CUBE'};
-  my $cube_default = $this->{'KEY_CLUMPER_CUBE_DEFAULT'};
 
   my $clumper;
   if ( $cube ) {
@@ -327,10 +323,9 @@ Cubing:
    __FORMAT_TEXT__
    Instead of added one entry for each input record, we add 2 ** (number of key
    fields), with every possible combination of fields replaced with the default
-   (which defaults to "ALL" but can be specified with --cube-default).  This is
-   not meant to be used with --adjacent or --size.  If our key fields were x
-   and y then we'd get output records for {x = 1, y = 2}, {x = 1, y = ALL}, {x
-   = ALL, y = 2} and {x = ALL, y = ALL}.
+   of "ALL".  This is not meant to be used with --adjacent or --size.  If our
+   key fields were x and y then we'd get output records for {x = 1, y = 2}, {x
+   = 1, y = ALL}, {x = ALL, y = 2} and {x = ALL, y = ALL}.
    __FORMAT_TEXT__
 
 Domain Lanuage Integration:
