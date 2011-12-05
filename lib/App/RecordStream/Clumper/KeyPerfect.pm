@@ -23,7 +23,7 @@ sub short_usage
 
 sub key_clumper_begin
 {
-  return {};
+  return [[], {}];
 }
 
 sub key_clumper_push_record
@@ -36,10 +36,11 @@ sub key_clumper_push_record
 
   for my $value ($this->get_values($value))
   {
-    my $next_cookie = $cookie->{$value};
+    my $next_cookie = $cookie->[1]->{$value};
     if(!defined($next_cookie))
     {
-      $next_cookie = $cookie->{$value} = $next->key_clumper_callback_begin_value($value);
+      push @{$cookie->[0]}, $value;
+      $next_cookie = $cookie->[1]->{$value} = $next->key_clumper_callback_begin_value($value);
     }
 
     $next->key_clumper_callback_push_record($next_cookie, $record);
@@ -60,8 +61,9 @@ sub key_clumper_end
   my $cookie = shift;
   my $next = shift;
 
-  for my $next_cookie (values(%$cookie))
+  for my $value (@{$cookie->[0]})
   {
+    my $next_cookie = $cookie->[1]->{$value};
     $next->key_clumper_callback_end($next_cookie);
   }
 }

@@ -145,13 +145,33 @@ SOLUTION
 STREAM
 
   my $output = <<SOLUTION;
-{"a":"a2","sum_x":32,"ct":4}
 {"a":"a1","sum_x":23,"ct":6}
+{"a":"a2","sum_x":32,"ct":4}
 SOLUTION
 
   App::RecordStream::Test::OperationHelper->do_match(
     'collate',
     ['-c', 'keyperfect,a', '-a', 'sum,x', '-a', 'ct'],
+    $input,
+    $output,
+  );
+}
+
+# other order!
+{
+  my $input = <<STREAM;
+{"a":"a2"}
+{"a":"a1"}
+STREAM
+
+  my $output = <<SOLUTION;
+{"a":"a2","ct":1}
+{"a":"a1","ct":1}
+SOLUTION
+
+  App::RecordStream::Test::OperationHelper->do_match(
+    'collate',
+    ['-c', 'keyperfect,a', '-a', 'ct'],
     $input,
     $output,
   );
