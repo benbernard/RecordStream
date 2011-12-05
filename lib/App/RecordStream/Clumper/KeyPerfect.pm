@@ -12,13 +12,13 @@ sub long_usage
 {
   return <<EOF;
 Usage: keyperfect,<keyspec>
-   Clump records by a key
+   Clump records by the value for a key
 EOF
 }
 
 sub short_usage
 {
-  return "clump records by a key";
+  return "clump records by the value for a key";
 }
 
 sub key_clumper_begin

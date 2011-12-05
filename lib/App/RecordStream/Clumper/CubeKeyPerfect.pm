@@ -12,13 +12,13 @@ sub long_usage
 {
   return <<EOF;
 Usage: cubekeyperfect,<keyspec>
-   Clump records by a key and additionally produce an "ALL" slice.
+   Clump records by the value for a key and additionally produce an "ALL" slice.
 EOF
 }
 
 sub short_usage
 {
-  return "clump records by a key, additionally cubing them";
+  return "clump records by the value for a key, additionally cubing them";
 }
 
 sub get_values

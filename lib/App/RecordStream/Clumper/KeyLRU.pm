@@ -40,13 +40,13 @@ sub long_usage
 {
   return <<EOF;
 Usage: keylru,<keyspec>,<size>
-   Clump records by a key, limiting number of active clumps to <size>
+   Clump records by the value for a key, limiting number of active clumps to <size>
 EOF
 }
 
 sub short_usage
 {
-  return "clump records by a key, limiting number of active clumps";
+  return "clump records by the value for a key, limiting number of active clumps";
 }
 
 sub argct
