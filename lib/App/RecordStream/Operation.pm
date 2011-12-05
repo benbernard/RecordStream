@@ -91,7 +91,7 @@ sub init_help {
       USE         => 0,
       SKIP_IN_ALL => 0,
       CODE        => \&clumping_help,
-      DESCRIPTION => 'Help on clumping, a generalization of collate\'s grouping mechanisms',
+      DESCRIPTION => 'Help on clumping; mechanisms to group records across a stream'
     },
   };
 
