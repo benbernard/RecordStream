@@ -40,7 +40,7 @@ sub short_usage
   return "find standard deviation of provided field";
 }
 
-App::RecordStream::Aggregator::register_aggregator('stddev', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('stddev', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'stddev', 'VALUATION');
 

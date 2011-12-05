@@ -88,8 +88,8 @@ sub argct
   return 2;
 }
 
-App::RecordStream::Aggregator::register_aggregator('percentile', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('perc', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('percentile', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('perc', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'percentile', 'SCALAR', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'perc', 'SCALAR', 'VALUATION');

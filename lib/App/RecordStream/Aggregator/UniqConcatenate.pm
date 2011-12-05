@@ -78,8 +78,8 @@ sub combine
   return $cookie;
 }
 
-App::RecordStream::Aggregator::register_aggregator('uconcatenate', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('uconcat', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('uconcatenate', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('uconcat', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'uconcatenate', 'SCALAR', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'uconcat', 'SCALAR', 'VALUATION');

@@ -8,7 +8,6 @@ use warnings;
 use base qw(App::RecordStream::Operation);
 
 use Data::Dumper;
-use Getopt::Long;
 use LWP::UserAgent;
 use XML::Simple;
 

@@ -11,6 +11,7 @@ use Getopt::Long;
 use Text::Autoformat;
 use Term::ReadKey;
 
+use App::RecordStream::Clumper;
 use App::RecordStream::DomainLanguage;
 use App::RecordStream::Executor;
 use App::RecordStream::KeyGroups;
@@ -85,6 +86,12 @@ sub init_help {
       SKIP_IN_ALL => 0,
       CODE        => \&domainlanguage_help,
       DESCRIPTION => 'Help on the recs domain language, a [very complicated] way of specifying valuations (which act like keys) or aggregators',
+    },
+    clumping => {
+      USE         => 0,
+      SKIP_IN_ALL => 0,
+      CODE        => \&clumping_help,
+      DESCRIPTION => 'Help on clumping; mechanisms to group records across a stream'
     },
   };
 
@@ -224,6 +231,7 @@ sub parse_options {
   $options_spec->{'--filename-key|fk=s'} = \($this->{'FILENAME_KEY'});
 
 
+  Getopt::Long::Configure('no_ignore_case');
   local @ARGV = @$args;
   unless (GetOptions(%$options_spec)) {
     # output usage if there was a problem with option parsing
@@ -500,6 +508,11 @@ sub keygroups_help {
 sub domainlanguage_help {
   my $this = shift;
   print $this->format_usage(App::RecordStream::DomainLanguage::usage());
+}
+
+sub clumping_help {
+  my $this = shift;
+  print $this->format_usage(App::RecordStream::Clumper::usage());
 }
 
 # A static method for a single-line operation bootstrap.  Operation wrappers

@@ -36,7 +36,7 @@ Usage: last,<field>
 EOF
 }
 
-App::RecordStream::Aggregator::register_aggregator('last', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('last', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'last', 'VALUATION');
 

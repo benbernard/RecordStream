@@ -68,7 +68,7 @@ sub argct
   return 2;
 }
 
-App::RecordStream::Deaggregator::register_deaggregator('unarray', __PACKAGE__);
+App::RecordStream::Deaggregator->register_implementation('unarray', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'unarray', 'VALUATION', 'SCALAR');
 

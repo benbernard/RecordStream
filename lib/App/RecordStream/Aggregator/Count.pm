@@ -41,8 +41,8 @@ sub short_usage
   return "counts (non-unique) records";
 }
 
-App::RecordStream::Aggregator::register_aggregator('count', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('ct', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('count', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('ct', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_ctor(__PACKAGE__, 'count');
 App::RecordStream::DomainLanguage::Registry::register_ctor(__PACKAGE__, 'ct');

@@ -74,8 +74,8 @@ sub argct
   return 2;
 }
 
-App::RecordStream::Aggregator::register_aggregator('concatenate', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('concat', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('concatenate', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('concat', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'concatenate', 'SCALAR', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'concat', 'SCALAR', 'VALUATION');

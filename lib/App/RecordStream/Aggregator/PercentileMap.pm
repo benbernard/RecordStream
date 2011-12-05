@@ -111,8 +111,8 @@ sub argct
   return 2;
 }
 
-App::RecordStream::Aggregator::register_aggregator('percentilemap', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('percmap', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('percentilemap', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('percmap', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'percentilemap', 'SCALAR', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'percmap', 'SCALAR', 'VALUATION');

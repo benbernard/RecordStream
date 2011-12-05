@@ -75,10 +75,10 @@ sub combine
   return $cookie;
 }
 
-App::RecordStream::Aggregator::register_aggregator('dcount', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('dct', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('distinctcount', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('distinctct', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('dcount', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('dct', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('distinctcount', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('distinctct', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'dcount', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'dct', 'VALUATION');

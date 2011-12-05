@@ -52,8 +52,8 @@ sub argct {
   return 2;
 }
 
-App::RecordStream::Aggregator::register_aggregator('valuestokeys', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('vk', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('valuestokeys', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('vk', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'valuestokeys', 'VALUATION', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'vk', 'VALUATION', 'VALUATION');

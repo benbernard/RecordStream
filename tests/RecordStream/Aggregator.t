@@ -7,8 +7,8 @@ use Data::Dumper;
 BEGIN { use_ok("App::RecordStream::Aggregator"); }
 BEGIN { use_ok("App::RecordStream::Record"); }
 
-App::RecordStream::Aggregator::load_aggregators();
-my $aggrs = App::RecordStream::Aggregator::make_aggregators("count", "sum,x", "sumy=sum,y", "biz/zap=count", "uuu/liz=firstrec");
+App::RecordStream::Aggregator->load_implementations();
+my $aggrs = App::RecordStream::Aggregator->make_aggregators("count", "sum,x", "sumy=sum,y", "biz/zap=count", "uuu/liz=firstrec");
 
 my $cookies = App::RecordStream::Aggregator::map_initial($aggrs);
 

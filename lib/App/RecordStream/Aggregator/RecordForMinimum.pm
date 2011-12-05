@@ -84,10 +84,10 @@ Usage: recformin,<field>
 EOF
 }
 
-App::RecordStream::Aggregator::register_aggregator('recformin', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('recforminimum', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('recordformin', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('recordforminimum', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('recformin', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('recforminimum', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('recordformin', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('recordforminimum', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'recformin', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'recforminimum', 'VALUATION');

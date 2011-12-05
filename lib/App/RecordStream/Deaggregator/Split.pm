@@ -90,7 +90,7 @@ sub argct
   return 3;
 }
 
-App::RecordStream::Deaggregator::register_deaggregator('split', __PACKAGE__);
+App::RecordStream::Deaggregator->register_implementation('split', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'split', 'VALUATION', 'SCALAR', 'SCALAR');
 

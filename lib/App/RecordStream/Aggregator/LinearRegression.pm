@@ -49,8 +49,8 @@ sub short_usage
   return "perform a linear regression of provided fields, dumping various statistics";
 }
 
-App::RecordStream::Aggregator::register_aggregator('linreg', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('linearregression', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('linreg', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('linearregression', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'linreg', 'VALUATION', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'linearregression', 'VALUATION', 'VALUATION');

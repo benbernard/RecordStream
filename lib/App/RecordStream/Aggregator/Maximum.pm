@@ -43,8 +43,8 @@ Usage: max,<field>
 EOF
 }
 
-App::RecordStream::Aggregator::register_aggregator('maximum', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('max', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('maximum', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('max', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'maximum', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'max', 'VALUATION');

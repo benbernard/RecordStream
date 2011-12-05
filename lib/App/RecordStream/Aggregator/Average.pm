@@ -37,8 +37,8 @@ sub short_usage
   return "averages provided field";
 }
 
-App::RecordStream::Aggregator::register_aggregator('average', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('avg', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('average', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('avg', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'average', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'avg', 'VALUATION');

@@ -37,9 +37,9 @@ sub short_usage
   return "find covariance of provided fields";
 }
 
-App::RecordStream::Aggregator::register_aggregator('cov', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('covar', __PACKAGE__);
-App::RecordStream::Aggregator::register_aggregator('covariance', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('cov', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('covar', __PACKAGE__);
+App::RecordStream::Aggregator->register_implementation('covariance', __PACKAGE__);
 
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'cov', 'VALUATION', 'VALUATION');
 App::RecordStream::DomainLanguage::Registry::register_vfn(__PACKAGE__, 'new_from_valuation', 'covar', 'VALUATION', 'VALUATION');
