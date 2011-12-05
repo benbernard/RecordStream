@@ -1,41 +1,43 @@
-Keith's personal section
-    fix die w/in getopt
-    --incr collate by time and by record count (--incr is by record count 1)
-        maybe even windowed incremental?
-            this would be expensive without allowing aggregators to remove points...
-            some aggregators are vaguely order dependent (last) so what removal even means for them is unclear
-            maybe we promised we'll only remove from the back?
-        threshold start for increment as well (start after 10 records, start after 10 seconds)
-    omfg, hierarchy stuff...
-    field group
-        for e.g.  recs-collate --default-agg sum=tp*
-    moving average aggregators
-        need a field and some need a "time" field
-    domain language short term
-        > *) operator overloading for DL::Value
-        > *) consider name('...', <valuation/agg>) alternative to current --dlk and --dla naming mechanism
-        >
-        > Also possible: --dlnamedaggregator (to separate named from unnamed) or
-        > inject_agg, etc. could take an optional name.
-    recs-collate
-        option shorthand for mr/ii adhoc aggregators, like
-            --mr-agg sum_x '{{x}}' '$a+$b'[ '$a']
-            --ii-agg sum_x 0 '$a+{{x}}'[ '$a']
-        note to implementor: how the fuck are we taking so many arguments?
-    refactor keys nightmare once and for all, this will include domain language keys (and help on them!)
-    domain language
-        brainstorming
-            map_agg(map_ex('"sum_$f" => sum($f)', grep_re('/^t/', fields())))
-                fields() is a VALUATION, returns an arrayref of fields
-                grep_re(SCALAR, VALUATION) is a valuation
-                grep_ex(SNIPPET, VALUATION) is a valuation
-                map_ex(SNIPPET, VALUATION) is a valuation
-                map_agg(VALUATION) is an aggregator, builds a map based on (per-record, sort of) aggregators specified by valuation
-                this is definitely more powerful shit, it's just very verbose and that short example is now huge
-            nested cubing aggregator
-                like a full collate w/in its slice
-                ugh, hash-taking functions (should ease the madness but at collision this is gonna be fucking tricky)
-                    maybe they register their OK keys to avoid matching too much?
-                    also, jesus, how do they define the "type" their arguments are?
-                    ARRAY[VALUATION]?
-                    HASH[AGG]?
+filename in input records
+    right now we can jam filename on output records as they go out, what about faking it on input records as they come in?
+timestamp on input/output records
+fix die w/in getopt
+--incr collate by time and by record count (--incr is by record count 1)
+    maybe even windowed incremental?
+        this would be expensive without allowing aggregators to remove points...
+        some aggregators are vaguely order dependent (last) so what removal even means for them is unclear
+        maybe we promised we'll only remove from the back?
+    threshold start for increment as well (start after 10 records, start after 10 seconds)
+omfg, hierarchy stuff...
+field group
+    for e.g.  recs-collate --default-agg sum=tp*
+moving average aggregators
+    need a field and some need a "time" field
+domain language short term
+    > *) operator overloading for DL::Value
+    > *) consider name('...', <valuation/agg>) alternative to current --dlk and --dla naming mechanism
+    >
+    > Also possible: --dlnamedaggregator (to separate named from unnamed) or
+    > inject_agg, etc. could take an optional name.
+recs-collate
+    option shorthand for mr/ii adhoc aggregators, like
+        --mr-agg sum_x '{{x}}' '$a+$b'[ '$a']
+        --ii-agg sum_x 0 '$a+{{x}}'[ '$a']
+    note to implementor: how the fuck are we taking so many arguments?
+refactor keys nightmare once and for all, this will include domain language keys (and help on them!)
+domain language
+    brainstorming
+        map_agg(map_ex('"sum_$f" => sum($f)', grep_re('/^t/', fields())))
+            fields() is a VALUATION, returns an arrayref of fields
+            grep_re(SCALAR, VALUATION) is a valuation
+            grep_ex(SNIPPET, VALUATION) is a valuation
+            map_ex(SNIPPET, VALUATION) is a valuation
+            map_agg(VALUATION) is an aggregator, builds a map based on (per-record, sort of) aggregators specified by valuation
+            this is definitely more powerful shit, it's just very verbose and that short example is now huge
+        nested cubing aggregator
+            like a full collate w/in its slice
+            ugh, hash-taking functions (should ease the madness but at collision this is gonna be fucking tricky)
+                maybe they register their OK keys to avoid matching too much?
+                also, jesus, how do they define the "type" their arguments are?
+                ARRAY[VALUATION]?
+                HASH[AGG]?
