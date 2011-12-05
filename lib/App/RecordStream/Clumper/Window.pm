@@ -26,7 +26,11 @@ sub long_usage
 {
   return <<EOF;
 Usage: window,<size>
-   Clump records by a rolling window of size <size>
+   Clump records by a rolling window of size <size>.  The windows are strict
+   (that is partial windows are not given at the beginning or end).  For
+   example, if there are five input records (1, 2, 3, 4, 5) and the window is
+   3, then the first clump will be (1, 2, 3), the second (2, 3, 4) and the
+   third and final (3, 4, 5).
 EOF
 }
 
