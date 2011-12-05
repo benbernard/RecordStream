@@ -1,4 +1,4 @@
-libapp-recordstream-perl (3.6-01-2ubuntu4) oneiric; urgency=low
+libapp-recordstream-perl (3.7-ubuntu1) oneiric; urgency=low
 
   * alternative clumpers for collate and decollate
 
