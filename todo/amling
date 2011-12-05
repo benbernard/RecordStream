@@ -19,11 +19,6 @@ domain language short term
     >
     > Also possible: --dlnamedaggregator (to separate named from unnamed) or
     > inject_agg, etc. could take an optional name.
-recs-collate
-    option shorthand for mr/ii adhoc aggregators, like
-        --mr-agg sum_x '{{x}}' '$a+$b'[ '$a']
-        --ii-agg sum_x 0 '$a+{{x}}'[ '$a']
-    note to implementor: how the fuck are we taking so many arguments?
 refactor keys nightmare once and for all, this will include domain language keys (and help on them!)
 domain language
     brainstorming
