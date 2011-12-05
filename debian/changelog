@@ -1,3 +1,9 @@
+libapp-recordstream-perl (3.6-01-2ubuntu4) oneiric; urgency=low
+
+  * alternative clumpers for collate and decollate
+
+ -- Ben Bernard <bernard@bernard-laptop>  Sun, 04 Dec 2011 16:34:23 -0800
+
 libapp-recordstream-perl (3.6-01-2ubuntu3) oneiric; urgency=low
 
   * distro changes, really adding new xform collator
