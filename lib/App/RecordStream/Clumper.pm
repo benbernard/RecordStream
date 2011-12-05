@@ -21,8 +21,8 @@ sub typename
 }
 
 sub usage {
-  my $this = shift;
-  return <<USAGE;
+  my $ret = "";
+  $ret .= <<USAGE;
 CLUMPING:
    __FORMAT_TEXT__
    "Clumping" defines a way of taking a stream of input records and rearranging
@@ -40,7 +40,11 @@ Examples:
       recs-collate -c keylru,host,1 -a ct
    Output the successive differences of the time field.
       recs-collate -c window,2 --dla 'time_delta=xform(recs, <<{{#1/time}} - {{#0/time}}>>)'
+
+Full list:
 USAGE
+  $ret .= __PACKAGE__->list_implementations("   ");
+  return $ret;
 }
 
 1;

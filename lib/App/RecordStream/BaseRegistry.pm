@@ -105,6 +105,7 @@ sub load_implementations_aux
   sub list_implementations
   {
     my $registry_class = shift;
+    my $prefix = shift || '';
 
     my %reverse;
     my @classes;
@@ -123,7 +124,7 @@ sub load_implementations_aux
     for my $class (@classes)
     {
       my $usage = $class->short_usage();
-      $ret .= join(", ", @{$reverse{$class}}) . ": " . $usage . "\n";
+      $ret .= $prefix . join(", ", @{$reverse{$class}}) . ": " . $usage . "\n";
     }
     return $ret;
   }
