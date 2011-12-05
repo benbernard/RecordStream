@@ -269,6 +269,8 @@ sub usage {
     [ 'dlkey|-K ...', 'Specify a domain language key.  See "Domain Language Integration" below.'],
     [ 'dlaggregator|-A ...', 'Specify a domain language aggregate.  See "Domain Language Integration" below.'],
     [ 'aggregator|-a <aggregators>', 'Colon separated list of aggregate field specifiers.  See "Aggregates" section below.'],
+    [ 'size|--sz|-n <number>', 'Number of running clumps to keep.'],
+    [ 'adjacent|-1', 'Only group together adjacent records.  Avoids spooling records into memeory'],
     [ 'cube', 'See "Cubing" section in --help-more.'],
     [ 'incremental', 'Output a record every time an input record is added to a clump (instead of everytime a clump is flushed).'],
     [ 'clumper ...', 'Use this clumper to group records.  May be specified multiple times.  See --help-clumping.'],
