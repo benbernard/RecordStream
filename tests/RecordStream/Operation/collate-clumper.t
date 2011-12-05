@@ -129,3 +129,30 @@ SOLUTION
     $output,
   );
 }
+
+{
+  my $input = <<STREAM;
+{"a":"a1","x":1}
+{"a":"a1","x":2}
+{"a":"a1","x":3}
+{"a":"a1","x":4}
+{"a":"a2","x":5}
+{"a":"a1","x":6}
+{"a":"a1","x":7}
+{"a":"a2","x":8}
+{"a":"a2","x":9}
+{"a":"a2","x":10}
+STREAM
+
+  my $output = <<SOLUTION;
+{"a":"a2","sum_x":32,"ct":4}
+{"a":"a1","sum_x":23,"ct":6}
+SOLUTION
+
+  App::RecordStream::Test::OperationHelper->do_match(
+    'collate',
+    ['-c', 'keyperfect,a', '-a', 'sum,x', '-a', 'ct'],
+    $input,
+    $output,
+  );
+}
