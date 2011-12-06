@@ -46,14 +46,14 @@ App::RecordStream::Test::OperationHelper->do_match(
 );
 
 my $solution3 = <<SOLUTION;
-{"count":3,"foo":"bar","element":"ALL"}
 {"count":1,"foo":"bar","element":"address"}
+{"count":3,"foo":"bar","element":"ALL"}
 {"count":2,"foo":"bar","element":"address2"}
-{"count":5,"foo":"ALL","element":"ALL"}
 {"count":2,"foo":"ALL","element":"address"}
+{"count":5,"foo":"ALL","element":"ALL"}
 {"count":3,"foo":"ALL","element":"address2"}
-{"count":2,"foo":"bar3","element":"ALL"}
 {"count":1,"foo":"bar3","element":"address"}
+{"count":2,"foo":"bar3","element":"ALL"}
 {"count":1,"foo":"bar3","element":"address2"}
 SOLUTION
 
@@ -75,8 +75,8 @@ App::RecordStream::Test::OperationHelper->do_match(
 my $solution4 = <<SOLUTION;
 {"sweet":"barbaz","foo":"bar","element":"address"}
 {"sweet":"bar3baz2","foo":"bar3","element":"address"}
-{"sweet":"barbaz,barbaz3","foo":"bar","element":"address2"}
 {"sweet":"bar3baz2","foo":"bar3","element":"address2"}
+{"sweet":"barbaz,barbaz3","foo":"bar","element":"address2"}
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
@@ -87,8 +87,8 @@ App::RecordStream::Test::OperationHelper->do_match(
 );
 
 my $solution5 = <<SOLUTION;
-{"count":2,"element":""}
 {"count":2,"element":"address"}
+{"count":2,"element":""}
 {"count":1,"element":"address2"}
 SOLUTION
 
