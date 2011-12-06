@@ -116,6 +116,15 @@ lib/App/RecordStream/Aggregator/Sum.pm
 lib/App/RecordStream/Aggregator/UniqConcatenate.pm
 lib/App/RecordStream/Aggregator/ValuesToKeys.pm
 lib/App/RecordStream/Aggregator/Variance.pm
+lib/App/RecordStream/BaseRegistry.pm
+lib/App/RecordStream/Clumper/Base.pm
+lib/App/RecordStream/Clumper/CubeKeyPerfect.pm
+lib/App/RecordStream/Clumper/KeyLRU.pm
+lib/App/RecordStream/Clumper/KeyPerfect.pm
+lib/App/RecordStream/Clumper/Key.pm
+lib/App/RecordStream/Clumper/Key/WrappedCallback.pm
+lib/App/RecordStream/Clumper.pm
+lib/App/RecordStream/Clumper/Window.pm
 lib/App/RecordStream/DBHandle.pm
 lib/App/RecordStream/Deaggregator/Base.pm
 lib/App/RecordStream/Deaggregator/Field.pm
@@ -141,7 +150,9 @@ lib/App/RecordStream/KeySpec.pm
 lib/App/RecordStream/LRUSheriff.pm
 lib/App/RecordStream/Operation/annotate.pm
 lib/App/RecordStream/Operation/chain.pm
+lib/App/RecordStream/Operation/collate/BaseClumperCallback.pm
 lib/App/RecordStream/Operation/collate.pm
+lib/App/RecordStream/Operation/collate/WrappedClumperCallback.pm
 lib/App/RecordStream/Operation/decollate.pm
 lib/App/RecordStream/Operation/delta.pm
 lib/App/RecordStream/Operation/eval.pm
@@ -247,6 +258,7 @@ tests/RecordStream/KeyGroups.t
 tests/RecordStream/KeySpec.t
 tests/RecordStream/Operation/annotate.t
 tests/RecordStream/Operation/chain.t
+tests/RecordStream/Operation/collate-clumper.t
 tests/RecordStream/Operation/collate.t
 tests/RecordStream/Operation/decollate.t
 tests/RecordStream/Operation/delta.t

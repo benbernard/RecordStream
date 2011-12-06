@@ -1,3 +1,9 @@
+libapp-recordstream-perl (3.7_01-ubuntu2) oneiric; urgency=low
+
+  * CPAN changes
+
+ -- Ben Bernard <bernard@bernard-laptop>  Tue, 06 Dec 2011 00:14:48 -0800
+
 libapp-recordstream-perl (3.7-ubuntu1) oneiric; urgency=low
 
   * alternative clumpers for collate and decollate
