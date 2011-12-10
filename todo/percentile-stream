@@ -1,0 +1,20 @@
+16:17 <ben_bernard> I would hope so
+16:33 <ben_bernard> recs idea
+16:33 <ben_bernard> I often want percentages
+16:33 <ben_bernard> but it sucks to re-figureout printf every time
+16:33 <ben_bernard> also, it should just do it
+16:33 <ben_bernard> so, given a key, find the largest value, compute percentages to a specified significant digit
+16:34 <amling> you want the inverse CDF?
+16:34 <amling> like you want a dump of every percentile for percentages that are multiple of e.g.  1 or 0.1?
+16:34 <ben_bernard> no
+16:36 -!- Irssi: Please confirm sending message:
+16:36 -!- Irssi: I have value: 1,4,5,10; I want those records tagged with 10%,40%, and 50%, (or optionally compute the total from the stream giving: 5,20,25,50
+16:36 -!- Irssi: Enter CNY to confirm sending this message, letter count: 142
+16:36 <ben_bernard> I have value: 1,4,5,10; I want those records tagged with 10%,40%, and 50%, (or optionally compute the total from the stream giving: 5,20,25,50
+16:36 <amling> oh
+16:36 <amling> I see
+16:37 <amling> you want to know how the value stacks up in context of its buddies
+16:37 <ben_bernard> yeah
+16:37 <amling> perhaps even in the context of its buddies when the view is restricted to a clumper bucket :P
+16:37 <ben_bernard> probably an aggregator
+16:37 <amling> clump, then redump the clumps with some field(s) normalized
