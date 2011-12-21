@@ -28,3 +28,6 @@ Day changed to 21 Dec 2011
 14:33 <amling> it could take a snippet
 14:33 <ben_bernard> wouldn't that be cool
 14:33 <amling> for that matter it can take a snippet or subref since it's not like it could confuse them
+
+
+Note: syntax << >> does not allow access to local variables... that will be a problem
