@@ -1,0 +1,30 @@
+Day changed to 21 Dec 2011
+14:26 <ben_bernard> new recs idea
+14:26 <ben_bernard> like {{}} but for keygroups
+14:26 <ben_bernard> [< >] ?
+14:28 <amling> as a pair unlikely to be used?
+14:28 <amling> what do keygroups do when shat out in eval-able perl?
+14:28 <amling> dump an arrayref of values?
+14:29 <ben_bernard> array ref of matching keys?
+14:30 <ben_bernard> I would accept either
+14:30 <ben_bernard> though ref is rough
+14:30 <amling> yeah
+14:30 <amling> also values or keys?
+14:30 <amling> or hash?
+14:30 <ben_bernard> then its for $i (@{[<depot.*>]}) { ...logic... }
+14:30 <amling> @{[< >]} feels like it should be a smiley for something
+14:31 <ben_bernard> indeed
+14:31 <amling> "gaping goatse hole with rose on left"?
+14:31 <ben_bernard> anyway, just an idea... I really want it for what I'm doing right now...
+14:31 <ben_bernard> thanks
+14:31 <ben_bernard> now that is in my head
+14:31 <amling> we could offer soemthing like:
+14:32 <amling> $r->for_group("depot.*", sub { ($k,$v)=@_; ...logic... })
+14:32 <amling> syntax is kind of a pain
+14:32 <amling> but is difficult to compare to a shock site
+14:33 <ben_bernard> $r->for_group("depot.*", <<...logic using $k and $v...>>) ?
+14:33 <amling> oh
+14:33 <amling> right
+14:33 <amling> it could take a snippet
+14:33 <ben_bernard> wouldn't that be cool
+14:33 <amling> for that matter it can take a snippet or subref since it's not like it could confuse them
