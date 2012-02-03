@@ -1,0 +1,1 @@
+topn should optionally do sorting to determine records it will output... this will spool the stream, but only part of it... (maybe a different script?)
