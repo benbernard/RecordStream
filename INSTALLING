@@ -67,7 +67,7 @@ First download all the source (available from http://github.com/benbernard/Recor
 
 Then you'll need some packages:
 
-Ubuntu packages: 
+Ubuntu packages:
   libdbd-sqlite3-perl
   sqlite3
   libxml-simple-perl
@@ -79,10 +79,11 @@ Ubuntu packages:
   libnet-pcap-perl
   libnet-dns-perl
   libjson-perl
+  libtext-autoformat-perl
 
 you can install these with:
 
-% sudo apt-get install libdbd-sqlite3-perl sqlite3 libxml-simple-perl libproc-processtable-perl libdate-manip-perl libtext-csv-perl gnuplot libnetpacket-perl libnet-pcap-perl libnet-dns-perl libjson-perl
+% sudo apt-get install libdbd-sqlite3-perl sqlite3 libxml-simple-perl libproc-processtable-perl libdate-manip-perl libtext-csv-perl gnuplot libnetpacket-perl libnet-pcap-perl libnet-dns-perl libjson-perl libtext-autoformat-perl
 
 ----
 
