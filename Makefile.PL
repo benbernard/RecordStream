@@ -39,6 +39,7 @@ WriteMakefile(
      'Text::CSV'           => 0,
      'Tie::IxHash'         => 0,
      'XML::Simple'         => 0,
+     'Text::Autoformat'    => 0,
    },
 
    MAN3PODS => {
