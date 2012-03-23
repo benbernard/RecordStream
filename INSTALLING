@@ -46,7 +46,7 @@ directory.  A humorus introduction to a simple use of RecordStream.
 ================================================================================
 
 % sudo perl -MCPAN -e shell
-> install App::RecordStream
+> install App::RecordStream::Operation
 
 Then answer all the many many prompts.
 
