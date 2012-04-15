@@ -45,7 +45,7 @@ create_tarball();
 
 sub create_executable {
   my $pp_args = create_pp_args();
-  run_command('pp', @args);
+  run_command('pp', @$pp_args);
 }
 
 sub create_tarball {
