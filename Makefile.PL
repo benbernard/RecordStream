@@ -36,7 +36,6 @@ WriteMakefile(
      'Text::Autoformat' => 0,
      'Text::CSV'        => 0,
      'Tie::Array'       => 0,
-     'Tie::ExtraHash'   => 0,
      'Tie::Hash'        => 0,
      'Tie::IxHash'      => 0,
      'XML::Simple'      => 0,
@@ -48,6 +47,9 @@ WriteMakefile(
    #   'NetPacket::Ethernet' => 0,
    #   'GD::Graph'           => 0,
    #   'Proc::ProcessTable'  => 0;
+   # Not really optional, but in the base perl, including it confuses debian
+   # package creator
+   #   'Tie::ExtraHash'   => 0,
 
    MAN3PODS => {
       'README.pod'                => '$(INST_MAN3DIR)/RecordStream.3',
