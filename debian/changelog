@@ -1,3 +1,9 @@
+libapp-recordstream-perl (3.7.3-ubuntu1) oneiric; urgency=low
+
+  * Make --list work on collate
+
+ -- Ben Bernard <bernard@bernard-laptop>  Sun, 15 Apr 2012 15:29:49 -0700
+
 libapp-recordstream-perl (3.7.2-ubuntu1) oneiric; urgency=low
 
   * Update to 3.7.2, fixed documentation, --mr-agg and --ii-agg, see Changes

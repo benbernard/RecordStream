@@ -72,13 +72,16 @@ recs-decollate
     can be confused with non-<snippet> scalars.
  
     Example:
-      --dla "ucancat(',', snip('{{x}} * 2'))"
+      --dla "silly= uconcat(',', snip('{{x}} * 2'))"
  
-    To remedy this, one may use <<code>> to inline a snippet which will be immediately understood by the typing mechanism as being
+    To remedy this, one may use <<CODE>> to inline a snippet which will be immediately understood by the typing mechanism as being
     code. Escaping inside this is as single quotes in PERL.
  
     Example With <<CODE>>
-      --dla 'uconcat(",", <<{{x}} * 2>>)'
+      --dla 'silly= uconcat(",", <<{{x}} * 2>>)'
+ 
+    Furthermore one may mark variables to be propagated in by prefixing CODE like <<var1,var2,var3|CODE>>:
+      --dla 'silly= $f=2; uconcat(",", <<f|{{x}} * $f>>)'
  
  Function Library
     ii_agg(<snippet>, <snippet>[, <snippet>])

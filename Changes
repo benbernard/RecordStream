@@ -1,3 +1,6 @@
+3.7.3 - Added snippet variable passing
+        --list for collate works again
+
 3.7.2 - Added tarball creation
         Added --mr-agg and --ii-agg shortcut args to recs-collate
         Adding --sort-to-end to recs-toptable

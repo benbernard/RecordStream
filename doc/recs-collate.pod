@@ -57,8 +57,10 @@ recs-collate
                                                   --help-clumping.
     --dlclumper ...                               Use this domain language clumper to group records. May be specified multiple
                                                   times. See --help-clumping.
-    --list-aggregators                            Bail and output a list of aggregators
+    --list-aggregators|--list                     Bail and output a list of aggregators
     --show-aggregator <aggregator>                Bail and output this aggregator's detailed usage.
+    --list-clumpers                               Bail and output a list of clumpers
+    --show-clumper <clumper>                      Bail and output this clumper's detailed usage.
     --filename-key|fk <keyspec>                   Add a key with the source filename (if no filename is applicable will put NONE)
  
    Help Options:
@@ -121,13 +123,16 @@ recs-collate
     can be confused with non-<snippet> scalars.
  
     Example:
-      --dla "ucancat(',', snip('{{x}} * 2'))"
+      --dla "silly= uconcat(',', snip('{{x}} * 2'))"
  
-    To remedy this, one may use <<code>> to inline a snippet which will be immediately understood by the typing mechanism as being
+    To remedy this, one may use <<CODE>> to inline a snippet which will be immediately understood by the typing mechanism as being
     code. Escaping inside this is as single quotes in PERL.
  
     Example With <<CODE>>
-      --dla 'uconcat(",", <<{{x}} * 2>>)'
+      --dla 'silly= uconcat(",", <<{{x}} * 2>>)'
+ 
+    Furthermore one may mark variables to be propagated in by prefixing CODE like <<var1,var2,var3|CODE>>:
+      --dla 'silly= $f=2; uconcat(",", <<f|{{x}} * $f>>)'
  
  Function Library
     ii_agg(<snippet>, <snippet>[, <snippet>])
@@ -295,8 +300,10 @@ recs-collate
                                                   --help-clumping.
     --dlclumper ...                               Use this domain language clumper to group records. May be specified multiple
                                                   times. See --help-clumping.
-    --list-aggregators                            Bail and output a list of aggregators
+    --list-aggregators|--list                     Bail and output a list of aggregators
     --show-aggregator <aggregator>                Bail and output this aggregator's detailed usage.
+    --list-clumpers                               Bail and output a list of clumpers
+    --show-clumper <clumper>                      Bail and output this clumper's detailed usage.
     --filename-key|fk <keyspec>                   Add a key with the source filename (if no filename is applicable will put NONE)
  
    Help Options:
