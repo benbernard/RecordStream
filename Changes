@@ -1,3 +1,13 @@
+3.7.2 - Added tarball creation
+        Added --mr-agg and --ii-agg shortcut args to recs-collate
+        Adding --sort-to-end to recs-toptable
+        Updated checked in documentation
+        Fixed first argument double indented problem
+
+3.7.1 - Fix optional dependencies for easier CPAN and clean system installs
+        Moved to 3 part version scheme to fix problems with dev releases in
+        CPAN
+
 3.7_01 - Fix CPAN Manifest / distro
 
 3.7 - Added alternative clumping mechanisms for decollate and collate

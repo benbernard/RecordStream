@@ -62,6 +62,7 @@ doc/recs-sort.pod
 doc/recs-stream2table.pod
 doc/recs-tocsv.pod
 doc/recs-todb.pod
+doc/recs-togdgraph.pod
 doc/recs-tognuplot.pod
 doc/recs-tohtml.pod
 doc/recs-topn.pod
@@ -72,9 +73,11 @@ doc/recs-xform.pod
 generate_deb.pl
 generate_manifest.sh
 generate_pods.pl
+generate_tarball.pl
 .gitignore
 ignore.txt
 INSTALLING
+INSTALLING.tarball
 lib/App/RecordStream/Accumulator.pm
 lib/App/RecordStream/Aggregator/Aggregation.pm
 lib/App/RecordStream/Aggregator/Average.pm
@@ -133,7 +136,6 @@ lib/App/RecordStream/Deaggregator.pm
 lib/App/RecordStream/Deaggregator/Split.pm
 lib/App/RecordStream/Deaggregator/Unarray.pm
 lib/App/RecordStream/Deaggregator/Unhash.pm
-libapp-recordstream.deb
 lib/App/RecordStream/DomainLanguage/Executor.pm
 lib/App/RecordStream/DomainLanguage/Library.pm
 lib/App/RecordStream/DomainLanguage.pm
@@ -187,8 +189,6 @@ lib/App/RecordStream/Operation/totable.pm
 lib/App/RecordStream/Operation/xform.pm
 lib/App/RecordStream/OptionalRequire.pm
 lib/App/RecordStream/OutputStream.pm
-libapp-recordstream-perl_3.5-01-1_all.deb
-libapp-recordstream-perl_3.6-1_all.deb
 lib/App/RecordStream.pm
 lib/App/RecordStream/Record.pm
 lib/App/RecordStream/Site.pm

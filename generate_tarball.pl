@@ -31,14 +31,21 @@ import BuildTools qw(get_pms run_command get_bin_scripts);
 
 $ENV{'PERL5LIB'} .= ':lib';
 
+my $update_docs = shift @ARGV;
+
+if ( ! defined $update_docs ) {
+  $update_docs = 1;
+}
+
 create_bin_scripts();
+update_docs() if $update_docs;
 create_copy_files();
-#create_executable();
-#create_tarball();
+create_executable();
+create_tarball();
 
 sub create_executable {
   my $pp_args = create_pp_args();
-  #run_command('pp', @args);
+  run_command('pp', @args);
 }
 
 sub create_tarball {
@@ -47,10 +54,12 @@ sub create_tarball {
   print "Created $tar_file\n";
 }
 
-sub create_copy_files {
+sub update_docs {
   print "Updating docs\n";
   run_command('./generate_pods.pl');
+}
 
+sub create_copy_files {
   my @copy_files = qw(LICENSE README.pod doc);
 
   my $translate_files = {

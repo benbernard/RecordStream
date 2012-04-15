@@ -9,7 +9,7 @@ my @scripts = BuildTools::get_bin_scripts();
 
 WriteMakefile(
    NAME          => 'App::RecordStream',
-   VERSION       => '3.7.1',
+   VERSION       => '3.7.2',
    EXE_FILES     => [ map { "bin/$_" } @scripts ],
    ABSTRACT_FROM => 'README.pod',
    AUTHOR        => 'Ben Bernard - perlhacker@benjaminbernard.com '

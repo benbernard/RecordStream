@@ -1,3 +1,9 @@
+libapp-recordstream-perl (3.7.2-ubuntu1) oneiric; urgency=low
+
+  * Update to 3.7.2, fixed documentation, --mr-agg and --ii-agg, see Changes
+
+ -- Ben Bernard <bernard@bernard-laptop>  Sun, 15 Apr 2012 14:51:15 -0700
+
 libapp-recordstream-perl (3.7-01-ubuntu2) oneiric; urgency=low
 
   * Update to 3.7.1, with optional modules
