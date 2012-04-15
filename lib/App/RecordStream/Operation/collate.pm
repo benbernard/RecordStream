@@ -37,6 +37,8 @@ sub init {
   # aggregation
   my @aggregators;
   my %dlaggregators;
+  my @mr_aggregators;
+  my @ii_aggregators;
   my $incremental = 0;
 
   # help
@@ -60,6 +62,8 @@ sub init {
     # aggregation
     "aggregator|a=s"    => sub { push @aggregators, $_[1]; },
     "dlaggregator|A=s"  => sub { build_dlaggregator(\%dlaggregators, $_[1]); },
+    "mr-agg=s{4}"       => \@mr_aggregators,
+    "ii-agg=s{4}"       => \@ii_aggregators,
     "incremental|i"     => \$incremental,
 
     # help
@@ -92,6 +96,32 @@ sub init {
   my $aggregator_objects = App::RecordStream::Aggregator->make_aggregators(@aggregators);
 
   $aggregator_objects = {%$aggregator_objects, %dlaggregators};
+
+  for(my $i = 0; $i < @mr_aggregators; 1) {
+    my $name = $mr_aggregators[$i++];
+    my $map_string = $mr_aggregators[$i++];
+    my $reduce_string = $mr_aggregators[$i++];
+    my $squish_string = $mr_aggregators[$i++];
+
+    my $map_snippet = App::RecordStream::DomainLanguage::Snippet->new($map_string);
+    my $reduce_snippet = App::RecordStream::DomainLanguage::Snippet->new($reduce_string);
+    my $squish_snippet = App::RecordStream::DomainLanguage::Snippet->new($squish_string);
+
+    $aggregator_objects->{$name} = App::RecordStream::DomainLanguage::Library::map_reduce_aggregator($map_snippet, $reduce_snippet, $squish_snippet);
+  }
+
+  for(my $i = 0; $i < @ii_aggregators; 1) {
+    my $name = $ii_aggregators[$i++];
+    my $initial_string = $ii_aggregators[$i++];
+    my $combine_string = $ii_aggregators[$i++];
+    my $squish_string = $ii_aggregators[$i++];
+
+    my $initial_snippet = App::RecordStream::DomainLanguage::Snippet->new($initial_string);
+    my $combine_snippet = App::RecordStream::DomainLanguage::Snippet->new($combine_string);
+    my $squish_snippet = App::RecordStream::DomainLanguage::Snippet->new($squish_string);
+
+    $aggregator_objects->{$name} = App::RecordStream::DomainLanguage::Library::inject_into_aggregator($initial_snippet, $combine_snippet, $squish_snippet);
+  }
 
   $this->{'CLUMPER_CALLBACK'} = App::RecordStream::Operation::collate::BaseClumperCallback->new($aggregator_objects, $incremental, sub { $this->push_record($_[0]); });
   $this->{'CLUMPER_CALLBACK_COOKIE'} = undef;
@@ -269,6 +299,8 @@ sub usage {
     [ 'dlkey|-K ...', 'Specify a domain language key.  See "Domain Language Integration" below.'],
     [ 'dlaggregator|-A ...', 'Specify a domain language aggregate.  See "Domain Language Integration" below.'],
     [ 'aggregator|-a <aggregators>', 'Colon separated list of aggregate field specifiers.  See "Aggregates" section below.'],
+    [ 'mr-agg <name> <map> <reduce> <squish>', 'Specify a map reduce aggregator via 3 snippets, similar to mr_agg() from the domain language.'],
+    [ 'ii-agg <name> <initial> <combine> <squish>', 'Specify an inject into aggregator via 3 snippets, similar to ii_agg() from the domain language.'],
     [ 'size|--sz|-n <number>', 'Number of running clumps to keep.'],
     [ 'adjacent|-1', 'Only group together adjacent records.  Avoids spooling records into memeory'],
     [ 'cube', 'See "Cubing" section in --help-more.'],
