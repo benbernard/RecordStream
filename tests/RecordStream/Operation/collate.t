@@ -98,3 +98,27 @@ App::RecordStream::Test::OperationHelper->do_match(
   $stream2,
   $solution5
 );
+
+my $stream3 = <<STREAM;
+{"z":1}
+{"z":2}
+{"z":4}
+STREAM
+
+my $solution6 = <<SOLUTION;
+{"a":7}
+SOLUTION
+
+App::RecordStream::Test::OperationHelper->do_match(
+  'collate',
+  ['--mr-agg', 'a', '{{z}}', '$a+$b', '$a'],
+  $stream3,
+  $solution6
+);
+
+App::RecordStream::Test::OperationHelper->do_match(
+  'collate',
+  ['--ii-agg', 'a', '0', '$a+{{z}}', '$a'],
+  $stream3,
+  $solution6
+);

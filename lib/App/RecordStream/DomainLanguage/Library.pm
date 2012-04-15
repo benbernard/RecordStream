@@ -54,7 +54,7 @@ sub _raw_valuation
 App::RecordStream::DomainLanguage::Registry::register_fn(\&_raw_valuation, 'valuation', 'SCALAR');
 App::RecordStream::DomainLanguage::Registry::register_fn(\&_raw_valuation, 'val', 'SCALAR');
 
-sub _inject_into_aggregator
+sub inject_into_aggregator
 {
   my $initial_snippet = shift;
   my $combine_snippet = shift;
@@ -87,12 +87,12 @@ for my $ii_name ('ii', 'inject_into')
 {
   for my $agg_name ('agg', 'aggregator')
   {
-    App::RecordStream::DomainLanguage::Registry::register_fn(\&_inject_into_aggregator, $ii_name . '_' . $agg_name, 'SNIPPET', 'SNIPPET');
-    App::RecordStream::DomainLanguage::Registry::register_fn(\&_inject_into_aggregator, $ii_name . '_' . $agg_name, 'SNIPPET', 'SNIPPET', 'SNIPPET');
+    App::RecordStream::DomainLanguage::Registry::register_fn(\&inject_into_aggregator, $ii_name . '_' . $agg_name, 'SNIPPET', 'SNIPPET');
+    App::RecordStream::DomainLanguage::Registry::register_fn(\&inject_into_aggregator, $ii_name . '_' . $agg_name, 'SNIPPET', 'SNIPPET', 'SNIPPET');
   }
 }
 
-sub _map_reduce_aggregator
+sub map_reduce_aggregator
 {
   my $map_snippet = shift;
   my $reduce_snippet = shift;
@@ -127,8 +127,8 @@ for my $mr_name ('mr', 'map_reduce')
 {
   for my $agg_name ('agg', 'aggregator')
   {
-    App::RecordStream::DomainLanguage::Registry::register_fn(\&_map_reduce_aggregator, $mr_name . '_' . $agg_name, 'SNIPPET', 'SNIPPET');
-    App::RecordStream::DomainLanguage::Registry::register_fn(\&_map_reduce_aggregator, $mr_name . '_' . $agg_name, 'SNIPPET', 'SNIPPET', 'SNIPPET');
+    App::RecordStream::DomainLanguage::Registry::register_fn(\&map_reduce_aggregator, $mr_name . '_' . $agg_name, 'SNIPPET', 'SNIPPET');
+    App::RecordStream::DomainLanguage::Registry::register_fn(\&map_reduce_aggregator, $mr_name . '_' . $agg_name, 'SNIPPET', 'SNIPPET', 'SNIPPET');
   }
 }
 
