@@ -5,3 +5,4 @@ makedeb/*
 pm_to_blib
 testDb
 App-RecordStream-*.tar.gz
+tarball/*

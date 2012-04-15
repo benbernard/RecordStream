@@ -1,0 +1,29 @@
+================================================================================
+===========================  Using RecordStream ================================
+================================================================================
+
+You've downloaded the tarball!  You're basically done.  Just add the scripts to
+your path
+
+export PATH=$PATH:`pwd`/bin
+
+And start using the scripts!  See the examples below for how guides to get
+started.
+
+================================================================================
+==================  Getting Started with RecordStream ==========================
+================================================================================
+
+See our lovely documentation via 'perldoc'.  Here are some recommendations:
+
+* A high level over view of recs
+  perldoc README.pod
+
+* A humorous story to help you get started with recs
+  perldoc doc/RecordStreamStory.pod
+
+* Some follow-along examples to show you the power of recs
+  perldoc doc/Examples.pod
+
+* Every script has --help documentation
+  recs-fromsplit --help

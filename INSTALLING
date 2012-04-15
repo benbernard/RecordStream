@@ -1,3 +1,20 @@
+================================================================================
+==================== Install from tarball ======================================
+================================================================================
+
+Grab the tarbal from github or from technofetish and untar it.
+
+% wget http://technofetish.net/recs.tar.gz
+% tar -xzvf recs.tar.gz
+
+Then run a script!
+
+% RecordStream/bin/recs-fromps
+
+================================================================================
+==================== Install from github =======================================
+================================================================================
+
 Best way to get recent code is use apt-get with git clone from github. (Manual Install below)
 
 1. sudo apt-get install libdbd-sqlite3-perl sqlite3 libxml-simple-perl libproc-processtable-perl libdate-manip-perl libtext-csv-perl gnuplot libnetpacket-perl libnet-pcap-perl libnet-dns-perl libjson-perl libtext-autoformat-perl
