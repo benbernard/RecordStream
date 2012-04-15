@@ -12,7 +12,6 @@ recs-collate - use Getopt::Long's multiple option values supports to provide eas
 recs-collate - use fastcollate when possible
 recs-tognuplot - use a library rather than invoking gnuplot directly
 recs-togchart - use google chart api, seems simplier than gnuplot, could support more options? also look at 'Chart' on CPAN, maybe that instead?, could also support graph viz charts, see: http://code.google.com/apis/chart/image/docs/gallery/graphviz.html
-refactor Aggregator/Deaggregator loading/registry code since we'll need it for clumper (and annotater?) as well
 recs-xform - add option to send null $r at the end of the stream to allow final actions after spooling records
 --help - have --help fit on one screen for all scripts, (maybe 40 lines), with additionall help available through drifferent help types
 Executor - add executor::options_help to all scripts that need it.
@@ -22,11 +21,6 @@ recs-streamparse - Terrible name... provide state machine line in frommultire bu
 SQL equivalents (recs-grep for Select..WHERE, recs-collate for SELECT AGG() from... GROUP BY KEY) - not sure this is a great idea
 recs-sort - allow/demand/offer/whatever stable sort
 recs-decollate - flatten (do what flatten does, only for every field flatten would make, make a record instead, ala unhash)
-
-Aribritation Collation clumps
-  - suportt week over week
-  - add new aggreators that expect 2 or some number of recs
-  - "clumper" could be a new type in the domain language allowing things like nested mechanisms easily
 
 recs-autojoin - join stream against itself
 
