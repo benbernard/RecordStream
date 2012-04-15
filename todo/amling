@@ -13,15 +13,4 @@ field group
     for e.g.  recs-collate --default-agg sum=tp*
 moving average aggregators
     need a field and some need a "time" field
-domain language short term
-    > *) operator overloading for DL::Value
-    > *) consider name('...', <valuation/agg>) alternative to current --dlk and --dla naming mechanism
-    >
-    > Also possible: --dlnamedaggregator (to separate named from unnamed) or
-    > inject_agg, etc. could take an optional name.
-recs-collate
-    option shorthand for mr/ii adhoc aggregators, like
-        --mr-agg sum_x '{{x}}' '$a+$b'[ '$a']
-        --ii-agg sum_x 0 '$a+{{x}}'[ '$a']
-    note to implementor: how the fuck are we taking so many arguments?
 refactor keys nightmare once and for all, this will include domain language keys (and help on them!)
