@@ -110,7 +110,7 @@ sub _quote_snippet
 {
     my $code = shift;
 
-    return "snip('$code')";
+    return "snip(App::RecordStream::DomainLanguage::Snippet->new('$code'))";
 }
 
 1;
