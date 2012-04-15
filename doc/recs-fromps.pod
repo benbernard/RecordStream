@@ -7,9 +7,16 @@ recs-fromps
  Usage: recs-fromps <args>
     Prints out JSON records converted from the process table.
  
+    --keys <fields>              Fields to output. May be specified multiple times, may be comma separated. Default to all fields
+                                 These are Proc::ProcessTable keys, and thus may not be keyspecs or groups
+    --filename-key|fk <keyspec>  Add a key with the source filename (if no filename is applicable will put NONE)
+ 
+   Help Options:
+       --help  This help screen
+ 
  Default fields:
-    uid, gid, pid, fname, ppid, pgrp, sess, ttynum, flags, minflt, cminflt, majflt, cmajflt, utime, stime, cutime, cstime, priority, start, size, rss, wchan, time, ctime, state, euid, suid, fuid, egid, sgid, fgid, pctcpu, pctmem,
-    cmndline, exec, cwd
+    uid, gid, pid, fname, ppid, pgrp, sess, ttynum, flags, minflt, cminflt, majflt, cmajflt, utime, stime, cutime, cstime, priority,
+    start, size, rss, wchan, time, ctime, state, euid, suid, fuid, egid, sgid, fgid, pctcpu, pctmem, cmndline, exec, cwd
  
  Examples:
     Get records for the process table

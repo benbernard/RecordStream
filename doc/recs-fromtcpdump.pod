@@ -4,13 +4,14 @@ recs-fromtcpdump
 
 =head1 recs-fromtcpdump --help-all
 
- Missing capture file
- 
  Usage: recs-fromtcpdump <file1> <file2> ...
-    Runs tcpdump and puts out records, one for each packet. Expects pcap files. Will put the name of the originating capture file in the 'file' field.
+    Runs tcpdump and puts out records, one for each packet. Expects pcap files. Will put the name of the originating capture file in
+    the 'file' field.
  
-    Will parse packet types: ethernet, ip, udp, arp, tcp The type key will indicate the highest level parsed. DNS information will be parsed for TCP or UDP packets that are from or to port 53. The parsed representation of the packet for
-    each valid level will be placed in the corresponding key. For instance, for a tcp packet, there will be information in the keys 'ethernet', 'ip', and 'tcp'
+    Will parse packet types: ethernet, ip, udp, arp, tcp The type key will indicate the highest level parsed. DNS information will
+    be parsed for TCP or UDP packets that are from or to port 53. The parsed representation of the packet for each valid level
+    will be placed in the corresponding key. For instance, for a tcp packet, there will be information in the keys 'ethernet',
+    'ip', and 'tcp'
  
     By default, data output is surpressed due to poor interaction with terminal programs.
  

@@ -6,21 +6,29 @@ recs-toptable
 
  Help from: --help-basic:
  Usage: recs-toptable <args> [<files>]
-    Creates a multi-dimensional pivot table with any number of x and y axises. There is additional help available through --full that includes examples
+    Creates a multi-dimensional pivot table with any number of x and y axises. There is additional help available through --full
+    that includes examples
  
     The x and y rows and columns are the values of the field specified
  
     X and Y fields can take the special value 'FIELD' which uses unused field names as values for the FIELD dimension
  
-    --x-field|x                  Add a x field, values of the specified field will become columns in the table, may be a keyspec or a keygroup
-    --y-field|y                  Add a y field, values of the specified field will become rows in the table, may be a keyspec or a keygroup
-    --v-field|v                  Specify the value to display in the table, if multiple value fields are specified and FIELD is not placed in the x or y axes, then the last one wins, may be a keyspec or a keygroup. If FIELD is in an
-                                 axis, then --v specifies the fields to be included in that expansion
-    --pin                        Pin a field to a certain value, only display records matching that value, very similar to doing a recs-grep befor toptable. Takes value of the form: field=pinnedValue, field may be a keyspec (not
+    --x-field|x                  Add a x field, values of the specified field will become columns in the table, may be a keyspec or
+                                 a keygroup
+    --y-field|y                  Add a y field, values of the specified field will become rows in the table, may be a keyspec or
+                                 a keygroup
+    --v-field|v                  Specify the value to display in the table, if multiple value fields are specified and FIELD is not
+                                 placed in the x or y axes, then the last one wins, may be a keyspec or a keygroup. If FIELD is in
+                                 an axis, then --v specifies the fields to be included in that expansion
+    --pin                        Pin a field to a certain value, only display records matching that value, very similar to doing a
+                                 recs-grep befor toptable. Takes value of the form: field=pinnedValue, field may be a keyspec (not
                                  a keygroup)
-    --sort                       Take sort specifications to sort X values and Y values in headers. See `recs-sort --help` for details of sort specifications, especially the * option to sort "ALL" to the end, e.g. "some_field=lex*".
+    --sort                       Take sort specifications to sort X values and Y values in headers. See `recs-sort --help` for
+                                 details of sort specifications, especially the * option to sort "ALL" to the end, e.g.
+                                 "some_field=lex*".
     --noheaders                  Do not print row and column headers (removes blank rows and columns)
     --records|recs               Instead of printing table, output records, one per row of the table.
+    --sort-to-end|sa             Sort ALL fields to the end, equivalent to --sort FIELD=* for each --y and --y field
     --filename-key|fk <keyspec>  Add a key with the source filename (if no filename is applicable will put NONE)
  
    Help Options:
@@ -77,7 +85,8 @@ recs-toptable
  |sleep|        |4|1 |
  +-----+--------+-+--+
  
- So, you can see that the VALUES of priority and state are used as the columns / rows. So that there is 1 process in state 'run' and priority 0, and 4 in state 'sleep' and priority 0
+ So, you can see that the VALUES of priority and state are used as the columns / rows. So that there is 1 process in state 'run' and
+ priority 0, and 4 in state 'sleep' and priority 0
  
  The --cube option on recs-collate also interacts very well with toptable:
  
@@ -94,9 +103,11 @@ recs-toptable
  |sleep|        |4|1 |5  |
  +-----+--------+-+--+---+
  
- We added an ALL row and an ALL column. So from this you can see that there are 5 processes in priority 0, 3 processes in state 'run' and 8 processes all told in the table (the ALL, ALL intersection)
+ We added an ALL row and an ALL column. So from this you can see that there are 5 processes in priority 0, 3 processes in state
+ 'run' and 8 processes all told in the table (the ALL, ALL intersection)
  
- Now lets see what happens when we have more than 1 left over field. Lets also sum up the rss usage of the processes with -a sum,rss on recs-collate:
+ Now lets see what happens when we have more than 1 left over field. Lets also sum up the rss usage of the processes with -a sum,rss
+ on recs-collate:
  
  $ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube -a sum,rss
  {"priority":0,"count":4,"state":"sleep","sum_rss":471040}
@@ -124,7 +135,8 @@ recs-toptable
  |sleep|        |471040 |0      |471040  |
  +-----+--------+-------+-------+--------+
  
- We now have sum_rss values in this field. What if we want the other field (count) displayed? We just use --v-field to specify what value field to use:
+ We now have sum_rss values in this field. What if we want the other field (count) displayed? We just use --v-field to specify what
+ value field to use:
  
  $ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube -a sum,rss | recs-toptable --x priority --y state --v count
  +-----+--------+-+--+---+
@@ -139,8 +151,9 @@ recs-toptable
  |sleep|        |4|1 |5  |
  +-----+--------+-+--+---+
  
- Ok, but what if we want to see both left over fields at the same time? What we really want is to add a column or row for each of count and sum_rss. (where the title of the row is count or sum_rss, not the values of the field). We can do
- this by using the special FIELD specifier like so:
+ Ok, but what if we want to see both left over fields at the same time? What we really want is to add a column or row for each of
+ count and sum_rss. (where the title of the row is count or sum_rss, not the values of the field). We can do this by using the
+ special FIELD specifier like so:
  
  $ cat /var/tmp/psrecs | recs-collate --perfect --key priority,state -a count --cube -a sum,rss | recs-toptable --x priority,FIELD --y state
  +-----+--------+-----+-------+-----+-------+-----+--------+
@@ -157,7 +170,8 @@ recs-toptable
  |sleep|        |4    |471040 |1    |0      |5    |471040  |
  +-----+--------+-----+-------+-----+-------+-----+--------+
  
- So, now in one table we can see all the intersections of state and priority values with the count and sum_rss fields. Remember that the ALL field (row and column) are provided by the --cube functionality of recs-collate
+ So, now in one table we can see all the intersections of state and priority values with the count and sum_rss fields. Remember that
+ the ALL field (row and column) are provided by the --cube functionality of recs-collate
  
  Now, say you want to pin value, lets just look at processes in state run for instance:
  
@@ -180,8 +194,10 @@ recs-toptable
  
  Help from: --help-keygroups:
  KEY GROUPS
-    SYNTAX: !regex!opt1!opt2... Key groups are a way of specifying multiple fields to a recs command with a single argument or function. They are generally regexes, and have several options to control what fields they match. By default
-    you give a regex, and it will be matched against all first level keys of a record to come up with the record list. For instance, in a record like this:
+    SYNTAX: !regex!opt1!opt2... Key groups are a way of specifying multiple fields to a recs command with a single argument or
+    function. They are generally regexes, and have several options to control what fields they match. By default you give a regex,
+    and it will be matched against all first level keys of a record to come up with the record list. For instance, in a record
+    like this:
  
     { 'zip': 1, 'zap': 2, 'foo': { 'bar': 3 } }
  
@@ -201,27 +217,29 @@ recs-toptable
        sort, s         - sort keyspecs lexically
  
  Help from: --help-keyspecs:
- KEY SPECS   
-    A key spec is short way of specifying a field with prefixes or regular expressions, it may also be nested into hashes and arrays. Use a '/' to nest into a hash and a '#NUM' to index into an array (i.e. #2)
+   KEY SPECS
+    A key spec is short way of specifying a field with prefixes or regular expressions, it may also be nested into hashes and
+    arrays. Use a '/' to nest into a hash and a '#NUM' to index into an array (i.e. #2)
  
     An example is in order, take a record like this:
-    
+ 
       {"biz":["a","b","c"],"foo":{"bar 1":1},"zap":"blah1"}
       {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
       {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
-    
+ 
     In this case a key spec of 'foo/bar 1' would have the values 1,2, and 3 in the respective records.
  
     Similarly, 'biz/#0' would have the value of 'a' for all 3 records
  
     You can also prefix key specs with '@' to engage the fuzzy matching logic
-    
+ 
     Fuzzy matching works like this in order, first key to match wins
       1. Exact match ( eq )
       2. Prefix match ( m/^/ )
       3. Match anywehre in the key (m//)
-    
-    So, in the above example '@b/#2', the 'b' portion would expand to 'biz' and 2 would be the index into the array, so all records would have the value of 'c'
+ 
+    So, in the above example '@b/#2', the 'b' portion would expand to 'biz' and 2 would be the index into the array, so all records
+    would have the value of 'c'
  
     Simiarly, @f/b would have values 1, 2, and 3
  

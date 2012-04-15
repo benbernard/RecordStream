@@ -5,7 +5,8 @@ recs-fromkv
 =head1 recs-fromkv --help-all
 
  Usage : recs-fromkv <args> [<files>]
-    Records are generated from charactr input with the form "<record><record-delim><record>...". Records have the form "<entry><entry-delim><entry>...". Entries are pairs of the form "<key><kv-delim><value>".
+    Records are generated from charactr input with the form "<record><record-delim><record>...". Records have the form "<entry><entry-
+    delim><entry>...". Entries are pairs of the form "<key><kv-delim><value>".
  
  Arguments:
     --record-delim|r <delim>     Delimiter to for separating records (defaults to "END\n").

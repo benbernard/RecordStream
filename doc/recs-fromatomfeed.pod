@@ -7,8 +7,9 @@ recs-fromatomfeed
  Usage: recs-fromatomfeed <args> [<uris>]
     Produce records from atom feed entries.
  
-    Recs from atom feed will get entries from paginated atom feeds and create a record stream from the results. The keys of the record will be the fields in the atom field entry. Recs from atom feed will follow the 'next' link in a feed
-    to retrieve all entries.
+    Recs from atom feed will get entries from paginated atom feeds and create a record stream from the results. The keys of the
+    record will be the fields in the atom field entry. Recs from atom feed will follow the 'next' link in a feed to retrieve
+    all entries.
  
  Arguments:
     --[no]follow                 Follow atom feed next links (or not). Defaults on.
