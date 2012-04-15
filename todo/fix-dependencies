@@ -1,2 +1,0 @@
-add Term::ReadKey to Makefile.PL dep list, automate?
-Also GD::Graph
