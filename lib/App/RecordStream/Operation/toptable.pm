@@ -23,19 +23,25 @@ sub init {
   my $ygroup = App::RecordStream::KeyGroups->new();
   my $vgroup = App::RecordStream::KeyGroups->new();
   my $output_records = 0;
+  my $all_at_end = 0;
   my %sorts = ();
 
   my $spec = {
-    "x-field|x=s"     => sub { $xgroup->add_groups($_[1]); },
-    "y-field|y=s"     => sub { $ygroup->add_groups($_[1]); },
-    "v-field|v=s"     => sub { $vgroup->add_groups($_[1]); },
-    "pin=s"           => sub { for(split(/,/, $_[1])) { if(/^(.*)=(.*)$/) { $pins{$1} = $2; } } },
-    "sort=s"          => sub { for(split(/,/, $_[1])) { my ($comparator, $field) = App::RecordStream::Record::get_comparator_and_field($_); $sorts{$field} = $comparator; } },
-    'noheaders'       => sub { $headers = 0; },
-    'records|recs'    => \$output_records,
+    "x-field|x=s"        => sub { $xgroup->add_groups($_[1]); },
+    "y-field|y=s"        => sub { $ygroup->add_groups($_[1]); },
+    "v-field|v=s"        => sub { $vgroup->add_groups($_[1]); },
+    "pin=s"              => sub { for(split(/,/, $_[1])) { if(/^(.*)=(.*)$/) { $pins{$1} = $2; } } },
+    "sort=s"             => sub { for(split(/,/, $_[1])) { my ($comparator, $field) = App::RecordStream::Record::get_comparator_and_field($_); $sorts{$field} = $comparator; } },
+    'noheaders'          => sub { $headers = 0; },
+    'records|recs'       => \$output_records,
+    'sort-all-to-end|sa' => \$all_at_end,
   };
 
   $this->parse_options($args, $spec);
+
+  if ( %sorts  && $all_at_end ) {
+    die "Cannot specify both --sort and --sort-all-to-end\n";
+  }
 
   my $do_vfields = !$vgroup->has_any_group();
 
@@ -43,11 +49,12 @@ sub init {
   $this->{'YGROUP'} = $ygroup;
   $this->{'VGROUP'} = $vgroup;
 
-  $this->{'PINS_HASH'}      = \%pins;
-  $this->{'SORTS'}          = \%sorts;
-  $this->{'HEADERS'}        = $headers;
-  $this->{'DO_VFIELDS'}     = $do_vfields;
-  $this->{'OUTPUT_RECORDS'} = $output_records;
+  $this->{'PINS_HASH'}       = \%pins;
+  $this->{'SORTS'}           = \%sorts;
+  $this->{'SORT_ALL_TO_END'} = $all_at_end;
+  $this->{'HEADERS'}         = $headers;
+  $this->{'DO_VFIELDS'}      = $do_vfields;
+  $this->{'OUTPUT_RECORDS'}  = $output_records;
 }
 
 sub stream_done {
@@ -81,6 +88,14 @@ sub stream_done {
         $yfields_hash->{$spec} = 1;
         push @yfields, $spec;
       }
+    }
+  }
+
+  if ( $this->{'SORT_ALL_TO_END' } ) {
+    foreach my $field (@xfields, @yfields) {
+      print "creating comp for $field\n";
+      my ($comparator, $comp_field) = App::RecordStream::Record::get_comparator_and_field("$field=*");
+      $this->{'SORTS'}->{$field} = $comparator;
     }
   }
 
@@ -670,6 +685,7 @@ sub usage {
     ['sort', 'Take sort specifications to sort X values and Y values in headers.  See `recs-sort --help` for details of sort specifications, especially the * option to sort "ALL" to the end, e.g.  "some_field=lex*".'],
     ['noheaders', 'Do not print row and column headers (removes blank rows and columns)'],
     ['records|recs', 'Instead of printing table, output records, one per row of the table.'],
+    ['sort-to-end|sa', 'Sort ALL fields to the end, equivalent to --sort FIELD=* for each --y and --y field'],
   ];
 
   my $args_string = $this->options_string($options);
@@ -686,7 +702,7 @@ Usage: recs-toptable <args> [<files>]
    names as values for the FIELD dimension
    __FORMAT_TEXT__
 
-   $args_string
+$args_string
 
 Simple Examples (see --full for more detailed descriptions)
 
