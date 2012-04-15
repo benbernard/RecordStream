@@ -40,16 +40,22 @@ Special Syntax
 
    Example:
    __FORMAT_TEXT__
-     --dla "ucancat(',', snip('{{x}} * 2'))"
+     --dla "silly= uconcat(',', snip('{{x}} * 2'))"
 
    __FORMAT_TEXT__
-   To remedy this, one may use <<code>> to inline a snippet which will be
+   To remedy this, one may use <<CODE>> to inline a snippet which will be
    immediately understood by the typing mechanism as being code.  Escaping
    inside this is as single quotes in PERL.
 
    Example With <<CODE>>
    __FORMAT_TEXT__
-     --dla 'uconcat(",", <<{{x}} * 2>>)'
+     --dla 'silly= uconcat(",", <<{{x}} * 2>>)'
+
+   __FORMAT_TEXT__
+   Furthermore one may mark variables to be propagated in by prefixing CODE
+   like <<var1,var2,var3|CODE>>:
+   __FORMAT_TEXT__
+     --dla 'silly= \$f=2; uconcat(",", <<f|{{x}} * \$f>>)'
 
 Function Library
    ii_agg(<snippet>, <snippet>[, <snippet>])

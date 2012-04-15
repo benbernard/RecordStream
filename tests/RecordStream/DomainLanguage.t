@@ -198,6 +198,9 @@ my @tests =
       'mr_agg(<<{{ct}}>>, <<$a+$b>>)',
       'map_reduce_aggregator(<<{{ct}}>>, <<$a+$b>>, <<$a>>)',
       'map_reduce_aggregator(<<{{ct}}>>, <<$a+$b>>)',
+
+      '$x=0; mr_agg(<<x|$x+={{ct}}>>, <<undef>>, <<x|$x>>)',
+      '$x=0; @y = (); mr_agg(<<x,y|$x+=2 * {{ct}}; push @y, {{ct}}; undef>>, <<undef>>, <<x,y|$x-=$_ for(@y); $x>>)',
     ],
     sub
     {
