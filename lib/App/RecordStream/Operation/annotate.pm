@@ -126,7 +126,7 @@ IMPORTANT SNIPPET NOTE
    recs-xform
    __FORMAT_TEXT__
 
-   $args_string
+$args_string
 
 Examples:
    # Annotate records with IPs with hostnames, only doing lookup once

@@ -165,7 +165,7 @@ sub usage {
    This script will attempt to create the table, if it is not already present.
    __FORMAT_TEXT__
 
-   $args_string
+$args_string
 
 USAGE
 

@@ -72,7 +72,7 @@ sub usage {
    the column names and the values the row values.
    __FORMAT_TEXT__
 
-   $args_string
+$args_string
 
 USAGE
 

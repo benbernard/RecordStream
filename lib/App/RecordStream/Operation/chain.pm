@@ -304,7 +304,7 @@ Usage: recs-chain <command> | <command> | ...
    interpret the pipe as a shell pipe.
    __FORMAT_TEXT__
 
-   $args_string
+$args_string
 
 Examples:
    Parse some fields, sort and collate, all in memory

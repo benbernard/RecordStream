@@ -295,7 +295,7 @@ Usage: recs-xform <args> <expr> [<files>]
    suppress the outputting of the current record
    __FORMAT_TEXT__
 
-   $args_string
+$args_string
 
 Examples:
    Add line number to records

@@ -124,7 +124,7 @@ Usage: recs-totable <args> [<files>]
    Prints out an html table for the records from input or from <files>.
    __FORMAT_TEXT__
 
-   $args_string
+$args_string
 
 Examples:
    Print all fields

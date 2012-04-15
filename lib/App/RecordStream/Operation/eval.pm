@@ -72,7 +72,7 @@ Usage: recs-eval <args> <expr> [<files>]
    --help-snippets for more information on code snippets
    __FORMAT_TEXT__
 
-   $args_string
+$args_string
 
 Examples:
    Print the host field from each record.

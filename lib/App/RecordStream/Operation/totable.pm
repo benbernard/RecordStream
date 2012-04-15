@@ -237,7 +237,7 @@ Usage: recs-totable <args> [<files>]
    record stream to determine column size, and number of columns
    __FORMAT_TEXT__
 
-   $args_string
+$args_string
 
 Examples:
    Display a table

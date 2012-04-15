@@ -61,7 +61,7 @@ Usage: recs-sort <args> [<files>]
    each key sorted lexically (alpha order) or numerically
    __FORMAT_TEXT__
 
-   $args_string
+$args_string
 
 Examples:
    Sort on the id field, a numeric

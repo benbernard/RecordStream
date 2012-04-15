@@ -172,7 +172,7 @@ Usage: recs-fromxml <args> [<URIs>]
    documents, and creates records for the specified elements
    __FORMAT_TEXT__
 
-   $args_string
+$args_string
 
 Examples:
    Create records for the bar element at the top level of myXMLDoc

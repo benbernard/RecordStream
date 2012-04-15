@@ -101,6 +101,8 @@ Usage: recs-fromps <args>
    Prints out JSON records converted from the process table.
    __FORMAT_TEXT__
 
+$args_string
+
 Default fields:
    __FORMAT_TEXT__
    $all_fields

@@ -90,7 +90,7 @@ Usage: recs-topn <args> [<files>]
    in the input record stream.
    __FORMAT_TEXT__
 
-   $args_string
+$args_string
 
 Examples:
    Output just the top 5 records
