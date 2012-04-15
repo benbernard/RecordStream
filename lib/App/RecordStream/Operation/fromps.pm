@@ -25,7 +25,9 @@ sub init {
   $this->parse_options($args, $spec);
 
   if ( scalar @fields < 1 ) {
-    @fields = $process_table->fields();
+    # Silly Proc::ProcessTable has been known to give undefs sometimes for some
+    # reason.  We throw them on the ground.
+    @fields = grep { defined($_) } $process_table->fields();
   }
 
   $this->{'FIELDS'}        = \@fields;
