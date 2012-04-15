@@ -24,6 +24,7 @@ bin/recs-sort
 bin/recs-stream2table
 bin/recs-tocsv
 bin/recs-todb
+bin/recs-togdgraph
 bin/recs-tognuplot
 bin/recs-tohtml
 bin/recs-topn
@@ -176,6 +177,7 @@ lib/App/RecordStream/Operation/sort.pm
 lib/App/RecordStream/Operation/stream2table.pm
 lib/App/RecordStream/Operation/tocsv.pm
 lib/App/RecordStream/Operation/todb.pm
+lib/App/RecordStream/Operation/togdgraph.pm
 lib/App/RecordStream/Operation/tognuplot.pm
 lib/App/RecordStream/Operation/tohtml.pm
 lib/App/RecordStream/Operation/topn.pm
@@ -183,9 +185,11 @@ lib/App/RecordStream/Operation/toprettyprint.pm
 lib/App/RecordStream/Operation/toptable.pm
 lib/App/RecordStream/Operation/totable.pm
 lib/App/RecordStream/Operation/xform.pm
+lib/App/RecordStream/OptionalRequire.pm
 lib/App/RecordStream/OutputStream.pm
 libapp-recordstream-perl_3.5-01-1_all.deb
 libapp-recordstream-perl_3.6-1_all.deb
+lib/App/RecordStream.pm
 lib/App/RecordStream/Record.pm
 lib/App/RecordStream/Site.pm
 lib/App/RecordStream/Stream/Base.pm
@@ -282,6 +286,7 @@ tests/RecordStream/Operation/sort.t
 tests/RecordStream/Operation/stream2table.t
 tests/RecordStream/Operation.t
 tests/RecordStream/Operation/tocsv.t
+tests/RecordStream/Operation/togdgraph.t
 tests/RecordStream/Operation/tognuplot.t
 tests/RecordStream/Operation/tohtml.t
 tests/RecordStream/Operation/topn.t
@@ -289,5 +294,6 @@ tests/RecordStream/Operation/toprettyprint.t
 tests/RecordStream/Operation/toptable.t
 tests/RecordStream/Operation/totable.t
 tests/RecordStream/Operation/xform.t
+tests/RecordStream/OptionalRequire.t
 tests/RecordStream/OutputStream.t
 tests/RecordStream/Record.t
