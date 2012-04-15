@@ -37,11 +37,17 @@ if ( ! defined $update_docs ) {
   $update_docs = 1;
 }
 
+clear_and_create_dirs();
 create_bin_scripts();
 update_docs() if $update_docs;
 create_copy_files();
 create_executable();
 create_tarball();
+
+sub clear_and_create_dirs {
+  run_command('rm', '-rf', 'tarball');
+  run_command('mkdir', '-p', 'tarball/RecordStream/bin');
+}
 
 sub create_executable {
   my $pp_args = create_pp_args();
@@ -91,7 +97,7 @@ sub create_pp_args {
     push @args, '-M', $pm;
   }
 
-  push @args, '-o', $BIN_DIRECTORY . 'recs-operation', 'bin/recs-operation';
+  push @args, '-o', $BIN_DIRECTORY . '/recs-operation', 'bin/recs-operation';
   return \@args;
 }
 
