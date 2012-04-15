@@ -31,18 +31,3 @@ Key groups:
       '!perc-(\d+)!v=Percentile: $1'
       '!perc-!v-eval=Percentile {{field}}'
   "Pretty-ify field names for toptable"
-
-recs-multiplex - divide incoming stream by a "thread/process" key, feeding to multiple copies of the "same" operation and dumping their outputs incrementally
-  recs-switch (and/or part of recs-multiplex)
-
-  collection of pairs of predicates and operations
-  each input records is jammed into operations for the predicates it matches
-  operations outputs are mashed together, somehow
-     by union
-        by join (idea 1)
-         write input record
-                spool output records from each operation
-                       full cartesian product sets of output records
-                              possibly default empty set to set of empty record
-                                 by join (idea 2)
-         just zip records 1-1 in order they come out of operations
