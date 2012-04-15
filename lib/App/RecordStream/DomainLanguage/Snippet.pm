@@ -11,6 +11,7 @@ sub new
 {
   my $class = shift;
   my $code = shift;
+  my $vars = shift;
 
   $code = App::RecordStream::Executor->transform_code($code);
   $code = _transform_angles($code);
@@ -18,6 +19,7 @@ sub new
   my $this =
   {
     'CODE' => $code,
+    'VARS' => $vars,
   };
 
   bless $this, $class;
@@ -33,6 +35,14 @@ sub evaluate_as
 
   my $executor = App::RecordStream::DomainLanguage::Executor->new();
   $executor->import_registry();
+
+  for my $var (%{$this->{'VARS'}})
+  {
+      for my $ref (@{$this->{'VARS'}->{$var}})
+      {
+          $executor->set_ref($var, $ref);
+      }
+  }
 
   for my $var (keys(%$vars))
   {
@@ -57,109 +67,68 @@ sub _transform_angles
 {
   my $code = shift;
 
-  my $in = $code;
+  my $pos = 0;
   my $out = '';
-  my $level = 0;
-  my $state = 'ZERO';
-  my $c = undef;
-  my $redo = 0;
-  my $had_eof = 0;
-
   while(1)
   {
-    if(!$redo)
+    my $top_level_entrance = index($code, '<<', $pos);
+    if($top_level_entrance == -1)
     {
-      if(length($in))
-      {
-        $c = substr($in, 0, 1, "");
-      }
-      elsif($had_eof)
-      {
-        last;
-      }
-      else
-      {
-        $had_eof = 1;
-        $c = '';
-      }
+      $out .= substr($code, $pos);
+      last;
     }
-    $redo = 0;
 
-    if($state eq 'ZERO')
+    my $level = 1;
+    my $pos2 = $top_level_entrance + 2;
+    my $top_level_exit;
+    while(1)
     {
-      if(0)
+      my $next_enter = index($code, '<<', $pos2);
+      my $next_exit = index($code, '>>', $pos2);
+
+      if($next_enter != -1 && ($next_exit == -1 || $next_enter < $next_exit))
       {
-      }
-      elsif($c eq '<')
-      {
-        $state = 'ENTER';
-      }
-      elsif($c eq '>')
-      {
-        $state = 'EXIT';
-      }
-      else
-      {
-        $out .= $c;
-      }
-    }
-    elsif($state eq 'ENTER')
-    {
-      if(0)
-      {
-      }
-      elsif($c eq '<')
-      {
-        if($level == 0)
-        {
-          $out .= "snip('";
-        }
-        else
-        {
-          $out .= '<<';
-        }
         ++$level;
-        $state = 'ZERO';
+        $pos2 = $next_enter + 2;
+        next;
       }
-      else
-      {
-        $out .= '<';
-        $redo = 1;
-        $state = 'ZERO';
-      }
-    }
-    elsif($state eq 'EXIT')
-    {
-      if(0)
-      {
-      }
-      elsif($c eq '>')
+
+      if($next_exit != -1 && ($next_enter == -1 || $next_exit < $next_enter))
       {
         --$level;
         if($level == 0)
         {
-          $out .= "')";
+          $top_level_exit = $next_exit;
+          last;
         }
-        else
-        {
-          $out .= '>>';
-        }
-        $state = 'ZERO';
+        $pos2 = $next_enter + 2;
+        next;
       }
-      else
-      {
-        $out .= '>';
-        $redo = 1;
-        $state = 'ZERO';
-      }
+
+      die "Unbalanced << and >> in snippet: $code";
     }
-    else
-    {
-      die "Invalid state in snippet angle transform: $state";
-    }
+
+    $out .= substr($code, $pos, $top_level_entrance - $pos);
+    $out .= _quote_snippet(substr($code, $top_level_entrance + 2, $top_level_exit - $top_level_entrance - 2));
+    $pos = $top_level_exit + 2;
   }
 
   return $out;
+}
+
+sub _quote_snippet
+{
+    my $code = shift;
+
+    my @vars;
+    if($code =~ s/^([a-zA-Z_][a-zA-Z_0-9]*(,[a-zA-Z_][a-zA-Z_0-9]*)*)\|//)
+    {
+        @vars = split(/,/, $1);
+    }
+
+    # Could not get typeglobs to work.  References go in, references come out,
+    # you can't explain that...
+    return "snip(App::RecordStream::DomainLanguage::Snippet->new('$code', {" . join(", ", map { "'$_' => [\\\$$_, \\\@$_, \\\%$_]" } @vars) . "}))";
 }
 
 1;

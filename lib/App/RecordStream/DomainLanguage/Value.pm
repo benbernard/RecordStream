@@ -43,6 +43,14 @@ sub add_possibility
   my $type = shift;
   my $value = shift;
 
+  if($type eq 'SCALAR')
+  {
+    if(blessed($value) && $value->isa('App::RecordStream::DomainLanguage::Snippet'))
+    {
+      return $this->add_possibility('SNIPPET', $value);
+    }
+  }
+
   push @{$this->{'POSSIBILITIES'}->{$type} ||= []}, $value;
 
   # sketchy upgrade...
