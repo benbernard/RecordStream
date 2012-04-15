@@ -278,6 +278,8 @@ sub usage {
     [ 'dlclumper ...', 'Use this domain language clumper to group records.  May be specified multiple times.  See --help-clumping.'],
     [ 'list-aggregators|--list', 'Bail and output a list of aggregators' ],
     [ 'show-aggregator <aggregator>', 'Bail and output this aggregator\'s detailed usage.'],
+    [ 'list-clumpers', 'Bail and output a list of clumpers' ],
+    [ 'show-clumper <clumper>', 'Bail and output this clumper\'s detailed usage.'],
   ];
 
   my $args_string = $this->options_string($options);
