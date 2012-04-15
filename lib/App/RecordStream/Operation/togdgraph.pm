@@ -5,9 +5,11 @@ our $VERSION = "3.4";
 use strict;
 use warnings;
 
-use GD::Graph::lines;
-use GD::Graph::bars;
-use GD::Graph::points;
+use App::RecordStream::OptionalRequire qw(GD::Graph::lines);
+use App::RecordStream::OptionalRequire qw(GD::Graph::bars);
+use App::RecordStream::OptionalRequire qw(GD::Graph::points);
+App::RecordStream::OptionalRequire::require_done();
+
 use base qw(App::RecordStream::Operation);
 
 my $GD_TYPES = {

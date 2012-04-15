@@ -4,13 +4,20 @@ use strict;
 use warnings;
 
 BEGIN {
-  eval { 
+  eval {
     require Net::Pcap;
+    require NetPacket::Ethernet;
+    require NetPacket::IP;
+    require NetPacket::TCP;
+    require NetPacket::UDP;
+    require NetPacket::ARP;
+    require Net::Pcap;
+    require Net::DNS::Packet;
   };
 
   if ( $@ ) {
     require Test::More;
-    import Test::More skip_all => 'Missing Net::Pcap';
+    import Test::More skip_all => 'Missing Modules!';
   }
   else {
     require Test::More;

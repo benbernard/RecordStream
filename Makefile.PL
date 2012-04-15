@@ -9,7 +9,7 @@ my @scripts = BuildTools::get_bin_scripts();
 
 WriteMakefile(
    NAME          => 'App::RecordStream',
-   VERSION       => '3.7_01',
+   VERSION       => '3.7.1',
    EXE_FILES     => [ map { "bin/$_" } @scripts ],
    ABSTRACT_FROM => 'README.pod',
    AUTHOR        => 'Ben Bernard - perlhacker@benjaminbernard.com '
@@ -19,28 +19,35 @@ WriteMakefile(
    clean         => { FILES => 'App-RecordStream-* deb-dist testDb makedeb' },
 
    PREREQ_PM     => {
-     'Carp'                => 0,
-     'DBD::SQLite'         => 0,
-     'DBI'                 => 0,
-     'Date::Manip'         => 0,
-     'File::Temp'          => 0,
-     'FindBin'             => 0,
-     'Getopt::Long'        => 0,
-     'HTTP::Request'       => 0,
-     'IO::String'          => 0,
-     'JSON'                => 0,
-     'JSON::XS'            => 0,
-     'LWP'                 => 0,
-     'Net::DNS::Packet'    => 0,
-     'Net::Pcap'           => 0,
-     'NetPacket::Ethernet' => 0,
-     'Proc::ProcessTable'  => 0,
-     'Test::More'          => 0,
-     'Text::CSV'           => 0,
-     'Tie::IxHash'         => 0,
-     'XML::Simple'         => 0,
-     'Text::Autoformat'    => 0,
+     'Carp'                => 0;
+     'DBI'                 => 0;
+     'Data::Dumper'        => 0;
+     'Date::Manip'         => 0;
+     'File::Temp'          => 0;
+     'FindBin'             => 0;
+     'Getopt::Long'        => 0;
+     'HTTP::Request'       => 0;
+     'IO::String'          => 0;
+     'JSON'                => 0;
+     'LWP::UserAgent'      => 0;
+     'Scalar::Util'        => 0;
+     'Term::ReadKey'       => 0;
+     'Test::More'          => 0;
+     'Text::Autoformat'    => 0;
+     'Text::CSV'           => 0;
+     'Tie::Array'          => 0;
+     'Tie::ExtraHash'      => 0;
+     'Tie::Hash'           => 0;
+     'Tie::IxHash'         => 0;
+     'XML::Simple'         => 0;
    },
+
+   # Optional dependencies
+   #   'Net::DNS::Packet'    => 0,
+   #   'Net::Pcap'           => 0,
+   #   'NetPacket::Ethernet' => 0,
+   #   'GD::Graph'           => 0,
+   #   'Proc::ProcessTable'  => 0;
 
    MAN3PODS => {
       'README.pod'                => '$(INST_MAN3DIR)/RecordStream.3',

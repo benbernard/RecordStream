@@ -413,6 +413,10 @@ sub load_operation {
   {
     eval "require $try_module";
     if($@) {
+      if ($@ =~ m/^Please install missing/ ) {
+	warn $@;
+	exit 1;
+      }
       push @errors, "Could not load $try_module: $@";
     }
     else {

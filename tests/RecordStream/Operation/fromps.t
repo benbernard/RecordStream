@@ -1,8 +1,23 @@
-use Test::More qw(no_plan);
 use App::RecordStream::Test::OperationHelper;
 
 use strict;
 use warnings;
+
+BEGIN {
+  eval {
+    require Proc::ProcessTable;
+  };
+
+  if ( $@ ) {
+    require Test::More;
+    import Test::More skip_all => 'Missing Proc::ProcessTable Modules!';
+  }
+  else {
+    require Test::More;
+    import Test::More qw(no_plan);
+    use_ok( 'App::RecordStream::Operation::fromps' );
+  }
+};
 
 BEGIN { use_ok( 'App::RecordStream::Operation::fromps' ) };
 

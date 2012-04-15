@@ -7,7 +7,8 @@ use warnings;
 
 use base qw(App::RecordStream::Operation);
 
-use Proc::ProcessTable;
+use App::RecordStream::OptionalRequire qw(Proc::ProcessTable);
+App::RecordStream::OptionalRequire::require_done();
 
 sub init {
   my $this = shift;

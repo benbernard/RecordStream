@@ -7,13 +7,15 @@ use warnings;
 
 use base qw(App::RecordStream::Operation);
 
-use NetPacket::Ethernet qw(:ALL);
-use NetPacket::IP qw(:ALL);
-use NetPacket::TCP qw(:ALL);
-use NetPacket::UDP qw(:ALL);
-use NetPacket::ARP qw(:ALL);
-use Net::Pcap qw(pcap_open_offline pcap_loop pcap_next_ex);
-use Net::DNS::Packet;
+use App::RecordStream::OptionalRequire qw(NetPacket::Ethernet :ALL);
+use App::RecordStream::OptionalRequire qw(NetPacket::IP :ALL);
+use App::RecordStream::OptionalRequire qw(NetPacket::TCP :ALL);
+use App::RecordStream::OptionalRequire qw(NetPacket::UDP :ALL);
+use App::RecordStream::OptionalRequire qw(NetPacket::ARP :ALL);
+use App::RecordStream::OptionalRequire qw(Net::Pcap pcap_open_offline pcap_loop pcap_next_ex);
+use App::RecordStream::OptionalRequire qw(Net::DNS::Packet);
+App::RecordStream::OptionalRequire::require_done();
+
 use Data::Dumper;
 
 # From NetPacket::IP

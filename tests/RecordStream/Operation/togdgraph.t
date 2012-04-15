@@ -1,7 +1,20 @@
-use Test::More qw(no_plan);
 use App::RecordStream::Test::OperationHelper;
 
-BEGIN { use_ok( 'App::RecordStream::Operation::togdgraph' ) };
+BEGIN {
+  eval {
+    require GD::Graph;
+  };
+
+  if ( $@ ) {
+    require Test::More;
+    import Test::More skip_all => 'Missing GD::Graph!';
+  }
+  else {
+    require Test::More;
+    import Test::More qw(no_plan);
+    use_ok( 'App::RecordStream::Operation::togdgraph' );
+  }
+}
 
 my $stream = <<STREAM;
 {"uid":"syslog","ct":1}
@@ -40,4 +53,4 @@ App::RecordStream::Test::OperationHelper->test_output(
   $solution,
 );
 
-unlink 'TEMP-gd.png'
+unlink 'TEMP-gd.png';
