@@ -11,6 +11,7 @@ sub new
 {
   my $class = shift;
   my $code = shift;
+  my $vars = shift;
 
   $code = App::RecordStream::Executor->transform_code($code);
   $code = _transform_angles($code);
@@ -18,6 +19,7 @@ sub new
   my $this =
   {
     'CODE' => $code,
+    'VARS' => $vars,
   };
 
   bless $this, $class;
@@ -33,6 +35,14 @@ sub evaluate_as
 
   my $executor = App::RecordStream::DomainLanguage::Executor->new();
   $executor->import_registry();
+
+  for my $var (%{$this->{'VARS'}})
+  {
+      for my $ref (@{$this->{'VARS'}->{$var}})
+      {
+          $executor->set_ref($var, $ref);
+      }
+  }
 
   for my $var (keys(%$vars))
   {
@@ -110,7 +120,15 @@ sub _quote_snippet
 {
     my $code = shift;
 
-    return "snip(App::RecordStream::DomainLanguage::Snippet->new('$code'))";
+    my @vars;
+    if($code =~ s/^([a-zA-Z_][a-zA-Z_0-9]*(,[a-zA-Z_][a-zA-Z_0-9]*)*)\|//)
+    {
+        @vars = split(/,/, $1);
+    }
+
+    # Could not get typeglobs to work.  References go in, references come out,
+    # you can't explain that...
+    return "snip(App::RecordStream::DomainLanguage::Snippet->new('$code', {" . join(", ", map { "'$_' => [\\\$$_, \\\@$_, \\\%$_]" } @vars) . "}))";
 }
 
 1;
