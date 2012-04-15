@@ -67,6 +67,7 @@ sub init {
     "show-aggregator=s" => \$aggregator,
     "list-clumpers"     => \$list_clumpers,
     "show-clumper=s"    => \$clumper,
+    "list"              => \$list_aggregators,
   };
 
   $this->parse_options($args, $spec);
@@ -275,7 +276,7 @@ sub usage {
     [ 'incremental', 'Output a record every time an input record is added to a clump (instead of everytime a clump is flushed).'],
     [ 'clumper ...', 'Use this clumper to group records.  May be specified multiple times.  See --help-clumping.'],
     [ 'dlclumper ...', 'Use this domain language clumper to group records.  May be specified multiple times.  See --help-clumping.'],
-    [ 'list-aggregators', 'Bail and output a list of aggregators' ],
+    [ 'list-aggregators|--list', 'Bail and output a list of aggregators' ],
     [ 'show-aggregator <aggregator>', 'Bail and output this aggregator\'s detailed usage.'],
   ];
 
