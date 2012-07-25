@@ -47,6 +47,7 @@ sub stream_done {
   my $records   = $this->get_records();
   my $key_group = $this->{'KEY_GROUPS'};
   my %widths;
+  my $fields = [];
 
   foreach my $record (@$records) {
     my $specs = $key_group->get_keyspecs_for_record($record);
@@ -54,6 +55,7 @@ sub stream_done {
     foreach my $field (@$specs) {
       if(!exists($widths{$field})) {
         $widths{$field} = 0;
+        push @$fields, $field;
       }
 
       $widths{$field} = max($widths{$field}, length($this->extract_field($record, $field)));
@@ -67,7 +69,6 @@ sub stream_done {
     }
   }
 
-  my $fields = [ sort keys %widths ];
   $this->{'FIELDS'} = $fields;
 
   if(!$no_header) {
