@@ -121,6 +121,18 @@ Some Examples you can run right now:
 export PATH=$PATH:`pwd`/bin && export PERL5LIB=$PERL5LIB:`pwd`/libs
 
 ================================================================================
+==================  Mac Install ================================================
+================================================================================
+
+You'll need to install MacPorts in order to install all these packages.  After
+that try this:
+
+sudo port install p5.12-libwww-perl p5.12-dbd-mysql p5.12-term-readkey p5.12-dbd-sqlite p5.12-xml-simple p5.12-datemanip p5.12-text-csv p5.12-netpacket p5.12-net-pcap p5.12-net-dns p5.12-json p5.12-text-autoformat sqlite3 p5.12-dbd-sqlite p5.12-json-xs p5.12-io-string p5.12-gdgraph gnuplot
+
+Be sure you're the first perl on your path is the MacPorts perl, generally
+found in /opt/local/bin/perl
+
+================================================================================
 ==================  Getting Started with RecordStream ==========================
 ================================================================================
 
