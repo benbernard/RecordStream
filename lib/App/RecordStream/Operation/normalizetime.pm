@@ -1,5 +1,11 @@
 package App::RecordStream::Operation::normalizetime;
 
+# We need to set DM5 for the backend with modern DateManip.
+# TODO: use backend 6
+BEGIN {
+  $Date::Manip::Backend = 'DM5';
+}
+
 our $VERSION = "3.4";
 
 use strict;
