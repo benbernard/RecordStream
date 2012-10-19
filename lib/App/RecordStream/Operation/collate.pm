@@ -366,10 +366,10 @@ Cubing:
    __FORMAT_TEXT__
 
 Domain Lanuage Integration:
-   __FORMAT_TEXT__
 USAGE
   $usage .= App::RecordStream::DomainLanguage::short_usage() . <<USAGE;
 
+   __FORMAT_TEXT__
    Either aggregates or keys may be specified using the recs domain language.
    Both --dlkey and --dlaggregator require an options of the format
    '<name>=<domain language code>'.  --dlkey requires the code evaluate as a
