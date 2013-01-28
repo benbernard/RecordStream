@@ -1,0 +1,54 @@
+We should have a collation aggregator that accepts aggregator arguments.  For instance countby could be implemented like:
+
+-a 'collate,key,count'
+
+15:42 <amling> arggh, using countby aggregator today
+15:42 <amling> I feel like we shouldn't need it
+15:42 <amling> but it's so ... handy
+15:44 <ben_bernard> I know
+15:44 <ben_bernard> you didn't want countby
+15:44 <ben_bernard> and I was like, nope, I'm implementing it
+15:44 <ben_bernard> :)
+15:44 <amling> how could this be easier?
+15:45 <amling> it's like I want a nested collate inside the slice of the outer collate
+15:45 <amling> although this is not likely an "easier" direction
+15:45 <ben_bernard> doesn't sound like an easier direction
+15:45 <ben_bernard> but yeah
+15:45 <ben_bernard> you want multiple collate levels
+15:45 <ben_bernard> actually that would be a really really useful feature
+15:45 <ben_bernard> I've definitely wanted that at other times
+15:46 <ben_bernard> and had to hack hack hack really hard to get around it
+15:46 <amling> you can nest collation stuff
+15:46 <amling> but you can't say you want another nested level to be its own nested level in the record
+15:46 <ben_bernard> I sorta that dlkeys could do it or something
+15:46 <ben_bernard> right
+15:46 <amling> dlaggregator can do whatever you want to write
+15:46 <ben_bernard> we should totally do that
+15:46 <amling> and in this particular case dlaggregator might have been a better shot since I have to hack a bunch after countby
+15:46 <ben_bernard> -a 'collate,key,sum,field'
+15:47 <ben_bernard> we could just have a collate 'aggregator' that accepts another aggregator arguments
+15:47 <ben_bernard> we should definitely write this down
+15:48 <amling> option parsing for the nested collate gets ... complicated
+15:48 <ben_bernard> really?
+15:49 <ben_bernard> split by commas?
+15:49 <amling> well, presumably it can be its own entire collate on the inside?
+15:49 <ben_bernard> isn't that what we are currently doing?
+15:49 <ben_bernard> sure
+15:49 <ben_bernard> -a 'collate,key,collate,key2,perc,50,sum'
+15:49 <ben_bernard> you just build the tree
+15:49 <amling> cube, incr, etc?
+15:50 <ben_bernard> oh....
+15:50 <amling> what if I want a dlkey or dlaggregator in there?
+15:50 <ben_bernard> no
+15:50 <ben_bernard> then use dlkey or dlaggreagtor language directly
+15:50 <ben_bernard> cube, incremental can be their own aggregators
+15:50 <amling> and reimplement collate in there essentially
+15:50 <ben_bernard> -a 'cube,key,agg'
+
+
+15:52 <amling> actually, this might be solvable by a way to tell collate what you want split/nested
+15:53 <amling> you'd give it the nesting "path" and anything not in the path would go on the outer record
+15:54 <amling> e.g.  -k x,y,z,w --key-path=y,w would get x and z in outer record
+15:54 <amling> then the "bag of shit" field with y as keys and hashrefs as values
+15:54 <ben_bernard> I think -a 'collate,key,agg' is really easy to understand
+15:54 <amling> and those hashrefs would have w values as keys, etc.
