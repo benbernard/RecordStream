@@ -78,10 +78,12 @@ use strict;
 use warnings;
 
 use IO::String;
-use JSON qw(decode_json);
+use JSON;
 
 use App::RecordStream::Record;
 require App::RecordStream::Operation;
+
+my $json = new JSON;
 
 my $ONE_OF = [qw(FH STRING FILE)];
 
@@ -209,7 +211,7 @@ sub get_record {
   }
 
   # Direct bless done in the name of performance
-  my $record = decode_json($line);
+  my $record = $json->decode($line);
   bless $record, 'App::RecordStream::Record';
 
   return $record;
