@@ -8,11 +8,13 @@ use IO::String;
 use App::RecordStream::Record;
 use App::RecordStream::InputStream;
 
+my $unicode = "\x{263A}";  # \x{263A} - unicode white smiley
 my $rec = App::RecordStream::Record->new(
   'foo' => 'bar',
   'zoo' => {
     'blah' => 'biz',
     'far'  => [ 'fing', 'fang', 'foom' ],
+    "key-$unicode" => "value-$unicode",
   }
 );
 

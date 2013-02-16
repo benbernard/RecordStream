@@ -63,3 +63,12 @@ is_deeply($magic_stream->get_record(), undef, 'Magic input Ends');
 my $empty_fh = IO::String->new('');
 ok(my $empty_stream = App::RecordStream::InputStream->new(FH => $empty_fh), "Empty String Initialize");
 is_deeply($empty_stream->get_record(), undef, 'Empty String stream ends');
+
+{
+  my $key = "foo\x{263A}";  # \x{263A} - unicode white smiley
+  my $value = "bar\x{263A}";
+  my $handle = IO::String->new(qq({"$key":"$value"}));
+  my $stream = App::RecordStream::InputStream->new(FH => $handle);
+  is_deeply($stream->get_record(), { $key => $value },
+      'InputStream handles key+values with wide characters');
+}

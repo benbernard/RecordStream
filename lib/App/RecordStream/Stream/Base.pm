@@ -1,9 +1,11 @@
 package App::RecordStream::Stream::Base;
 
-use JSON qw(decode_json);
+use JSON;
 
 use App::RecordStream::Record;
 use App::RecordStream::OutputStream;
+
+my $json = new JSON;
 
 sub new
 {
@@ -33,7 +35,7 @@ sub accept_line
   my $this = shift;
   my $line = shift;
 
-  my $record = App::RecordStream::Record->new(decode_json($line));
+  my $record = App::RecordStream::Record->new($json->decode($line));
 
   return $this->accept_record($record);
 }
