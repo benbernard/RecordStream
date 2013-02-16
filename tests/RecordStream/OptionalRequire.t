@@ -10,9 +10,10 @@ is($loaded, 0, 'Test nonexistant module load');
 $loaded = App::RecordStream::OptionalRequire::optional_use(qw(App::RecordStream::Operation));
 is($loaded, 1, 'Test existing module load');
 
-$loaded = App::RecordStream::OptionalRequire::optional_use(qw(JSON decode_json));
+$loaded = App::RecordStream::OptionalRequire::optional_use(qw(JSON));
 is($loaded, 1, 'Test external module with extra args');
 
-my $hash = decode_json('{"foo": "bar"}');
+my $json = new JSON;
+my $hash = $json->decode('{"foo": "bar"}');
 is($hash->{'foo'}, 'bar', "Test useing loaded method");
 
