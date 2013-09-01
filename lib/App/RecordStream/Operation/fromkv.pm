@@ -28,51 +28,64 @@ sub init {
   $this->{'KV_DELIM'}     = $kv_delim;
   $this->{'ENTRY_DELIM'}  = $entry_delim;
   $this->{'RECORD_DELIM'} = $record_delim;
+  $this->{'ACC'}          = undef;
 }
 
 
 sub wants_input {
-  return 0;
+  return 1;
 }
 
 sub stream_done {
   my $this = shift;
 
-  my $kv_delim     = $this->{'KV_DELIM'};
-  my $entry_delim  = $this->{'ENTRY_DELIM'};
-  my $record_delim = $this->{'RECORD_DELIM'};
-
-  while (my $line = read_until($record_delim)) {
-    {
-      local $/ = $record_delim;
-      chomp $line;
-    }
-    $this->update_current_filename($ARGV);
-
-    # trim trailing and leading whitespace from record
-    $line =~ s/^\s+|\s+$//g;
-
-    my @entries = split(/\Q$entry_delim\E/, $line);
-
-    if (scalar(@entries) > 0) {
-      my $current_record = {};
-
-      for my $entry (@entries) {
-        my @pair = split($kv_delim, $entry);
-
-        $current_record->{$pair[0]} = $pair[1] if scalar(@pair) == 2;
-      }
-
-      $this->push_record(App::RecordStream::Record->new($current_record));
-    }
+  my $acc = $this->{'ACC'};
+  if(defined($acc)) {
+    $this->process_record($acc);
   }
 }
 
-sub read_until {
-  my $delim = shift;
-  local $/ = $delim;
+sub accept_line {
+  my $this = shift;
+  my $line = shift;
 
-  return <>;
+  if(!defined($this->{'ACC'})) {
+    $this->{'ACC'} = '';
+  }
+  $this->{'ACC'} .= "$line\n";
+
+  my $record_delim = $this->{'RECORD_DELIM'};
+
+  if($this->{'ACC'} =~ s/^(.*?)\Q$record_delim\E//s) {
+    $this->process_record($1);
+  }
+
+  return 1;
+}
+
+sub process_record {
+  my $this = shift;
+  my $line = shift;
+
+  my $kv_delim     = $this->{'KV_DELIM'};
+  my $entry_delim  = $this->{'ENTRY_DELIM'};
+
+  # trim trailing and leading whitespace from record
+  $line =~ s/^\s+|\s+$//g;
+
+  my @entries = split(/\Q$entry_delim\E/, $line);
+
+  if (scalar(@entries) > 0) {
+    my $current_record = {};
+
+    for my $entry (@entries) {
+      my @pair = split($kv_delim, $entry);
+
+      $current_record->{$pair[0]} = $pair[1] if scalar(@pair) == 2;
+    }
+
+    $this->push_record(App::RecordStream::Record->new($current_record));
+  }
 }
 
 sub usage

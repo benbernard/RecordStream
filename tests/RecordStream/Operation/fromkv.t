@@ -25,7 +25,7 @@ $output = <<OUTPUT;
 {"d":"4","e":"5","f":"6"}
 OUTPUT
 
-$tester->test_stdin(['--kv-delim', '=', '--record-delim', "%\n"], $input, $output);
+$tester->test_input(['--kv-delim', '=', '--record-delim', "%\n"], $input, $output);
 
 $input = <<INPUT;
 a=1|b=2|c=3%
@@ -37,7 +37,7 @@ $output = <<OUTPUT;
 {"d":"4","e":"5","f":"6"}
 OUTPUT
 
-$tester->test_stdin(['--kv-delim', '=', '--entry-delim', '|', '--record-delim', "%\n"], $input, $output);
+$tester->test_input(['--kv-delim', '=', '--entry-delim', '|', '--record-delim', "%\n"], $input, $output);
 
 $input = <<INPUT;
 a=1|b=2|c=3\%d=4|e=5|f=6
@@ -48,4 +48,4 @@ $output = <<OUTPUT;
 {"d":"4","e":"5","f":"6"}
 OUTPUT
 
-$tester->test_stdin(['--kv-delim', '=', '--entry-delim', '|', '--record-delim', "%"], $input, $output);
+$tester->test_input(['--kv-delim', '=', '--entry-delim', '|', '--record-delim', "%"], $input, $output);
