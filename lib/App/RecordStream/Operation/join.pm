@@ -22,7 +22,6 @@ sub init {
   my $accumulate_right = 0;
 
   my $spec = {
-    "help"             => \&usage,
     "left"             => \$left,
     "right"            => \$right,
     "inner"            => \$inner,
@@ -43,7 +42,7 @@ sub init {
 
   my $dbkey = shift @$args;
 
-  usage("You must provide dbfile") unless (@$args);
+  $this->usage("You must provide dbfile") unless (@$args);
 
   my $dbfile = shift @$args;
 
@@ -225,7 +224,8 @@ HELP_FULL
 }
 
 sub usage {
-  my $this = shift;
+  my $this    = shift;
+  my $message = shift;
 
   my $options = [
     ['left', 'Do a left join'],
@@ -239,6 +239,7 @@ sub usage {
   my $args_string = $this->options_string($options);
 
   return <<USAGE;
+$message
 Usage: recs-join <args> <inputkey> <dbkey> <dbfile> [<files>]
    __FORMAT_TEXT__
    Records of input (or records from <files>) are joined against records in
