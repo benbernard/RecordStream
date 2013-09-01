@@ -7,32 +7,22 @@ use warnings;
 
 use base qw(App::RecordStream::Operation);
 
-use App::RecordStream::Aggregator::Last;
 use App::RecordStream::Aggregator;
-use App::RecordStream::Clumper::CubeKeyPerfect;
-use App::RecordStream::Clumper::KeyLRU;
-use App::RecordStream::Clumper::KeyPerfect;
-use App::RecordStream::Clumper::WrappedClumperCallback;
-use App::RecordStream::Clumper;
-use App::RecordStream::DomainLanguage::Executor;
+use App::RecordStream::Clumper::Options;
 use App::RecordStream::DomainLanguage::Library;
-use App::RecordStream::DomainLanguage::Valuation::KeySpec;
-use App::RecordStream::DomainLanguage::Value;
+use App::RecordStream::DomainLanguage::Snippet;
 use App::RecordStream::DomainLanguage;
 use App::RecordStream::Operation::collate::BaseClumperCallback;
+use App::RecordStream::Operation;
 
 sub init {
   my $this = shift;
   my $args = shift;
 
   App::RecordStream::Aggregator->load_implementations();
-  App::RecordStream::Clumper->load_implementations();
 
-  # options for old-style clumping
-  my $size = undef;
-  my $cube = 0;
-
-  my @clumpers;
+  # clumping
+  my $clumper_options = App::RecordStream::Clumper::Options->new();
 
   # aggregation
   my @aggregators;
@@ -44,20 +34,9 @@ sub init {
   # help
   my $list_aggregators = 0;
   my $aggregator = 0;
-  my $list_clumpers = 0;
-  my $clumper = 0;
 
   my $spec = {
-    # old style clumping
-    "key|k=s"           => sub { push @clumpers, ['KEYGROUP', $_[1]]; },
-    "dlkey|K=s"         => sub { push @clumpers, ['VALUATION', build_dlkey($_[1])]; },
-    "size|sz|n=i"       => \$size,
-    "adjacent|1"        => sub { $size = 1; },
-    "cube"              => \$cube,
-
-    # new style clumping
-    "clumper|c=s"       => sub { push @clumpers, ['CLUMPER', App::RecordStream::Clumper->make_clumper($_[1])]; },
-    "dlclumper|C=s"     => sub { push @clumpers, ['CLUMPER', build_dlclumper($_[1])]; },
+    $clumper_options->main_options(),
 
     # aggregation
     "aggregator|a=s"    => sub { push @aggregators, $_[1]; },
@@ -69,8 +48,7 @@ sub init {
     # help
     "list-aggregators"  => \$list_aggregators,
     "show-aggregator=s" => \$aggregator,
-    "list-clumpers"     => \$list_clumpers,
-    "show-clumper=s"    => \$clumper,
+    $clumper_options->help_options(),
     "list"              => \$list_aggregators,
   };
 
@@ -84,14 +62,6 @@ sub init {
 
   if ( $aggregator ) {
     die sub { App::RecordStream::Aggregator->show_implementation($aggregator) };
-  }
-
-  if ( $list_clumpers ) {
-    die sub { print App::RecordStream::Clumper->list_implementations(); };
-  }
-
-  if ( $clumper ) {
-    die sub { App::RecordStream::Clumper->show_implementation($clumper) };
   }
 
   my $aggregator_objects = App::RecordStream::Aggregator->make_aggregators(@aggregators);
@@ -124,25 +94,9 @@ sub init {
     $aggregator_objects->{$name} = App::RecordStream::DomainLanguage::Library::inject_into_aggregator($initial_snippet, $combine_snippet, $squish_snippet);
   }
 
-  $this->{'CLUMPER_CALLBACK'} = App::RecordStream::Operation::collate::BaseClumperCallback->new($aggregator_objects, $incremental, sub { $this->push_record($_[0]); });
-  $this->{'CLUMPER_CALLBACK_COOKIE'} = undef;
-  $this->{'CLUMPERS_TBD'} = \@clumpers;
-  $this->{'KEY_CLUMPER_SIZE'} = $size;
-  $this->{'KEY_CLUMPER_CUBE'} = $cube;
-}
+  $clumper_options->check_options(App::RecordStream::Operation::collate::BaseClumperCallback->new($aggregator_objects, $incremental, sub { $this->push_record($_[0]); }));
 
-sub build_dlkey {
-  my $string = shift;
-
-  my $name;
-  if($string =~ s/^([^=]*)=//) {
-    $name = $1;
-  }
-  else {
-    die "Bad domain language key option (missing '=' to separate name and code): " . $string;
-  }
-
-  return ($name, App::RecordStream::DomainLanguage::Snippet->new($string)->evaluate_as('VALUATION'));
+  $this->{'CLUMPER_OPTIONS'} = $clumper_options;
 }
 
 sub build_dlaggregator {
@@ -160,105 +114,17 @@ sub build_dlaggregator {
   $dlaggregators_ref->{$name} = App::RecordStream::DomainLanguage::Snippet->new($string)->evaluate_as('AGGREGATOR');
 }
 
-sub build_dlclumper {
-  my $string = shift;
-
-  return App::RecordStream::DomainLanguage::Snippet->new($string)->evaluate_as('CLUMPER');
-}
-
-sub _get_cb_and_cookie {
-  my $this = shift;
-
-  my $cb = $this->{'CLUMPER_CALLBACK'};
-  my $cookie = $this->{'CLUMPER_CALLBACK_COOKIE'};
-  if ( !defined($cookie) ) {
-    $cookie = $this->{'CLUMPER_CALLBACK_COOKIE'} = $cb->clumper_callback_begin({});
-  }
-
-  return ($cb, $cookie);
-}
-
 sub accept_record {
   my $this   = shift;
   my $record = shift;
 
-  my $clumpers = $this->{'CLUMPERS_TBD'};
-  while ( @$clumpers ) {
-    my $clumper_tuple = pop @$clumpers;
-    my ($type, @rest) = @$clumper_tuple;
-
-    my $cb = $this->{'CLUMPER_CALLBACK'};
-
-    if (0) {
-    }
-    elsif ( $type eq 'KEYGROUP' ) {
-      my ($group_spec) = @rest;
-
-      my $key_groups = App::RecordStream::KeyGroups->new();
-      $key_groups->add_groups($group_spec);
-      my $keys = $key_groups->get_keyspecs($record);
-
-      for my $spec (@$keys)
-      {
-        $cb = $this->_wrap_key_cb($spec, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($spec), $cb);
-      }
-    }
-    elsif ( $type eq 'VALUATION' ) {
-      my ($name, $val) = @rest;
-
-      $cb = $this->_wrap_key_cb($name, $val, $cb);
-    }
-    elsif ( $type eq 'CLUMPER' ) {
-      my ($clumper) = @rest;
-
-      $cb = App::RecordStream::Clumper::WrappedClumperCallback->new($clumper, $cb);
-    }
-    else {
-      die "Internal error";
-    }
-
-    $this->{'CLUMPER_CALLBACK'} = $cb;
-  }
-
-  my ($cb, $cookie) = $this->_get_cb_and_cookie();
-
-  $cb->clumper_callback_push_record($cookie, $record);
-
-  return 1;
-}
-
-sub _wrap_key_cb {
-  my $this = shift;
-  my $name = shift;
-  my $val = shift;
-  my $cb = shift;
-
-  my $size = $this->{'KEY_CLUMPER_SIZE'};
-  my $cube = $this->{'KEY_CLUMPER_CUBE'};
-
-  my $clumper;
-  if ( $cube ) {
-    if ( defined($size) ) {
-      die "--cube with --size (or --adjacent) is no longer a thing (and it never made sense)";
-    }
-    $clumper = App::RecordStream::Clumper::CubeKeyPerfect->new_from_valuation($name, $val);
-  }
-  elsif ( defined($size) ) {
-    $clumper = App::RecordStream::Clumper::KeyLRU->new_from_valuation($name, $val, $size);
-  }
-  else {
-    $clumper = App::RecordStream::Clumper::KeyPerfect->new_from_valuation($name, $val);
-  }
-
-  return App::RecordStream::Clumper::WrappedClumperCallback->new($clumper, $cb);
+  $this->{'CLUMPER_OPTIONS'}->accept_record($record);
 }
 
 sub stream_done {
   my $this = shift;
 
-  my ($cb, $cookie) = $this->_get_cb_and_cookie();
-
-  $cb->clumper_callback_end($cookie);
+  $this->{'CLUMPER_OPTIONS'}->stream_done();
 }
 
 sub print_usage {
@@ -296,22 +162,16 @@ sub usage {
   my $this = shift;
 
   my $options = [
-    [ 'key|-k <keys>', 'Comma separated list of key fields.  May be a key spec or key group'],
-    [ 'dlkey|-K ...', 'Specify a domain language key.  See "Domain Language Integration" below.'],
     [ 'dlaggregator|-A ...', 'Specify a domain language aggregate.  See "Domain Language Integration" below.'],
     [ 'aggregator|-a <aggregators>', 'Colon separated list of aggregate field specifiers.  See "Aggregates" section below.'],
     [ 'mr-agg <name> <map> <reduce> <squish>', 'Specify a map reduce aggregator via 3 snippets, similar to mr_agg() from the domain language.'],
     [ 'ii-agg <name> <initial> <combine> <squish>', 'Specify an inject into aggregator via 3 snippets, similar to ii_agg() from the domain language.'],
-    [ 'size|--sz|-n <number>', 'Number of running clumps to keep.'],
-    [ 'adjacent|-1', 'Only group together adjacent records.  Avoids spooling records into memeory'],
-    [ 'cube', 'See "Cubing" section in --help-more.'],
     [ 'incremental', 'Output a record every time an input record is added to a clump (instead of everytime a clump is flushed).'],
-    [ 'clumper ...', 'Use this clumper to group records.  May be specified multiple times.  See --help-clumping.'],
-    [ 'dlclumper ...', 'Use this domain language clumper to group records.  May be specified multiple times.  See --help-clumping.'],
+    $this->{'CLUMPER_OPTIONS'}->main_usage(),
+
     [ 'list-aggregators|--list', 'Bail and output a list of aggregators' ],
     [ 'show-aggregator <aggregator>', 'Bail and output this aggregator\'s detailed usage.'],
-    [ 'list-clumpers', 'Bail and output a list of clumpers' ],
-    [ 'show-clumper <clumper>', 'Bail and output this clumper\'s detailed usage.'],
+    $this->{'CLUMPER_OPTIONS'}->help_usage(),
   ];
 
   my $args_string = $this->options_string($options);
