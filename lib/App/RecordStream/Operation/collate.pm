@@ -12,6 +12,7 @@ use App::RecordStream::Aggregator;
 use App::RecordStream::Clumper::CubeKeyPerfect;
 use App::RecordStream::Clumper::KeyLRU;
 use App::RecordStream::Clumper::KeyPerfect;
+use App::RecordStream::Clumper::WrappedClumperCallback;
 use App::RecordStream::Clumper;
 use App::RecordStream::DomainLanguage::Executor;
 use App::RecordStream::DomainLanguage::Library;
@@ -19,7 +20,6 @@ use App::RecordStream::DomainLanguage::Valuation::KeySpec;
 use App::RecordStream::DomainLanguage::Value;
 use App::RecordStream::DomainLanguage;
 use App::RecordStream::Operation::collate::BaseClumperCallback;
-use App::RecordStream::Operation::collate::WrappedClumperCallback;
 
 sub init {
   my $this = shift;
@@ -211,7 +211,7 @@ sub accept_record {
     elsif ( $type eq 'CLUMPER' ) {
       my ($clumper) = @rest;
 
-      $cb = App::RecordStream::Operation::collate::WrappedClumperCallback->new($clumper, $cb);
+      $cb = App::RecordStream::Clumper::WrappedClumperCallback->new($clumper, $cb);
     }
     else {
       die "Internal error";
@@ -250,7 +250,7 @@ sub _wrap_key_cb {
     $clumper = App::RecordStream::Clumper::KeyPerfect->new_from_valuation($name, $val);
   }
 
-  return App::RecordStream::Operation::collate::WrappedClumperCallback->new($clumper, $cb);
+  return App::RecordStream::Clumper::WrappedClumperCallback->new($clumper, $cb);
 }
 
 sub stream_done {
