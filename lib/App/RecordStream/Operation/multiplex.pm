@@ -79,10 +79,10 @@ sub usage {
   my $this = shift;
 
   my $options = [
-    $this->{'CLUMPER_OPTIONS'}->main_usage(),
+    App::RecordStream::Clumper::Options->main_usage(),
     [ 'line-key|-L <key>', 'Use the value of this key as line input for the nested operation (rather than the entire record).  Use with recs-from* scripts generally.'],
 
-    $this->{'CLUMPER_OPTIONS'}->help_usage(),
+    App::RecordStream::Clumper::Options->help_usage(),
   ];
 
   my $args_string = $this->options_string($options);
@@ -119,10 +119,10 @@ Cubing:
    __FORMAT_TEXT__
 
 Domain Lanuage Integration:
-   __FORMAT_TEXT__
 USAGE
   $usage .= App::RecordStream::DomainLanguage::short_usage() . <<USAGE;
 
+   __FORMAT_TEXT__
    Keys may be specified using the recs domain language.  --dlkey requires an
    option of the format '<name>=<domain language code>'.  --dlkey requires the
    code evaluate as a valuation.
