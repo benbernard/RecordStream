@@ -1,4 +1,4 @@
-package App::RecordStream::Operation::collate::WrappedClumperCallback;
+package App::RecordStream::Clumper::WrappedClumperCallback;
 
 use strict;
 use warnings;
