@@ -1,0 +1,13 @@
+chain is super broken
+    chain being !wants_input() is a mess
+    chain's final output is to STDOUT, i.e.  it doesn't actually play nicely with hot new stream-wrapping model
+    fixing both of these is going to be an epic mess
+        top chain process needs to start whatever shit it wants in a hole and ferry output on both sides if it is going to fit in the stream-wrapping model
+    allowing multiplex to fork out the sub-operation(s) might be the way
+        it's super fucking scary (as would chain be) due to the potential for process bomb (>0 procs/clump is scary and that is what this or a non-trivial chain promises)
+    another option is to allow a string of recs-only things that fit in the stream-wrapping model
+        this even provides an alternative chain implementation -- all stream-wrapping with something magicked up to hide a shell command inside that model
+
+need to decide how to allow variable commands
+    for now this is semi-mitigated by stamping the bucket on output [records]
+    we could eval a snippet that gets access to the bucket to produce the command...
