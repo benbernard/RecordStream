@@ -130,6 +130,10 @@ Flatten records of input to one level
 
 Select records for which a string of perl evaluates to true.
 
+=item recs-multiplex
+
+Take records, grouped by keys, and run a separate recs script for each group.
+
 =item recs-normalizetime
 
 Based on a time field, tag records with a normalized time, i.e. every 5 minute buckets
