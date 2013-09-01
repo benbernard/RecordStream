@@ -384,7 +384,7 @@ sub push_record {
     ${$record->guess_key_from_spec($this->{'FILENAME_KEY'})} = get_current_filename();
   }
 
-  $this->{'NEXT'}->accept_record($record);
+  return $this->{'NEXT'}->accept_record($record);
 }
 
 sub push_line {
