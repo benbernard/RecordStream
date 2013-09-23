@@ -1,0 +1,5 @@
+INSTALL -
+
+ppa dos not work
+apt-get one liner needs Term::ReadKey (maybe others)
+need to add binary? maybe...
