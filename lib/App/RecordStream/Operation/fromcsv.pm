@@ -61,7 +61,7 @@ sub stream_done {
   }
   else {
     $this->get_records_from_handle(\*STDIN);
-}
+  }
 }
 
 sub get_records_from_handle {
@@ -80,8 +80,7 @@ sub get_records_from_handle {
     my @values = @$row;
 
     my $record = App::RecordStream::Record->new();
-    for(my $i = 0; $i < @values; ++$i)
-    {
+    for(my $i = 0; $i < @values; ++$i) {
       my $key = $this->{'FIELDS'}->[$i] || $i;
       ${$record->guess_key_from_spec($key)} = $values[$i];
     }

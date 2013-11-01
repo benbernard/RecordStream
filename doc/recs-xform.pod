@@ -6,27 +6,38 @@ recs-xform
 
  Help from: --help-basic:
  Usage: recs-xform <args> <expr> [<files>]
-    <expr> is evaluated as perl on each record of input (or records from <files>) with $r set to a App::RecordStream::Record object
-    and $line set to the current line number (starting at 1). All records are printed back out (changed as they may be).
+    <expr> is evaluated as perl on each record of input (or records from <files>)
+    with $r set to a App::RecordStream::Record object and $line set to the
+    current line number (starting at 1). All records are printed back out
+    (changed as they may be).
  
-    If $r is set to an ARRAY ref in the expr, then the values of the array will be treated as records and outputed one to a line.
-    The values of the array may either be a hash ref or a App::RecordStream::Record object. The original record will not be
-    outputted in this case.
+    If $r is set to an ARRAY ref in the expr, then the values of the array will
+    be treated as records and outputed one to a line. The values of the array may
+    either be a hash ref or a App::RecordStream::Record object. The original
+    record will not be outputted in this case.
  
-    There are two helper methods: push_input and push_output. Invoking push_input on a Record object or hash will cause the next
-    record to be processed to be the indicated record. You may pass multiple records with one call. Similarly push_output causes the
-    next record to be output to be the passed record(s). If push_record is called, the original record will not be output in this
-    case. (call push_record($r) if you want that record also outputted). You may call these methods from a --pre-snippet or a --post-
-    snippet. You may also call push_output() without any argument to suppress the outputting of the current record
+    There are two helper methods: push_input and push_output. Invoking push_input
+    on a Record object or hash will cause the next record to be processed to be
+    the indicated record. You may pass multiple records with one call. Similarly
+    push_output causes the next record to be output to be the passed record(s).
+    If push_record is called, the original record will not be output in this
+    case. (call push_record($r) if you want that record also outputted). You may
+    call these methods from a --pre-snippet or a --post-snippet. You may also
+    call push_output() without any argument to suppress the outputting of the
+    current record
  
     --e                          a perl snippet to execute, optional
     --E                          the name of a file to read as a perl snippet
-    --A NUM                      Make NUM records after this one available in $A (closest record to current in first position)
-    --B NUM                      Make NUM records before this one available in $B (closest record to current in first position)
-    --C NUM                      Make NUM records after this one available in $A and $B, as per -A NUM and -B NUM
+    --A NUM                      Make NUM records after this one available in $A
+                                 (closest record to current in first position)
+    --B NUM                      Make NUM records before this one available in $B
+                                 (closest record to current in first position)
+    --C NUM                      Make NUM records after this one available in $A
+                                 and $B, as per -A NUM and -B NUM
     --post-snippet SNIP          A snippet to run once the stream has completed
     --pre-snippet SNIP           A snippet to run before the stream starts
-    --filename-key|fk <keyspec>  Add a key with the source filename (if no filename is applicable will put NONE)
+    --filename-key|fk <keyspec>  Add a key with the source filename (if no
+                                 filename is applicable will put NONE)
  
    Help Options:
        --help-all       Output all help for this script
@@ -50,8 +61,9 @@ recs-xform
  
  Help from: --help-keyspecs:
    KEY SPECS
-    A key spec is short way of specifying a field with prefixes or regular expressions, it may also be nested into hashes and
-    arrays. Use a '/' to nest into a hash and a '#NUM' to index into an array (i.e. #2)
+    A key spec is short way of specifying a field with prefixes or regular
+    expressions, it may also be nested into hashes and arrays. Use a '/' to nest
+    into a hash and a '#NUM' to index into an array (i.e. #2)
  
     An example is in order, take a record like this:
  
@@ -59,7 +71,8 @@ recs-xform
       {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
       {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
  
-    In this case a key spec of 'foo/bar 1' would have the values 1,2, and 3 in the respective records.
+    In this case a key spec of 'foo/bar 1' would have the values 1,2, and 3 in
+    the respective records.
  
     Similarly, 'biz/#0' would have the value of 'a' for all 3 records
  
@@ -70,8 +83,8 @@ recs-xform
       2. Prefix match ( m/^/ )
       3. Match anywehre in the key (m//)
  
-    So, in the above example '@b/#2', the 'b' portion would expand to 'biz' and 2 would be the index into the array, so all records
-    would have the value of 'c'
+    So, in the above example '@b/#2', the 'b' portion would expand to 'biz' and 2
+    would be the index into the array, so all records would have the value of 'c'
  
     Simiarly, @f/b would have values 1, 2, and 3
  
@@ -82,25 +95,33 @@ recs-xform
  
  Help from: --help-snippet:
     CODE SNIPPETS:
-     Recs code snippets are perl code, with one exception. There a couple of variables predefined for you, and one piece of special
-     syntax to assist in modifying hashes.
+     Recs code snippets are perl code, with one exception. There a couple of
+     variables predefined for you, and one piece of special syntax to assist in
+     modifying hashes.
  
  Special Variables:
-     $r - the current record object. This may be used exactly like a hash, or you can use some of the special record functions, see
-     App::RecordStream::Record for more information
+     $r - the current record object. This may be used exactly like a hash, or you
+     can use some of the special record functions, see App::RecordStream::Record
+     for more information
  
-     $line - This is the number of records run through the code snippet, starting at 1. For most scripts this corresponds to the
-     line number of the input to the script.
+     $line - This is the number of records run through the code snippet, starting
+     at 1. For most scripts this corresponds to the line number of the input to
+     the script.
  
-     $filename - The filename of the originating record. Note: This is only useful if you're passing filenames directly to the recs
-     script, piping from other recs scripts or from cat, for instance, will not have a useful filename.
+     $filename - The filename of the originating record. Note: This is only
+     useful if you're passing filenames directly to the recs script, piping
+     from other recs scripts or from cat, for instance, will not have a
+     useful filename.
  
  Special Syntax
-     Use {{search_string}} to look for a string in the keys of a record, use / to nest keys. You can nest into arrays by using an
-     index. If you are vivifying arrays (if the array doesn't exist, prefix your key with # so that an array rather than a hash will
-     be created to put a / in your key, escape it twice, i.e. \/
+     Use {{search_string}} to look for a string in the keys of a record, use /
+     to nest keys. You can nest into arrays by using an index. If you are
+     vivifying arrays (if the array doesn't exist, prefix your key with # so
+     that an array rather than a hash will be created to put a / in your key,
+     escape it twice, i.e. \/
  
-     This is exactly the same as a key spec that is always prefaced with a @, see 'man recs' for more info on key specs
+     This is exactly the same as a key spec that is always prefaced with a @, see
+     'man recs' for more info on key specs
  
      For example: A record that looks like:
      { "foo" : { "bar 1" : 1 }, "zoo" : 2}
@@ -119,7 +140,8 @@ recs-xform
      {{array_key/#3}} # The value of index 3 of the array ref under the
      'array_key' hash key.
  
-     This matching is a fuzzy keyspec matching, see --help-keyspecs for more details.
+     This matching is a fuzzy keyspec matching, see --help-keyspecs for
+     more details.
  
 
 =head1 See Also

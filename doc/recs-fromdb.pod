@@ -4,12 +4,15 @@ recs-fromdb
 
 =head1 recs-fromdb --help-all
 
-    Recs from DB will execute a select statement on a database of your choice, and create a record stream from the results. The keys
-    of the record will be the column names and the values the row values.
+    Recs from DB will execute a select statement on a database of your choice,
+    and create a record stream from the results. The keys of the record will be
+    the column names and the values the row values.
  
-    --table                      Name of the table to dump, this is a shortcut for --sql 'SELECT * from tableName'
+    --table                      Name of the table to dump, this is a shortcut
+                                 for --sql 'SELECT * from tableName'
     --sql                        SQL select statement to run
-    --filename-key|fk <keyspec>  Add a key with the source filename (if no filename is applicable will put NONE)
+    --filename-key|fk <keyspec>  Add a key with the source filename (if no
+                                 filename is applicable will put NONE)
  
    Help Options:
        --help  This help screen

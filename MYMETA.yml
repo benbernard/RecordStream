@@ -1,0 +1,43 @@
+---
+abstract: 'System for commandline analysis of data'
+author:
+  - 'Ben Bernard - perlhacker@benjaminbernard.com Keith Amling - keith.amling@gmail.com'
+build_requires:
+  ExtUtils::MakeMaker: 0
+configure_requires:
+  ExtUtils::MakeMaker: 0
+dynamic_config: 0
+generated_by: 'ExtUtils::MakeMaker version 6.78, CPAN::Meta::Converter version 2.132661'
+license: mit
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: App-RecordStream
+no_index:
+  directory:
+    - t
+    - inc
+requires:
+  Carp: 0
+  DBI: 0
+  Data::Dumper: 0
+  Date::Manip: 0
+  File::Temp: 0
+  FindBin: 0
+  Getopt::Long: 0
+  HTTP::Request: 0
+  IO::String: 0
+  JSON: 0
+  JSON::XS: 0
+  LWP::UserAgent: 0
+  Scalar::Util: 0
+  Term::ReadKey: 0
+  Test::More: 0
+  Text::Autoformat: 0
+  Text::CSV: 0
+  Text::CSV_XS: 0
+  Tie::Array: 0
+  Tie::Hash: 0
+  Tie::IxHash: 0
+  XML::Simple: 0
+version: v3.7.3
