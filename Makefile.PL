@@ -21,6 +21,7 @@ WriteMakefile(
    PREREQ_PM     => {
      'Carp'             => 0,
      'DBI'              => 0,
+     'DBD::SQLite'      => 0,
      'Data::Dumper'     => 0,
      'Date::Manip'      => 0,
      'File::Temp'       => 0,
