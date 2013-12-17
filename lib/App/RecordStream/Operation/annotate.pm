@@ -22,6 +22,7 @@ sub init {
     'keys|k=s' => sub { $key_groups->add_groups($_[1]); },
   };
 
+  Getopt::Long::Configure("bundling");
   $this->parse_options($args, $spec);
 
   my $expression = $executor_options->get_string($args);

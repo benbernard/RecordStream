@@ -28,6 +28,7 @@ sub init {
     $executor_options->arguments(),
   };
 
+  Getopt::Long::Configure("bundling");
   $this->parse_options($args, $spec);
 
   my $expression = $executor_options->get_string($args);
