@@ -8,6 +8,7 @@ sub new {
 
   my $this = {
     'STRINGS' => [],
+    'MODULES' => [],
   };
 
   bless $this, $class;
@@ -38,7 +39,9 @@ sub get_strings {
     push @$strings, shift @$args;
   }
 
-  return @$strings;
+  # Use map to avoid the undesired comma operator behaviour if we're ever
+  # called in scalar context.  return @{[ ..., ... ]} could also be used.
+  return map { @$_ } $this->{'MODULES'}, $strings;
 }
 
 sub get_string {
@@ -94,7 +97,7 @@ sub push_module {
         $statement = "use $module ();";
     }
 
-    push @{$this->{'STRINGS'}}, $statement;
+    push @{$this->{'MODULES'}}, $statement;
 }
 
 1;
