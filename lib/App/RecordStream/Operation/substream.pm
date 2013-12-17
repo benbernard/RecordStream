@@ -33,21 +33,27 @@ sub accept_record {
 
     if ( (! defined $executor) || $executor->execute_code($record) ) {
       $this->{'IN_SUBSTREAM'} = 1;
-      $this->push_record($record);
     }
+  }
 
-  } else {
+  if ( $this->{'IN_SUBSTREAM'} ) {
     my $executor = $this->{'END_EXECUTOR'};
+
+    $this->push_record($record);
+    $this->{'SEEN_RECORD'} = 1;
 
     if ( (defined $executor) && $executor->execute_code($record) ) {
       $this->{'IN_SUBSTREAM'} = 0;
       return 0; # terminate early to avoid reading the rest of the stream
-    } else {
-      $this->push_record($record);
     }
   }
 
   return 1;
+}
+
+sub stream_done {
+  my $this = shift;
+  $this->_set_exit_value(1) unless ( $this->{'SEEN_RECORD'} );
 }
 
 sub add_help_types {
@@ -56,15 +62,25 @@ sub add_help_types {
 }
 
 sub usage {
+  my $this = shift;
+
+  my $options = [
+    ['begin|b SNIP ', 'Begins outputting records when this snippet becomes true. If omitted, output starts from beginning of the stream.'],
+    ['end|e SNIP', 'Stops outputting records after this snippet becomes true. If omitted, outputs to the end of the stream.'],
+  ];
+
+  my $args_string = $this->options_string($options);
+
   return <<USAGE;
 Usage: recs-substream <args> [<files>]
-  filters to records after the begin predicate is met and before the end predicate is met.
-  ie. [begin, end)
-  Compare to Perl's bistable "..." range operator.
+   __FORMAT_TEXT__
+  Filters to a range of records delimited from when the begin snippet becomes true to when the end snippet becomes true, ie. [begin, end]. Compare to Perl's inclusive, bistable ".." range operator.
+
+  See --help-snippet for details on snippets.
+   __FORMAT_TEXT__
 
 Arguments:
-  --begin <expr> - if omitted, starts at beginning of stream
-  --end <expr> - if omitted, continues until end of stream
+$args_string
 
 Examples:
   Filter to a specific minute:

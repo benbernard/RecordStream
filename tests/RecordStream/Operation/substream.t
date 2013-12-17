@@ -47,6 +47,7 @@ $solution = <<SOLUTION;
 {"foo":2,"zoo":"biz2"}
 {"foo":3,"zoo":"biz3"}
 {"foo":4,"zoo":"biz4"}
+{"foo":5,"zoo":"biz5"}
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
@@ -58,10 +59,6 @@ App::RecordStream::Test::OperationHelper->do_match(
 
 $solution = <<SOLUTION;
 {"foo":2,"zoo":"biz2"}
-{"foo":3,"zoo":"biz3"}
-{"foo":4,"zoo":"biz4"}
-{"foo":5,"zoo":"biz5"}
-{"foo":1,"zoo":"biz1"}
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
@@ -76,6 +73,7 @@ $solution = <<SOLUTION;
 {"foo":3,"zoo":"biz3"}
 {"foo":4,"zoo":"biz4"}
 {"foo":5,"zoo":"biz5"}
+{"foo":1,"zoo":"biz1"}
 SOLUTION
 
 App::RecordStream::Test::OperationHelper->do_match(
