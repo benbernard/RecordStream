@@ -7,3 +7,4 @@ testDb
 App-RecordStream-*.tar.gz
 tarball/*
 libapp-recordstream*
+MYMETA.*
