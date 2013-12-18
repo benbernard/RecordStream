@@ -81,6 +81,7 @@ sub usage
   my $this = shift;
 
   my $options = [
+    App::RecordStream::Executor::options_help(),
     [ 'passthrough', 'Emit input record in addition to generated records' ],
     [ 'keychain <name>', 'Use \'name\' as the chain key (default is \'_chain\') may be a key spec, see \'--help-keyspecs\' for more info' ],
   ];

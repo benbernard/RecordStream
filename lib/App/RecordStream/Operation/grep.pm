@@ -102,6 +102,7 @@ sub usage {
   my $this = shift;
 
   my $options = [
+    App::RecordStream::Executor::options_help(),
     ['v', 'Anti-match.  Records NOT matching <expr> will be returned'],
     ['C NUM', 'Provide NUM records of context around matches, equivalent to -A NUM and -B NUM'],
     ['A NUM', 'Print out NUM following records after a match'],

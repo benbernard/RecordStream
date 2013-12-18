@@ -57,6 +57,7 @@ sub usage {
   my $this = shift;
 
   my $options = [
+    App::RecordStream::Executor::options_help(),
     ['chomp', 'Chomp eval results (to avoid duplicate newlines when already newline-terminated)'],
   ];
 
