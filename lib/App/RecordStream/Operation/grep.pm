@@ -126,7 +126,9 @@ Examples:
    Filter to records with field 'name' equal to 'John'
       recs-grep '\$r->{name} eq "John"'
    Find fields without ppid = 3456
-     recs-grep -v '{{ppid}} == 3456'
+      recs-grep -v '{{ppid}} == 3456'
+   Filter to records with all methods equal to 'PUT'
+      recs-grep -MList::MoreUtils=all 'all { \$_ eq 'PUT' } \@{\$r->{methods}}'
 USAGE
 }
 
