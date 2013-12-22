@@ -42,6 +42,7 @@ WriteMakefile(
      'Tie::Hash'        => 0,
      'Tie::IxHash'      => 0,
      'XML::Simple'      => 0,
+     'XML::Twig'        => 0,
    },
 
    # Optional dependencies
