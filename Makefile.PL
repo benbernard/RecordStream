@@ -20,8 +20,8 @@ WriteMakefile(
 
    PREREQ_PM     => {
      'Carp'             => 0,
-     'DBI'              => 0,
      'DBD::SQLite'      => 0,
+     'DBI'              => 0,
      'Data::Dumper'     => 0,
      'Date::Manip'      => 0,
      'File::Temp'       => 0,
@@ -50,6 +50,8 @@ WriteMakefile(
    #   'NetPacket::Ethernet' => 0,
    #   'GD::Graph'           => 0,
    #   'Proc::ProcessTable'  => 0;
+   #   'MongoDB'          => 0,
+   #   'JSON::PP'         => 0;
    # Not really optional, but in the base perl, including it confuses debian
    # package creator
    #   'Tie::ExtraHash'   => 0,
@@ -73,7 +75,7 @@ WriteMakefile(
       './generate_pods.pl' => 'generate_pods',
    },
 
-   PM => { 
+   PM => {
       (map {( "lib/$_" => "\$(INST_LIB)/$_" )} BuildTools::get_pms()),
    },
 );
