@@ -70,6 +70,10 @@ Produces records for a db table, or from a SELECT statment into a db.
 
 Matches input streams against a regex, puts capture groups into hashes
 
+=item recs-frommongo
+
+Generate a record stream from a MongoDB query.
+
 =item recs-frommultire
 
 Matches input streams against several regexs, puts capture groups into the record
@@ -142,6 +146,10 @@ Based on a time field, tag records with a normalized time, i.e. every 5 minute b
 
 Perform an inner join of two record streams.  Associate records in one stream
 with another stream.
+
+=item recs-substream
+
+Filter to a range of matching records with paired perl snippets --start and --end.
 
 =item recs-sort
 
