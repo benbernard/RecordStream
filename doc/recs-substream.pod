@@ -1,0 +1,100 @@
+=head1 NAME
+
+recs-substream
+
+=head1 recs-substream --help-all
+
+ Help from: --help-basic:
+ Usage: recs-substream <args> [<files>]
+   Filters to a range of records delimited from when the begin snippet becomes
+   true to when the end snippet becomes true, ie. [begin, end]. Compare to Perl's
+   inclusive, bistable ".." range operator.
+ 
+   See --help-snippet for details on snippets.
+ 
+ Arguments:
+    --begin|b SNIP               Begins outputting records when this snippet
+                                 becomes true. If omitted, output starts from
+                                 beginning of the stream.
+    --end|e SNIP                 Stops outputting records after this snippet
+                                 becomes true. If omitted, outputs to the end of
+                                 the stream.
+    --filename-key|fk <keyspec>  Add a key with the source filename (if no
+                                 filename is applicable will put NONE)
+ 
+   Help Options:
+       --help-all      Output all help for this script
+       --help          This help screen
+       --help-snippet  Help on code snippets
+ 
+ Examples:
+   Filter to a specific minute:
+       recs-substream -b '{{EndTime}} =~ /Thu, 07 Nov 2013 22:42/' -e 'not {{EndTime}} =~ /Thu, 07 Nov 2013 22:42/'
+   Truncate past a specific date:
+       recs-substream -e '{{EndTime}} =~ /Thu, 07 Nov/'
+ 
+ Help from: --help-snippet:
+    CODE SNIPPETS:
+     Recs code snippets are perl code, with one exception. There a couple of
+     variables predefined for you, and one piece of special syntax to assist in
+     modifying hashes.
+ 
+ Special Variables:
+     $r - the current record object. This may be used exactly like a hash, or you
+     can use some of the special record functions, see App::RecordStream::Record
+     for more information
+ 
+     $line - This is the number of records run through the code snippet, starting
+     at 1. For most scripts this corresponds to the line number of the input to
+     the script.
+ 
+     $filename - The filename of the originating record. Note: This is only
+     useful if you're passing filenames directly to the recs script, piping
+     from other recs scripts or from cat, for instance, will not have a
+     useful filename.
+ 
+ Special Syntax
+     Use {{search_string}} to look for a string in the keys of a record, use /
+     to nest keys. You can nest into arrays by using an index. If you are
+     vivifying arrays (if the array doesn't exist, prefix your key with # so
+     that an array rather than a hash will be created to put a / in your key,
+     escape it twice, i.e. \/
+ 
+     This is exactly the same as a key spec that is always prefaced with a @, see
+     'man recs' for more info on key specs
+ 
+     For example: A record that looks like:
+     { "foo" : { "bar 1" : 1 }, "zoo" : 2}
+     Could be accessed like this:
+ 
+     # value of zoo  # value of $r->{foo}->{bar 1}: (comma separate nested keys)
+     {{zoo}}         {{foo/ar 1}}
+ 
+     # Even assign to values (set the foo key to the value 1)
+     {{foo}} = 1
+ 
+     # And auto, vivify
+     {{new_key/array_key/#0}} = 3 # creates an array within a hash within a hash
+ 
+     # Index into an array
+     {{array_key/#3}} # The value of index 3 of the array ref under the
+     'array_key' hash key.
+ 
+     This matching is a fuzzy keyspec matching, see --help-keyspecs for
+     more details.
+ 
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+
