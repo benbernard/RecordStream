@@ -2,6 +2,9 @@
   <server name="sahara" osname="solaris" osversion="2.6">
     <address>10.0.0.101</address>
     <address>10.0.1.101</address>
+    <inner foo="bar">
+      <panda>1.2.3.4</panda>
+    </inner>
   </server>
   <server name="gobi" osname="irix" osversion="6.5">
     <address>10.0.0.102</address>

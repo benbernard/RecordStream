@@ -1,0 +1,2 @@
+add a --xpath for more fine-grained element selection; only need to support /, *, [], and maybe @ (which Twig gives us
+by default)

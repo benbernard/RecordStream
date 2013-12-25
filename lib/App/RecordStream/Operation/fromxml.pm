@@ -7,10 +7,11 @@ use warnings;
 
 use base qw(App::RecordStream::Operation);
 
-use XML::Simple;
 use App::RecordStream::Record;
-use LWP::UserAgent;
 use HTTP::Request;
+use LWP::UserAgent;
+use List::MoreUtils qw( uniq );
+use XML::Twig;
 
 sub init {
   my $this = shift;
@@ -26,13 +27,14 @@ sub init {
 
   $this->parse_options($args, $spec);
 
-  $this->{'ELEMENTS'} = { map { $_ => 1 } @elements };
+  $this->{'ELEMENTS'} = [ uniq @elements ];
   $this->{'NESTED'}   = $nested;
 
   my $has_files = scalar @$args;
   $this->{'HAS_URIS'} = $has_files;
 
   $this->{'EXTRA_ARGS'} = $args;
+  $this->{'OPEN_TAGS'}  = 0;
 }
 
 sub wants_input {
@@ -43,45 +45,62 @@ sub stream_done {
   my $this = shift;
 
   my $elements = $this->{'ELEMENTS'};
-  while ( my $xml = $this->get_xml_string() ) {
-    my $xml_hash = XMLin(
-      $xml,
-      ForceArray => $elements,
-      KeyAttr    => [],
-    );
 
-    if ( $this->{'NESTED'} ) {
-      $this->find_elements($elements, $xml_hash);
+  my $elem_prefix = '/*/';
+  my $attr_prefix = '/';
+
+  if ( $this->{'NESTED'} ) {
+    $elem_prefix .= '/';
+    $attr_prefix .= '/';
+  }
+
+  my %start_tag_handlers;
+  my %twig_roots;
+
+  for my $element ( @$elements ) {
+    my $elem_expr = $elem_prefix . $element;
+    my $attr_expr = $attr_prefix . '[@' . $element . ']';
+    my $default_hash = {};
+
+    if ( @$elements > 1 ) {
+      $default_hash->{'element'} = $element;
     }
-    else {
-      foreach my $element ( keys %$elements ) {
-        if ( exists $xml_hash->{$element} ) {
-          $this->push_value($xml_hash->{$element}, {});
-        }
-      }
-    }
+
+    $start_tag_handlers{$elem_expr} = sub { $this->{'OPEN_TAGS'}++ };
+    $twig_roots{$elem_expr} = sub { $this->handle_element($default_hash, @_) };
+    $twig_roots{$attr_expr} = sub { $this->handle_attribute($element, $default_hash, @_) };
+  }
+
+  my $twig = XML::Twig->new(
+    start_tag_handlers => \%start_tag_handlers,
+    twig_roots         => \%twig_roots);
+
+  while ( my $xml = $this->get_xml_string() ) {
+    $twig->parse($xml);
   }
 }
 
-sub find_elements {
-  my $this     = shift;
-  my $elements = shift;
-  my $value    = shift;
+sub handle_element {
+  my ($this, $default_hash, $twig, $elem) = @_;
 
-  if ( UNIVERSAL::isa($value, 'HASH') ) {
-    foreach my $key (keys %$value) {
-      if ( $elements->{$key} ) {
-        $this->push_value($value->{$key}, {element => $key});
-      }
-      else {
-        $this->find_elements($elements, $value->{$key});
-      }
-    }
+  $this->{'OPEN_TAGS'}--; # force evaluation of outer elements before inner
+
+  if ( $this->{'OPEN_TAGS'} == 0 ) {
+    my $s = $elem->simplify('forcearray' => 1,
+                            'keyattr'    => [] );
+
+    $this->push_value($s, $default_hash);
+    $twig->purge;
   }
-  elsif ( UNIVERSAL::isa($value, 'ARRAY') ) {
-    foreach my $item (@$value) {
-      $this->find_elements($elements, $item);
-    }
+
+  return 0; # don't trigger attr handler
+}
+
+sub handle_attribute {
+  my ($this, $name, $default_hash, $twig, $elem) = @_;
+
+  if ( $this->{'OPEN_TAGS'} == 0 ) {
+    $this->push_value($elem->att($name), $default_hash);
   }
 }
 
@@ -159,7 +178,7 @@ sub usage {
   my $this = shift;
 
   my $options = [
-    [ 'elements <elements>', 'May be comma separated, may be specified multiple times.  Sets the elements to print records for'],
+    [ 'element <elements>', 'May be comma separated, may be specified multiple times.  Sets the elements/attributes to print records for'],
     [ 'nested', 'search for elements at all levels of the xml document'],
   ];
 
@@ -169,7 +188,8 @@ sub usage {
 Usage: recs-fromxml <args> [<URIs>]
    __FORMAT_TEXT__
    Reads either from STDIN or from the specified URIs.  Parses the xml
-   documents, and creates records for the specified elements
+   documents, and creates records for the specified elements.
+   If multiple element types are specified, will add a {'element' => element name} field to the output record.
    __FORMAT_TEXT__
 
 $args_string

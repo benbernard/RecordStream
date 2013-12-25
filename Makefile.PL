@@ -31,6 +31,7 @@ WriteMakefile(
      'IO::String'       => 0,
      'JSON'             => 0,
      'JSON::XS'         => 0,
+     'List::MoreUtils'  => 0,
      'LWP::UserAgent'   => 0,
      'Scalar::Util'     => 0,
      'Term::ReadKey'    => 0,
@@ -42,6 +43,7 @@ WriteMakefile(
      'Tie::Hash'        => 0,
      'Tie::IxHash'      => 0,
      'XML::Simple'      => 0,
+     'XML::Twig'        => 0,
    },
 
    # Optional dependencies
