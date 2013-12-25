@@ -8,6 +8,7 @@ sub new {
 
   my $this = {
     'STRINGS' => [],
+    'MODULES' => [],
   };
 
   bless $this, $class;
@@ -21,6 +22,8 @@ sub arguments {
   return (
     'e=s' => sub { $this->push_string($_[1]); },
     'E=s' => sub { $this->push_file($_[1]); },
+    'M=s' => sub { $this->push_module($_[1], 1); },
+    'm=s' => sub { $this->push_module($_[1], 0); },
   );
 }
 
@@ -36,7 +39,9 @@ sub get_strings {
     push @$strings, shift @$args;
   }
 
-  return @$strings;
+  # Use map to avoid the undesired comma operator behaviour if we're ever
+  # called in scalar context.  return @{[ ..., ... ]} could also be used.
+  return map { @$_ } $this->{'MODULES'}, $strings;
 }
 
 sub get_string {
@@ -73,6 +78,26 @@ sub _slurp {
   close $fh;
 
   return $code;
+}
+
+sub push_module {
+    my $this              = shift;
+    my ($module, $import) = split /=/, shift, 2;
+    my $import_default    = shift;
+    my $statement;
+
+    if (defined $import) {
+        # This syntax mimics the output of:
+        #   perl -MO=Deparse -MList::Util=sum,max -e1
+        $import =~ s/(?=[\\'])/\\/g;
+        $statement = "use $module (split(/,/, '$import', 0));";
+    } elsif ($import_default) {
+        $statement = "use $module;";
+    } else {
+        $statement = "use $module ();";
+    }
+
+    push @{$this->{'MODULES'}}, $statement;
 }
 
 1;

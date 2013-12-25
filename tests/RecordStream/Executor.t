@@ -65,3 +65,51 @@ OUTPUT
    '',
    $output
  );
+
+my $input = <<INPUT;
+{"a":12,"b":1}
+{"a":345,"b":2}
+INPUT
+$output = <<OUTPUT;
+{"a":12,"b":1,"reduced":12,"sum":13}
+{"a":345,"b":2,"reduced":690,"sum":347}
+OUTPUT
+# -M with import list
+App::RecordStream::Test::OperationHelper->do_match(
+    'xform',
+    ['-MList::Util=reduce,sum', '{{reduced}} = reduce { $a * $b } values %$r; {{sum}} = sum @{$r}{qw(a b)};'],
+    $input,
+    $output
+);
+
+# -m with imports is same as -M
+App::RecordStream::Test::OperationHelper->do_match(
+    'xform',
+    ['-mList::Util=reduce,sum', '{{reduced}} = reduce { $a * $b } values %$r; {{sum}} = sum @{$r}{qw(a b)};'],
+    $input,
+    $output
+);
+
+# -M with default exports
+$output = <<OUTPUT;
+{"a":"\$VAR1 = 12;"}
+{"a":"\$VAR1 = 345;"}
+OUTPUT
+App::RecordStream::Test::OperationHelper->do_match(
+    'xform',
+    ['-MData::Dumper', '{{a}} = Dumper({{a}}); chomp {{a}}; delete $r->{b};'],
+    $input,
+    $output
+);
+
+# -m shouldn't import default exports
+$output = <<OUTPUT;
+{"a":"\$VAR1 = 12;","ok":"1"}
+{"a":"\$VAR1 = 345;","ok":"1"}
+OUTPUT
+App::RecordStream::Test::OperationHelper->do_match(
+    'xform',
+    ['-mData::Dumper', '{{a}} = Data::Dumper::Dumper({{a}}); chomp {{a}}; delete $r->{b}; {{ok}} = not __PACKAGE__->can("Dumper");'],
+    $input,
+    $output
+);

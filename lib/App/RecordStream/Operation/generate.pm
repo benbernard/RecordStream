@@ -28,7 +28,7 @@ sub init {
     $executor_options->arguments(),
   };
 
-  Getopt::Long::Configure('no_ignore_case');
+  Getopt::Long::Configure('no_ignore_case', 'bundling');
   $this->parse_options($args, $spec);
 
   my $expression = $executor_options->get_string($args);
@@ -81,6 +81,7 @@ sub usage
   my $this = shift;
 
   my $options = [
+    App::RecordStream::Executor::options_help(),
     [ 'passthrough', 'Emit input record in addition to generated records' ],
     [ 'keychain <name>', 'Use \'name\' as the chain key (default is \'_chain\') may be a key spec, see \'--help-keyspecs\' for more info' ],
   ];

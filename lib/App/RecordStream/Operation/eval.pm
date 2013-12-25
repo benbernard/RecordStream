@@ -23,6 +23,7 @@ sub init {
     $executor_options->arguments(),
   };
 
+  Getopt::Long::Configure("bundling");
   $this->parse_options($args, $spec);
 
   my $expression = $executor_options->get_string($args);
@@ -56,6 +57,7 @@ sub usage {
   my $this = shift;
 
   my $options = [
+    App::RecordStream::Executor::options_help(),
     ['chomp', 'Chomp eval results (to avoid duplicate newlines when already newline-terminated)'],
   ];
 

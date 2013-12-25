@@ -69,6 +69,17 @@ App::RecordStream::Test::OperationHelper->do_match(
 );
 
 $output = <<OUTPUT;
+{"a":"a1,a2","b":"b1","reduced":12}
+{"a":"a3,a4,a5","b":"b2","reduced":690}
+OUTPUT
+App::RecordStream::Test::OperationHelper->do_match(
+    'xform',
+    ['-MList::Util=reduce', '{{reduced}} = reduce { $a * $b } map { (my $tmp = $_) =~ s/\D//g; $tmp } values %$r'],
+    $input,
+    $output
+);
+
+$output = <<OUTPUT;
 {"a":"a1,a2","b":"b1","before":null}
 {"a":"a3,a4,a5","b":"b2", "before":"b1"}
 OUTPUT
