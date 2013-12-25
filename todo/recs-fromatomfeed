@@ -1,0 +1,2 @@
+switch from XML::Simple to XML::Twig to get streaming support (should be able to drop XML::Simple as a dependency
+afterwards)
