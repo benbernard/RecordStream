@@ -31,6 +31,7 @@ WriteMakefile(
      'IO::String'       => 0,
      'JSON'             => 0,
      'JSON::XS'         => 0,
+     'List::MoreUtils'  => 0,
      'LWP::UserAgent'   => 0,
      'Scalar::Util'     => 0,
      'Term::ReadKey'    => 0,

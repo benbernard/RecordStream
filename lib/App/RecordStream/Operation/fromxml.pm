@@ -7,11 +7,11 @@ use warnings;
 
 use base qw(App::RecordStream::Operation);
 
-use XML::Twig;
 use App::RecordStream::Record;
-use LWP::UserAgent;
 use HTTP::Request;
-use Data::Dumper;
+use LWP::UserAgent;
+use List::MoreUtils qw( uniq );
+use XML::Twig;
 
 sub init {
   my $this = shift;
@@ -27,7 +27,7 @@ sub init {
 
   $this->parse_options($args, $spec);
 
-  $this->{'ELEMENTS'} = \@elements;
+  $this->{'ELEMENTS'} = [ uniq @elements ];
   $this->{'NESTED'}   = $nested;
 
   my $has_files = scalar @$args;
@@ -62,7 +62,7 @@ sub stream_done {
     my $attr_expr = $attr_prefix . '[@' . $element . ']';
     my $default_hash = {};
 
-    if ((scalar @$elements) > 1) {
+    if ( @$elements > 1 ) {
       $default_hash->{'element'} = $element;
     }
 
@@ -85,7 +85,7 @@ sub handle_element {
 
   $this->{'OPEN_TAGS'}--; # force evaluation of outer elements before inner
 
-  if ($this->{'OPEN_TAGS'} == 0) {
+  if ( $this->{'OPEN_TAGS'} == 0 ) {
     my $s = $elem->simplify('forcearray' => $this->{'ELEMENTS'},
                             'keyattr'    => [] );
 
@@ -99,7 +99,7 @@ sub handle_element {
 sub handle_attribute {
   my ($this, $name, $default_hash, $twig, $elem) = @_;
 
-  if ($this->{'OPEN_TAGS'} == 0) {
+  if ( $this->{'OPEN_TAGS'} == 0 ) {
     $this->push_value($elem->att($name), $default_hash);
   }
 }
@@ -178,7 +178,7 @@ sub usage {
   my $this = shift;
 
   my $options = [
-    [ 'element <elements>', 'May be comma separated, may be specified multiple times.  Sets the elements to print records for'],
+    [ 'element <elements>', 'May be comma separated, may be specified multiple times.  Sets the elements/attributes to print records for'],
     [ 'nested', 'search for elements at all levels of the xml document'],
   ];
 
@@ -188,7 +188,8 @@ sub usage {
 Usage: recs-fromxml <args> [<URIs>]
    __FORMAT_TEXT__
    Reads either from STDIN or from the specified URIs.  Parses the xml
-   documents, and creates records for the specified elements
+   documents, and creates records for the specified elements.
+   If multiple element types are specified, will add a {'element' => element name} field to the output record.
    __FORMAT_TEXT__
 
 $args_string
