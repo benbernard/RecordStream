@@ -86,7 +86,7 @@ sub handle_element {
   $this->{'OPEN_TAGS'}--; # force evaluation of outer elements before inner
 
   if ( $this->{'OPEN_TAGS'} == 0 ) {
-    my $s = $elem->simplify('forcearray' => $this->{'ELEMENTS'},
+    my $s = $elem->simplify('forcearray' => 1,
                             'keyattr'    => [] );
 
     $this->push_value($s, $default_hash);

@@ -23,8 +23,8 @@ App::RecordStream::Test::OperationHelper->do_match(
 );
 
 my $solution2 = <<SOLUTION;
-{"name":"sahara","osname":"solaris","inner":{"foo":"bar","panda":"1.2.3.4"},"address":["10.0.0.101","10.0.1.101"],"osversion":"2.6"}
-{"osversion":"6.5","name":"gobi","osname":"irix","address":"10.0.0.102"}
+{"name":"sahara","osname":"solaris","inner":[{"foo":"bar","panda":["1.2.3.4"]}],"address":["10.0.0.101","10.0.1.101"],"osversion":"2.6"}
+{"osversion":"6.5","name":"gobi","osname":"irix","address":["10.0.0.102"]}
 {"name":"kalahari","osname":"linux","address":["10.0.0.103","10.0.1.103"],"osversion":"2.0.34"}
 SOLUTION
 
@@ -43,8 +43,8 @@ App::RecordStream::Test::OperationHelper->do_match(
 );
 
 my $solution3 = <<SOLUTION;
-{"osversion":"2.6","element":"server","address":["10.0.0.101","10.0.1.101"],"osname":"solaris","name":"sahara","inner":[{"foo":"bar","panda":"1.2.3.4"}]}
-{"address":"10.0.0.102","element":"server","osversion":"6.5","name":"gobi","osname":"irix"}
+{"osversion":"2.6","element":"server","address":["10.0.0.101","10.0.1.101"],"osname":"solaris","name":"sahara","inner":[{"foo":"bar","panda":["1.2.3.4"]}]}
+{"address":["10.0.0.102"],"element":"server","osversion":"6.5","name":"gobi","osname":"irix"}
 {"osname":"linux","name":"kalahari","element":"server","osversion":"2.0.34","address":["10.0.0.103","10.0.1.103"]}
 SOLUTION
 
