@@ -22,8 +22,7 @@ sub init {
     'sql=s'   => \$sql,
   };
 
-  Getopt::Long::Configure("pass_through");
-  $this->parse_options($args, $spec);
+  $this->parse_options($args, $spec, ['pass_through']);
 
   $this->{'TABLE_NAME'} = $table_name;
 

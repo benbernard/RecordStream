@@ -20,8 +20,7 @@ sub init {
     'n'          => sub { $show_chain = 1; $dry_run = 1; },
   };
 
-  Getopt::Long::Configure("require_order");
-  $this->parse_options($args, $spec);
+  $this->parse_options($args, $spec, ['require_order']);
 
   return unless (@$args);
 

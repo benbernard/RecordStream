@@ -22,8 +22,7 @@ sub init {
     'keys|k=s' => sub { $key_groups->add_groups($_[1]); },
   };
 
-  Getopt::Long::Configure("bundling");
-  $this->parse_options($args, $spec);
+  $this->parse_options($args, $spec, ['bundling']);
 
   my $expression = $executor_options->get_string($args);
   my $executor = App::RecordStream::Executor->new($expression . ';$r');

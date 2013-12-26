@@ -210,9 +210,10 @@ sub add_help_type {
 }
 
 sub parse_options {
-  my $this         = shift;
-  my $args         = shift || [];
-  my $options_spec = shift || {};
+  my $this                  = shift;
+  my $args                  = shift || [];
+  my $options_spec          = shift || {};
+  my $configuration_options = shift || [];
 
   # Add help options
   foreach my $help_type (keys %{$this->{'HELP_TYPES'}}) {
@@ -230,13 +231,19 @@ sub parse_options {
   # Add filename annotation option
   $options_spec->{'--filename-key|fk=s'} = \($this->{'FILENAME_KEY'});
 
+  my $starting_config = Getopt::Long::Configure();
 
-  Getopt::Long::Configure('no_ignore_case');
+  # Push custom configuration
+  Getopt::Long::Configure('no_ignore_case', @$configuration_options);
+
   local @ARGV = @$args;
   unless (GetOptions(%$options_spec)) {
     # output usage if there was a problem with option parsing
     $this->_set_wants_help(1);
   }
+
+  # Restore original configuration
+  Getopt::Long::Configure($starting_config);
 
   @$args = @ARGV;
 }

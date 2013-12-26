@@ -59,8 +59,11 @@ sub parse_options {
   my $spec = get_option_spec($mode, $options);
   local @ARGV = @$args;
 
+  my $saved_settings = Getopt::Long::Configure();
   Getopt::Long::Configure("pass_through");
   GetOptions( %$spec );
+  Getopt::Long::Configure($saved_settings);
+
   set_defaults($mode, $options);
 
   @$args = @ARGV;
