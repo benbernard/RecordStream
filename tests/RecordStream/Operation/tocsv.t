@@ -32,7 +32,7 @@ App::RecordStream::Test::OperationHelper->test_output(
 
 App::RecordStream::Test::OperationHelper->test_output(
   'tocsv',
-  ['--key', '!oo!'],
+  ['--key', '!oo!sort'],
   $stream,
   $solution,
 );

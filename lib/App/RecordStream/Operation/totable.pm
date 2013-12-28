@@ -31,7 +31,7 @@ sub init {
   $this->parse_options($args, $spec);
 
   if ( ! $key_groups->has_any_group() ) {
-    $key_groups->add_groups('!.!returnrefs');
+    $key_groups->add_groups('!.!returnrefs!sort');
   }
 
   $this->{'NO_HEADER'}     = $no_header;
