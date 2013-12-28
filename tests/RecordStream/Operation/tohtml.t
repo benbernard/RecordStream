@@ -50,7 +50,7 @@ App::RecordStream::Test::OperationHelper->test_output(
 # KeyGroup test
 App::RecordStream::Test::OperationHelper->test_output(
   'tohtml',
-  ['--key', '!.!'],
+  ['--key', '!.!sort'],
   $stream,
   $solution,
 );

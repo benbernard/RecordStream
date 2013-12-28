@@ -30,7 +30,7 @@ App::RecordStream::Test::OperationHelper->test_output(
 
 App::RecordStream::Test::OperationHelper->test_output(
   'totable',
-  ['--key', '!oo!'],
+  ['--key', '!oo!sort'],
   $stream,
   $solution,
 );
@@ -62,7 +62,7 @@ SOLUTION
 
 App::RecordStream::Test::OperationHelper->test_output(
   'totable',
-  [qw(--k !foo!)],
+  [qw(--k !foo!sort)],
   $stream,
   $solution3,
 );
