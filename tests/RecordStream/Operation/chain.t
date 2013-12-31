@@ -8,6 +8,14 @@ BEGIN { use_ok( 'App::RecordStream::Operation::chain' ) };
 
 my $test_file = $ENV{'BASE_TEST_DIR'} . '/files/testFile';
 
+# Straight from `perldoc perlvar`
+use Config;
+my $secure_perl_path = $Config{perlpath};
+if ($^O ne 'VMS') {
+    $secure_perl_path .= $Config{_exe}
+        unless $secure_perl_path =~ m/$Config{_exe}$/i;
+}
+
 my $solution = <<SOLUTION;
 Chain Starts with:
   Recs command: recs-xform \$r->rename("foo", "zoo"); $test_file
@@ -29,7 +37,7 @@ is(join('', map { "$_\n" } @{$keeper->get_lines()}), $solution, "Output matches 
 # I'm not sure how to best test this, other than going at it... The forking makes it very complicated to test this in memory.
 my $bin_dir = $ENV{'BASE_TEST_DIR'} . '/../bin';
 my $base_dir = $ENV{'BASE_TEST_DIR'} . '/..';
-open(my $outputfh, '-|', "$bin_dir/recs-chain  recs-xform '\$r->rename(\"foo\", \"zoo\");' $test_file \\| recs-sort --key zoo=-n \\| grep 3  \\| recs-totable");
+open(my $outputfh, '-|', "$secure_perl_path $bin_dir/recs-chain  recs-xform '\$r->rename(\"foo\", \"zoo\");' $test_file \\| recs-sort --key zoo=-n \\| grep 3  \\| recs-totable");
 
 my $expected = <<OUTPUT;
 zoo
@@ -61,7 +69,7 @@ SOLUTION2
 # Again, not sure of the best testing strategy, since the chain would have to
 # pass along the printer for the operations... Perhaps printers should be
 # universal instead of relative to the object?
-open(my $outputfh2, '-|', "$bin_dir/recs-chain  recs-xform '\$r->rename(\"foo\", \"zoo\");' $test_file \\| recs-sort --key zoo=-n \\| recs-totable");
+open(my $outputfh2, '-|', "$secure_perl_path $bin_dir/recs-chain  recs-xform '\$r->rename(\"foo\", \"zoo\");' $test_file \\| recs-sort --key zoo=-n \\| recs-totable");
 $/ = undef;
 my $results2 = <$outputfh2>;
 is_deeply($results2, $solution2, "Complex chain matched output");
