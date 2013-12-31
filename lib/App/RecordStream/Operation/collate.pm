@@ -22,7 +22,7 @@ sub init {
   App::RecordStream::Aggregator->load_implementations();
 
   # clumping
-  my $clumper_options = App::RecordStream::Clumper::Options->new();
+  my $clumper_options = $this->{'CLUMPER_OPTIONS'} = App::RecordStream::Clumper::Options->new();
 
   # aggregation
   my @aggregators;
@@ -95,8 +95,6 @@ sub init {
   }
 
   $clumper_options->check_options(App::RecordStream::Operation::collate::BaseClumperCallback->new($aggregator_objects, $incremental, sub { $this->push_record($_[0]); }));
-
-  $this->{'CLUMPER_OPTIONS'} = $clumper_options;
 }
 
 sub build_dlaggregator {
