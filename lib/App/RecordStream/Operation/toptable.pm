@@ -120,6 +120,9 @@ sub stream_done {
         }
       }
     }
+
+    # lexically sort if user didn't explicitly specify any vfields
+    @vfields = sort @vfields;
   }
   else {
     my $vfields_hash = {};
@@ -681,7 +684,7 @@ sub usage {
     ['x-field|x', 'Add a x field, values of the specified field will become columns in the table, may be a keyspec or a keygroup'],
     ['y-field|y', 'Add a y field, values of the specified field will become rows in the table, may be a keyspec or a keygroup'],
     ['v-field|v', 'Specify the value to display in the table, if multiple value fields are specified and FIELD is not placed in the x or y axes, then the last one wins, may be a keyspec or a keygroup.  If FIELD is in an axis, then --v specifies the fields to be included in that expansion'],
-    ['pin', 'Pin a field to a certain value, only display records matching that value, very similar to doing a recs-grep befor toptable.  Takes value of the form: field=pinnedValue, field may be a keyspec (not a keygroup)'],
+    ['pin', 'Pin a field to a certain value, only display records matching that value, very similar to doing a recs-grep before toptable.  Takes value of the form: field=pinnedValue, field may be a keyspec (not a keygroup)'],
     ['sort', 'Take sort specifications to sort X values and Y values in headers.  See `recs-sort --help` for details of sort specifications, especially the * option to sort "ALL" to the end, e.g.  "some_field=lex*".'],
     ['noheaders', 'Do not print row and column headers (removes blank rows and columns)'],
     ['records|recs', 'Instead of printing table, output records, one per row of the table.'],
