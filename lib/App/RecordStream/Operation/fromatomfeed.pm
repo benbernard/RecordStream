@@ -7,9 +7,8 @@ use warnings;
 
 use base qw(App::RecordStream::Operation);
 
-use Data::Dumper;
 use LWP::UserAgent;
-use XML::Simple;
+use XML::Twig;
 
 use App::RecordStream::Record;
 
@@ -29,6 +28,7 @@ sub init
 
   $this->parse_options($args, \%options);
 
+  $this->{'COUNT'}  = 0;
   $this->{'FOLLOW'} = $follow;
   $this->{'MAX'}    = $max;
   $this->{'URLS'}   = $args;
@@ -48,11 +48,15 @@ sub stream_done
   my $request = HTTP::Request->new();
   $request->method('GET');
 
-  my @urls = @{$this->{'URLS'}};
+  my $twig_roots = { '/*/entry' => sub { $this->handle_entry_elem( @_ ) } };
 
-  my $count = 0;
-  URL:
-  while (my $url = shift @urls)
+  if ( $this->{'FOLLOW'} ) {
+    $twig_roots->{ '/*/link[ @rel="next" and @href ]' } = sub { $this->handle_link_elem( @_ ) };
+  }
+
+  my $twig = XML::Twig->new(twig_roots => $twig_roots);
+
+  while (my $url = shift @{ $this->{'URLS'} })
   {
     $this->update_current_filename($url);
     $request->uri($url);
@@ -65,28 +69,33 @@ sub stream_done
       next;
     }
 
-    my $xml = XMLin($response->content,
-      forcearray => [ 'entry', 'link' ],
-      keyattr => [ 'rel' ]);
-
-    foreach my $entry (@{$xml->{entry}})
-    {
-      $count++;
-      my $record = App::RecordStream::Record->new(%$entry);
-      $this->push_record($record);
-      if (defined $this->{'MAX'} && $count >= $this->{'MAX'})
-      {
-        last URL;
-      }
-    }
-
-    # Follow the feed 'next' link if present. It is a proposed part
-    # of the standard - see http://www.ietf.org/rfc/rfc5005.txt
-    if ($this->{'FOLLOW'} && exists $xml->{link}->{next})
-    {
-      unshift @urls, $xml->{link}->{next}->{href};
-    }
+    $twig->parse( $response->content );
   }
+}
+
+sub handle_entry_elem {
+  my ($this, $twig, $entry_elem) = @_;
+
+  $this->{'COUNT'}++;
+
+  my $record = App::RecordStream::Record->new( $entry_elem->simplify );
+  $this->push_record($record);
+
+  if (defined $this->{'MAX'} && $this->{'COUNT'} >= $this->{'MAX'}) {
+    $this->{'URLS'} = [];
+    $twig->finish_now;
+  }
+
+  $twig->purge;
+}
+
+# Follow the feed 'next' link if present. It is a proposed part
+# of the standard - see http://www.ietf.org/rfc/rfc5005.txt
+sub handle_link_elem {
+  my ($this, $twig, $link_elem) = @_;
+
+  unshift @{ $this->{'URLS'} }, $link_elem->att('href');
+  $twig->purge;
 }
 
 sub make_user_agent {

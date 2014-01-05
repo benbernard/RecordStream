@@ -42,7 +42,6 @@ WriteMakefile(
      'Tie::Array'       => 0,
      'Tie::Hash'        => 0,
      'Tie::IxHash'      => 0,
-     'XML::Simple'      => 0,
      'XML::Twig'        => 0,
    },
 
