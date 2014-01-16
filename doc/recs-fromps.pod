@@ -18,9 +18,10 @@ recs-fromps
        --help  This help screen
  
  Default fields:
-    pid, ppid, pgrp, uid, gid, euid, egid, suid, sgid, priority, size, rss,
-    flags, nice, sess, time, stime, utime, start, wchan, ttydev, ttynum, pctcpu,
-    pctmem, state, cmndline, fname
+    uid, gid, pid, fname, ppid, pgrp, sess, ttynum, flags, minflt, cminflt,
+    majflt, cmajflt, utime, stime, cutime, cstime, priority, start, size, rss,
+    wchan, time, ctime, state, euid, suid, fuid, egid, sgid, fgid, pctcpu,
+    pctmem, cmndline, exec, cwd
  
  Examples:
     Get records for the process table

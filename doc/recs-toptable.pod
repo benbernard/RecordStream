@@ -28,8 +28,8 @@ recs-toptable
                                  be included in that expansion
     --pin                        Pin a field to a certain value, only display
                                  records matching that value, very similar to
-                                 doing a recs-grep befor toptable. Takes value of
-                                 the form: field=pinnedValue, field may be a
+                                 doing a recs-grep before toptable. Takes value
+                                 of the form: field=pinnedValue, field may be a
                                  keyspec (not a keygroup)
     --sort                       Take sort specifications to sort X values and Y
                                  values in headers. See `recs-sort --help` for

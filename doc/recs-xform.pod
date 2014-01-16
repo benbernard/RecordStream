@@ -28,6 +28,9 @@ recs-xform
  
     --e                          a perl snippet to execute, optional
     --E                          the name of a file to read as a perl snippet
+    --M module[=...]             execute "use module..." before executing
+                                 snippet; same behaviour as perl -M
+    --m module[=...]             same as -M, but by default import nothing
     --A NUM                      Make NUM records after this one available in $A
                                  (closest record to current in first position)
     --B NUM                      Make NUM records before this one available in $B

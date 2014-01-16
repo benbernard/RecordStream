@@ -21,6 +21,11 @@ recs-annotate
     will not apply to later records. If you need this behavior, consider using
     recs-xform
  
+    --e                          a perl snippet to execute, optional
+    --E                          the name of a file to read as a perl snippet
+    --M module[=...]             execute "use module..." before executing
+                                 snippet; same behaviour as perl -M
+    --m module[=...]             same as -M, but by default import nothing
     --keys                       Keys to match records by, maybe specified
                                  multiple times, may be a keygroup or keyspec
     --filename-key|fk <keyspec>  Add a key with the source filename (if no

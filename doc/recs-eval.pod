@@ -13,6 +13,11 @@ recs-eval
     App::RecordStream::Record for help on what the $r object can do. See --help-
     snippets for more information on code snippets
  
+    --e                          a perl snippet to execute, optional
+    --E                          the name of a file to read as a perl snippet
+    --M module[=...]             execute "use module..." before executing
+                                 snippet; same behaviour as perl -M
+    --m module[=...]             same as -M, but by default import nothing
     --chomp                      Chomp eval results (to avoid duplicate newlines
                                  when already newline-terminated)
     --filename-key|fk <keyspec>  Add a key with the source filename (if no
