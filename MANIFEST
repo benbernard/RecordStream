@@ -213,6 +213,7 @@ lib/App/RecordStream/Test/Tester.pm
 lib/App/RecordStream/Test/UniqConcatHelper.pm
 LICENSE
 Makefile.PL
+MANIFEST
 README.pod
 src/fast-recs-collate/aggregators.c
 src/fast-recs-collate/aggregators.h
