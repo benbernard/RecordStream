@@ -1,3 +1,8 @@
+3.7.5 - 16 Jan 2014
+
+    - Change individual package versions to 3.7 (from 3.7.4) and bump release
+      version to 3.7.5 due to PAUSE indexing version comparison requirements
+
 3.7.4 - 16 Jan 2014
 
     - New commands: recs-substream, recs-multiplex, recs-frommongo (Eli

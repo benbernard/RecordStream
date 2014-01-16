@@ -1,6 +1,6 @@
 package App::RecordStream::Aggregator::FirstRecord;
 
-our $VERSION = "3.7.4";
+our $VERSION = "3.7";
 
 use strict;
 use warnings;

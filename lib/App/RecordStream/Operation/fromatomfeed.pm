@@ -1,6 +1,6 @@
 package App::RecordStream::Operation::fromatomfeed;
 
-our $VERSION = "3.7.4";
+our $VERSION = "3.7";
 
 use strict;
 use warnings;

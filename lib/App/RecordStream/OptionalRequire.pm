@@ -19,7 +19,7 @@ BEGIN { require App::RecordStream::OptionalRequire qw(optional_require); optiona
 
 =cut
 
-our $VERSION = "3.7.4";
+our $VERSION = "3.7";
 
 use strict;
 use warnings;

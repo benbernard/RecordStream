@@ -1,6 +1,6 @@
 package App::RecordStream::Operation::frommultire;
 
-our $VERSION = "3.7.4";
+our $VERSION = "3.7";
 
 use strict;
 

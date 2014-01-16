@@ -1,6 +1,6 @@
 package App::RecordStream::Operation::fromdb;
 
-our $VERSION = "3.7.4";
+our $VERSION = "3.7";
 
 use strict;
 use warnings;
