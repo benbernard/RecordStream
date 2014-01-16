@@ -38,7 +38,7 @@ WriteMakefile(
      'Test::More'       => 0,
      'Text::Autoformat' => 0,
      'Text::CSV'        => 0,
-     'Text::CSV_XS'     => 0,
+     'Text::CSV_XS'     => 0.99,
      'Tie::Array'       => 0,
      'Tie::Hash'        => 0,
      'Tie::IxHash'      => 0,
