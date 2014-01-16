@@ -1,3 +1,38 @@
+3.7.4 - 16 Jan 2014
+
+    - New commands: recs-substream, recs-multiplex, recs-frommongo (Eli
+      Lindsey, Keith Amling, Ben Bernard)
+
+    - Switch from XML::Simple to XML::Twig to handle large documents and
+      preserve document order (Eli Lindsey)
+
+    - Nested XML elements are now forced into arrays (Eli Lindsey)
+
+    - Support -M and -m, a la perl itself, for operations that accept snippets
+      (Thomas Sibley)
+
+    - Lexically sort keys if no order is specified for a better user experience
+      and passing tests on 5.18 (Eli Lindsey)
+
+    - totable now respects explicit key ordering (Ben Bernard)
+
+    - Handle input streams as bytes instead of assuming UTF-8 (Shawn Halpenny)
+
+    - New and updated documentation for many operations
+
+    - Fix various --help-* options to recs-collate, recs-join, recs-multiplex
+      (Keith Amling, Ben Bernard, Thomas Sibley)
+
+    - Fix normalize time issues with newer Date::Manip versions (Ben Bernard)
+
+    - Require Text::CSV_XS 0.98 to avoid a bug with embedded newlines (Thomas
+      Sibley)
+
+    - Exec recs-chain with the same perl running the tests [rt.cpan.org #76879]
+      (Thomas Sibley)
+
+    - Skip failing tests in fromtcpdump.t which are TODO (Thomas Sibley)
+
 3.7.3 - Added snippet variable passing
         --list for collate works again
 

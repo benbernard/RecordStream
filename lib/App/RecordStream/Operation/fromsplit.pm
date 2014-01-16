@@ -1,6 +1,6 @@
 package App::RecordStream::Operation::fromsplit;
 
-our $VERSION = "3.4";
+our $VERSION = "3.7.4";
 
 use strict;
 
