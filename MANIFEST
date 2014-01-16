@@ -9,6 +9,7 @@ bin/recs-fromatomfeed
 bin/recs-fromcsv
 bin/recs-fromdb
 bin/recs-fromkv
+bin/recs-frommongo
 bin/recs-frommultire
 bin/recs-fromps
 bin/recs-fromre
@@ -18,10 +19,12 @@ bin/recs-fromxml
 bin/recs-generate
 bin/recs-grep
 bin/recs-join
+bin/recs-multiplex
 bin/recs-normalizetime
 bin/recs-operation
 bin/recs-sort
 bin/recs-stream2table
+bin/recs-substream
 bin/recs-tocsv
 bin/recs-todb
 bin/recs-togdgraph
@@ -48,6 +51,7 @@ doc/recs-fromatomfeed.pod
 doc/recs-fromcsv.pod
 doc/recs-fromdb.pod
 doc/recs-fromkv.pod
+doc/recs-frommongo.pod
 doc/recs-frommultire.pod
 doc/recs-fromps.pod
 doc/recs-fromre.pod
@@ -57,9 +61,11 @@ doc/recs-fromxml.pod
 doc/recs-generate.pod
 doc/recs-grep.pod
 doc/recs-join.pod
+doc/recs-multiplex.pod
 doc/recs-normalizetime.pod
 doc/recs-sort.pod
 doc/recs-stream2table.pod
+doc/recs-substream.pod
 doc/recs-tocsv.pod
 doc/recs-todb.pod
 doc/recs-togdgraph.pod
@@ -127,8 +133,10 @@ lib/App/RecordStream/Clumper/KeyLRU.pm
 lib/App/RecordStream/Clumper/KeyPerfect.pm
 lib/App/RecordStream/Clumper/Key.pm
 lib/App/RecordStream/Clumper/Key/WrappedCallback.pm
+lib/App/RecordStream/Clumper/Options.pm
 lib/App/RecordStream/Clumper.pm
 lib/App/RecordStream/Clumper/Window.pm
+lib/App/RecordStream/Clumper/WrappedClumperCallback.pm
 lib/App/RecordStream/DBHandle.pm
 lib/App/RecordStream/Deaggregator/Base.pm
 lib/App/RecordStream/Deaggregator/Field.pm
@@ -155,7 +163,6 @@ lib/App/RecordStream/Operation/annotate.pm
 lib/App/RecordStream/Operation/chain.pm
 lib/App/RecordStream/Operation/collate/BaseClumperCallback.pm
 lib/App/RecordStream/Operation/collate.pm
-lib/App/RecordStream/Operation/collate/WrappedClumperCallback.pm
 lib/App/RecordStream/Operation/decollate.pm
 lib/App/RecordStream/Operation/delta.pm
 lib/App/RecordStream/Operation/eval.pm
@@ -164,6 +171,7 @@ lib/App/RecordStream/Operation/fromatomfeed.pm
 lib/App/RecordStream/Operation/fromcsv.pm
 lib/App/RecordStream/Operation/fromdb.pm
 lib/App/RecordStream/Operation/fromkv.pm
+lib/App/RecordStream/Operation/frommongo.pm
 lib/App/RecordStream/Operation/frommultire.pm
 lib/App/RecordStream/Operation/fromps.pm
 lib/App/RecordStream/Operation/fromre.pm
@@ -173,10 +181,13 @@ lib/App/RecordStream/Operation/fromxml.pm
 lib/App/RecordStream/Operation/generate.pm
 lib/App/RecordStream/Operation/grep.pm
 lib/App/RecordStream/Operation/join.pm
+lib/App/RecordStream/Operation/multiplex/BaseClumperCallback.pm
+lib/App/RecordStream/Operation/multiplex.pm
 lib/App/RecordStream/Operation/normalizetime.pm
 lib/App/RecordStream/Operation.pm
 lib/App/RecordStream/Operation/sort.pm
 lib/App/RecordStream/Operation/stream2table.pm
+lib/App/RecordStream/Operation/substream.pm
 lib/App/RecordStream/Operation/tocsv.pm
 lib/App/RecordStream/Operation/todb.pm
 lib/App/RecordStream/Operation/togdgraph.pm
@@ -194,6 +205,7 @@ lib/App/RecordStream/Record.pm
 lib/App/RecordStream/Site.pm
 lib/App/RecordStream/Stream/Base.pm
 lib/App/RecordStream/Stream/Printer.pm
+lib/App/RecordStream/Stream/Sub.pm
 lib/App/RecordStream/Test/DistinctCountHelper.pm
 lib/App/RecordStream/Test/LastHelper.pm
 lib/App/RecordStream/Test/OperationHelper.pm
@@ -272,6 +284,7 @@ tests/RecordStream/Operation/fromatomfeed.t
 tests/RecordStream/Operation/fromcsv.t
 tests/RecordStream/Operation/fromdb.t
 tests/RecordStream/Operation/fromkv.t
+tests/RecordStream/Operation/frommongo.pm
 tests/RecordStream/Operation/frommultire.t
 tests/RecordStream/Operation/fromps.t
 tests/RecordStream/Operation/fromre.t
@@ -281,9 +294,11 @@ tests/RecordStream/Operation/fromxml.t
 tests/RecordStream/Operation/generate.t
 tests/RecordStream/Operation/grep.t
 tests/RecordStream/Operation/join.t
+tests/RecordStream/Operation/multiplex.t
 tests/RecordStream/Operation/normalizetime.t
 tests/RecordStream/Operation/sort.t
 tests/RecordStream/Operation/stream2table.t
+tests/RecordStream/Operation/substream.t
 tests/RecordStream/Operation.t
 tests/RecordStream/Operation/tocsv.t
 tests/RecordStream/Operation/togdgraph.t

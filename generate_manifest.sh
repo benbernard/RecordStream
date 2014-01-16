@@ -11,6 +11,7 @@ find . \( -type f -o -type l \) \
    -not -path './tarball/*' \
    -not -path ./Makefile \
    -not -name MANIFEST \
+   -not -name 'MYMETA*' \
    -not -name pm_to_blib \
    -not -name testDb \
    -not -name 'libapp-recordstream*.deb' \
