@@ -313,3 +313,4 @@ tests/RecordStream/Operation/xform.t
 tests/RecordStream/OptionalRequire.t
 tests/RecordStream/OutputStream.t
 tests/RecordStream/Record.t
+update_versions.sh
