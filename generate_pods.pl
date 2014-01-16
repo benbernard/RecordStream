@@ -9,6 +9,12 @@ require 'BuildTools.recbuildtool';
 
 $ENV{'PERL5LIB'} .= ':lib';
 
+# Don't let the actual terminal size affect POD everytime we generate it.
+# LINES isn't used by us, but is required for Term::ReadKey::GetTerminalSize()
+# to use COLUMNS.
+$ENV{'COLUMNS'} = 80;
+$ENV{'LINES'}   = 50;
+
 my @scripts = BuildTools::get_bin_scripts();
 
 foreach my $script (@scripts) {

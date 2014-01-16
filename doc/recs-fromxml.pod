@@ -6,11 +6,12 @@ recs-fromxml
 
  Usage: recs-fromxml <args> [<URIs>]
     Reads either from STDIN or from the specified URIs. Parses the xml documents,
-    and creates records for the specified elements
+    and creates records for the specified elements. If multiple element types are
+    specified, will add a {'element' => element name} field to the output record.
  
-    --elements <elements>        May be comma separated, may be specified
-                                 multiple times. Sets the elements to print
-                                 records for
+    --element <elements>         May be comma separated, may be specified
+                                 multiple times. Sets the elements/attributes to
+                                 print records for
     --nested                     search for elements at all levels of the xml
                                  document
     --filename-key|fk <keyspec>  Add a key with the source filename (if no
