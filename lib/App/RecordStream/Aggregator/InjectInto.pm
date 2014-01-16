@@ -1,6 +1,6 @@
 package App::RecordStream::Aggregator::InjectInto;
 
-our $VERSION = "4.0.0";
+our $VERSION = "4.0.1";
 
 use App::RecordStream::Aggregator;
 

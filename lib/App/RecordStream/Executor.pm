@@ -3,7 +3,7 @@
 
 package App::RecordStream::Executor;
 
-our $VERSION = "4.0.0";
+our $VERSION = "4.0.1";
 
 use strict;
 use warnings;

@@ -1,6 +1,6 @@
 package App::RecordStream::Accumulator;
 
-our $VERSION = "4.0.0";
+our $VERSION = "4.0.1";
 
 sub accept_record {
   my $this = shift;

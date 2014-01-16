@@ -1,6 +1,6 @@
 package App::RecordStream::Aggregator::Sum;
 
-our $VERSION = "4.0.0";
+our $VERSION = "4.0.1";
 
 use strict;
 use warnings;
