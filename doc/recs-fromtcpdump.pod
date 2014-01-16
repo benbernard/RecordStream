@@ -20,10 +20,10 @@ recs-fromtcpdump
  
     Flags will be parsed into hash of strings
     Possible IP flags: congestion, dont_fragment, more_fragments
-    Poassible TCP flags: CWR, URG, SYN, ECE, FIN, RST, ACK, PSH
+    Poassible TCP flags: ACK, CWR, ECE, FIN, PSH, RST, SYN, URG
  
     ARP opcodes will be matched
-    Possible opcodes: RARP_REPLY, ARP_REQUEST, RARP_REQUEST, ARP_REPLY
+    Possible opcodes: ARP_REPLY, ARP_REQUEST, RARP_REPLY, RARP_REQUEST
  
  Creating a pcap file:
     Run a tcpdump command with -w FILE to produce a pcap file. For instance: sudo

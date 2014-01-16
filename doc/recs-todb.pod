@@ -33,23 +33,23 @@ recs-todb
  
  Database Options
     password  - Password to connect as
-    user  - User to connect as
     type  - Type of database to connect to - Default: sqlite
+    user  - User to connect as
  
  Datbase types:
     mysql - Connect to a remote mysql database
-    sqlite - A simple local file based db
     oracle - Connect to a remote Oracle database
+    sqlite - A simple local file based db
  
  Database Options for type: mysql
     dbname  - Database to connect to
     host  - Mysql Host
  
- Database Options for type: sqlite
-    dbfile  - Local file for database - Default: testDb
- 
  Database Options for type: oracle
     db  - Database name (tnsname) to connect to
+ 
+ Database Options for type: sqlite
+    dbfile  - Local file for database - Default: testDb
  
  Examples:
     # Just put all the records into the recs table
