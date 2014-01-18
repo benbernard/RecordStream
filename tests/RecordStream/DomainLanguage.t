@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 use Test::More 'no_plan';
+use Config;
 use Data::Dumper;
 
 BEGIN { use_ok("App::RecordStream::Aggregator"); }
@@ -148,13 +149,25 @@ my @tests =
 
       my $value = $aggr->squish($cookie);
 
-      my $ans =
-      {
-        'x1,y1' => -0.73469387755102,
-        'x1,y2' => -0.428571428571428,
-        'x2,y1' => 0,
-        'x2,y2' => -0.28125,
-      };
+      my $ans;
+      if ( $Config{uselongdouble} eq "define" ) {
+        $ans =
+        {
+          'x1,y1' => -0.734693877551020408,
+          'x1,y2' => -0.428571428571428571,
+          'x2,y1' => 0,
+          'x2,y2' => -0.28125,
+        };
+
+      } else {
+        $ans =
+        {
+          'x1,y1' => -0.73469387755102,
+          'x1,y2' => -0.428571428571428,
+          'x2,y1' => 0,
+          'x2,y2' => -0.28125,
+        };
+      }
 
       is_deeply($value, $ans);
     },
