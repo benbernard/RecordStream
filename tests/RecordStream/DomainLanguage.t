@@ -150,7 +150,7 @@ my @tests =
       my $value = $aggr->squish($cookie);
 
       my $ans;
-      if ( $Config{uselongdouble} eq "define" ) {
+      if ( $Config{uselongdouble} and $Config{uselongdouble} eq "define" ) {
         $ans =
         {
           'x1,y1' => -0.734693877551020408,
