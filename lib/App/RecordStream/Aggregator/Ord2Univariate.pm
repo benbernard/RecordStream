@@ -1,6 +1,6 @@
 package App::RecordStream::Aggregator::Ord2Univariate;
 
-our $VERSION = "4.0.1";
+our $VERSION = "4.0.2";
 
 use strict;
 use warnings;

@@ -1,3 +1,8 @@
+4.0.2 - 22 Jan 2014
+
+    - Tests: fix DomainLanguage.t comparison on perls compiled with
+      uselongdouble (Eli Lindsey)
+
 4.0.1 - 16 Jan 2014
 
     - Added forgotten Changes entry for 4.0.0.  Code is exactly the same as

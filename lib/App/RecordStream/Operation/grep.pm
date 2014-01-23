@@ -1,6 +1,6 @@
 package App::RecordStream::Operation::grep;
 
-our $VERSION = "4.0.1";
+our $VERSION = "4.0.2";
 
 use strict;
 
