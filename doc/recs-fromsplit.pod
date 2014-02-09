@@ -12,7 +12,7 @@ recs-fromsplit
  
  Arguments:
     --delim|-d <delim>           Delimiter to use for splitting input lines
-                                 (default
+                                 (default ',').
     --key|-k <key>               Comma separated list of key names. May be
                                  specified multiple times, may be key specs
     --header                     Take key names from the first line of input.
