@@ -1,3 +1,7 @@
+4.0.3 - 2014-02-08
+
+    - Help: Fix quoting which hid the default delimiter to recs-fromsplit
+
 4.0.2 - 22 Jan 2014
 
     - Tests: fix DomainLanguage.t comparison on perls compiled with
