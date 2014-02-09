@@ -104,7 +104,7 @@ sub usage {
   my $this = shift;
 
   my $options = [
-    [ 'delim|-d <delim>', 'Delimiter to use for splitting input lines (default ',').'],
+    [ 'delim|-d <delim>', "Delimiter to use for splitting input lines (default ',')."],
     [ 'key|-k <key>', 'Comma separated list of key names.  May be specified multiple times, may be key specs'],
     [ 'header', 'Take key names from the first line of input.'],
     [ 'strict', 'Delimiter is not treated as a regex'],
