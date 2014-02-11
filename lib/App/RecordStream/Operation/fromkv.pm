@@ -103,7 +103,7 @@ sub usage
   return <<USAGE;
 Usage : recs-fromkv <args> [<files>]
    __FORMAT_TEXT__
-   Records are generated from charactr input with the form "<record><record-delim><record>...".
+   Records are generated from character input with the form "<record><record-delim><record>...".
    Records have the form "<entry><entry-delim><entry>...".  Entries are pairs of the form
    "<key><kv-delim><value>".
    __FORMAT_TEXT__
