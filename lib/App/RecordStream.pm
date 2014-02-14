@@ -22,7 +22,7 @@ started with RecordStream
 
 =cut
 
-our $VERSION = "4.0.3";
+our $VERSION = "4.0.4";
 
 use strict;
 use warnings;

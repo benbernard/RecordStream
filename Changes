@@ -1,3 +1,11 @@
+4.0.4 - 2014-02-13
+
+    - Documentation: Fix typos in usage documentation for fromkv and flatten
+      (Brandon Forehand)
+
+    - Tests: Re-open STDIN using in-memory strings instead of `echo` to work on
+      more platforms (Thomas Sibley)
+
 4.0.3 - 2014-02-08
 
     - Help: Fix quoting which hid the default delimiter to recs-fromsplit
