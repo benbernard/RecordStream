@@ -52,8 +52,9 @@ sub test_stdin {
   my $input  = shift;
   my $output = shift;
 
-  # Re open stdin to the given input
-  open(STDIN, "-|", "echo", "-n", $input) || ok(0, "Cannot open echo?!");
+  # Re-open stdin to the given input
+  close(STDIN) or die "Cannot close STDIN: $!";
+  open(STDIN, "<", \$input) or die "Cannot re-open STDIN to string ref: $!";
 
   return App::RecordStream::Test::OperationHelper->do_match(
     $this->{'OPERATION'},
