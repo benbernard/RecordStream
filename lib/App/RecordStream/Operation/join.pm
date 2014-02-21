@@ -32,16 +32,11 @@ sub init {
 
   $this->parse_options($args, $spec);
 
-  if ( ! @$args ) {
-    die("You must provide inputkey");
-  }
+  my $inputkey = shift @$args
+    or die "You must provide inputkey\n";
 
-  my $inputkey = shift @$args;
-
-  die("You must provide dbkey") unless (@$args);
-
-  my $dbkey = shift @$args;
-
+  my $dbkey = shift @$args
+    or die "You must provide dbkey\n";
 
   my $dbfile = shift @$args
     or die "You must provide dbfile\n";
