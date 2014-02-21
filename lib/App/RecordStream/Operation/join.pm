@@ -42,9 +42,9 @@ sub init {
 
   my $dbkey = shift @$args;
 
-  $this->usage("You must provide dbfile") unless (@$args);
 
-  my $dbfile = shift @$args;
+  my $dbfile = shift @$args
+    or die "You must provide dbfile\n";
 
   $this->{'ACCUMULATE_RIGHT'} = $accumulate_right;
   $this->{'DB_KEY'}           = $dbkey;
