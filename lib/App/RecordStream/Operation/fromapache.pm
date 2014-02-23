@@ -15,23 +15,45 @@ sub init {
   my $this = shift;
   my $args = shift;
 
-  my $fast    = 0;
-  my $strict  = 0;
-  my $verbose = 0;
+  my $fast;
+  my $strict;
+  my $verbose;
 
   my $spec = {
-    "fast"    => \$fast,
-    "strict"  => \$strict,
-    "verbose" => \$verbose,
+    "fast:s"   => \$fast,
+    "strict:s" => \$strict,
+    "verbose"  => \$verbose,
   };
-
+  
   $this->parse_options($args, $spec);
 
-  $this->{'PARSER'} = Apache::Log::Parser->new(
-      ( $fast    ? ( fast    => eval $fast   ) : () ),
-      ( $strict  ? ( strict  => eval $strict ) : () ),
-      ( $verbose ? ( verbose => $verbose     ) : () ),
-  );
+  my %opts;
+
+  if (defined $fast) {
+    if ($fast eq '') {
+      $opts{fast} = 1;
+    }
+    else {
+      $opts{fast} = eval $fast;
+      die "eval of option fast failed. $@" if $@;
+    }
+  }
+
+  if (defined $strict) {
+    if ($strict eq '') {
+      $opts{strict} = 1;
+    }
+    else {
+      $opts{strict} = eval $strict;
+      die "eval of option strict failed. $@" if $@;
+    }
+  }
+  
+  if ($verbose) {
+    $opts{verbose} = 1;
+  }
+
+  $this->{'PARSER'} = Apache::Log::Parser->new(%opts);
 }
 
 sub accept_line {
@@ -71,7 +93,7 @@ $args_string
 Examples:
    Get records from typical apache log
       recs-fromapache --fast < /var/log/httpd-access.log
-   A more detailed how to use
+   A more detailed how to use (See perldoc Apache::Log::Parser)
       recs-fromapache --strict '[qw(combined common vhost_common)]' < /var/log/httpd-access.log
 USAGE
 }
