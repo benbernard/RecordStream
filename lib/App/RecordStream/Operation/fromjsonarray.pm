@@ -19,14 +19,12 @@ sub init {
 
   my $spec = {
     'key|k=s'        => sub { push @fields, split(/,/, $_[1]); },
-    'preserve-empty' => \$preserve_empty,
   };
 
   $this->parse_options($args, $spec);
 
   $this->{'EXTRA_ARGS'}     = $args;
   $this->{'FIELDS'}         = \@fields;
-  $this->{'PRESERVE_EMPTY'} = $preserve_empty;
   $this->{'JSON'}           = JSON->new();
 }
 
@@ -66,20 +64,17 @@ sub get_records_from_handle {
   my $items = $json->decode($contents);
 
   for my $item (@$items) {
-    my $record;
+    $item = App::RecordStream::Record->new($item);
 
+    my $record = $item;
     if ($has_fields) {
       $record = App::RecordStream::Record->new();
       for my $field (@$fields) {
-        $record->set($field, $item->{$field}) if exists $item->{$field};
+        $record->set($field, ${$item->guess_key_from_spec($field)});
       }
     }
-    else {
-      $record = App::RecordStream::Record->new($item);
-    }
 
-    $this->push_record($record)
-      if scalar $record->keys() || $this->{'PRESERVE_EMPTY'};
+    $this->push_record($record);
   }
 }
 
@@ -88,7 +83,6 @@ sub usage {
 
   my $options = [
     [ 'key|k <keys>', 'Optional Comma separated list of field names.  If none specified, use all keys.  May be specified multiple times, may be key specs' ],
-    [ 'preserve-empty', 'Enable output of empty records' ],
   ];
 
   my $args_string = $this->options_string($options);
