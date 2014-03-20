@@ -1,7 +1,20 @@
-use Test::More qw(no_plan);
 use App::RecordStream::Test::Tester;
 
-BEGIN { use_ok( 'App::RecordStream::Operation::fromxferlog' ) };
+BEGIN {
+  eval {
+    require Net::FTPServer::XferLog;
+  };
+
+  if ( $@ ) {
+    require Test::More;
+    import Test::More skip_all => 'Missing Net::FTPServer::XferLog Modules!';
+  }
+  else {
+    require Test::More;
+    import Test::More qw(no_plan);
+    use_ok( 'App::RecordStream::Operation::fromxferlog' );
+  }
+};
 
 my $tester = App::RecordStream::Test::Tester->new('fromxferlog');
 

@@ -1,7 +1,20 @@
-use Test::More qw(no_plan);
 use App::RecordStream::Test::Tester;
 
-BEGIN { use_ok( 'App::RecordStream::Operation::fromapache' ) };
+BEGIN {
+  eval {
+    require Apache::Log::Parser;
+  };
+
+  if ( $@ ) {
+    require Test::More;
+    import Test::More skip_all => 'Missing Apache::Log::Parser Modules!';
+  }
+  else {
+    require Test::More;
+    import Test::More qw(no_plan);
+    use_ok( 'App::RecordStream::Operation::fromapache' );
+  }
+};
 
 my $tester = App::RecordStream::Test::Tester->new('fromapache');
 
