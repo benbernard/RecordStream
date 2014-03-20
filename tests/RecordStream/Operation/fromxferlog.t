@@ -1,3 +1,5 @@
+use strict;
+use warnings;
 use App::RecordStream::Test::Tester;
 
 BEGIN {
