@@ -1,0 +1,48 @@
+=head1 NAME
+
+recs-fromapache
+
+=head1 recs-fromapache --help-all
+
+ Usage: recs-fromapache <args>
+    Each line of input (or lines of <files>) is parse by Apache::Log::Parser to
+    produce an output record.
+ 
+ Arguments:
+    --fast                       'fast' parser works relatively fast. It can
+                                 process only 'common', 'combined' and custom
+                                 styles with compatibility with 'common', and
+                                 cannot work with backslash-quoted double-quotes
+                                 in fields.
+    --strict                     'strict' parser works relatively slow. It can
+                                 process any style format logs, with
+                                 specification about separator, and checker for
+                                 perfection. It can also process backslash-quoted
+                                 double-quotes properly.
+    --verbose                    Verbose output.
+    --filename-key|fk <keyspec>  Add a key with the source filename (if no
+                                 filename is applicable will put NONE)
+ 
+   Help Options:
+       --help  This help screen
+ 
+ Examples:
+    Get records from typical apache log
+       recs-fromapache --fast < /var/log/httpd-access.log
+    A more detailed how to use (See perldoc Apache::Log::Parser)
+       recs-fromapache --strict '[qw(combined common vhost_common)]' < /var/log/httpd-access.log
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+

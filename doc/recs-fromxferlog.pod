@@ -1,0 +1,28 @@
+=head1 NAME
+
+recs-fromxferlog
+
+=head1 recs-fromxferlog --help-all
+
+ Usage: recs-fromxferlog <args>
+    Each line of input (or lines of <files>) is parse by Net::FTPServer::XferLog
+    to produce an output record.
+ 
+ Examples:
+    Get records from typical xferlog
+       recs-fromxferlog < /var/log/xferlog
+
+=head1 See Also
+
+=over
+
+=item  L<RecordStream(3)> - Overview of the scripts and the system
+
+=item  L<recs-examples(3)> - A set of simple recs examples
+
+=item  L<recs-story(3)> - A humorous introduction to RecordStream
+
+=item SCRIPT --help - every script has a --help option, like the output above
+
+=back
+
