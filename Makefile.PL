@@ -53,6 +53,9 @@ WriteMakefile(
    #   'Proc::ProcessTable'  => 0;
    #   'MongoDB'          => 0,
    #   'JSON::PP'         => 0;
+   #   'Apache::Log::Parser'     => 0,
+   #   'Woothee'                 => 0,
+   #   'Net::FTPServer::XferLog' => 0,
    # Not really optional, but in the base perl, including it confuses debian
    # package creator
    #   'Tie::ExtraHash'   => 0,

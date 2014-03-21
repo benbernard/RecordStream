@@ -13,13 +13,15 @@ recs-fromapache
                                  process only 'common', 'combined' and custom
                                  styles with compatibility with 'common', and
                                  cannot work with backslash-quoted double-quotes
-                                 in fields.
+                                 in fields. (This is the default)
     --strict                     'strict' parser works relatively slow. It can
                                  process any style format logs, with
                                  specification about separator, and checker for
                                  perfection. It can also process backslash-quoted
                                  double-quotes properly.
     --verbose                    Verbose output.
+    --woothee                    Each agent field of records is parse by Woothee
+                                 to produce woothee field.
     --filename-key|fk <keyspec>  Add a key with the source filename (if no
                                  filename is applicable will put NONE)
  
@@ -28,9 +30,11 @@ recs-fromapache
  
  Examples:
     Get records from typical apache log
-       recs-fromapache --fast < /var/log/httpd-access.log
+       recs-fromapache < /var/log/httpd-access.log
     A more detailed how to use (See perldoc Apache::Log::Parser)
        recs-fromapache --strict '[qw(combined common vhost_common)]' < /var/log/httpd-access.log
+    Get records except access of crawler
+       recs-fromapache --woothee < /var/log/httpd-access.log | recs-grep '$r->{woothee}{category} ne "crawler"'
 
 =head1 See Also
 
