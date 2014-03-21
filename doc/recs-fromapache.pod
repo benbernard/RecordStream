@@ -20,6 +20,8 @@ recs-fromapache
                                  perfection. It can also process backslash-quoted
                                  double-quotes properly.
     --verbose                    Verbose output.
+    --woothee                    Each agent field of records is parse by Woothee
+                                 to produce woothee field.
     --filename-key|fk <keyspec>  Add a key with the source filename (if no
                                  filename is applicable will put NONE)
  
@@ -31,6 +33,8 @@ recs-fromapache
        recs-fromapache --fast < /var/log/httpd-access.log
     A more detailed how to use (See perldoc Apache::Log::Parser)
        recs-fromapache --strict '[qw(combined common vhost_common)]' < /var/log/httpd-access.log
+    Get records except access of crawler
+       recs-fromapache --fast --woothee < /var/log/httpd-access.log | recs-grep '$r->{woothee}{category} ne "crawler"'
 
 =head1 See Also
 

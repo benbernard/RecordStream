@@ -18,11 +18,13 @@ sub init {
   my $fast;
   my $strict;
   my $verbose;
+  my $woothee;
 
   my $spec = {
     "fast:s"   => \$fast,
     "strict:s" => \$strict,
     "verbose"  => \$verbose,
+    "woothee"  => \$woothee,
   };
   
   $this->parse_options($args, $spec);
@@ -53,6 +55,12 @@ sub init {
     $opts{verbose} = 1;
   }
 
+  if ($woothee) {
+    App::RecordStream::OptionalRequire::optional_use("Woothee");
+    App::RecordStream::OptionalRequire::require_done();
+    $this->{'WOOTHEE'} = 1;
+  }
+
   $this->{'PARSER'} = Apache::Log::Parser->new(%opts);
 }
 
@@ -64,6 +72,7 @@ sub accept_line {
 
   if (my $hash = $parser->parse($line)) {
     my $record = App::RecordStream::Record->new($hash);
+    $record->{woothee} = Woothee->parse($record->{agent}) if $this->{'WOOTHEE'};
     $this->push_record($record);
   }
 
@@ -77,6 +86,7 @@ sub usage {
     [ 'fast',    q{'fast' parser works relatively fast. It can process only 'common', 'combined' and custom styles with compatibility with 'common', and cannot work with backslash-quoted double-quotes in fields.} ],
     [ 'strict',  q{'strict' parser works relatively slow. It can process any style format logs, with specification about separator, and checker for perfection. It can also process backslash-quoted double-quotes properly.} ],
     [ 'verbose', q{Verbose output.} ],
+    [ 'woothee', q{Each agent field of records is parse by Woothee to produce woothee field.} ],
   ];
 
   my $args_string = $this->options_string($options);
@@ -95,6 +105,8 @@ Examples:
       recs-fromapache --fast < /var/log/httpd-access.log
    A more detailed how to use (See perldoc Apache::Log::Parser)
       recs-fromapache --strict '[qw(combined common vhost_common)]' < /var/log/httpd-access.log
+   Get records except access of crawler
+      recs-fromapache --fast --woothee < /var/log/httpd-access.log | recs-grep '\$r->{woothee}{category} ne "crawler"'
 USAGE
 }
 
