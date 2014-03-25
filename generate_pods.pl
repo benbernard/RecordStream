@@ -30,7 +30,7 @@ sub generate_pod {
 
   my @help = `$script --help-all 2>/dev/null`;
 
-  open(my $fh, '>', "doc/$script_base.pod") or die "Could not open doc/$script.pod: $!";
+  open(my $fh, '>', "doc/$script_base.pod") or die "Could not open doc/$script_base.pod: $!";
 
   print $fh <<HEADER;
 =head1 NAME
