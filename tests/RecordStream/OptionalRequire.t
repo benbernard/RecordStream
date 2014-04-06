@@ -4,8 +4,9 @@ BEGIN { require_ok( 'App::RecordStream::OptionalRequire' ) };
 
 $App::RecordStream::OptionalRequire::PRINT_WARNING = 0;
 
-my $loaded = App::RecordStream::OptionalRequire::optional_use(qw(Foo::Bar));
-is($loaded, 0, 'Test nonexistant module load');
+my $dne = "No::Such::Module::Random" . int(rand(1_000_000));
+my $loaded = App::RecordStream::OptionalRequire::optional_use($dne);
+is($loaded, 0, "Test nonexistant module load of $dne");
 
 $loaded = App::RecordStream::OptionalRequire::optional_use(qw(App::RecordStream::Operation));
 is($loaded, 1, 'Test existing module load');
