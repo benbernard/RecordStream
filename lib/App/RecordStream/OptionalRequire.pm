@@ -15,7 +15,10 @@ Class for optionally requiring a set of modules
 
 =head1 SYNOPSIS
 
-BEGIN { require App::RecordStream::OptionalRequire qw(optional_require); optional_require(qw(Foo::Bar Biz::Zip)); }
+    BEGIN {
+        use App::RecordStream::OptionalRequire qw(optional_require);
+        optional_require(qw(Foo::Bar Biz::Zip));
+    }
 
 =cut
 
