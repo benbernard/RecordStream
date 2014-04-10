@@ -261,7 +261,8 @@ Operation:
    App::RecordStream::Record object for the db record, and \$i is set to a 
    App::RecordStream::Record object for the input record. The \$d record is
    used for the result. Thus, if you provide an empty operation, the result
-   will contain only fields from the db record.
+   will contain only fields from the db record. Note that an empty operation is
+   different from no --operation at all.
    __FORMAT_TEXT__
 
 Examples:
