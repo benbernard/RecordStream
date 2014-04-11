@@ -11,6 +11,7 @@ BEGIN { use_ok("App::RecordStream::DomainLanguage::Snippet"); }
 BEGIN { use_ok("App::RecordStream::Test::DistinctCountHelper"); }
 BEGIN { use_ok("App::RecordStream::Test::LastHelper"); }
 BEGIN { use_ok("App::RecordStream::Test::UniqConcatHelper"); }
+BEGIN { use_ok("App::RecordStream::Test::Aggregator::ArrayHelper"); }
 
 App::RecordStream::Aggregator->load_implementations();
 
@@ -337,6 +338,40 @@ my @tests =
       my $value = $aggr->squish($cookie);
 
       is_deeply($value, 6);
+    },
+    $CAST_FAILURE,
+    $CAST_FAILURE,
+  ],
+  [
+    [
+      "array(x)",
+      "array(snip('{{x}}'))",
+      "array(<<{{x}}>>)",
+    ],
+    sub {
+      my $aggr = shift;
+      App::RecordStream::Test::Aggregator::ArrayHelper::array_agg_ok(
+          $aggr,
+          [1,3,3,7] => [1,3,3,7],
+          "array of 1, 3, 3, 7"
+      );
+    },
+    $CAST_FAILURE,
+    $CAST_FAILURE,
+  ],
+  [
+    [
+      "uarray(x)",
+      "uarray(snip('{{x}}'))",
+      "uarray(<<{{x}}>>)",
+    ],
+    sub {
+      my $aggr = shift;
+      App::RecordStream::Test::Aggregator::ArrayHelper::array_agg_ok(
+          $aggr,
+          [1,3,3,7] => [1,3,7],
+          "array of 1, 3, 7"
+      );
     },
     $CAST_FAILURE,
     $CAST_FAILURE,
