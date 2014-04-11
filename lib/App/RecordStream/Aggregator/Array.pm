@@ -11,35 +11,30 @@ use App::RecordStream::DomainLanguage::Registry;
 
 use base 'App::RecordStream::Aggregator::MapReduce::Field';
 
-sub map_field
-{
+sub map_field {
   my ($this, $value) = @_;
 
   return [$value];
 }
 
-sub reduce
-{
+sub reduce {
   my ($this, $cookie, $cookie2) = @_;
 
   return [@$cookie, @$cookie2];
 }
 
-sub long_usage
-{
+sub long_usage {
   return <<EOF;
 Usage: array,<field>
    Collect values from specified field into an array.
 EOF
 }
 
-sub short_usage
-{
+sub short_usage {
   return "collect values from provided field into an array";
 }
 
-sub argct
-{
+sub argct {
   return 1;
 }
 

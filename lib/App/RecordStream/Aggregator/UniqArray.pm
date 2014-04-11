@@ -11,16 +11,14 @@ use App::RecordStream::DomainLanguage::Valuation::KeySpec;
 
 use base qw(App::RecordStream::Aggregator::Aggregation);
 
-sub new
-{
+sub new {
   my $class = shift;
   my $field = shift;
 
   return new_from_valuation($class, App::RecordStream::DomainLanguage::Valuation::KeySpec->new($field));
 }
 
-sub new_from_valuation
-{
+sub new_from_valuation {
   my $class = shift;
   my $valuation = shift;
 
@@ -34,38 +32,32 @@ sub new_from_valuation
   return $this;
 }
 
-sub squish
-{
+sub squish {
   my ($this, $cookie) = @_;
 
   return [ sort keys %$cookie ];
 }
 
-sub long_usage
-{
+sub long_usage {
   return <<EOF;
 Usage: uarray,<field>
    Collect unique values from specified field into an array.
 EOF
 }
 
-sub short_usage
-{
+sub short_usage {
   return "collect unique values from provided field into an array";
 }
 
-sub argct
-{
+sub argct {
   return 1;
 }
 
-sub initial
-{
+sub initial {
   return {};
 }
 
-sub combine
-{
+sub combine {
   my ($this, $cookie, $record) = @_;
 
   my $value = $this->{'valuation'}->evaluate_record($record);
