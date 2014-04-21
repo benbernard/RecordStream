@@ -5,6 +5,7 @@ recs-collate
 =head1 recs-collate --help-all
 
  Help from: --help-aggregators:
+ array: collect values from provided field into an array
  average, avg: averages provided field
  cb, countby: counts by unique value for a field
  concat, concatenate: concatenate values from provided field
@@ -27,6 +28,7 @@ recs-collate
  records, recs: returns an arrayref of all records
  stddev: find standard deviation of provided field
  sum: sums provided field
+ uarray: collect unique values from provided field into an array
  uconcat, uconcatenate: concatenate unique values from provided field
  valuestokeys, vk: use one key-value as a key for a different value in the record
  var, variance: find variance of provided field

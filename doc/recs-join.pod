@@ -13,8 +13,8 @@ recs-join
     pair of matches will be combined to form a larger record, with fields from
     the dbfile overwriting fields from the input stream. If the join is a left
     join or inner join, any inputs that do not match a dbfile record are
-    discarded. If the join is a right join or inner join, any db records that do
-    not match an input record are discarded.
+    discarded. If the join is a right join, any db records that do not match an
+    input record are discarded.
  
     dbkey and inputkey may be key specs, see '--help-keyspecs' for more
     information
@@ -48,7 +48,8 @@ recs-join
     App::RecordStream::Record object for the db record, and $i is set to a
     App::RecordStream::Record object for the input record. The $d record is used
     for the result. Thus, if you provide an empty operation, the result will
-    contain only fields from the db record.
+    contain only fields from the db record. Note that an empty operation is
+    different from no --operation at all.
  
  Examples:
     Join type from STDIN and typeName from dbfile
