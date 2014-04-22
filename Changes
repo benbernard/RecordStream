@@ -1,3 +1,24 @@
+4.0.5 - 2014-04-21
+
+    * Features
+        - recs-fromjsonarray: Unwrap records in a JSON array (Brandon Forehand)
+        - recs-fromxferlog: Parse various FTP transfer log formats (Tomohiro Hosaka)
+        - recs-fromapache: Parse various Apache log formats (Tomohiro Hosaka)
+        - recs-fromapache: Optionally parse user agents with Woothee (Tomohiro Hosaka)
+        - recs-collate: New aggregators array and uarray (Thomas Sibley)
+
+    * Documentation
+        - recs-join: Clarify that there's a difference between no operation
+          and an empty operation (Thomas Sibley)
+        - recs-join: Show usage when dbfile is not provided (Thomas Sibley)
+        - recs-delta: Show usage when --key is not provided (Thomas Sibley)
+        - Format and correct SYNOPSIS for App::RecordStream::OptionalRequire
+
+    * Tests
+        - Use a different "never installed" module than Foo::Bar, which does
+          exist on backpan and which at least one CPAN smoker has installed
+          (Thomas Sibley)
+
 4.0.4 - 2014-02-13
 
     - Documentation: Fix typos in usage documentation for fromkv and flatten
