@@ -13,8 +13,8 @@ recs-join
     pair of matches will be combined to form a larger record, with fields from
     the dbfile overwriting fields from the input stream. If the join is a left
     join or inner join, any inputs that do not match a dbfile record are
-    discarded. If the join is a right join, any db records that do not match an
-    input record are discarded.
+    discarded. If the join is a right join or inner join, any db records that do
+    not match an input record are discarded.
  
     dbkey and inputkey may be key specs, see '--help-keyspecs' for more
     information
