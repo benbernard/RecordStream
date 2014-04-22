@@ -8,3 +8,5 @@ App-RecordStream-*.tar.gz
 tarball/*
 libapp-recordstream*
 MYMETA.*
+MANIFEST.bak
+MANIFEST.SKIP.bak
