@@ -13,16 +13,22 @@ sub init {
 
   my @keys;
   my $reverse;
+  my $rank;
+  my $percentile;
 
   my $spec = {
-    "key|k=s"   => sub { push @keys, split(/,/, $_[1]); },
-    "reverse|r" => \$reverse,
+    "key|k=s"        => sub { push @keys, split(/,/, $_[1]); },
+    "reverse|r"      => \$reverse,
+    "rank|R=s"       => \$rank,
+    "percentile|p=s" => \$percentile,
   };
 
   $this->parse_options($args, $spec);
 
-  $this->{'KEYS'}    = \@keys;
-  $this->{'REVERSE'} = $reverse;
+  $this->{'KEYS'}       = \@keys;
+  $this->{'REVERSE'}    = $reverse;
+  $this->{'RANK'}       = $rank;
+  $this->{'PERCENTILE'} = $percentile;
 }
 
 sub stream_done {
@@ -34,7 +40,14 @@ sub stream_done {
     @records = reverse @records;
   }
 
-  foreach my $record (@records) {
+  for(my $i = 0; $i < @records; ++$i) {
+    my $record = $records[$i];
+    if ( defined($this->{'RANK'}) ) {
+      ${$record->guess_key_from_spec($this->{'RANK'})} = $i;
+    }
+    if ( defined($this->{'PERCENTILE'}) ) {
+      ${$record->guess_key_from_spec($this->{'PERCENTILE'})} = $i / @records;
+    }
     $this->push_record($record);
   }
 }
@@ -50,6 +63,8 @@ sub usage {
   my $options = [
     ['key <keyspec>', "May be comma separated, May be specified multiple times.  Each keyspec is a name or a name=sortType.  The name should be a field name to sort on.  The sort type should be either lexical or numeric.  Default sort type is lexical (can also use nat, lex, n, and l).  Additionallly, the sort type may be prefixed with '-' to indicate a decreasing sort order.  Additionally, the sort type may be postfixed with '*' to sort the special value 'ALL' to the end (useful for the output of recs-collate --cube).  See perldoc for App::RecordStream::Record for more on sort specs.  May be a key spec, see '--help-keyspecs' for more.  Cannot be a keygroup."],
     ['reverse', 'Reverses the sort order'],
+    ['rank|-R <field>', 'Save the rank of each record in this field (0-indexed).'].
+    ['percentile <field>', 'Save the percentile of each record in this field (calculated as rank divided by record count).'],
   ];
 
   my $args_string = $this->options_string($options);
@@ -70,6 +85,8 @@ Examples:
       recs-sort --key age=numeric,name
    Sort on decreasing size, name
       recs-sort --key size=-numeric --key name
+   Compute ranks and percentiles for each student within their classroom
+      recs-multiplex -k classroom -- recs-sort -k grade=num -R rank -p percentile
 USAGE
 }
 
