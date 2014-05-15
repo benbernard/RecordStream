@@ -30,6 +30,7 @@ sub init {
   my @mr_aggregators;
   my @ii_aggregators;
   my $incremental = 0;
+  my $bucket = 1;
 
   # help
   my $list_aggregators = 0;
@@ -44,6 +45,7 @@ sub init {
     "mr-agg=s{4}"       => \@mr_aggregators,
     "ii-agg=s{4}"       => \@ii_aggregators,
     "incremental|i"     => \$incremental,
+    "bucket!"           => \$bucket,
 
     # help
     "list-aggregators"  => \$list_aggregators,
@@ -94,7 +96,7 @@ sub init {
     $aggregator_objects->{$name} = App::RecordStream::DomainLanguage::Library::inject_into_aggregator($initial_snippet, $combine_snippet, $squish_snippet);
   }
 
-  $clumper_options->check_options(App::RecordStream::Operation::collate::BaseClumperCallback->new($aggregator_objects, $incremental, sub { $this->push_record($_[0]); }));
+  $clumper_options->check_options(App::RecordStream::Operation::collate::BaseClumperCallback->new($aggregator_objects, $incremental, $bucket, sub { $this->push_record($_[0]); }));
 }
 
 sub build_dlaggregator {
@@ -165,6 +167,7 @@ sub usage {
     [ 'mr-agg <name> <map> <reduce> <squish>', 'Specify a map reduce aggregator via 3 snippets, similar to mr_agg() from the domain language.'],
     [ 'ii-agg <name> <initial> <combine> <squish>', 'Specify an inject into aggregator via 3 snippets, similar to ii_agg() from the domain language.'],
     [ 'incremental', 'Output a record every time an input record is added to a clump (instead of every time a clump is flushed).'],
+    [ '[no]-bucket', 'With --bucket outputs one record per clump, with --no-bucket outputs one record for each record that went into the clump.'],
     $this->{'CLUMPER_OPTIONS'}->main_usage(),
 
     [ 'list-aggregators|--list', 'Bail and output a list of aggregators' ],

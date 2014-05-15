@@ -45,6 +45,21 @@ App::RecordStream::Test::OperationHelper->do_match(
   $solution2,
 );
 
+my $solution2b = <<SOLUTION;
+{"value":"10.0.0.101","element":"address", "foo": "bar", "bar": "baz", "count":"2"}
+{"value":"10.0.1.101","element":"address", "foo": "bar3", "bar": "baz2", "count":"2"}
+{"value":"10.0.0.102","element":"address2", "foo": "bar3", "bar": "baz2", "count":"3"}
+{"value":"10.0.0.103","element":"address2", "foo": "bar", "bar": "baz3", "count":"3"}
+{"value":"10.0.1.103","element":"address2", "foo": "bar", "bar": "baz", "count":"3"}
+SOLUTION
+
+App::RecordStream::Test::OperationHelper->do_match(
+  'collate',
+  [qw(--key element --a count --nobucket)],
+  $stream,
+  $solution2b,
+);
+
 my $solution3 = <<SOLUTION;
 {"count":1,"foo":"bar","element":"address"}
 {"count":3,"foo":"bar","element":"ALL"}
