@@ -5,10 +5,11 @@ our $VERSION = "4.0.14";
 use strict;
 use warnings;
 
-use base qw(App::RecordStream::Accumulator App::RecordStream::Operation);
+use base qw(App::RecordStream::Operation::Base::SimpleMultiplexHelper);
 
-use App::RecordStream::Aggregator;
-use App::RecordStream::Operation;
+use App::RecordStream::Aggregator::Average;
+use App::RecordStream::Aggregator::StandardDeviation;
+use App::RecordStream::Operation::Base::SimpleMultiplexHelper;
 
 sub init {
   my $this = shift;
@@ -31,35 +32,25 @@ sub init {
   $this->{'Z_KEY'} = $z_key;
 }
 
-sub stream_done {
+sub _get_aggregators {
   my $this = shift;
 
-  my $v_key = $this->{'V_KEY'};
-  my $z_key = $this->{'Z_KEY'};
+  return {
+    'AVERAGE' => App::RecordStream::Aggregator::Average->new($this->{'V_KEY'}),
+    'SD' => App::RecordStream::Aggregator::StandardDeviation->new($this->{'V_KEY'}),
+  };
+}
 
-  my $records = $this->get_records();
+sub _annotate_record {
+  my $this = shift;
+  my $record = shift;
+  my $aggregates = shift;
 
-  return unless(@$records);
-  my $count = 0;
-  my $sum = 0;
-  for my $record (@$records) {
-    my $v = ${$record->guess_key_from_spec($v_key)};
-    $count += 1;
-    $sum += $v;
-  }
-  my $average = $sum / $count;
-  my $sum_squared_error = 0;
-  for my $record (@$records) {
-    my $v = ${$record->guess_key_from_spec($v_key)};
-    $sum_squared_error += ($v - $average) ** 2;
-  }
-  my $variance = $sum_squared_error / $count;
-  my $sd = sqrt($variance);
-  for my $record (@$records) {
-    my $v = ${$record->guess_key_from_spec($v_key)};
-    ${$record->guess_key_from_spec($z_key)} = ($v - $average) / $sd;
-    $this->push_record($record);
-  }
+  my $average = $aggregates->{'AVERAGE'};
+  my $sd = $aggregates->{'SD'};
+
+  my $v = ${$record->guess_key_from_spec($this->{'V_KEY'})};
+  ${$record->guess_key_from_spec($this->{'Z_KEY'})} = ($v - $average) / $sd;
 }
 
 sub usage {
