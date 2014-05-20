@@ -272,7 +272,7 @@ sub sort
   my $records = shift;
   my @specs   = @_;
 
-  return CORE::sort { $a->cmp($b, @specs) } @$records;
+  return map { $records->[$_] } CORE::sort { $records->[$a]->cmp($records->[$b], @specs) || ($a <=> $b) } (0..(@$records - 1));
 }
 
 ### Actual class
