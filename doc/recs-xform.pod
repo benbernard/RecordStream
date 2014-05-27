@@ -20,8 +20,8 @@ recs-xform
     on a Record object or hash will cause the next record to be processed to be
     the indicated record. You may pass multiple records with one call. Similarly
     push_output causes the next record to be output to be the passed record(s).
-    If push_record is called, the original record will not be output in this
-    case. (call push_record($r) if you want that record also outputted). You may
+    If push_output is called, the original record will not be output in this
+    case. (call push_output($r) if you want that record also outputted). You may
     call these methods from a --pre-snippet or a --post-snippet. You may also
     call push_output() without any argument to suppress the outputting of the
     current record
