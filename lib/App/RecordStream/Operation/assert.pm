@@ -1,6 +1,6 @@
 package App::RecordStream::Operation::assert;
 
-our $VERSION = "4.0.4";
+our $VERSION = "4.0.6";
 
 use strict;
 use warnings;

@@ -1,4 +1,5 @@
 bin/recs-annotate
+bin/recs-assert
 bin/recs-chain
 bin/recs-collate
 bin/recs-decollate
@@ -44,6 +45,7 @@ distro_command_notes
 doc/Examples.pod
 doc/RecordStreamStory.pod
 doc/recs-annotate.pod
+doc/recs-assert.pod
 doc/recs-chain.pod
 doc/recs-collate.pod
 doc/recs-decollate.pod
@@ -169,6 +171,7 @@ lib/App/RecordStream/KeySpec.pm
 lib/App/RecordStream/LRUSheriff.pm
 lib/App/RecordStream/Operation.pm
 lib/App/RecordStream/Operation/annotate.pm
+lib/App/RecordStream/Operation/assert.pm
 lib/App/RecordStream/Operation/chain.pm
 lib/App/RecordStream/Operation/collate.pm
 lib/App/RecordStream/Operation/collate/BaseClumperCallback.pm
@@ -288,6 +291,7 @@ tests/RecordStream/KeyGroups.t
 tests/RecordStream/KeySpec.t
 tests/RecordStream/Operation.t
 tests/RecordStream/Operation/annotate.t
+tests/RecordStream/Operation/assert.t
 tests/RecordStream/Operation/chain.t
 tests/RecordStream/Operation/collate-clumper.t
 tests/RecordStream/Operation/collate.t

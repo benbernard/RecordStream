@@ -1,6 +1,6 @@
 package App::RecordStream::Aggregator::MapReduce::Field;
 
-our $VERSION = "4.0.5";
+our $VERSION = "4.0.6";
 
 use strict;
 use warnings;

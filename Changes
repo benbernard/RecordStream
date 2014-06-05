@@ -1,3 +1,12 @@
+4.0.6 - 2014-06-04
+
+    * Features
+        - recs-assert: Assert truths about your record streams (Thomas Sibley)
+
+    * Documentation
+        - recs-xform: Correctly refer to push_output() instead of the
+          nonexistent push_record() (Thomas Sibley)
+
 4.0.5 - 2014-04-21
 
     * Features
