@@ -139,7 +139,7 @@ CODE
 
      foreach my $variable (keys %{$package_name . '::'}) {
        next if ( exists $method_names{$variable} );
-       delete %{$package_name . '::'}->{$variable};
+       delete ${$package_name . '::'}{$variable};
      }
    }
  }
