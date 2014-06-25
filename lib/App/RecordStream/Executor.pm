@@ -139,7 +139,8 @@ CODE
 
      foreach my $variable (keys %{$package_name . '::'}) {
        next if ( exists $method_names{$variable} );
-       delete %{$package_name . '::'}->{$variable};
+       undef *{$package_name . '::' . $variable};
+       delete ${$package_name . '::'}{$variable};
      }
    }
  }
@@ -224,10 +225,10 @@ sub transform_code {
   my $this = shift;
   my $code = shift;
 
-  while ( $code =~ m/{{(.*?)}}/ ) {
+  while ( $code =~ m/\{\{(.*?)\}\}/ ) {
     my $specifier = $1;
     my $guessing_code = '${App::RecordStream::KeySpec::find_key($r, qq{\@' . $specifier . '})}';
-    $code =~ s/{{.*?}}/$guessing_code/;
+    $code =~ s/\{\{.*?\}\}/$guessing_code/;
   }
 
   return $code;
