@@ -6,7 +6,7 @@ BEGIN {
   $Date::Manip::Backend = 'DM5';
 }
 
-our $VERSION = "4.0.6";
+our $VERSION = "4.0.7";
 
 use strict;
 

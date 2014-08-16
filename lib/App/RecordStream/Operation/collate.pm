@@ -1,6 +1,6 @@
 package App::RecordStream::Operation::collate;
 
-our $VERSION = "4.0.6";
+our $VERSION = "4.0.7";
 
 use strict;
 use warnings;
