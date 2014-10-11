@@ -29,6 +29,15 @@ on 'test' => sub {
 };
 
 on 'develop' => sub {
+    requires 'Dist::Milla';
+    requires 'Dist::Zilla::PluginBundle::Filter';
+    requires 'Dist::Zilla::Plugin::CustomLicense';
+    requires 'Dist::Zilla::Plugin::ExecDir';
+    requires 'Dist::Zilla::Plugin::MakeMaker::Awesome';
+    requires 'Dist::Zilla::Plugin::MetaNoIndex';
+    requires 'Dist::Zilla::Plugin::MetaResources';
+    requires 'Dist::Zilla::Plugin::PruneFiles';
+    requires 'Dist::Zilla::Plugin::Run::BeforeBuild';
     requires 'File::Find';
 };
 
