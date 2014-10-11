@@ -1,9 +1,19 @@
-This software is Copyright (c) 2010-2014 by Benjamin Bernard and Keith Amling.
+__[ NAME ]__
+the MIT and Artistic 1.0 Licenses
+__[ URL ]__
+
+__[ META_NAME ]__
+mit
+__[ META2_NAME ]__
+mit
+__[ NOTICE ]__
+This software is Copyright (c) 2010-{{$self->year}} by {{$self->holder}}.
 
 This is free software, dual licensed under:
 
-  the MIT and Artistic 1.0 Licenses
+  {{$self->name}}
 
+__[ LICENSE ]__
                                     ~ ~ ~
 
 The MIT License
