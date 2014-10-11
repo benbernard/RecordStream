@@ -3,7 +3,7 @@ package App::RecordStream::BaseRegistry;
 use App::RecordStream::Site;
 
 use strict;
-use lib;
+use warnings;
 
 sub load_implementations
 {
