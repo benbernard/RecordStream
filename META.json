@@ -138,6 +138,7 @@
             "Dist::Milla" : "v1.0.8",
             "Dist::Zilla::Plugin::CustomLicense" : "0",
             "Dist::Zilla::Plugin::ExecDir" : "0",
+            "Dist::Zilla::Plugin::MakeMaker::Awesome" : "0",
             "Dist::Zilla::Plugin::MetaNoIndex" : "0",
             "Dist::Zilla::Plugin::MetaResources" : "0",
             "Dist::Zilla::Plugin::PruneFiles" : "0",
