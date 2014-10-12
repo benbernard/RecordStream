@@ -1,0 +1,71 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+no warnings 'exec';
+
+use App::RecordStream::Operation;
+use File::Basename 'basename';
+use File::Glob 'bsd_glob';
+use Getopt::Long;
+use Module::Pluggable::Object;
+
+Getopt::Long::Configure(qw( require_order pass_through ));
+GetOptions(
+  'h|help'      => sub { print usage(); exit },
+  'l|list-ops'  => sub { print "$_\n" for known_ops(); exit },
+);
+
+my $operation = shift or die usage();
+my $recs = basename($0);
+
+my $loaded_op = eval {
+  App::RecordStream::Operation::load_operation("recs-$operation");
+  1;
+};
+if ($loaded_op and not $@) {
+  # We found a library operation, run it!
+  App::RecordStream::Operation::main("recs-$operation"); # never returns
+}
+else {
+  # Try installed executables for ops in other languages (or implemented
+  # outside of the Perl API)
+  exec { "recs-$operation" } "recs-$operation", @ARGV or do {
+      print STDERR "$recs: '$operation' is not a recs operation.\n\n";
+      print STDERR "Use `$recs --list-ops` to see known operations.\n";
+      exit 1;
+  };
+}
+
+sub usage {
+  <<'.';
+usage: recs operation [arguments]
+       recs -l|--list-ops
+       recs -h|--help
+.
+}
+
+sub known_ops {
+  my %seen;
+  sort { $a cmp $b }
+  grep { not $seen{$_}++ }
+  _lib_ops(), _path_ops()
+}
+
+sub _lib_ops {
+  sort { $a cmp $b }
+  map  { s/^App::RecordStream::Operation:://; $_ }
+  Module::Pluggable::Object->new(
+    search_path => "App::RecordStream::Operation",
+    max_depth   => 4,
+  )->plugins
+}
+
+sub _path_ops {
+  my %seen;
+  sort { $a cmp $b }
+  grep { not $seen{$_}++ }
+  map  { $_ = basename($_); s/^recs-//; $_ }
+  grep { -f and -x _ }
+  map  { bsd_glob("$_/recs-*") }
+  split /:/, $ENV{PATH};
+}

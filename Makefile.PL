@@ -15,6 +15,7 @@ my %WriteMakefileArgs = (
   },
   "DISTNAME" => "App-RecordStream",
   "EXE_FILES" => [
+    "bin/recs",
     "bin/recs-annotate",
     "bin/recs-assert",
     "bin/recs-chain",

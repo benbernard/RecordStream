@@ -533,9 +533,11 @@ sub clumping_help {
 # can/should be a symlink to recs-operation itself or just this one line: use
 # App::RecordStream::Operation; App::RecordStream::Operation::main();
 sub main {
+  my $command = shift || $Script;
+
   $| = 1;
 
-  if ( $Script eq 'recs-operation' ) {
+  if ( $command eq 'recs-operation' ) {
     print <<MESSAGE;
 WARNING!
 recs-operation invoked directly!
@@ -554,7 +556,7 @@ MESSAGE
   my @args = @ARGV;
   @ARGV = ();
 
-  my $op = App::RecordStream::Operation::create_operation($Script, \@args);
+  my $op = App::RecordStream::Operation::create_operation($command, \@args);
 
   if ( $op->wants_input() ) {
     @ARGV = @args;
