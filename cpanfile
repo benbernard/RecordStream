@@ -10,15 +10,17 @@ requires 'File::Temp';              # recs-tognuplot, but package is core Perl
 requires 'FindBin';
 requires 'Getopt::Long';
 requires 'IO::String';
-requires 'JSON';
-requires 'JSON::XS';                # FIXME: JSON::MaybeXS
+requires 'JSON::MaybeXS', '1.002005';
 requires 'Scalar::Util';
-requires 'Term::ReadKey';
 requires 'Text::Autoformat';
 requires 'Text::CSV';
-requires 'Text::CSV_XS', '0.99';    # FIXME: recommends
 requires 'Tie::Array';
 requires 'Tie::Hash';               # includes Tie::ExtraHash
+
+# XS deps
+recommends 'Cpanel::JSON::XS';
+recommends 'Text::CSV_XS', '0.99';
+recommends 'Term::ReadKey';
 
 on 'configure' => sub {
     requires 'ExtUtils::MakeMaker';

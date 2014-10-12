@@ -149,6 +149,11 @@
          }
       },
       "runtime" : {
+         "recommends" : {
+            "Cpanel::JSON::XS" : "0",
+            "Term::ReadKey" : "0",
+            "Text::CSV_XS" : "0.99"
+         },
          "requires" : {
             "Carp" : "0",
             "Cwd" : "0",
@@ -160,13 +165,10 @@
             "FindBin" : "0",
             "Getopt::Long" : "0",
             "IO::String" : "0",
-            "JSON" : "0",
-            "JSON::XS" : "0",
+            "JSON::MaybeXS" : "1.002005",
             "Scalar::Util" : "0",
-            "Term::ReadKey" : "0",
             "Text::Autoformat" : "0",
             "Text::CSV" : "0",
-            "Text::CSV_XS" : "0.99",
             "Tie::Array" : "0",
             "Tie::Hash" : "0"
          }

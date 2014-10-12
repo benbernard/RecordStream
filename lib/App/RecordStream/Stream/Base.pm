@@ -1,11 +1,11 @@
 package App::RecordStream::Stream::Base;
 
-use JSON;
+use JSON::MaybeXS;
 
 use App::RecordStream::Record;
 use App::RecordStream::OutputStream;
 
-my $json = new JSON;
+my $json = JSON->new;
 
 sub new
 {

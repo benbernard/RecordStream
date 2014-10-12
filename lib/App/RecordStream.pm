@@ -217,7 +217,7 @@ Prints a multi-dimensional (pivot) table of values.  Very powerful.
 The data stream format of the recs scripts is JSON hashes separated by new
 lines.  If you wish to write your own recs script in your own language, just
 get a JSON parser and you should be good to go.  The recs scripts use
-JSON::Syck, a fast xs-binding of a c implementation of a YAML parser/outputer
+JSON::MaybeXS.
 
 =head1 EXAMPLES
 

@@ -9,7 +9,6 @@ use Carp;
 use FindBin qw($Script $RealScript);
 use Getopt::Long;
 use Text::Autoformat;
-use Term::ReadKey;
 
 use App::RecordStream::Clumper;
 use App::RecordStream::DomainLanguage;
@@ -162,9 +161,13 @@ sub _options_format {
   sub get_terminal_size {
     if ( ! $size_initialized ) {
       $size_initialized = 1;
-      eval {
-        $size = (Term::ReadKey::GetTerminalSize())[0];
-      };
+      if (eval { require Term::ReadKey; 1 }) {
+        eval {
+          $size = (Term::ReadKey::GetTerminalSize())[0];
+        };
+      } elsif ($ENV{COLUMNS}) {
+        $size = $ENV{COLUMNS};
+      }
     }
     return $size;
   }
