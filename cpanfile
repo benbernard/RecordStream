@@ -41,7 +41,20 @@ on 'develop' => sub {
     requires 'Dist::Zilla::Plugin::MetaResources';
     requires 'Dist::Zilla::Plugin::PruneFiles';
     requires 'Dist::Zilla::Plugin::Run::BeforeBuild';
+
+    # fatpacking
+    requires 'App::FatPacker', '0.10.2';
+    requires 'lib::core::only';
+    requires 'List::MoreUtils';
+    requires 'Module::CPANfile';
+
+    # fatpacking: these should be core, but we'll include them for good measure
+    requires 'Cwd';
     requires 'File::Find';
+    requires 'File::Path';
+    requires 'Getopt::Long';
+    requires 'Module::CoreList';
+    requires 'Tie::File';
 };
 
 feature 'recs-fromapache', 'Apache log parsing' => sub {

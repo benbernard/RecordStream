@@ -135,6 +135,8 @@
       },
       "develop" : {
          "requires" : {
+            "App::FatPacker" : "v0.10.2",
+            "Cwd" : "0",
             "Dist::Milla" : "v1.0.8",
             "Dist::Zilla::Plugin::CustomLicense" : "0",
             "Dist::Zilla::Plugin::ExecDir" : "0",
@@ -145,7 +147,14 @@
             "Dist::Zilla::Plugin::Run::BeforeBuild" : "0",
             "Dist::Zilla::PluginBundle::Filter" : "0",
             "File::Find" : "0",
-            "Test::Pod" : "1.41"
+            "File::Path" : "0",
+            "Getopt::Long" : "0",
+            "List::MoreUtils" : "0",
+            "Module::CPANfile" : "0",
+            "Module::CoreList" : "0",
+            "Test::Pod" : "1.41",
+            "Tie::File" : "0",
+            "lib::core::only" : "0"
          }
       },
       "runtime" : {
