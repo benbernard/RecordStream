@@ -3,6 +3,7 @@ use strict;
 use warnings;
 no warnings 'exec';
 
+use App::RecordStream;
 use App::RecordStream::Operation;
 use File::Basename 'basename';
 use File::Glob 'bsd_glob';
@@ -13,6 +14,7 @@ Getopt::Long::Configure(qw( require_order pass_through ));
 GetOptions(
   'h|help'      => sub { print usage(); exit },
   'l|list-ops'  => sub { print "$_\n" for known_ops(); exit },
+  'version'     => \&version,
 );
 
 my $operation = shift or die usage();
@@ -41,6 +43,7 @@ sub usage {
 usage: recs operation [arguments]
        recs -l|--list-ops
        recs -h|--help
+       recs --version
 .
 }
 
@@ -68,4 +71,11 @@ sub _path_ops {
   grep { -f and -x _ }
   map  { bsd_glob("$_/recs-*") }
   split /:/, $ENV{PATH};
+}
+
+sub version {
+  print "recs/$App::RecordStream::VERSION";
+  print " (fatpacked)" if grep { ref =~ /^FatPacked/ } @INC;
+  print "\n";
+  exit;
 }
