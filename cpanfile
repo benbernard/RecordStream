@@ -47,6 +47,7 @@ on 'develop' => sub {
     requires 'lib::core::only';
     requires 'List::MoreUtils';
     requires 'Module::CPANfile';
+    requires 'Perl::Strip';
 
     # fatpacking: these should be core, but we'll include them for good measure
     requires 'Cwd';

@@ -155,6 +155,7 @@
             "List::MoreUtils" : "0",
             "Module::CPANfile" : "0",
             "Module::CoreList" : "0",
+            "Perl::Strip" : "0",
             "Test::Pod" : "1.41",
             "Tie::File" : "0",
             "lib::core::only" : "0"

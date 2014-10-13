@@ -13,3 +13,4 @@ libapp-recordstream*
 /MANIFEST.SKIP.bak
 !META.json
 /local/
+/.fatpack-recs
