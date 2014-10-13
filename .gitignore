@@ -12,3 +12,4 @@ libapp-recordstream*
 /MANIFEST.bak
 /MANIFEST.SKIP.bak
 !META.json
+/local/
