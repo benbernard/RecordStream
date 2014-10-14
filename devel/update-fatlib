@@ -90,7 +90,22 @@ sub pack_modules {
     print "Packing $packlist\n";
   }
   $packer->packlists_to_tree($path, \@packlists);
-  print "Packed into $path\n";
+  print "Copied tree into $path\n";
+
+  # Sanity check what just happened
+  my %known_ok = (
+    "Tie::Hash::NamedCapture" => "in core >= 5.10 only; used by Date::Manip's DM6 interface, but we use DM5",
+    "overloading"             => "used internally by overload.pm on newer Perl versions; overload.pm is used by our dep Data::Dumper",
+    "deprecate"               => "used internally by newer Perl versions",
+    "parent"                  => "used internally by File::Temp on newer Perl versions",
+  );
+  for my $missed (sort grep { !-e "$path/$_" } @requires) {
+    my $mod = pm_to_mod($missed);
+    next if $known_ok{$mod};
+    my $status = grep($mod =~ /^$_/, @$modules)
+      ? "probably BROKEN" : "maybe ok?";
+    print "Did not copy traced module $missed ($status)\n"
+  }
 }
 
 sub exclude_modules {
