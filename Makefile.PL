@@ -96,6 +96,8 @@ my %WriteMakefileArgs = (
                   'doc/Examples.pod'           => '$(INST_MAN3DIR)/recs-examples.3',,
                   'doc/RecordStreamStory.pod'  => '$(INST_MAN3DIR)/recs-story.3' },,
     MAN1PODS => { map { m{doc/(.+)\.pod$} ? ($_ => "\$(INST_MAN1DIR)/$1.1") : () } grep { -f and not /recs-operation/ } <doc/recs-*.pod> },
+    depend   => { map { ($_ => "generate_pods") } grep { -f and not /recs-operation/ } <doc/recs-*.pod> },
+    PL_FILES => { 'generate_pods.pl' => 'generate_pods' },
 );
 
 my %FallbackPrereqs = (
