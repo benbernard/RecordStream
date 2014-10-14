@@ -33,6 +33,13 @@ run();
 sub run {
   my @modules = grep !in_lib(mod_to_pm($_)), find_requires();
 
+  # JSON::PP is core on 5.14+, so if we fatpack on a modern perl it won't be
+  # included unless we manually specify it here.  This only works when
+  # JSON::PP's CPAN version is newer than the core version, otherwise cpanm
+  # won't install it into local/ without the --reinstall option.  We'll deal
+  # with that when we get there.
+  push @modules, 'JSON::PP';
+
   # Some modules are required for packing since the tracing process is
   # limited to our local lib + core.
   my @for_packing = qw( App::FatPacker );
