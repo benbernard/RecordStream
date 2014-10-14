@@ -4,6 +4,7 @@ use App::RecordStream::Site;
 
 use strict;
 use warnings;
+use Module::Pluggable::Object;
 
 sub load_implementations
 {
@@ -11,50 +12,17 @@ sub load_implementations
 
   my $subtree = $registry_class->subtree();
 
-  for my $inc (@INC)
-  {
-    load_implementations_aux($inc . "/App/RecordStream/$subtree", "App/RecordStream/$subtree");
-  }
-
-  # Now load from sites, overriding lower priority with higher priority
+  # include sites, overriding lower priority with higher priority
   App::RecordStream::Site::bootstrap();
   my @sites = sort { $a->{'priority'} <=> $b->{'priority'} } App::RecordStream::Site::list_sites();
-  for my $site (@sites)
-  {
-    for my $inc (@INC)
-    {
-      my $rel = $site->{'path'} . "::$subtree";
-      $rel =~ s!::!\/!g;
-      my $root = "$inc/$rel";
-      load_implementations_aux($root, $rel);
-    }
-  }
-}
 
-sub load_implementations_aux
-{
-  my ($root, $rel) = @_;
-
-  if(opendir(DIR, $root))
-  {
-    my @ents = readdir(DIR);
-    closedir(DIR);
-    for my $ent (@ents)
-    {
-      if($ent eq "." || $ent eq "..")
-      {
-        next;
-      }
-
-      if($ent =~ /\.pm$/)
-      {
-        require $rel . "/" . $ent;
-        next;
-      }
-
-      load_implementations_aux($root . "/" . $ent, $rel . "/" . $ent);
-    }
-  }
+  Module::Pluggable::Object->new(
+    require     => 1,
+    search_path => [
+      "App::RecordStream::$subtree",
+      map { "$_->{path}::$subtree" } @sites
+    ],
+  )->plugins;
 }
 
 {

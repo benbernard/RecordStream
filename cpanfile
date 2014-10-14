@@ -11,6 +11,7 @@ requires 'FindBin';
 requires 'Getopt::Long';
 requires 'IO::String';
 requires 'JSON::MaybeXS', '1.002005';
+requires 'Module::Pluggable::Object', '5.1';
 requires 'Scalar::Util';
 requires 'Text::Autoformat';
 requires 'Text::CSV';
