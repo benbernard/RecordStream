@@ -33,3 +33,5 @@ All core operations should also be listed by running:
 and core aggregators should function:
 
     $ perl -Mlib::core::only recs collate -a count <<<'{}'
+
+See also tests/RecordStream/recs-fatpack.t.
