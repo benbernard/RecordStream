@@ -1,0 +1,20 @@
+#!/bin/sh
+# Partially based on maint/build.pl
+# from https://github.com/miyagawa/cpanminus (1.7014-4-g4064399),
+# licensed under the Artistic 1.0 license.
+mkdir .fatpack-recs
+cp -r fatlib lib .fatpack-recs/
+
+cd .fatpack-recs
+
+echo "Stripping Perl libs (this can take a while, pass -v to see progress)"
+find fatlib lib -type f -name '*.pm' | xargs perlstrip --cache "$@"
+
+echo Fatpacking ./bin/recs into ./recs
+fatpack file ../bin/recs > ../recs
+
+cd ..
+
+chmod 0755 recs
+
+rm -r .fatpack-recs

@@ -9,7 +9,7 @@ use base qw(App::RecordStream::Operation);
 
 use App::RecordStream::Record;
 
-use JSON;
+use JSON::MaybeXS;
 
 sub init {
   my ($this, $args) = @_;

@@ -5,8 +5,6 @@ use warnings;
 
 use File::Basename qw(basename);
 
-require 'BuildTools.recbuildtool';
-
 $ENV{'PERL5LIB'} .= ':lib';
 
 # Don't let the actual terminal size affect POD everytime we generate it.
@@ -15,11 +13,7 @@ $ENV{'PERL5LIB'} .= ':lib';
 $ENV{'COLUMNS'} = 80;
 $ENV{'LINES'}   = 50;
 
-my @scripts = BuildTools::get_bin_scripts();
-
-foreach my $script (@scripts) {
-  generate_pod("bin/$script");
-}
+generate_pod($_) for grep { not /recs-operation/ } <bin/recs-*>;
 
 sub generate_pod {
   my $script = shift;

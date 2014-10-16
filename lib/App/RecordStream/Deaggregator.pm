@@ -1,7 +1,7 @@
 package App::RecordStream::Deaggregator;
 
 use strict;
-use lib;
+use warnings;
 
 use App::RecordStream::BaseRegistry;
 

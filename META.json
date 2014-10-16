@@ -1,0 +1,225 @@
+{
+   "abstract" : "recs - A system for command-line analysis of data",
+   "author" : [
+      "Ben Bernard <perlhacker@benjaminbernard.com>",
+      "Keith Amling <keith.amling@gmail.com>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Dist::Milla version v1.0.8, Dist::Zilla version 5.020, CPAN::Meta::Converter version 2.142690",
+   "license" : [
+      "mit"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "App-RecordStream",
+   "no_index" : {
+      "directory" : [
+         "devel",
+         "local",
+         "fatlib",
+         "tests"
+      ],
+      "package" : [
+         "KeyspecRecorder",
+         "MockCursor",
+         "RecordingArray",
+         "RecordingHash"
+      ]
+   },
+   "optional_features" : {
+      "recs-fromapache" : {
+         "description" : "Apache log parsing",
+         "prereqs" : {
+            "runtime" : {
+               "requires" : {
+                  "Apache::Log::Parser" : "0"
+               },
+               "suggests" : {
+                  "Woothee" : "0"
+               }
+            }
+         }
+      },
+      "recs-fromdb and recs-todb" : {
+         "description" : "SQL database support",
+         "prereqs" : {
+            "runtime" : {
+               "requires" : {
+                  "DBI" : "0",
+                  "Tie::IxHash" : "0"
+               },
+               "suggests" : {
+                  "DBD::SQLite" : "0"
+               }
+            }
+         }
+      },
+      "recs-frommongo" : {
+         "description" : "MongoDB data source",
+         "prereqs" : {
+            "runtime" : {
+               "requires" : {
+                  "JSON::PP" : "0",
+                  "MongoDB" : "0"
+               }
+            }
+         }
+      },
+      "recs-fromps" : {
+         "description" : "Process list data source",
+         "prereqs" : {
+            "runtime" : {
+               "requires" : {
+                  "Proc::ProcessTable" : "0"
+               }
+            }
+         }
+      },
+      "recs-fromtcpdump" : {
+         "description" : "Network packet capture parsing",
+         "prereqs" : {
+            "runtime" : {
+               "requires" : {
+                  "Net::DNS::Packet" : "0",
+                  "Net::Pcap" : "0",
+                  "NetPacket::ARP" : "0",
+                  "NetPacket::Ethernet" : "0",
+                  "NetPacket::IP" : "0",
+                  "NetPacket::TCP" : "0",
+                  "NetPacket::UDP" : "0"
+               }
+            }
+         }
+      },
+      "recs-fromxferlog" : {
+         "description" : "Transfer (xfer) log parsing",
+         "prereqs" : {
+            "runtime" : {
+               "requires" : {
+                  "Net::FTPServer::XferLog" : "0"
+               }
+            }
+         }
+      },
+      "recs-fromxml and recs-fromatomfeeds" : {
+         "description" : "XML/Atom sources",
+         "prereqs" : {
+            "runtime" : {
+               "requires" : {
+                  "HTTP::Request" : "0",
+                  "LWP::UserAgent" : "0",
+                  "List::MoreUtils" : "0",
+                  "XML::Twig" : "0"
+               }
+            }
+         }
+      },
+      "recs-togdgraph" : {
+         "description" : "GD graph output",
+         "prereqs" : {
+            "runtime" : {
+               "requires" : {
+                  "GD::Graph" : "0",
+                  "GD::Graph::bars" : "0",
+                  "GD::Graph::lines" : "0",
+                  "GD::Graph::points" : "0"
+               }
+            }
+         }
+      }
+   },
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "App::FatPacker" : "v0.10.2",
+            "Cwd" : "0",
+            "Dist::Milla" : "v1.0.8",
+            "Dist::Zilla::Plugin::CustomLicense" : "0",
+            "Dist::Zilla::Plugin::ExecDir" : "0",
+            "Dist::Zilla::Plugin::MakeMaker::Awesome" : "0",
+            "Dist::Zilla::Plugin::MetaNoIndex" : "0",
+            "Dist::Zilla::Plugin::MetaResources" : "0",
+            "Dist::Zilla::Plugin::PruneFiles" : "0",
+            "Dist::Zilla::Plugin::Run::BeforeBuild" : "0",
+            "Dist::Zilla::PluginBundle::Filter" : "0",
+            "File::Find" : "0",
+            "File::Path" : "0",
+            "Getopt::Long" : "0",
+            "List::MoreUtils" : "0",
+            "Module::CPANfile" : "0",
+            "Module::CoreList" : "0",
+            "Perl::Strip" : "0",
+            "Test::Pod" : "1.41",
+            "Tie::File" : "0",
+            "lib::core::only" : "0"
+         }
+      },
+      "runtime" : {
+         "recommends" : {
+            "Cpanel::JSON::XS" : "0",
+            "Term::ReadKey" : "0",
+            "Text::CSV_XS" : "0.99"
+         },
+         "requires" : {
+            "Carp" : "0",
+            "Cwd" : "0",
+            "Data::Dumper" : "0",
+            "Date::Manip" : "0",
+            "File::Basename" : "0",
+            "File::Glob" : "0",
+            "File::Temp" : "0",
+            "FindBin" : "0",
+            "Getopt::Long" : "0",
+            "IO::String" : "0",
+            "JSON::MaybeXS" : "1.002005",
+            "Module::Pluggable::Object" : "5.1",
+            "Scalar::Util" : "0",
+            "Text::Autoformat" : "0",
+            "Text::CSV" : "0",
+            "Tie::Array" : "0",
+            "Tie::Hash" : "0"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::More" : "0"
+         }
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "mailto" : "bug-App-RecordStream@rt.cpan.org",
+         "web" : "https://rt.cpan.org/Dist/Display.html?Name=App-RecordStream"
+      },
+      "homepage" : "https://github.com/tsibley/RecordStream",
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/benbernard/RecordStream.git",
+         "web" : "https://github.com/benbernard/RecordStream"
+      }
+   },
+   "version" : "4.0.7",
+   "x_contributors" : [
+      "Ben Bernard <github@benjaminbernard.com>",
+      "Brandon Forehand <b4hand@users.sf.net>",
+      "Eli Lindsey <eli@siliconsprawl.com>",
+      "Keith Amling <amling@palantir.com>",
+      "Pat McIlroy <itgpmc@gmail.com>",
+      "Pax Unix <paxunix@gmail.com>",
+      "Punya Biswal <p>",
+      "Shawn Halpenny <paxunix@gmail.com>",
+      "Thomas Sibley <tsibley@cpan.org>",
+      "Tomohiro Hosaka <bokutin@bokut.in>",
+      "Torsten Blix <torsten.blix@gmail.com>",
+      "infamouspat <itgpmc@gmail.com>"
+   ]
+}
+

@@ -1,0 +1,140 @@
+#!/usr/bin/env perl
+# Based on maint/upgrade-fatlib.pl
+# from https://github.com/miyagawa/cpanminus (1.7014-4-g4064399),
+# licensed under the Artistic 1.0 license.
+use strict;
+use warnings;
+use App::FatPacker ();
+use File::Path;
+use File::Find;
+use Module::CoreList;
+use Module::CPANfile;   # ensures we die early if no cpanfile-dump
+use Cwd;
+use Tie::File;
+use Config;
+use List::MoreUtils 'uniq';
+use Getopt::Long;
+
+# Now that we've loaded what we need, remove all non-core @INC paths and add
+# our minimal pure-Perl local lib; also applied to fatpack trace with PERL5OPT
+use lib::core::only;
+use lib 'local/lib/perl5';
+
+# Avoids FatPacker tracing the attempted Text::CSV_XS load
+$ENV{PERL_TEXT_CSV} = 'Text::CSV_PP';
+
+my %opt;
+GetOptions(
+  \%opt,
+  'upgrade-local',
+);
+run();
+
+sub run {
+  my @modules = grep !in_lib(mod_to_pm($_)), find_requires();
+
+  # JSON::PP is core on 5.14+, so if we fatpack on a modern perl it won't be
+  # included unless we manually specify it here.  This only works when
+  # JSON::PP's CPAN version is newer than the core version, otherwise cpanm
+  # won't install it into local/ without the --reinstall option.  We'll deal
+  # with that when we get there.
+  push @modules, 'JSON::PP';
+
+  # Some modules are required for packing since the tracing process is
+  # limited to our local lib + core.
+  my @for_packing = qw( App::FatPacker );
+
+  # Use my break-cc wrapper if we run into deps which don't respect PUREPERL_ONLY (--pp).
+  # -trs, 13 Oct 2014
+  my @cpanm = qw(cpanm -L local --pp);
+  if ($opt{'upgrade-local'}) {
+    # by excluding core modules, we don't force upgrade them (and will
+    # fatpack whatever version is in core for the version of perl running)
+    push @cpanm, grep !is_core($_), @modules, @for_packing;
+  } else {
+    push @cpanm, qw(--installdeps --without-recommends --without-suggests .);
+  }
+  system(@cpanm) == 0
+    or die "cpanm failed (exit @{[$? >> 8]}): $!";
+
+  pack_modules(cwd . "/fatlib", \@modules, []);
+
+  rmtree("fatlib/$Config{archname}");
+  rmtree("fatlib/POD2");
+
+  find({ wanted => sub { unlink $_ if /\.pod$/ }, no_chdir => 1 }, "fatlib");
+}
+
+sub find_requires {
+  uniq map { chomp; $_ }
+  `cpanfile-dump --no-configure --no-build --no-test --no-recommends --no-suggests`
+}
+
+sub pack_modules {
+  my($path, $modules, $no_trace) = @_;
+
+  $modules = exclude_modules($modules, $no_trace);
+
+  # fatpack tracing spawns a new perl and we need to force modules to operate
+  # in isolation of our pure-Perl local lib + core libs.
+  local $ENV{PERL5OPT} = "-Mlib::core::only -Mlib=local/lib/perl5";
+
+  my $packer = App::FatPacker->new;
+  my @requires = grep !is_core(pm_to_mod($_)), grep /\.pm$/, split /\n/,
+    $packer->trace(use => $modules, args => ['-e', 1]);
+  push @requires, map mod_to_pm($_), @$no_trace;
+
+  # fatpack tree gets (silently) unhappy when the packlist paths aren't absolute
+  my @packlists = map { Cwd::abs_path($_) } $packer->packlists_containing(\@requires);
+  for my $packlist (@packlists) {
+    print "Packing $packlist\n";
+  }
+  $packer->packlists_to_tree($path, \@packlists);
+  print "Copied tree into $path\n";
+
+  # Sanity check what just happened
+  my %known_ok = (
+    "Tie::Hash::NamedCapture" => "in core >= 5.10 only; used by Date::Manip's DM6 interface, but we use DM5",
+    "overloading"             => "used internally by overload.pm on newer Perl versions; overload.pm is used by our dep Data::Dumper",
+    "deprecate"               => "used internally by newer Perl versions",
+    "parent"                  => "used internally by File::Temp on newer Perl versions",
+  );
+  for my $missed (sort grep { !-e "$path/$_" } @requires) {
+    my $mod = pm_to_mod($missed);
+    next if $known_ok{$mod};
+    my $status = grep($mod =~ /^$_/, @$modules)
+      ? "probably BROKEN" : "maybe ok?";
+    print "Did not copy traced module $missed ($status)\n"
+  }
+}
+
+sub exclude_modules {
+  my($modules, $except) = @_;
+  my %exclude = map { $_ => 1 } @$except;
+  [ grep !$exclude{$_}, @$modules ];
+}
+
+sub mod_to_pm {
+  local $_ = shift;
+  s!::!/!g;
+  "$_.pm";
+}
+
+sub pm_to_mod {
+  local $_ = shift;
+  s!/!::!g;
+  s/\.pm$//;
+  $_;
+}
+
+sub in_lib {
+  my $file = shift;
+  -e "lib/$file";
+}
+
+# TODO: doesn't account for modules which are removed from core after 5.8.1...
+# -trs, 12 Oct 2014
+sub is_core {
+  my $module = shift;
+  exists $Module::CoreList::version{5.008001}{$module};
+}

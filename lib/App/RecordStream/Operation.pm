@@ -9,7 +9,6 @@ use Carp;
 use FindBin qw($Script $RealScript);
 use Getopt::Long;
 use Text::Autoformat;
-use Term::ReadKey;
 
 use App::RecordStream::Clumper;
 use App::RecordStream::DomainLanguage;
@@ -162,9 +161,13 @@ sub _options_format {
   sub get_terminal_size {
     if ( ! $size_initialized ) {
       $size_initialized = 1;
-      eval {
-        $size = (Term::ReadKey::GetTerminalSize())[0];
-      };
+      if (eval { require Term::ReadKey; 1 }) {
+        eval {
+          $size = (Term::ReadKey::GetTerminalSize())[0];
+        };
+      } elsif ($ENV{COLUMNS}) {
+        $size = $ENV{COLUMNS};
+      }
     }
     return $size;
   }
@@ -530,9 +533,11 @@ sub clumping_help {
 # can/should be a symlink to recs-operation itself or just this one line: use
 # App::RecordStream::Operation; App::RecordStream::Operation::main();
 sub main {
+  my $command = shift || $Script;
+
   $| = 1;
 
-  if ( $Script eq 'recs-operation' ) {
+  if ( $command eq 'recs-operation' ) {
     print <<MESSAGE;
 WARNING!
 recs-operation invoked directly!
@@ -551,7 +556,7 @@ MESSAGE
   my @args = @ARGV;
   @ARGV = ();
 
-  my $op = App::RecordStream::Operation::create_operation($Script, \@args);
+  my $op = App::RecordStream::Operation::create_operation($command, \@args);
 
   if ( $op->wants_input() ) {
     @ARGV = @args;
