@@ -193,13 +193,12 @@
          }
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
          "mailto" : "bug-App-RecordStream@rt.cpan.org",
          "web" : "https://rt.cpan.org/Dist/Display.html?Name=App-RecordStream"
       },
-      "homepage" : "https://github.com/tsibley/RecordStream",
       "repository" : {
          "type" : "git",
          "url" : "https://github.com/benbernard/RecordStream.git",
