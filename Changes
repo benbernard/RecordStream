@@ -1,5 +1,13 @@
 {{$NEXT}}
 
+4.0.8  2014-10-17 15:57:12 PDT - TRIAL DEVELOPMENT RELEASE
+    * Authoring tooling switched to Dist::Milla
+    * Optional dependencies are now provided in the metadata; use cpanm's
+      --with-feature=... option to install them
+    * New git-like recs command which dispatches to operations (xform, fromcsv, etc)
+    * New entirely self-contained ("fatpacked") version of new recs command
+      which requires only libraries bundled with core Perl 5.8+
+
 4.0.7 - 2014-08-16
 
     * Compatibility with Perl 5.21, the development series which will lead to 5.22

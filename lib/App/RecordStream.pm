@@ -3,7 +3,7 @@ use warnings;
 
 package App::RecordStream;
 
-our $VERSION = "4.0.7";
+our $VERSION = "4.0.8";
 
 =head1 NAME
 
