@@ -6,13 +6,16 @@ recs-tocsv
 
  Help from: --help-basic:
  Usage: recs-tocsv <options> [files]
-    This script outputs csv formatted recs.
+    This script outputs csv formatted recs. With the --delim option, it can
+    output tsv or other line-based formats with character-separated fields.
  
  Arguments:
     --noheader|--nh              Do not output headers on the first line
     --key|-k <keyspec>           Comma separated keys to output. Defaults to all
                                  fields in first record. May be a keyspec, may be
                                  a keyspec group
+    --delim|-d <character>       Field delimiter to use when outputting lines
+                                 (default ',').
     --filename-key|fk <keyspec>  Add a key with the source filename (if no
                                  filename is applicable will put NONE)
  

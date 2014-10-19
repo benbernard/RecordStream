@@ -1,4 +1,7 @@
 {{$NEXT}}
+    [Features]
+        * fromcsv, tocsv: add a --delim option to use a field delimiter other
+          than commas (Thomas Sibley)
 
 4.0.8  2014-10-17 15:57:12 PDT - TRIAL DEVELOPMENT RELEASE
     * Authoring tooling switched to Dist::Milla

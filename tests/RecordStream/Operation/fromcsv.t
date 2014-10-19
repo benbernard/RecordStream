@@ -1,4 +1,4 @@
-use Test::More qw(no_plan);
+use Test::More;
 use App::RecordStream::Test::Tester;
 
 BEGIN { use_ok( 'App::RecordStream::Operation::fromcsv' ) };
@@ -59,3 +59,15 @@ $output = <<OUTPUT;
 {"zip":["foo\\nloo","bar loo","baz"]}
 OUTPUT
 $tester->test_stdin(['--key', 'zip/#0,zip/#1,zip/#2'], $input, $output);
+
+$input = <<INPUT;
+foo;bar;baz
+"foo loo";"bar loo"; baz
+INPUT
+$output = <<OUTPUT;
+{"1":"bar","0":"foo","2":"baz"}
+{"1":"bar loo","0":"foo loo","2":"baz"}
+OUTPUT
+$tester->test_stdin(['--delim', ';'], $input, $output);
+
+done_testing;

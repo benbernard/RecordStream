@@ -15,16 +15,24 @@ sub init {
 
   my $header = 1;
   my $key_groups = App::RecordStream::KeyGroups->new();
+  my $delim = ',';
   my $spec = {
     "key|k=s"     => sub { $key_groups->add_groups($_[1]); },
     "noheader|nh" => sub { $header = 0 },
+    "delim|d=s"   => \$delim,
   };
 
   $this->parse_options($args, $spec);
   $this->{'KEY_GROUPS'} = $key_groups;
 
-  # Extra arguments are to handle new lines in field values
-  $this->{'CSV'}     = Text::CSV->new({ binary => 1 });
+  die "Delimiter must be a single character\n\n"
+    unless length $delim == 1;
+
+  # binary => 1 is to handle new lines in field values
+  $this->{'CSV'} = Text::CSV->new({
+      binary    => 1,
+      sep_char  => $delim,
+  });
 
   $this->{'FIRST'}   = 1;
   $this->{'HEADERS'} = $header;
@@ -81,6 +89,7 @@ sub usage {
   my $options = [
     ['noheader|--nh', 'Do not output headers on the first line'],
     ['key|-k <keyspec>', 'Comma separated keys to output.  Defaults to all fields in first record.  May be a keyspec, may be a keyspec group'],
+    ['delim|-d <character>', "Field delimiter to use when outputting lines (default ',')."],
   ];
 
   my $args_string = $this->options_string($options);
@@ -88,7 +97,8 @@ sub usage {
   return <<USAGE;
 Usage: recs-tocsv <options> [files]
    __FORMAT_TEXT__
-   This script outputs csv formatted recs.
+   This script outputs csv formatted recs.  With the --delim option, it can
+   output tsv or other line-based formats with character-separated fields.
    __FORMAT_TEXT__
 
 Arguments:

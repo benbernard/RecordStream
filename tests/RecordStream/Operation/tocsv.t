@@ -1,4 +1,4 @@
-use Test::More qw(no_plan);
+use Test::More;
 use App::RecordStream::Test::OperationHelper;
 
 use strict;
@@ -67,3 +67,21 @@ App::RecordStream::Test::OperationHelper->test_output(
   $stream,
   $solution,
 );
+
+$solution = <<SOLUTION;
+foo\tzoo
+1\tbiz1
+2\tbiz2
+3\tbiz3
+4\tbiz4
+5\tbiz5
+SOLUTION
+
+App::RecordStream::Test::OperationHelper->test_output(
+  'tocsv',
+  ['--key', 'foo,zoo', '--delim', "\t"],
+  $stream,
+  $solution,
+);
+
+done_testing;

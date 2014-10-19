@@ -6,8 +6,10 @@ recs-fromcsv
 
  Help from: --help-basic:
  Usage: recs-fromcsv <args> [<files>]
-    Each line of input (or lines of <files>) is split on csv to produce an output
-    record. Fields are named numerically (0, 1, etc.) or as given by --field.
+    Each line of input (or lines of <files>) is split on commas to produce an
+    output record. Fields are named numerically (0, 1, etc.), or as given by --
+    field, or as read by --header. Lines may be split on delimiters other than
+    commas by providing --delim.
  
  Arguments:
     --key|k <keys>               Comma separated list of field names. May be
@@ -17,6 +19,8 @@ recs-fromcsv
                                  (quotes inside qutoes), or allow the use of
                                  escape characters when not strictly needed. (not
                                  recommended, for most cases)
+    --delim|-d <character>       Field delimiter to use when reading input lines
+                                 (default ',').
     --filename-key|fk <keyspec>  Add a key with the source filename (if no
                                  filename is applicable will put NONE)
  
@@ -30,6 +34,8 @@ recs-fromcsv
        recs-fromcsv --field x,y
     Parse data with a header line specifying fields
        recs-fromcsv --header
+    Parse tsv data (using bash syntax for a literal tab)
+       recs-fromcsv --delim $'\t'
  
  Help from: --help-keyspecs:
    KEY SPECS
