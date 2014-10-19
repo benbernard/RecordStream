@@ -7,10 +7,11 @@ use warnings;
 
 use base qw(App::RecordStream::Operation);
 
-use LWP::UserAgent;
-use XML::Twig;
-
 use App::RecordStream::Record;
+
+use App::RecordStream::OptionalRequire 'LWP::UserAgent';
+use App::RecordStream::OptionalRequire 'XML::Twig';
+BEGIN { App::RecordStream::OptionalRequire::require_done() }
 
 sub init
 {
