@@ -14,3 +14,4 @@ libapp-recordstream*
 !META.json
 /local/
 /.fatpack-recs
+/.build
