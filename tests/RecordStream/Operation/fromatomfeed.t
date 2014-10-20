@@ -1,7 +1,6 @@
-use Test::More 'no_plan';
+use Test::More;
+use App::RecordStream::Test::OperationHelper 'fromatomfeed';
 use App::RecordStream::Test::Tester;
-
-BEGIN { use_ok( 'App::RecordStream::Operation::fromatomfeed' ) };
 
 my $output1 = <<OUTPUT;
 {"dc:creator":"author1","updated":"2007-06-06T07:00:00Z","id":"http://localhost/entry1","author":{"name":"author1"},"title":"Entry 1"}
@@ -33,3 +32,5 @@ $tester->no_input_test(['--max', '1', '--nofollow', 'file:tests/files/testFeed1'
 $tester->no_input_test(['--max', '2',               'file:tests/files/testFeed1'], $output2);
 $tester->no_input_test(['--max', '3',               'file:tests/files/testFeed1'], $output3);
 $tester->no_input_test(['--max', '3', '--nofollow', 'file:tests/files/testFeed1'], $output2);
+
+done_testing;

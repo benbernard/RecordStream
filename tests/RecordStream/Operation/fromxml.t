@@ -1,10 +1,8 @@
-use Test::More qw(no_plan);
-use App::RecordStream::Test::OperationHelper;
+use Test::More;
+use App::RecordStream::Test::OperationHelper 'fromxml';
 
 use strict;
 use warnings;
-
-BEGIN { use_ok( 'App::RecordStream::Operation::fromxml' ) };
 
 my $solution = <<SOLUTION;
 {"value":"10.0.0.101","element":"address"}
@@ -64,3 +62,5 @@ App::RecordStream::Test::OperationHelper->do_match(
     $solution3,
   );
 }
+
+done_testing;

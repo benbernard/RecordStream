@@ -5,7 +5,9 @@ our $VERSION = "4.0.8";
 use strict;
 use warnings;
 
-use DBI;
+use App::RecordStream::OptionalRequire 'DBI';
+BEGIN { App::RecordStream::OptionalRequire::require_done() }
+
 use Data::Dumper;
 use Getopt::Long;
 
