@@ -116,6 +116,16 @@ sub matches {
     }
   }
 
+  # Find the call level of the originating test file for better diagnostic
+  # reporting if we fail tests below
+  my ($level_to_testfile, $file) = (0, (caller(0))[1]);
+  while (defined $file and $file !~ /\.t$/) {
+    $level_to_testfile++;
+    $file = (caller($level_to_testfile))[1];
+  }
+
+  local $Test::Builder::Level = $Test::Builder::Level + $level_to_testfile + 1;
+
   my $is_ok = 1;
   for my $record (@$results) {
     $is_ok = 0 if ( ! ok(UNIVERSAL::isa($record, 'App::RecordStream::Record'), "Record is a App::RecordStream::Record") );
