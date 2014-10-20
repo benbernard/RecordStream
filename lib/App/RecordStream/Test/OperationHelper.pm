@@ -8,6 +8,26 @@ use warnings;
 use Test::More;
 use App::RecordStream::InputStream;
 use App::RecordStream::OutputStream;
+use Carp qw(croak);
+
+sub import {
+  my $class = shift;
+
+  require App::RecordStream::OptionalRequire;
+  local $App::RecordStream::OptionalRequire::PRINT_WARNING = 0;
+
+  for my $op (@_) {
+    croak "invalid package name: '$op'"
+      unless $op =~ /^[a-z0-9_]+$/;
+    if (not eval "require App::RecordStream::Operation::$op; 1;") {
+      if ($@ =~ /Please install missing modules/) {
+        plan skip_all => "Missing deps for operation $op";
+      } else {
+        die $@;
+      }
+    }
+  }
+}
 
 sub new {
   my $class = shift;
