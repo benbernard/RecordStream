@@ -8,7 +8,7 @@ cp -r fatlib lib .fatpack-recs/
 cd .fatpack-recs
 
 echo "Stripping Perl libs (this can take a while, pass -v to see progress)"
-find fatlib lib -type f -name '*.pm' | xargs perlstrip --cache "$@"
+find fatlib lib -type f -name '*.pm' | xargs perlstrip --size --cache "$@"
 
 echo Fatpacking ./bin/recs into ./recs
 fatpack file ../bin/recs > ../recs
