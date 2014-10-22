@@ -80,7 +80,7 @@ my %WriteMakefileArgs = (
     "Tie::Hash" => 0
   },
   "TEST_REQUIRES" => {
-    "Test::More" => 0
+    "Test::More" => "0.88"
   },
   "VERSION" => "4.0.8",
   "test" => {
@@ -113,7 +113,7 @@ my %FallbackPrereqs = (
   "JSON::MaybeXS" => "1.002005",
   "Module::Pluggable::Object" => "5.1",
   "Scalar::Util" => 0,
-  "Test::More" => 0,
+  "Test::More" => "0.88",
   "Text::Autoformat" => 0,
   "Text::CSV" => 0,
   "Tie::Array" => 0,

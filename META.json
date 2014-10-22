@@ -189,7 +189,7 @@
       },
       "test" : {
          "requires" : {
-            "Test::More" : "0"
+            "Test::More" : "0.88"
          }
       }
    },
@@ -199,6 +199,7 @@
          "mailto" : "bug-App-RecordStream@rt.cpan.org",
          "web" : "https://rt.cpan.org/Dist/Display.html?Name=App-RecordStream"
       },
+      "homepage" : "https://github.com/benbernard/RecordStream",
       "repository" : {
          "type" : "git",
          "url" : "https://github.com/benbernard/RecordStream.git",
