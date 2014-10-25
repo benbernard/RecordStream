@@ -30,7 +30,11 @@ App::RecordStream::Test::OperationHelper->do_match(
   $output,
 );
 
-$output = <<OUTPUT;
+SKIP: {
+  skip "Text::CSV_PP doesn't currently handle embedded newlines + allow_loose_quotes (i.e. recs-fromcsv without --strict option)" => 1
+    unless $INC{'Text/CSV_XS.pm'};
+
+  $output = <<OUTPUT;
 {"1":"two","0":"one","2":"three","fn":"tests/files/data.csv"}
 {"1":"bar","0":"foo","2":"baz","fn":"tests/files/data.csv"}
 {"1":"bar loo","0":"foo\\nloo","2":"baz","fn":"tests/files/data.csv"}
@@ -39,10 +43,11 @@ $output = <<OUTPUT;
 {"1":"bar loo","0":"foo\\nloo","2":"baz","fn":"tests/files/data2.csv"}
 OUTPUT
 
-use App::RecordStream::Operation::xform;
-App::RecordStream::Test::OperationHelper->do_match(
-  'fromcsv',
-  ['tests/files/data.csv', 'tests/files/data2.csv', '--filename-key', 'fn'],
-  '',
-  $output,
-);
+  use App::RecordStream::Operation::xform;
+  App::RecordStream::Test::OperationHelper->do_match(
+    'fromcsv',
+    ['tests/files/data.csv', 'tests/files/data2.csv', '--filename-key', 'fn'],
+    '',
+    $output,
+  );
+}

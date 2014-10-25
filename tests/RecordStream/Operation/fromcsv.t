@@ -49,16 +49,21 @@ $output = <<OUTPUT;
 OUTPUT
 $tester->test_stdin(['--key', 'zip/#0,zip/#1,zip/#2'], $input, $output);
 
-$input = <<INPUT;
+SKIP: {
+  skip "Text::CSV_PP doesn't currently handle embedded newlines + allow_loose_quotes (i.e. recs-fromcsv without --strict option)" => 1
+    unless $INC{'Text/CSV_XS.pm'};
+
+  $input = <<INPUT;
 foo,bar,baz
 "foo
 loo","bar loo", baz
 INPUT
-$output = <<OUTPUT;
+  $output = <<OUTPUT;
 {"zip":["foo", "bar", "baz"]}
 {"zip":["foo\\nloo","bar loo","baz"]}
 OUTPUT
-$tester->test_stdin(['--key', 'zip/#0,zip/#1,zip/#2'], $input, $output);
+  $tester->test_stdin(['--key', 'zip/#0,zip/#1,zip/#2'], $input, $output);
+}
 
 $input = <<INPUT;
 foo;bar;baz
