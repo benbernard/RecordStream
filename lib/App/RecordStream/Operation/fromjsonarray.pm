@@ -58,8 +58,7 @@ sub get_records_from_handle {
   my $fields = $this->{'FIELDS'};
   my $has_fields = scalar @$fields;
 
-  local $/;
-  my $contents = <$fh>;
+  my $contents = do { local $/; <$fh> };
 
   my $items = $json->decode($contents);
 
