@@ -60,9 +60,9 @@ sub get_records_from_handle {
 
   my $contents = do { local $/; <$fh> };
 
-  my $items = $json->decode($contents);
+  my @arrays = $json->incr_parse($contents);
 
-  for my $item (@$items) {
+  for my $item (map { @$_ } @arrays) {
     $item = App::RecordStream::Record->new($item);
 
     my $record = $item;
