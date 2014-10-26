@@ -1,7 +1,5 @@
-use Test::More qw(no_plan);
-use App::RecordStream::Test::OperationHelper;
-
-BEGIN { use_ok( 'App::RecordStream::Operation::fromdb' ) };
+use Test::More;
+use App::RecordStream::Test::OperationHelper 'fromdb';
 
 my $solution = <<SOLUTION;
 {"foo":"1","id":1}
@@ -37,3 +35,4 @@ App::RecordStream::Test::OperationHelper->do_match(
   $solution,
 );
 
+done_testing;

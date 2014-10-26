@@ -8,10 +8,12 @@ use warnings;
 use base qw(App::RecordStream::Operation);
 
 use App::RecordStream::Record;
-use HTTP::Request;
-use LWP::UserAgent;
-use List::MoreUtils qw( uniq );
-use XML::Twig;
+
+use App::RecordStream::OptionalRequire 'HTTP::Request';
+use App::RecordStream::OptionalRequire 'LWP::UserAgent';
+use App::RecordStream::OptionalRequire 'List::MoreUtils', qw(uniq);
+use App::RecordStream::OptionalRequire 'XML::Twig';
+BEGIN { App::RecordStream::OptionalRequire::require_done() }
 
 sub init {
   my $this = shift;

@@ -7,10 +7,11 @@ use warnings;
 
 use base qw(App::RecordStream::Operation);
 
-use DBI;
-use Data::Dumper;
-use Tie::IxHash;
+use App::RecordStream::OptionalRequire 'DBI';
+use App::RecordStream::OptionalRequire 'Tie::IxHash';
+BEGIN { App::RecordStream::OptionalRequire::require_done() }
 
+use Data::Dumper;
 use App::RecordStream::DBHandle;
 use App::RecordStream::Record;
 

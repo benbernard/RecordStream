@@ -7,7 +7,8 @@ use warnings;
 
 use base qw(App::RecordStream::Operation);
 
-use DBI;
+use App::RecordStream::OptionalRequire 'DBI';
+BEGIN { App::RecordStream::OptionalRequire::require_done() }
 
 use App::RecordStream::DBHandle;
 use App::RecordStream::Record;
