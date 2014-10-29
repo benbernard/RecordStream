@@ -1,22 +1,8 @@
 use strict;
 use warnings;
+use Test::More;
+use App::RecordStream::Test::OperationHelper 'fromapache';
 use App::RecordStream::Test::Tester;
-
-BEGIN {
-  eval {
-    require Apache::Log::Parser;
-  };
-
-  if ( $@ ) {
-    require Test::More;
-    import Test::More skip_all => 'Missing Apache::Log::Parser Modules!';
-  }
-  else {
-    require Test::More;
-    import Test::More qw(no_plan);
-    use_ok( 'App::RecordStream::Operation::fromapache' );
-  }
-};
 
 my $tester = App::RecordStream::Test::Tester->new('fromapache');
 
@@ -98,3 +84,5 @@ eval {
   $tester->test_input(['--fast', '["common"'], $input, $output);
 };
 like $@, qr/^eval of option fast failed\. syntax error at/;
+
+done_testing;
