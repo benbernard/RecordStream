@@ -3,6 +3,8 @@ use strict;
 use warnings;
 no warnings 'exec';
 
+our $VERSION;
+
 use App::RecordStream;
 use App::RecordStream::Operation;
 use File::Basename 'basename';
@@ -74,7 +76,7 @@ sub _path_ops {
 }
 
 sub version {
-  print "recs/$App::RecordStream::VERSION";
+  print "recs/" . ($VERSION || $App::RecordStream::VERSION);
   print " (fatpacked)" if grep { ref =~ /^FatPacked/ } @INC;
   print "\n";
   exit;
