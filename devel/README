@@ -1,9 +1,9 @@
 Normally running
 
-    $ milla build --no-tgz && milla clean
+    $ dzil build --no-tgz && dzil clean
     
     # ...or if you have Dist::Zilla::App::Command::update installed:
-    $ milla update
+    $ dzil update
 
 will build a fatpacked version of recs for you.  You can also run the following
 yourself:
