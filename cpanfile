@@ -60,6 +60,7 @@ on 'develop' => sub {
     requires 'Dist::Zilla::Plugin::PruneCruft';
     requires 'Dist::Zilla::Plugin::ReadmeAnyFromPod';
     requires 'Dist::Zilla::Plugin::ReversionOnRelease';
+    requires 'Dist::Zilla::Plugin::Run::AfterRelease', '0.027';
     requires 'Dist::Zilla::Plugin::Run::BeforeBuild';
     requires 'Dist::Zilla::Plugin::ShareDir';
     requires 'Dist::Zilla::Plugin::TestRelease';
