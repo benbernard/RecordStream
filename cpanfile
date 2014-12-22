@@ -33,6 +33,9 @@ on 'test' => sub {
 
 on 'develop' => sub {
     requires 'Dist::Zilla';
+
+    # Generated with devel/authordeps.  It's useful to include them here with
+    # the rest of our deps.
     requires 'Dist::Zilla::Plugin::CheckChangesHasContent';
     requires 'Dist::Zilla::Plugin::ConfirmRelease';
     requires 'Dist::Zilla::Plugin::ContributorsFromGit';

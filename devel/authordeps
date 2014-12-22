@@ -1,0 +1,3 @@
+#!/bin/bash
+dzil authordeps --version \
+    | perl -nE 'chomp; my ($m,$v) = split / = /; say "requires \x27$m\x27" . ($v != 0 ? ", \x27$v\x27;" : ";")'
