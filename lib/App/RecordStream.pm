@@ -31,47 +31,6 @@ The recs system consists of three basic sets of scripts:
 These scripts can interface with other systems to retrieve data, parse existing
 files, or just regex out some values from a text stream.
 
-=head1 KEY SPECS
-
-Many of the scripts below take key arguments to specify or assign to a key in a
-record. Almost all of the places where you can specify a key (which normally
-means a first level key in the record), you can instead specify a key spec.
-
-A key spec may be nested, and may index into arrays.  Use a C</> to nest into a
-hash and a C<#NUM> to index into an array (i.e. C<#2>)
-
-An example is in order, take a record like this:
-
-  {"biz":["a","b","c"],"foo":{"bar 1":1},"zap":"blah1"}
-  {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
-  {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
-
-In this case a key spec of C<foo/bar 1> would have the values 1, 2, and 3
-respectively.
-
-Similarly, C<biz/#0> would have the value of C<a> for all 3 records
-
-=head2 Fuzzy matching
-
-You can also prefix key specs with C<@> to engage the fuzzy matching logic.
-Matching is tried like this, in order, with the first key to match winning:
-
-=over 4
-
-=item 1. Exact match (eq)
-
-=item 2. Prefix match (m/^/)
-
-=item 3. Match anywehre in the key (m//)
-
-=back
-
-Given the above example data and the fuzzy key spec C<@b/#2>, the C<b> portion
-would expand to C<biz> and C<2> would be the index into the array, so all
-records would have the value of C<c>.
-
-Simiarly, C<@f/b> would have values 1, 2, and 3.
-
 =head1 SCRIPTS
 
 =head2 Input Generation
@@ -228,6 +187,47 @@ Prettily prints records, one key to a line, great for making sense of very large
 Prints a multi-dimensional (pivot) table of values.  Very powerful.
 
 =back
+
+=head1 KEY SPECS
+
+Many of the scripts above take key arguments to specify or assign to a key in a
+record. Almost all of the places where you can specify a key (which normally
+means a first level key in the record), you can instead specify a key spec.
+
+A key spec may be nested, and may index into arrays.  Use a C</> to nest into a
+hash and a C<#NUM> to index into an array (i.e. C<#2>)
+
+An example is in order, take a record like this:
+
+  {"biz":["a","b","c"],"foo":{"bar 1":1},"zap":"blah1"}
+  {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
+  {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
+
+In this case a key spec of C<foo/bar 1> would have the values 1, 2, and 3
+respectively.
+
+Similarly, C<biz/#0> would have the value of C<a> for all 3 records
+
+=head2 Fuzzy matching
+
+You can also prefix key specs with C<@> to engage the fuzzy matching logic.
+Matching is tried like this, in order, with the first key to match winning:
+
+=over 4
+
+=item 1. Exact match (eq)
+
+=item 2. Prefix match (m/^/)
+
+=item 3. Match anywehre in the key (m//)
+
+=back
+
+Given the above example data and the fuzzy key spec C<@b/#2>, the C<b> portion
+would expand to C<biz> and C<2> would be the index into the array, so all
+records would have the value of C<c>.
+
+Simiarly, C<@f/b> would have values 1, 2, and 3.
 
 =head1 NOTES
 
