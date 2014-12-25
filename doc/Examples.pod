@@ -1,4 +1,4 @@
-=head1 SYSPOSIS
+=head1 SYNOPSIS
 
 This file provides a couple of useful examples of recs chains and how each of them break down.  This is meant as a learning tool for folks new recs that would like to see some cool things you can do with RecordStream.  Another good resource is 'man recs-story' which is a humorous story meant to get the newest users used to recs.
 
