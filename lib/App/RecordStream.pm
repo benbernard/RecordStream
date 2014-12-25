@@ -9,19 +9,27 @@ our $VERSION = "4.0.9";
 
 App::RecordStream - recs - A system for command-line analysis of data
 
-=head1 SYNPOSIS
+=head1 SYNOPSIS
 
 A set of programs for creating, manipulating, and outputing a stream of
 Records, or JSON hashes.  Inspired by Monad.
 
 =head1 DESCRIPTION
 
-The recs system consists of 3 basic sets of scripts.  Input scripts responsible
-for generating streams of record objects, Manipulation scripts responsible for
-analyzing, select, and manipulating records, and output scripts which take
-record streams and produce output for humans.  These scripts can interface with
-other systems to retrieve data, parse existing files, or just regex out some
-values from a text stream.
+The recs system consists of three basic sets of scripts:
+
+=over 4
+
+=item * I<Input> scripts responsible for generating streams of record objects
+
+=item * I<Manipulation> scripts responsible for analyzing, selecting, and manipulating records
+
+=item * I<Output> scripts responsible for taking record streams and producing output for humans or other programs
+
+=back
+
+These scripts can interface with other systems to retrieve data, parse existing
+files, or just regex out some values from a text stream.
 
 =head1 KEY SPECS
 
@@ -29,8 +37,8 @@ Many of the scripts below take key arguments to specify or assign to a key in a
 record. Almost all of the places where you can specify a key (which normally
 means a first level key in the record), you can instead specify a key spec.
 
-A key spec may be nested, and may index into arrays.  Use a '/' to nest into a
-hash and a '#NUM' to index into an array (i.e. #2)
+A key spec may be nested, and may index into arrays.  Use a C</> to nest into a
+hash and a C<#NUM> to index into an array (i.e. C<#2>)
 
 An example is in order, take a record like this:
 
@@ -38,22 +46,31 @@ An example is in order, take a record like this:
   {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
   {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
 
-In this case a key spec of 'foo/bar 1' would have the values 1,2, and 3
+In this case a key spec of C<foo/bar 1> would have the values 1, 2, and 3
 respectively.
 
-Similarly, 'biz/#0' would have the value of 'a' for all 3 records
+Similarly, C<biz/#0> would have the value of C<a> for all 3 records
 
-You can also prefix key specs with '@' to engage the fuzzy matching logic
+=head2 Fuzzy matching
 
-Matching works like this in order, first key to match wins
-  1. Exact match ( eq )
-  2. Prefix match ( m/^/ )
-  3. Match anywehre in the key (m//)
+You can also prefix key specs with C<@> to engage the fuzzy matching logic.
+Matching is tried like this, in order, with the first key to match winning:
 
-So, in the above example '@b/#2', the 'b' portion would expand to 'biz' and 2
-would be the index into the array, so all records would have the value of 'c'
+=over 4
 
-Simiarly, @f/b would have values 1, 2, and 3
+=item 1. Exact match (eq)
+
+=item 2. Prefix match (m/^/)
+
+=item 3. Match anywehre in the key (m//)
+
+=back
+
+Given the above example data and the fuzzy key spec C<@b/#2>, the C<b> portion
+would expand to C<biz> and C<2> would be the index into the array, so all
+records would have the value of C<c>.
+
+Simiarly, C<@f/b> would have values 1, 2, and 3.
 
 =head1 SCRIPTS
 
@@ -152,7 +169,7 @@ with another stream.
 
 =item recs-substream
 
-Filter to a range of matching records with paired perl snippets --start and --end.
+Filter to a range of matching records with paired Perl snippets C<--start> and C<--end>.
 
 =item recs-sort
 
@@ -161,9 +178,9 @@ numerical or lexical sort ordering
 
 =item recs-topn
 
-Outputs the top n records. You may segment the input based on a list of keys
+Outputs the top I<n> records. You may segment the input based on a list of keys
 such that unique values of keys are treated as distinct input streams. This
-enables top n listings per value groupings.
+enables top I<n> listings per value groupings.
 
 =item recs-xform
 
@@ -183,7 +200,7 @@ then output with a chain link back to the original record.
 
 =item recs-todb
 
-Inserts records into a DBI supported SQL database.  Will crate a local sqlite
+Inserts records into a DBI supported SQL database.  Will create a local sqlite
 database by default
 
 =item recs-tocsv
@@ -222,12 +239,15 @@ JSON::MaybeXS.
 =head1 EXAMPLES
 
   # look in the access log for all accesses with greater than 5 seconds, display in a table
-  cat access.log | recs-fromre --fieds ip,time '^(\d+).*TIME: (\d+)' | recs-grep '$r->{time} > 5' | recs-totable
+  cat access.log \
+    | recs-fromre --fieds ip,time '^(\d+).*TIME: (\d+)' \
+    | recs-grep '$r->{time} > 5' \
+    | recs-totable
 
 =head1 SEE ALSO
 
-Each of the recs-* scripts discussed have a --help mode available to print out
-usage and examples for the particular script, See that documentation for
+Each of the recs-* scripts discussed have a C<--help> mode available to print
+out usage and examples for the particular script.  See that documentation for
 detailed information on the operation of each of the scripts.  Also see some
 other man pages:
 
@@ -247,8 +267,9 @@ Keith Amling <keith.amling@gmail.com>
  
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2007 by Benjamin Bernard and Keith Amling
-This software is released under the MIT license
+Copyright 2007-2014 by Benjamin Bernard and Keith Amling.
+
+This software is released under the MIT and Artistic 1.0 licenses.
 
 =cut
 
