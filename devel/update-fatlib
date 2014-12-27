@@ -46,13 +46,13 @@ sub run {
 
   # Use my break-cc wrapper if we run into deps which don't respect PUREPERL_ONLY (--pp).
   # -trs, 13 Oct 2014
-  my @cpanm = qw(cpanm -L local --pp);
+  my @cpanm = qw(cpanm -L local --pp --without-recommends --without-suggests);
   if ($opt{'upgrade-local'}) {
     # by excluding core modules, we don't force upgrade them (and will
     # fatpack whatever version is in core for the version of perl running)
     push @cpanm, grep !is_core($_), @modules, @for_packing;
   } else {
-    push @cpanm, qw(--installdeps --without-recommends --without-suggests .);
+    push @cpanm, qw(--installdeps .);
   }
   system(@cpanm) == 0
     or die "cpanm failed (exit @{[$? >> 8]}): $!";

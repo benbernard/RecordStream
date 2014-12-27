@@ -25,6 +25,13 @@ $ENV{'PERLLIB'} = "$dir/lib:" . ($ENV{'PERLLIB'}||'');
 
 $ENV{'BASE_TEST_DIR'} = "$dir/tests";
 
+# dzil test happens under .build/random/
+for ($dir, "$dir/../..") {
+  next unless -e "$_/dist.ini";
+  $ENV{'DZIL_ROOT_DIR'} = $_;
+  last;
+}
+
 my $file = shift;
 
 if ( $file ) {
@@ -39,10 +46,10 @@ runtests(sort @files);
 
 # Try to run test suite again under minimal deps if we're an author
 if ($ENV{AUTHOR_TESTING}
-    and -d "$dir/../../local/lib/perl5"         # milla test happens under .build/random/
+    and -d "$ENV{DZIL_ROOT_DIR}/local/lib/perl5"
     and eval { require lib::core::only; 1 }) {
 
   print "# Running tests again with minimal deps\n";
-  local $ENV{PERL5OPT} = "-Mlib::core::only -Mlib=$dir/lib,$dir/../../local/lib/perl5";
+  local $ENV{PERL5OPT} = "-Mlib::core::only -Mlib=$dir/lib,$ENV{DZIL_ROOT_DIR}/local/lib/perl5";
   runtests(sort @files);
 }

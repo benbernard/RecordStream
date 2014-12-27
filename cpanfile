@@ -32,15 +32,43 @@ on 'test' => sub {
 };
 
 on 'develop' => sub {
-    requires 'Dist::Milla';
-    requires 'Dist::Zilla::PluginBundle::Filter';
+    requires 'Dist::Zilla';
+
+    # Generated with devel/authordeps.  It's useful to include them here with
+    # the rest of our deps.
+    requires 'Dist::Zilla::Plugin::CheckChangesHasContent';
+    requires 'Dist::Zilla::Plugin::ConfirmRelease';
+    requires 'Dist::Zilla::Plugin::ContributorsFromGit';
+    requires 'Dist::Zilla::Plugin::CopyFilesFromBuild';
+    requires 'Dist::Zilla::Plugin::CopyFilesFromRelease';
     requires 'Dist::Zilla::Plugin::CustomLicense';
     requires 'Dist::Zilla::Plugin::ExecDir';
+    requires 'Dist::Zilla::Plugin::ExtraTests';
+    requires 'Dist::Zilla::Plugin::Git::Check';
+    requires 'Dist::Zilla::Plugin::Git::Commit';
+    requires 'Dist::Zilla::Plugin::Git::GatherDir';
+    requires 'Dist::Zilla::Plugin::Git::Push';
+    requires 'Dist::Zilla::Plugin::Git::Tag';
+    requires 'Dist::Zilla::Plugin::License';
     requires 'Dist::Zilla::Plugin::MakeMaker::Awesome';
+    requires 'Dist::Zilla::Plugin::Manifest';
+    requires 'Dist::Zilla::Plugin::ManifestSkip';
+    requires 'Dist::Zilla::Plugin::MetaJSON';
     requires 'Dist::Zilla::Plugin::MetaNoIndex';
     requires 'Dist::Zilla::Plugin::MetaResources';
-    requires 'Dist::Zilla::Plugin::PruneFiles';
+    requires 'Dist::Zilla::Plugin::MetaYAML';
+    requires 'Dist::Zilla::Plugin::NextRelease';
+    requires 'Dist::Zilla::Plugin::PodSyntaxTests';
+    requires 'Dist::Zilla::Plugin::Prereqs::FromCPANfile';
+    requires 'Dist::Zilla::Plugin::PruneCruft';
+    requires 'Dist::Zilla::Plugin::ReadmeAnyFromPod';
+    requires 'Dist::Zilla::Plugin::ReversionOnRelease';
+    requires 'Dist::Zilla::Plugin::Run::AfterRelease', '0.027';
     requires 'Dist::Zilla::Plugin::Run::BeforeBuild';
+    requires 'Dist::Zilla::Plugin::ShareDir';
+    requires 'Dist::Zilla::Plugin::TestRelease';
+    requires 'Dist::Zilla::Plugin::UploadToCPAN';
+    requires 'Dist::Zilla::Plugin::VersionFromModule';
 
     # fatpacking
     requires 'App::FatPacker', '0.10.2';

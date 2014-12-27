@@ -4,10 +4,11 @@ use Test::More;
 use File::Basename 'basename';
 use JSON::MaybeXS 'decode_json';
 
-my $recs = "$ENV{BASE_TEST_DIR}/../recs";
+my ($recs) = grep { -e } map { "$_/recs" }
+  "$ENV{BASE_TEST_DIR}/..", $ENV{DZIL_ROOT_DIR};
 
-plan 'skip_all', "$recs must exist and be executable and lib::core::only must be installed"
-  unless -x $recs and eval { require lib::core::only; 1 };
+plan 'skip_all', "recs must exist and be executable and lib::core::only must be installed"
+  unless $recs and -x $recs and eval { require lib::core::only; 1 };
 
 # test loading of both Text::CSV_PP and JSON::PP
 is_deeply decode_json(fatpack_ok('fromcsv <<<foo,bar,baz')), { 0 => "foo", 1 => "bar", 2 => "baz" }, 'json matches';
