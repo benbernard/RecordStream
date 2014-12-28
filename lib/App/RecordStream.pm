@@ -296,9 +296,10 @@ the need for any executable script shim.
 
 =head1 EXAMPLES
 
-  # look in the access log for all accesses with greater than 5 seconds, display in a table
+  # look in the custom access log for all accesses with greater than 5 seconds,
+  # display in a table
   cat access.log \
-    | recs-fromre --fieds ip,time '^(\d+).*TIME: (\d+)' \
+    | recs-fromre --fields ip,time '^(\d+).*TIME: (\d+)' \
     | recs-grep '$r->{time} > 5' \
     | recs-totable
 
