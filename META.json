@@ -171,6 +171,7 @@
             "Dist::Zilla::Plugin::NextRelease" : "0",
             "Dist::Zilla::Plugin::PodSyntaxTests" : "0",
             "Dist::Zilla::Plugin::Prereqs::FromCPANfile" : "0",
+            "Dist::Zilla::Plugin::PruneCruft" : "0",
             "Dist::Zilla::Plugin::ReadmeAnyFromPod" : "0",
             "Dist::Zilla::Plugin::ReversionOnRelease" : "0",
             "Dist::Zilla::Plugin::Run::AfterRelease" : "0.027",
