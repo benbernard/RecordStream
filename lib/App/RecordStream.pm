@@ -14,6 +14,35 @@ App::RecordStream - recs - A system for command-line analysis of data
 A set of programs for creating, manipulating, and outputing a stream of
 Records, or JSON hashes.  Inspired by Monad.
 
+=head1 INSTALLATION
+
+=head2 Quick, standalone bundle
+
+The quickest way to start using recs is via the minimal, standalone bundle:
+
+  curl -fsSL https://recs.pl > recs
+  chmod +x recs
+  ./recs --help
+
+This is also known as the "fatpacked" recs.
+
+=head2 From CPAN
+
+You can also install recs from L<CPAN|http://cpan.org> as App::RecordStream:
+
+  cpanm --interactive App::RecordStream
+
+Using L<cpanm> in interactive mode will prompt you for optional feature
+support.  Other CPAN clients such as L<cpan> and L<cpanp> also work fine, but
+you can't opt to use any optional features (just like cpanm in non-interactive
+mode).  A kitchen-sink install of App::RecordStream looks like:
+
+  cpanm --with-recommends --with-all-features App::RecordStream
+
+If you don't have L<cpanm> itself, you can install it easily with:
+
+  curl -fsSL https://cpanmin.us | perl - App::cpanminus
+
 =head1 DESCRIPTION
 
 The recs system consists of three basic sets of scripts:
