@@ -102,7 +102,8 @@ sub init_help {
 sub options_string {
   my ($this, $options) = @_;
 
-  push @$options, ['filename-key|fk <keyspec>', 'Add a key with the source filename (if no filename is applicable will put NONE)'];
+  push @$options, ['filename-key|fk <keyspec>', 'Add a key with the source filename (if no filename is applicable will put NONE)']
+    if $this->does_record_output;
 
   my $string = $this->_options_format($options);
   $string .= "\n  Help Options:\n";
@@ -232,7 +233,8 @@ sub parse_options {
   }
 
   # Add filename annotation option
-  $options_spec->{'--filename-key|fk=s'} = \($this->{'FILENAME_KEY'});
+  $options_spec->{'--filename-key|fk=s'} = \($this->{'FILENAME_KEY'})
+    if $this->does_record_output;
 
   my $starting_config = Getopt::Long::Configure();
 
@@ -358,6 +360,10 @@ sub init {
 # subclasses can override to indicate they'll handle their own extra
 # args and input in stream_done()
 sub wants_input {
+  return 1;
+}
+
+sub does_record_output {
   return 1;
 }
 

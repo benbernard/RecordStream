@@ -56,6 +56,7 @@ sub init {
   }
 }
 
+sub does_record_output { 0 }
 sub wants_input { 0 }
 sub accept_line {
   croak "This operation does not accept input.";
