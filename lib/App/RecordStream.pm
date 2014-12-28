@@ -276,12 +276,23 @@ records would have the value of C<c>.
 
 Simiarly, C<@f/b> would have values 1, 2, and 3.
 
-=head1 NOTES
+=head1 WRITING YOUR OWN SCRIPTS
 
 The data stream format of the recs scripts is JSON hashes separated by new
 lines.  If you wish to write your own recs script in your own language, just
 get a JSON parser and you should be good to go.  The recs scripts use
-JSON::MaybeXS.
+L<JSON::MaybeXS>.
+
+If you name your script as C<recs-mycommand> and put it somewhere in your
+C<PATH> environment variable, the C<recs> command will dispatch to it when
+called as C<recs mycommand>.  It will also be included in C<recs --list>
+output.
+
+If you want to write your new script in Perl, you can use the same Perl API
+that the standard recs toolkit uses.  See the various
+L<App::RecordStream::Operation> subclasses.  Once your new operation class is
+installed in perl's library paths, C<recs> will find it automatically without
+the need for any executable script shim.
 
 =head1 EXAMPLES
 
