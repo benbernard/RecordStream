@@ -60,6 +60,24 @@ The recs system consists of three basic sets of scripts:
 These scripts can interface with other systems to retrieve data, parse existing
 files, or just regex out some values from a text stream.
 
+Scripts are run using C<recs script [options and arguments]>.  If you're using
+a CPAN-based install, you may also run scripts directly as C<recs-script>,
+though this is no longer recommended for forwards compatibility.  Both
+L<installation methods|/INSTALLATION> provide a top-level C<recs> executable
+which dispatches to commands, so this is the preferred invocation style.
+
+The core recs scripts are briefly summarized below, and you can list all
+available scripts by running C<recs --list>.
+
+To read more about each script, run C<recs script --help>.  Longer
+documentation is available as C<recs script --help-all> or C<perldoc recs-script>.
+For example, to read more about L</fromcsv>, you might run any of the
+following:
+
+  recs fromcsv --help
+  recs fromcsv --help-all
+  perldoc recs-fromcsv
+
 =head1 SCRIPTS
 
 =head2 Input Generation
