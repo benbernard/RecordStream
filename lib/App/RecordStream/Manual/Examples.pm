@@ -1,14 +1,18 @@
+use strict;
+use warnings;
+package App::RecordStream::Manual::Examples;
+
 =head1 NAME
 
-recs examples
+App::RecordStream::Manual::Examples - A set of simple recs examples 
 
-=head1 SYNOPSIS
+=head1 DESCRIPTION
 
 This file provides a couple of useful examples of recs chains and how each of
 them break down.  This is meant as a learning tool for folks new recs that
 would like to see some cool things you can do with RecordStream.  Another good
-resource is the L<recs-story(3)> manpage which is a humorous story meant to get
-the newest users used to recs.
+resource is L<App::RecordStream::Manual::Story>, also viewable by running C<recs
+story>, which is a humorous story meant to get the newest users used to recs.
 
 =head1 EXAMPLES
 
@@ -103,8 +107,12 @@ Output a table in spreadsheet format (no ASCII art), delimited by commas
 
 =over
 
-=item  L<RecordStream(3)> - Overview of the scripts and the system
+=item * See L<App::RecordStream> for an overview of the scripts and the system
 
-=item  L<recs-story(3)> - A humorous introduction to RecordStream
+=item * Run C<recs story> or see L<App::RecordStream::Manual::Story> for a humorous introduction to RecordStream
 
 =back
+
+=cut
+
+1;

@@ -312,9 +312,9 @@ other man pages:
 
 =over
 
-=item  L<recs-examples(3)> - A set of simple recs examples
+=item * Run C<recs examples> or see L<App::RecordStream::Manual::Examples> for a set of simple recs examples
 
-=item  L<recs-story(3)> - A humorous introduction to RecordStream
+=item * Run C<recs story> or see L<App::RecordStream::Manual::Story> for a humorous introduction to RecordStream
 
 =back
 

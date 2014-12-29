@@ -1,7 +1,15 @@
-=head1 PURPOSE
+use strict;
+use warnings;
+package App::RecordStream::Manual::Story;
 
-This was a humorus article written to give an introduction to the RecordStream
-tools, please read with tongue firmly planted in cheek
+=head1 NAME
+
+App::RecordStream::Manual::Story - A humorous introduction to recs
+
+=head1 DESCRIPTION
+
+This was a humorous article written to give an introduction to the RecordStream
+tools, please read with tongue firmly planted in cheek.
 
 =head1 And So It Begins
 
@@ -167,13 +175,16 @@ your own you can always turn to --help. All recs scripts come equipped with
 detailed usage instructions triggered by the --help option. You can also turn
 to `man recs` (if the man file is installed correctly)
 
-=head1 See Also
+=head1 SEE ALSO
 
 =over
 
-=item  L<RecordStream(3)> - Overview of the scripts and the system
+=item * See L<App::RecordStream> for an overview of the scripts and the system
 
-=item  L<recs-examples(3)> - A set of simple recs examples
+=item * Run C<recs examples> or see L<App::RecordStream::Manual::Examples> for a set of simple recs examples
 
 =back
 
+=cut
+
+1;

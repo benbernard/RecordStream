@@ -46,6 +46,9 @@ usage: recs command [arguments]
        recs -l|--list-commands
        recs -h|--help
        recs --version
+
+Run `recs examples` to see examples and `recs story` to read a humorous
+introduction to recs.
 .
 }
 
