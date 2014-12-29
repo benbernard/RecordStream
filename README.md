@@ -279,8 +279,8 @@ usage and examples for the particular command.  See that documentation for
 detailed information on the operation of each of the commands.  Also see some
 other man pages:
 
-- [recs-examples(3)](http://man.he.net/man3/recs-examples) - A set of simple recs examples
-- [recs-story(3)](http://man.he.net/man3/recs-story) - A humorous introduction to RecordStream
+- Run `recs examples` or see [App::RecordStream::Manual::Examples](https://metacpan.org/pod/App::RecordStream::Manual::Examples) for a set of simple recs examples
+- Run `recs story` or see [App::RecordStream::Manual::Story](https://metacpan.org/pod/App::RecordStream::Manual::Story) for a humorous introduction to RecordStream
 
 # AUTHORS
 

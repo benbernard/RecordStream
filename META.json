@@ -211,6 +211,7 @@
             "IO::String" : "0",
             "JSON::MaybeXS" : "1.002005",
             "Module::Pluggable::Object" : "5.1",
+            "Pod::Perldoc" : "0",
             "Scalar::Util" : "0",
             "Text::Autoformat" : "0",
             "Text::CSV" : "0",
