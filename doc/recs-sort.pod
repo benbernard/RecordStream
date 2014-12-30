@@ -76,17 +76,18 @@ recs-sort
     You can address that key with foo\/bar
  
 
-=head1 See Also
+=head1 SEE ALSO
 
 =over
 
-=item  L<RecordStream(3)> - Overview of the scripts and the system
+=item * See L<App::RecordStream> for an overview of the scripts and the system
 
-=item  L<recs-examples(3)> - A set of simple recs examples
+=item * Run C<recs examples> or see L<App::RecordStream::Manual::Examples> for a set of simple recs examples
 
-=item  L<recs-story(3)> - A humorous introduction to RecordStream
+=item * Run C<recs story> or see L<App::RecordStream::Manual::Story> for a humorous introduction to RecordStream
 
-=item SCRIPT --help - every script has a --help option, like the output above
+=item * Every command has a C<--help> mode available to print out usage and
+examples for the particular command, just like the output above.
 
 =back
 

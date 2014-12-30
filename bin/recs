@@ -14,9 +14,9 @@ use Module::Pluggable::Object;
 
 Getopt::Long::Configure(qw( require_order pass_through ));
 GetOptions(
-  'h|help'      => sub { print usage(); exit },
-  'l|list-ops'  => sub { print "$_\n" for known_ops(); exit },
-  'version'     => \&version,
+  'h|help'          => sub { print usage(); exit },
+  'l|list-commands' => sub { print "$_\n" for known_ops(); exit },
+  'version'         => \&version,
 );
 
 my $operation = shift or die usage();
@@ -34,18 +34,21 @@ else {
   # Try installed executables for ops in other languages (or implemented
   # outside of the Perl API)
   exec { "recs-$operation" } "recs-$operation", @ARGV or do {
-      print STDERR "$recs: '$operation' is not a recs operation.\n\n";
-      print STDERR "Use `$recs --list-ops` to see known operations.\n";
+      print STDERR "$recs: '$operation' is not a recs command.\n\n";
+      print STDERR "Use `$recs --list-commands` to see known commands.\n";
       exit 1;
   };
 }
 
 sub usage {
   <<'.';
-usage: recs operation [arguments]
-       recs -l|--list-ops
+usage: recs command [arguments]
+       recs -l|--list-commands
        recs -h|--help
        recs --version
+
+Run `recs examples` to see examples and `recs story` to read a humorous
+introduction to recs.
 .
 }
 
