@@ -87,7 +87,7 @@ sub usage {
   my $this = shift;
 
   my @fields = Proc::ProcessTable->new()->fields();
-  my $all_fields = join (', ', @fields);
+  my $all_fields = join (', ', grep { defined } @fields);
 
   my $options = [
     [ 'keys <fields>', 'Fields to output.  May be specified multiple times, may be comma separated.  Default to all fields These are Proc::ProcessTable keys, and thus may not be keyspecs or groups'],
