@@ -1,6 +1,6 @@
 package App::RecordStream::Operation;
 
-our $VERSION = "4.0.9";
+our $VERSION = "4.0.10";
 
 use strict;
 use warnings;

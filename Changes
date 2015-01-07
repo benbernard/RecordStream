@@ -1,5 +1,28 @@
 {{$NEXT}}
 
+4.0.10-TRIAL  2015-01-07 14:50:24 PST - TRIAL DEVELOPMENT RELEASE
+    [Documentation]
+        * Cleaned up App::RecordStream/README overview
+        * New installation instructions
+        * Documented the recs command and how to extend recs
+        * Removed outdated documentation for alternate install methods
+        * Added a "recs help" command
+        * Provided examples and story as "recs examples" and "recs story",
+          as well as linkable POD
+        * fromps: Document default fields for both Linux and OS X, regardless
+          of the OS of the releasing author
+
+    [Features]
+        * Bash completion for recs subcommands, see etc/completion.bash
+
+    [Tests]
+        * Account for Woothee version 1.0.0's os_version field
+
+    [Development]
+        * Move to a vanilla Dist::Zilla releng process for easier customization
+        * Version the in-tree fatpacked recs with a git-based version, for
+          better precision
+
 4.0.9  2014-10-26 14:39:55 PDT - TRIAL DEVELOPMENT RELEASE
     [Features]
         * fromcsv, tocsv: add a --delim option to use a field delimiter other
