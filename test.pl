@@ -25,8 +25,9 @@ $ENV{'PERLLIB'} = "$dir/lib:" . ($ENV{'PERLLIB'}||'');
 
 $ENV{'BASE_TEST_DIR'} = "$dir/tests";
 
-# dzil test happens under .build/random/
-for ($dir, "$dir/../..") {
+# dzil test happens under .build/random/,
+# dzil release under .build/random/App-RecordStream-x.y.z/
+for ($dir, "$dir/../..", "$dir/../../../") {
   next unless -e "$_/dist.ini";
   $ENV{'DZIL_ROOT_DIR'} = $_;
   last;
@@ -45,7 +46,7 @@ chomp @files;
 runtests(sort @files);
 
 # Try to run test suite again under minimal deps if we're an author
-if ($ENV{AUTHOR_TESTING}
+if ($ENV{AUTHOR_TESTING} and $ENV{DZIL_ROOT_DIR}
     and -d "$ENV{DZIL_ROOT_DIR}/local/lib/perl5"
     and eval { require lib::core::only; 1 }) {
 
