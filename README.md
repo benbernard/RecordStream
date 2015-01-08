@@ -1,6 +1,8 @@
+[![Build Status](https://travis-ci.org/benbernard/RecordStream.svg?branch=master)](https://travis-ci.org/benbernard/RecordStream.svg?branch=master)
+
 # NAME
 
-App::RecordStream - recs - A system for command-line analysis of data.
+App::RecordStream - recs - A system for command-line analysis of data. 
 
 # SYNOPSIS
 
