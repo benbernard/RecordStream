@@ -30,6 +30,7 @@ on 'configure' => sub {
 
 on 'test' => sub {
     requires 'Test::More', '0.88';
+    requires 'IPC::Open2';
 };
 
 on 'develop' => sub {
