@@ -108,15 +108,18 @@ feature 'recs-fromps', 'Process list data source' => sub {
     requires 'Proc::ProcessTable';
 };
 
-feature 'recs-fromtcpdump', 'Network packet capture parsing' => sub {
-    requires 'Net::DNS::Packet';
-    requires 'NetPacket::ARP';
-    requires 'NetPacket::Ethernet';
-    requires 'NetPacket::IP';
-    requires 'NetPacket::TCP';
-    requires 'NetPacket::UDP';
-    requires 'Net::Pcap';
-};
+# NetPacket only supports 5.10+
+unless ($] lt '5.010') {
+    feature 'recs-fromtcpdump', 'Network packet capture parsing' => sub {
+        requires 'Net::DNS::Packet';
+        requires 'NetPacket::ARP';
+        requires 'NetPacket::Ethernet';
+        requires 'NetPacket::IP';
+        requires 'NetPacket::TCP';
+        requires 'NetPacket::UDP';
+        requires 'Net::Pcap';
+    };
+}
 
 feature 'recs-fromxferlog', 'Transfer (xfer) log parsing' => sub {
     requires 'Net::FTPServer::XferLog';
