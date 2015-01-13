@@ -5,6 +5,10 @@ package App::RecordStream;
 
 our $VERSION = "4.0.10";
 
+=encoding utf-8
+
+=for markdown [![Build Status](https://travis-ci.org/benbernard/RecordStream.svg?branch=master)](https://travis-ci.org/benbernard/RecordStream.svg?branch=master)
+
 =head1 NAME
 
 App::RecordStream - recs - A system for command-line analysis of data
