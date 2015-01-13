@@ -2,7 +2,7 @@
 
 # NAME
 
-App::RecordStream - recs - A system for command-line analysis of data. 
+App::RecordStream - recs - A system for command-line analysis of data
 
 # SYNOPSIS
 

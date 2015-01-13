@@ -221,6 +221,7 @@
       },
       "test" : {
          "requires" : {
+            "IPC::Open2" : "0",
             "Test::More" : "0.88"
          }
       }

@@ -81,6 +81,7 @@ my %WriteMakefileArgs = (
     "Tie::Hash" => 0
   },
   "TEST_REQUIRES" => {
+    "IPC::Open2" => 0,
     "Test::More" => "0.88"
   },
   "VERSION" => "4.0.10",
@@ -111,6 +112,7 @@ my %FallbackPrereqs = (
   "FindBin" => 0,
   "Getopt::Long" => 0,
   "IO::String" => 0,
+  "IPC::Open2" => 0,
   "JSON::MaybeXS" => "1.002005",
   "Module::Pluggable::Object" => "5.1",
   "Pod::Perldoc" => 0,
