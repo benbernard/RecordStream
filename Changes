@@ -1,5 +1,17 @@
 {{$NEXT}}
 
+4.0.11  2015-01-15 20:35:07 PST
+    First non-trial release with the "recs" command!  Aside from some small
+    changes noted below, this release is largely the same as 4.0.10-TRIAL.
+        –tsibley
+
+    [Installation]
+        * Don't offer fromtcpdump on Perl < 5.10 due to NetPacket support
+
+    [Tests]
+        * Don't use bash-isms in tests, less /bin/sh is something like dash
+        * Travis CI integration: https://travis-ci.org/benbernard/RecordStream
+
 4.0.10-TRIAL  2015-01-07 14:50:24 PST - TRIAL DEVELOPMENT RELEASE
     [Documentation]
         * Cleaned up App::RecordStream/README overview

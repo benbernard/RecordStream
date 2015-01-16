@@ -1,6 +1,6 @@
 package App::RecordStream::Operation::todb;
 
-our $VERSION = "4.0.10";
+our $VERSION = "4.0.11";
 
 use strict;
 use warnings;
