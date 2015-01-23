@@ -58,7 +58,7 @@ recs-collate
                                                   domain language.
     --incremental                                 Output a record every time an
                                                   input record is added to a
-                                                  clump (instead of everytime a
+                                                  clump (instead of every time a
                                                   clump is flushed).
     --key|-k <keys>                               Comma separated list of key
                                                   fields. May be a key spec or
@@ -365,7 +365,7 @@ recs-collate
                                                   domain language.
     --incremental                                 Output a record every time an
                                                   input record is added to a
-                                                  clump (instead of everytime a
+                                                  clump (instead of every time a
                                                   clump is flushed).
     --key|-k <keys>                               Comma separated list of key
                                                   fields. May be a key spec or

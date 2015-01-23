@@ -11,7 +11,7 @@ recs-fromhtmltable - parse an html file, extract data from a table
 recs-collate - use Getopt::Long's multiple option values supports to provide easier aggregators, e.g.  something like --sum x
 recs-collate - use fastcollate when possible
 recs-tognuplot - use a library rather than invoking gnuplot directly
-recs-togchart - use google chart api, seems simplier than gnuplot, could support more options? also look at 'Chart' on CPAN, maybe that instead?, could also support graph viz charts, see: http://code.google.com/apis/chart/image/docs/gallery/graphviz.html
+recs-togchart - use google chart api, seems simpler than gnuplot, could support more options? also look at 'Chart' on CPAN, maybe that instead?, could also support graph viz charts, see: http://code.google.com/apis/chart/image/docs/gallery/graphviz.html
 recs-xform - add option to send null $r at the end of the stream to allow final actions after spooling records
 --help - have --help fit on one screen for all scripts, (maybe 40 lines), with additionall help available through drifferent help types
 Executor - add executor::options_help to all scripts that need it.

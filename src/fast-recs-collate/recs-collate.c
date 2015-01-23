@@ -447,7 +447,7 @@ char usage[] =
 "   --cube                        See \"Cubing\" section below.\n"
 "   --cube-default                See \"Cubing\" section below.\n"
 "   --incremental                 Output a record every time an input record is added\n"
-"                                 to a clump (instead of everytime a clump is flushed).\n"
+"                                 to a clump (instead of every time a clump is flushed).\n"
 "\n"
 "Help / Usage Options:\n"
 "   --help                         Bail and output this help screen.\n"

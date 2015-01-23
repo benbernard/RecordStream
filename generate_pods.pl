@@ -7,7 +7,7 @@ use File::Basename qw(basename);
 
 $ENV{'PERL5LIB'} .= ':lib';
 
-# Don't let the actual terminal size affect POD everytime we generate it.
+# Don't let the actual terminal size affect POD every time we generate it.
 # LINES isn't used by us, but is required for Term::ReadKey::GetTerminalSize()
 # to use COLUMNS.
 $ENV{'COLUMNS'} = 80;
