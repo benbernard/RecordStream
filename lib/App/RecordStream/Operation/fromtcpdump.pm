@@ -258,7 +258,7 @@ Usage: recs-fromtcpdump <file1> <file2> ...
    corresponding key.  For instance, for a tcp packet, there will be
    information in the keys 'ethernet', 'ip', and 'tcp'
 
-   By default, data output is surpressed due to poor interaction with terminal
+   By default, data output is suppressed due to poor interaction with terminal
    programs.
    __FORMAT_TEXT__
 

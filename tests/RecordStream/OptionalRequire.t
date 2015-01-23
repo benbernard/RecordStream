@@ -16,5 +16,5 @@ is($loaded, 1, 'Test external module with extra args');
 
 my $json = JSON::MaybeXS->new;
 my $hash = $json->decode('{"foo": "bar"}');
-is($hash->{'foo'}, 'bar', "Test useing loaded method");
+is($hash->{'foo'}, 'bar', "Test using loaded method");
 

@@ -40,7 +40,7 @@ sub init {
   $params->{'username'} = $user if defined $user;
   $params->{'password'} = $pass if defined $pass;
 
-  # This will come closer to allowing mongo-hq sytle json
+  # This will come closer to allowing mongo-hq style json
   my $json = JSON::PP->new()
     ->allow_barekey() # Allow {navItem:[]} instead of {'navItem':[]}
     ->allow_singlequote() # allow single quotes for keys

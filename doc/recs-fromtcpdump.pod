@@ -15,7 +15,7 @@ recs-fromtcpdump
     instance, for a tcp packet, there will be information in the keys 'ethernet',
     'ip', and 'tcp'
  
-    By default, data output is surpressed due to poor interaction with
+    By default, data output is suppressed due to poor interaction with
     terminal programs.
  
     Flags will be parsed into hash of strings

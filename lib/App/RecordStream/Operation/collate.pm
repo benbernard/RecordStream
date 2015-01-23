@@ -164,7 +164,7 @@ sub usage {
     [ 'aggregator|-a <aggregators>', 'Colon separated list of aggregate field specifiers.  See "Aggregates" section below.'],
     [ 'mr-agg <name> <map> <reduce> <squish>', 'Specify a map reduce aggregator via 3 snippets, similar to mr_agg() from the domain language.'],
     [ 'ii-agg <name> <initial> <combine> <squish>', 'Specify an inject into aggregator via 3 snippets, similar to ii_agg() from the domain language.'],
-    [ 'incremental', 'Output a record every time an input record is added to a clump (instead of everytime a clump is flushed).'],
+    [ 'incremental', 'Output a record every time an input record is added to a clump (instead of every time a clump is flushed).'],
     $this->{'CLUMPER_OPTIONS'}->main_usage(),
 
     [ 'list-aggregators|--list', 'Bail and output a list of aggregators' ],
