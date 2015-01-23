@@ -122,7 +122,7 @@ IMPORTANT SNIPPET NOTE
    __FORMAT_TEXT__
    Because of the way annotations are recorded, you cannot use UNSHIFT or
    SPLICE on array refs that already exist in the record you are modifiying.
-   Additinally, deletes, removes, unshifts, and other 'removing' operations
+   Additionally, deletes, removes, unshifts, and other 'removing' operations
    will not apply to later records.  If you need this behavior, consider using
    recs-xform
    __FORMAT_TEXT__

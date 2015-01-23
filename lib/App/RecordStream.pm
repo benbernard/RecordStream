@@ -94,7 +94,7 @@ Produces records from a csv file/stream
 
 =item fromdb
 
-Produces records for a db table, or from a SELECT statment into a db.
+Produces records for a db table, or from a SELECT statement into a db.
 
 =item fromre
 

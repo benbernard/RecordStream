@@ -28,7 +28,7 @@ This module will generate an stream of App::RecordStream::Record objects for giv
 
 =item my $in = App::RecordStream::InputStream->new(OPTIONS);
 
-The input stream takes named paramters, it will take one of: FILE, STRING, or FH
+The input stream takes named parameters, it will take one of: FILE, STRING, or FH
 (a file handle).
 
   FILE   - Name of a file, must be readable
