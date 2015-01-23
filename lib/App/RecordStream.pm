@@ -3,7 +3,7 @@ use warnings;
 
 package App::RecordStream;
 
-our $VERSION = "4.0.11";
+our $VERSION = "4.0.12";
 
 =encoding utf-8
 

@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+4.0.12  2015-01-22 22:02:22 PST
+    [Documentation]
+        * Spelling fixes.  Thanks, James!
+
 4.0.11  2015-01-15 20:35:07 PST
     First non-trial release with the "recs" command!  Aside from some small
     changes noted below, this release is largely the same as 4.0.10-TRIAL.
