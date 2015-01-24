@@ -96,3 +96,5 @@ $args_string
 
 USAGE
 }
+
+1;
