@@ -31,9 +31,11 @@ if ($loaded_op and not $@) {
   App::RecordStream::Operation::main("recs-$operation"); # never returns
 }
 else {
+  trace("Failed to load operation class: $@");
   # Try installed executables for ops in other languages (or implemented
   # outside of the Perl API)
   exec { "recs-$operation" } "recs-$operation", @ARGV or do {
+      trace("Failed to exec recs-$operation: $!");
       print STDERR "$recs: '$operation' is not a recs command.\n\n";
       print STDERR "Use `$recs --list-commands` to see known commands.\n";
       exit 1;
@@ -83,4 +85,10 @@ sub version {
   print " (fatpacked)" if grep { ref =~ /^FatPacked/ } @INC;
   print "\n";
   exit;
+}
+
+sub trace {
+  return unless $ENV{RECS_TRACE};
+  chomp @_;
+  print STDERR "TRACE: ", @_, "\n";
 }
