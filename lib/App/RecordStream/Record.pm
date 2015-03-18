@@ -150,7 +150,7 @@ records.
 
 =cut
 
-our $VERSION = "4.0.12";
+our $VERSION = "4.0.13";
 
 use strict;
 use warnings;

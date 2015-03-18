@@ -1,3 +1,5 @@
+
+[![CPAN version](https://badge.fury.io/pl/App-RecordStream.png)](https://metacpan.org/release/App-RecordStream)
 [![Build Status](https://travis-ci.org/benbernard/RecordStream.svg?branch=master)](https://travis-ci.org/benbernard/RecordStream)
 
 # NAME

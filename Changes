@@ -1,5 +1,14 @@
 {{$NEXT}}
 
+4.0.13  2015-03-17 21:02:40 PDT
+    [Bug fixes]
+        * fromjsonarray package now returns a true value
+
+    [Development]
+        * RECS_TRACE=1 now makes recs print debugging information about
+          command loading
+        * Include a CPAN version badge for Github
+
 4.0.12  2015-01-22 22:02:22 PST
     [Documentation]
         * Spelling fixes.  Thanks, James!
