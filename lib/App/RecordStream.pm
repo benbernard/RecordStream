@@ -7,7 +7,9 @@ our $VERSION = "4.0.12";
 
 =encoding utf-8
 
-=for markdown [![Build Status](https://travis-ci.org/benbernard/RecordStream.svg?branch=master)](https://travis-ci.org/benbernard/RecordStream)
+=for markdown
+[![CPAN version](https://badge.fury.io/pl/App-RecordStream.png)](https://metacpan.org/release/App-RecordStream)
+[![Build Status](https://travis-ci.org/benbernard/RecordStream.svg?branch=master)](https://travis-ci.org/benbernard/RecordStream)
 
 =head1 NAME
 
