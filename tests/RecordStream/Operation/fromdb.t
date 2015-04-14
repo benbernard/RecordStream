@@ -1,6 +1,11 @@
 use Test::More;
 use App::RecordStream::Test::OperationHelper 'fromdb';
 
+# OperationHelper will catch fromdb's DBI requirement, but we require SQLite
+# for testing too.
+plan skip_all => 'DBD::SQLite needed to run tests'
+  unless eval { require DBD::SQLite; };
+
 my $solution = <<SOLUTION;
 {"foo":"1","id":1}
 {"foo":"2","id":2}
