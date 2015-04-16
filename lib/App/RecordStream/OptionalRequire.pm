@@ -64,6 +64,8 @@ sub optional_use_with_caller {
 # CHECK runs after BEGIN blocks
 sub require_done {
   if ( @missing_modules ) {
+    # NB: The exact phrasing of this exception is checked for in multiple
+    # places.  Please grep accordingly if you plan to change it below.
     die "Please install missing modules above to use this script\n";
   }
 }
