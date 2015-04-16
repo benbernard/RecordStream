@@ -22,7 +22,7 @@ sub generate_pod {
 
   my $script_base = basename($script);
 
-  my @help = `$script --help-all 2>/dev/null`;
+  my @help = `$^X $script --help-all 2>/dev/null`;
 
   open(my $fh, '>', "doc/$script_base.pod") or die "Could not open doc/$script_base.pod: $!";
 

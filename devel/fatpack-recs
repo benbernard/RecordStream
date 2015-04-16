@@ -22,5 +22,8 @@ chmod 0755 recs
 
 rm -r .fatpack-recs
 
+echo "Rewriting shebang"
+perl -pi -e 's{^#!perl$}{#!/usr/bin/env perl}' recs
+
 echo "Setting version to $version"
 perl -pi -e "s/(?<=^our \\\$VERSION)(?=;)/ = '$version'/" recs
