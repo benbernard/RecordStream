@@ -6,11 +6,14 @@ no warnings 'exec';
 our $VERSION;
 
 use App::RecordStream;
+use App::RecordStream::Site;
 use App::RecordStream::Operation;
 use File::Basename 'basename';
 use File::Glob 'bsd_glob';
 use Getopt::Long;
 use Module::Pluggable::Object;
+
+App::RecordStream::Site::bootstrap();
 
 Getopt::Long::Configure(qw( require_order pass_through ));
 GetOptions(
