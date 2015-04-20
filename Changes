@@ -1,5 +1,20 @@
 {{$NEXT}}
 
+4.0.14  2015-04-19 21:14:29 PDT
+    [Features]
+        * Look for site classes to load in ~/.recs/site/ and any path provided
+          by RECS_SITELIB
+        * Report loaded sites in `recs --version`
+
+    [Bug fixes]
+        * Rewrite shebang lines of scripts when installing to ensure the
+          correct, install-time Perl is used regardless of environment
+        * Site-provided operations are now listed under `recs --list-commands`
+
+    [Tests]
+        * Skip all fromdb tests when DBD::SQLite isn't available
+        * New tests for App::RecordStream::Site
+
 4.0.13  2015-03-17 21:02:40 PDT
     [Bug fixes]
         * fromjsonarray package now returns a true value
