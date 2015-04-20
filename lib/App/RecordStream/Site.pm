@@ -18,11 +18,17 @@ use Carp qw(croak);
       return;
     }
 
+    my @site_libs = (
+      (defined $ENV{RECS_SITELIB} ? $ENV{RECS_SITELIB} : ()),
+      (defined $ENV{HOME} ? "$ENV{HOME}/.recs/site" : ()),
+      map { "$_/Recs/Site" } @INC
+    );
+
     # First we find all conceivable sites by looking for module files
     my %sites;
-    for my $inc (@INC)
+    for my $dir (@site_libs)
     {
-      if(opendir(DIR, "$inc/Recs/Site"))
+      if(opendir(DIR, $dir))
       {
         while(my $site_module = readdir(DIR))
         {
@@ -30,7 +36,7 @@ use Carp qw(croak);
 
           if($site_module =~ /^(.*)\.pm$/)
           {
-            $sites{$1} = 1;
+            $sites{$1} = "$dir/$site_module";
           }
         }
         closedir(DIR);
@@ -42,7 +48,7 @@ use Carp qw(croak);
     # Then we try loading each of them (they register themselves)
     for my $site (sort(keys(%sites)))
     {
-      require "Recs/Site/$site.pm";
+      require $sites{$site};
     }
 
     $bootstrapped = 1;

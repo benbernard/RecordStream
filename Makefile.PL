@@ -81,6 +81,7 @@ my %WriteMakefileArgs = (
     "Tie::Hash" => 0
   },
   "TEST_REQUIRES" => {
+    "File::Spec::Functions" => 0,
     "IPC::Open2" => 0,
     "Test::More" => "0.88"
   },
@@ -108,6 +109,7 @@ my %FallbackPrereqs = (
   "Date::Manip" => 0,
   "File::Basename" => 0,
   "File::Glob" => 0,
+  "File::Spec::Functions" => 0,
   "File::Temp" => 0,
   "FindBin" => 0,
   "Getopt::Long" => 0,

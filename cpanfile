@@ -30,6 +30,7 @@ on 'configure' => sub {
 
 on 'test' => sub {
     requires 'Test::More', '0.88';
+    requires 'File::Spec::Functions';
     requires 'IPC::Open2';
 };
 

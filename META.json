@@ -221,6 +221,7 @@
       },
       "test" : {
          "requires" : {
+            "File::Spec::Functions" : "0",
             "IPC::Open2" : "0",
             "Test::More" : "0.88"
          }
