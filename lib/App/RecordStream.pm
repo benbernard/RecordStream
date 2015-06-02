@@ -332,7 +332,7 @@ Keith Amling <keith.amling@gmail.com>
  
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2007-2014 by Benjamin Bernard and Keith Amling.
+Copyright 2007–2015 by Benjamin Bernard and Keith Amling.
 
 This software is released under the MIT and Artistic 1.0 licenses.
 
