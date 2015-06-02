@@ -17,7 +17,7 @@ App::RecordStream - recs - A system for command-line analysis of data
 
 =head1 SYNOPSIS
 
-A set of programs for creating, manipulating, and outputing a stream of
+A set of programs for creating, manipulating, and outputting a stream of
 Records, or JSON hashes.  Inspired by Monad.
 
 =head1 INSTALLATION
@@ -108,11 +108,11 @@ Generate a record stream from a MongoDB query.
 
 =item frommultire
 
-Matches input streams against several regexs, puts capture groups into the record
+Matches input streams against several regexes, puts capture groups into the record
 
 =item fromsplit
 
-Splits input stream on a delimeter
+Splits input stream on a delimiter
 
 =item fromps
 
@@ -148,7 +148,7 @@ annotations
 =item collate
 
 Perforce aggregation operations on records.  Group by a field, get an average,
-sum, corellation, etc.  Very powerful
+sum, correlation, etc.  Very powerful
 
 =item delta
 
@@ -156,7 +156,7 @@ Transform values into deltas between adjacent records
 
 =item eval
 
-Eval a string of perl against each record
+Eval a string of Perl against each record
 
 =item flatten
 
@@ -164,7 +164,7 @@ Flatten records of input to one level
 
 =item grep
 
-Select records for which a string of perl evaluates to true.
+Select records for which a string of Perl evaluates to true.
 
 =item multiplex
 
@@ -196,12 +196,12 @@ enables top I<n> listings per value groupings.
 
 =item xform
 
-Perform a block of perl on each record, which may modify the record, Record is
+Perform a block of Perl on each record, which may modify the record, Record is
 then output
 
 =item generate
 
-Perform a block of perl on each record to generate a record stream, which is
+Perform a block of Perl on each record to generate a record stream, which is
 then output with a chain link back to the original record.
 
 =back
@@ -212,7 +212,7 @@ then output with a chain link back to the original record.
 
 =item todb
 
-Inserts records into a DBI supported SQL database.  Will create a local sqlite
+Inserts records into a DBI supported SQL database.  Will create a local SQLite
 database by default
 
 =item tocsv
@@ -229,7 +229,7 @@ Pretty prints a table of results.
 
 =item tohtml
 
-Prints out an html table of the record stream
+Prints out an HTML table of the record stream
 
 =item toprettyprint
 
@@ -268,11 +268,11 @@ Matching is tried like this, in order, with the first key to match winning:
 
 =over 4
 
-=item 1. Exact match (eq)
+=item 1. Exact match (C<eq>)
 
-=item 2. Prefix match (m/^/)
+=item 2. Prefix match (C<m/^/>)
 
-=item 3. Match anywehre in the key (m//)
+=item 3. Match anywhere in the key (C<m//>)
 
 =back
 
