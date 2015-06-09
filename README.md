@@ -8,7 +8,7 @@ App::RecordStream - recs - A system for command-line analysis of data
 
 # SYNOPSIS
 
-A set of programs for creating, manipulating, and outputing a stream of
+A set of programs for creating, manipulating, and outputting a stream of
 Records, or JSON hashes.  Inspired by Monad.
 
 # INSTALLATION
@@ -91,11 +91,11 @@ following:
 
 - frommultire
 
-    Matches input streams against several regexs, puts capture groups into the record
+    Matches input streams against several regexes, puts capture groups into the record
 
 - fromsplit
 
-    Splits input stream on a delimeter
+    Splits input stream on a delimiter
 
 - fromps
 
@@ -127,7 +127,7 @@ following:
 - collate
 
     Perforce aggregation operations on records.  Group by a field, get an average,
-    sum, corellation, etc.  Very powerful
+    sum, correlation, etc.  Very powerful
 
 - delta
 
@@ -135,7 +135,7 @@ following:
 
 - eval
 
-    Eval a string of perl against each record
+    Eval a string of Perl against each record
 
 - flatten
 
@@ -143,7 +143,7 @@ following:
 
 - grep
 
-    Select records for which a string of perl evaluates to true.
+    Select records for which a string of Perl evaluates to true.
 
 - multiplex
 
@@ -175,19 +175,19 @@ following:
 
 - xform
 
-    Perform a block of perl on each record, which may modify the record, Record is
+    Perform a block of Perl on each record, which may modify the record, Record is
     then output
 
 - generate
 
-    Perform a block of perl on each record to generate a record stream, which is
+    Perform a block of Perl on each record to generate a record stream, which is
     then output with a chain link back to the original record.
 
 ## Output Generation
 
 - todb
 
-    Inserts records into a DBI supported SQL database.  Will create a local sqlite
+    Inserts records into a DBI supported SQL database.  Will create a local SQLite
     database by default
 
 - tocsv
@@ -204,7 +204,7 @@ following:
 
 - tohtml
 
-    Prints out an html table of the record stream
+    Prints out an HTML table of the record stream
 
 - toprettyprint
 
@@ -239,9 +239,9 @@ Similarly, `biz/#0` would have the value of `a` for all 3 records
 You can also prefix key specs with `@` to engage the fuzzy matching logic.
 Matching is tried like this, in order, with the first key to match winning:
 
-- 1. Exact match (eq)
-- 2. Prefix match (m/^/)
-- 3. Match anywehre in the key (m//)
+- 1. Exact match (`eq`)
+- 2. Prefix match (`m/^/`)
+- 3. Match anywhere in the key (`m//`)
 
 Given the above example data and the fuzzy key spec `@b/#2`, the `b` portion
 would expand to `biz` and `2` would be the index into the array, so all
@@ -294,6 +294,6 @@ Keith Amling <keith.amling@gmail.com>
 
 # COPYRIGHT AND LICENSE
 
-Copyright 2007-2014 by Benjamin Bernard and Keith Amling.
+Copyright 2007–2015 by Benjamin Bernard and Keith Amling.
 
 This software is released under the MIT and Artistic 1.0 licenses.

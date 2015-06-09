@@ -60,6 +60,11 @@ recs-collate
                                                   input record is added to a
                                                   clump (instead of every time a
                                                   clump is flushed).
+    --[no]-bucket                                 With --bucket outputs one
+                                                  record per clump, with --no-
+                                                  bucket outputs one record for
+                                                  each record that went into
+                                                  the clump.
     --key|-k <keys>                               Comma separated list of key
                                                   fields. May be a key spec or
                                                   key group
@@ -367,6 +372,11 @@ recs-collate
                                                   input record is added to a
                                                   clump (instead of every time a
                                                   clump is flushed).
+    --[no]-bucket                                 With --bucket outputs one
+                                                  record per clump, with --no-
+                                                  bucket outputs one record for
+                                                  each record that went into
+                                                  the clump.
     --key|-k <keys>                               Comma separated list of key
                                                   fields. May be a key spec or
                                                   key group
