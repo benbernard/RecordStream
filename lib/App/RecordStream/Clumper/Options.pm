@@ -8,8 +8,10 @@ use App::RecordStream::Clumper::KeyLRU;
 use App::RecordStream::Clumper::KeyPerfect;
 use App::RecordStream::Clumper::WrappedClumperCallback;
 use App::RecordStream::Clumper;
+use App::RecordStream::DomainLanguage::Library;
 use App::RecordStream::DomainLanguage::Snippet;
 use App::RecordStream::DomainLanguage::Valuation::KeySpec;
+use App::RecordStream::DomainLanguage;
 use App::RecordStream::KeyGroups;
 
 sub new {
