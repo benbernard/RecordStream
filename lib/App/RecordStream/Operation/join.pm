@@ -81,7 +81,9 @@ sub value_for_key {
   my $record = shift;
   my $key    = shift;
 
-  return ${$record->guess_key_from_spec($key, 0)};
+  return join "\x1E", # ASCII record separator (RS)
+          map { ${$record->guess_key_from_spec($_, 0)} }
+        split /,/, $key;
 }
 
 sub accept_record {
@@ -247,7 +249,7 @@ Usage: recs-join <args> <inputkey> <dbkey> <dbfile> [<files>]
    not match an input record are discarded.
 
    dbkey and inputkey may be key specs, see '--help-keyspecs' for more
-   information
+   information.  Separate multiple keyspecs with commas to use a composite key.
    __FORMAT_TEXT__
 
 Arguments:

@@ -1,4 +1,4 @@
-use Test::More qw(no_plan);
+use Test::More;
 use App::RecordStream::Test::OperationHelper;
 
 BEGIN { use_ok( 'App::RecordStream::Operation::join' ) };
@@ -66,3 +66,16 @@ App::RecordStream::Test::OperationHelper->do_match(
   $solution,
 );
 
+$solution = <<SOLUTION;
+{"foo":3,"zoo":"biz3"}
+{"foo":4,"zoo":"biz4"}
+SOLUTION
+
+App::RecordStream::Test::OperationHelper->do_match(
+  'join',
+  [ "foo,zoo", "foo,zoo", "tests/files/join3" ],
+  $stream,
+  $solution,
+);
+
+done_testing;
