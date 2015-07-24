@@ -18,6 +18,10 @@ recs-toprettyprint
     --nonested                   Do not nest the output of hashes, keep each
                                  value on one line
     --n <n>                      Only print n records
+    --aligned [r|l|right|left]   Format keys to the same width so values are
+                                 aligned. Keys are right aligned by default, but
+                                 you may pass a value of "left" to left align
+                                 keys within the width.
     --filename-key|fk <keyspec>  Add a key with the source filename (if no
                                  filename is applicable will put NONE)
  

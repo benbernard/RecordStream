@@ -17,7 +17,7 @@ recs-join
     not match an input record are discarded.
  
     dbkey and inputkey may be key specs, see '--help-keyspecs' for more
-    information
+    information. Separate multiple keyspecs with commas to use a composite key.
  
  Arguments:
     --left                       Do a left join
