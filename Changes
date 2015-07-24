@@ -1,5 +1,15 @@
 {{$NEXT}}
 
+4.0.15  2015-07-24 16:44:49 PDT
+    [Features]
+        * collate: added a --no-bucket option
+        * sort: force a stable sort, always
+        * join: composite key support
+        * toprettyprint: optionally align values
+
+    [Documentation]
+        * Corrected spelling and typos
+
 4.0.14  2015-04-19 21:14:29 PDT
     [Features]
         * Look for site classes to load in ~/.recs/site/ and any path provided

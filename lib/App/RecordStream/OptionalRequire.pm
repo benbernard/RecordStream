@@ -22,7 +22,7 @@ Class for optionally requiring a set of modules
 
 =cut
 
-our $VERSION = "4.0.14";
+our $VERSION = "4.0.15";
 
 use strict;
 use warnings;

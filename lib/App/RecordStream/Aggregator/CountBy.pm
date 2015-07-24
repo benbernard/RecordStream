@@ -1,6 +1,6 @@
 package App::RecordStream::Aggregator::CountBy;
 
-our $VERSION = "4.0.14";
+our $VERSION = "4.0.15";
 
 use strict;
 use warnings;

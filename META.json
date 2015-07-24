@@ -5,7 +5,7 @@
       "Keith Amling <keith.amling@gmail.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.020, CPAN::Meta::Converter version 2.142690",
+   "generated_by" : "Dist::Zilla version 5.032, CPAN::Meta::Converter version 2.143240",
    "license" : [
       "mit"
    ],
@@ -240,7 +240,7 @@
          "web" : "https://github.com/benbernard/RecordStream"
       }
    },
-   "version" : "4.0.14",
+   "version" : "4.0.15",
    "x_contributors" : [
       "Ben Bernard <github@benjaminbernard.com>",
       "Brandon Forehand <b4hand@users.sf.net>",

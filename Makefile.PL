@@ -85,7 +85,7 @@ my %WriteMakefileArgs = (
     "IPC::Open2" => 0,
     "Test::More" => "0.88"
   },
-  "VERSION" => "4.0.14",
+  "VERSION" => "4.0.15",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -107,6 +107,7 @@ my %FallbackPrereqs = (
   "Cwd" => 0,
   "Data::Dumper" => 0,
   "Date::Manip" => 0,
+  "ExtUtils::MakeMaker" => 0,
   "File::Basename" => 0,
   "File::Glob" => 0,
   "File::Spec::Functions" => 0,
