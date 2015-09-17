@@ -22,6 +22,10 @@ my $MODES = {
   'oracle' => {
     'db' => ['=s', undef, 'Database name (tnsname) to connect to'],
   },
+  'pg' => {
+    'host' => ['=s', undef, 'Hostname to connect to'],
+    'db'   => ['=s', undef, 'Database to connect to'],
+  },
   'main' => {
     'type'     => ['=s', 'sqlite', 'Type of database to connect to'],
     'user'     => ['=s', '', 'User to connect as'],
@@ -33,12 +37,14 @@ my $DESCRIPTIONS = {
   'sqlite' => 'A simple local file based db',
   'mysql'  => 'Connect to a remote mysql database',
   'oracle' => 'Connect to a remote Oracle database',
+  'pg'     => 'Connect to a remote PostgreSQL database',
 };
 
 my $DISPATCH_TABLE = {
   'sqlite' => \&sqlite_dbh,
   'mysql'  => \&mysql_dbh,
   'oracle' => \&oracle_dbh,
+  'pg'     => \&pg_dbh,
 };
 
 sub get_dbh {
@@ -146,6 +152,22 @@ sub oracle_dbh {
     $user,
     $password,
     { RaiseError => 1, PrintError => 1 });
+  return $dbh;
+}
+
+sub pg_dbh {
+  my $args = shift;
+
+  my $database = $args->{'db'};
+  my $host     = $args->{'host'};
+  my $user     = $args->{'user'};
+  my $password = $args->{'password'};
+
+  my $dbh = DBI->connect("DBI:Pg:database=$database;host=$host",
+    $user,
+    $password,
+    { RaiseError => 1, PrintError => 0 });
+
   return $dbh;
 }
 
