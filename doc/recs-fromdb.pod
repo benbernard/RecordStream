@@ -25,6 +25,7 @@ recs-fromdb
  Datbase types:
     mysql - Connect to a remote mysql database
     oracle - Connect to a remote Oracle database
+    pg - Connect to a remote PostgreSQL database
     sqlite - A simple local file based db
  
  Database Options for type: mysql
@@ -33,6 +34,10 @@ recs-fromdb
  
  Database Options for type: oracle
     db  - Database name (tnsname) to connect to
+ 
+ Database Options for type: pg
+    db  - Database to connect to
+    host  - Hostname to connect to
  
  Database Options for type: sqlite
     dbfile  - Local file for database - Default: testDb
