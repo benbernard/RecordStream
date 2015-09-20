@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+4.0.16  2015-09-19 17:51:52 PDT
+    [Features]
+        * Add Pg support for database commands (fromdb/todb)
+
 4.0.15  2015-07-24 16:44:49 PDT
     [Features]
         * collate: added a --no-bucket option
