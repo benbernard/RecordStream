@@ -16,7 +16,7 @@ sub short_usage {
    allows the creation of these objects in a programmatic way, with neither the
    syntactic issues of the normal way nor its guiding hand.
 
-   The domain language is itself just PERL with a collection of library
+   The domain language is itself just Perl with a collection of library
    functions for creating platform objects included.  Your favorite aggregators
    are all here with constructors matching their normal token.  For convenience
    of e.g.  last, aggregators are also included with a prefixed underscore.
@@ -45,7 +45,7 @@ Special Syntax
    __FORMAT_TEXT__
    To remedy this, one may use <<CODE>> to inline a snippet which will be
    immediately understood by the typing mechanism as being code.  Escaping
-   inside this is as single quotes in PERL.
+   inside this is as single quotes in Perl.
 
    Example With <<CODE>>
    __FORMAT_TEXT__
