@@ -13,11 +13,13 @@ requires 'IO::String';
 requires 'JSON::MaybeXS', '1.002005';
 requires 'Module::Pluggable::Object', '5.1';
 requires 'Pod::Perldoc';
+requires 'POSIX';
 requires 'Scalar::Util';
 requires 'Text::Autoformat';
 requires 'Text::CSV';
 requires 'Tie::Array';
 requires 'Tie::Hash';               # includes Tie::ExtraHash
+requires 'Time::ParseDate', '2013.1113';
 
 # XS deps
 recommends 'Cpanel::JSON::XS',
