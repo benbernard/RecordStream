@@ -292,8 +292,10 @@ Benjamin Bernard <perlhacker@benjaminbernard.com>
 
 Keith Amling <keith.amling@gmail.com>
 
+Thomas Sibley <github@zulutango.org>
+
 # COPYRIGHT AND LICENSE
 
-Copyright 2007–2015 by Benjamin Bernard and Keith Amling.
+Copyright 2007–2015 by the AUTHORS
 
 This software is released under the MIT and Artistic 1.0 licenses.
