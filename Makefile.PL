@@ -9,7 +9,7 @@ use ExtUtils::MakeMaker;
 
 my %WriteMakefileArgs = (
   "ABSTRACT" => "recs - A system for command-line analysis of data",
-  "AUTHOR" => "Ben Bernard <perlhacker\@benjaminbernard.com>, Keith Amling <keith.amling\@gmail.com>",
+  "AUTHOR" => "Ben Bernard <perlhacker\@benjaminbernard.com>, Keith Amling <keith.amling\@gmail.com>, Thomas Sibley <tsibley\@cpan.org>",
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0
   },

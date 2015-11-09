@@ -2,7 +2,8 @@
    "abstract" : "recs - A system for command-line analysis of data",
    "author" : [
       "Ben Bernard <perlhacker@benjaminbernard.com>",
-      "Keith Amling <keith.amling@gmail.com>"
+      "Keith Amling <keith.amling@gmail.com>",
+      "Thomas Sibley <tsibley@cpan.org>"
    ],
    "dynamic_config" : 0,
    "generated_by" : "Dist::Zilla version 5.039, CPAN::Meta::Converter version 2.150005",
@@ -251,7 +252,6 @@
       "Pax Unix <paxunix@gmail.com>",
       "Punya Biswal <p>",
       "Shawn Halpenny <paxunix@gmail.com>",
-      "Thomas Sibley <tsibley@cpan.org>",
       "Tomohiro Hosaka <bokutin@bokut.in>",
       "Torsten Blix <torsten.blix@gmail.com>",
       "infamouspat <itgpmc@gmail.com>"

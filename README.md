@@ -292,7 +292,7 @@ Benjamin Bernard <perlhacker@benjaminbernard.com>
 
 Keith Amling <keith.amling@gmail.com>
 
-Thomas Sibley <github@zulutango.org>
+Thomas Sibley <tsibley@cpan.org>
 
 # COPYRIGHT AND LICENSE
 
