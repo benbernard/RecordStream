@@ -75,4 +75,16 @@ $output = <<OUTPUT;
 OUTPUT
 $tester->test_stdin(['--delim', ';'], $input, $output);
 
+$output = <<OUTPUT;
+{"static":42,"foo":"bar","baz":"bat"}
+{"static":42,"red":"green","yellow":"blue"}
+OUTPUT
+
+App::RecordStream::Test::OperationHelper->do_match(
+  'fromcsv',
+  ['--header', '--key', 'static', 'tests/files/data3.csv', 'tests/files/data4.csv'],
+  '',
+  $output,
+);
+
 done_testing;
