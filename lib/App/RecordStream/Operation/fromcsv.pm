@@ -75,10 +75,11 @@ sub get_records_from_handle {
 
   my $parser     = $this->{'PARSER'};
   my $do_headers = $this->{'HEADER_LINE'};
+  my @fields     = @{ $this->{'FIELDS'} };
 
   while(my $row = $parser->getline($handle)) {
     if ( $do_headers ) {
-      push @{$this->{'FIELDS'}}, @$row;
+      push @fields, @$row;
       $do_headers = 0;
       next;
     }
@@ -87,7 +88,7 @@ sub get_records_from_handle {
 
     my $record = App::RecordStream::Record->new();
     for(my $i = 0; $i < @values; ++$i) {
-      my $key = $this->{'FIELDS'}->[$i] || $i;
+      my $key = $fields[$i] || $i;
       ${$record->guess_key_from_spec($key)} = $values[$i];
     }
     $this->push_record($record);
