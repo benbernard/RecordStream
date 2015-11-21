@@ -47,6 +47,7 @@ on 'develop' => sub {
     requires 'Dist::Zilla::Plugin::CustomLicense';
     requires 'Dist::Zilla::Plugin::ExecDir';
     requires 'Dist::Zilla::Plugin::ExtraTests';
+    requires 'Dist::Zilla::Plugin::GatherDir';
     requires 'Dist::Zilla::Plugin::Git::Check';
     requires 'Dist::Zilla::Plugin::Git::Commit';
     requires 'Dist::Zilla::Plugin::Git::GatherDir';
@@ -72,6 +73,7 @@ on 'develop' => sub {
     requires 'Dist::Zilla::Plugin::TestRelease';
     requires 'Dist::Zilla::Plugin::UploadToCPAN';
     requires 'Dist::Zilla::Plugin::VersionFromModule';
+    requires 'Software::License::Custom';
 
     # fatpacking
     requires 'App::FatPacker', '0.10.2';
