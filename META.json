@@ -156,6 +156,7 @@
             "Dist::Zilla::Plugin::CustomLicense" : "0",
             "Dist::Zilla::Plugin::ExecDir" : "0",
             "Dist::Zilla::Plugin::ExtraTests" : "0",
+            "Dist::Zilla::Plugin::GatherDir" : "0",
             "Dist::Zilla::Plugin::Git::Check" : "0",
             "Dist::Zilla::Plugin::Git::Commit" : "0",
             "Dist::Zilla::Plugin::Git::GatherDir" : "0",
@@ -188,6 +189,7 @@
             "Module::CPANfile" : "0",
             "Module::CoreList" : "0",
             "Perl::Strip" : "0",
+            "Software::License::Custom" : "0",
             "Test::Pod" : "1.41",
             "Tie::File" : "0",
             "lib::core::only" : "0"
@@ -241,7 +243,7 @@
          "web" : "https://github.com/benbernard/RecordStream"
       }
    },
-   "version" : "4.0.16",
+   "version" : "4.0.17",
    "x_contributors" : [
       "Ben Bernard <github@benjaminbernard.com>",
       "Brandon Forehand <b4hand@users.sf.net>",

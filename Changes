@@ -1,5 +1,17 @@
 {{$NEXT}}
 
+4.0.17  2015-11-20 18:29:48 PST
+    [Bug fixes]
+        * fromcsv: Properly handle --header when reading multiple files with
+          different header lines.  Previously, headers from each file
+          accumulated in order, causing the fields of earlier files to be used
+          for later files.  This was not noticeable when each file shared the
+          same header.
+
+    [Documention]
+        * s/PERL/Perl/g in various ancient places
+        * Add Thomas Sibley to the authors
+
 4.0.16  2015-09-19 17:51:52 PDT
     [Features]
         * Add Pg support for database commands (fromdb/todb)
