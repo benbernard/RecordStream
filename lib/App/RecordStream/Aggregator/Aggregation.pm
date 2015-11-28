@@ -1,6 +1,6 @@
 package App::RecordStream::Aggregator::Aggregation;
 
-our $VERSION = "4.0.17";
+our $VERSION = "4.0.18";
 
 # marker for aggregators (used in isa checks)
 

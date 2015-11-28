@@ -1,5 +1,5 @@
 package App::RecordStream::KeyGroups;
-our $VERSION = "4.0.17";
+our $VERSION = "4.0.18";
 
 use strict;
 use warnings;
