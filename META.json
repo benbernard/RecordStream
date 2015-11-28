@@ -197,7 +197,7 @@
       },
       "runtime" : {
          "recommends" : {
-            "Cpanel::JSON::XS" : "0",
+            "Cpanel::JSON::XS" : "!= 3.0201, != 3.0202, != 3.0203, != 3.0204",
             "Term::ReadKey" : "0",
             "Text::CSV_XS" : "0.99"
          },

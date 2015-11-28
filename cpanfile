@@ -20,7 +20,11 @@ requires 'Tie::Array';
 requires 'Tie::Hash';               # includes Tie::ExtraHash
 
 # XS deps
-recommends 'Cpanel::JSON::XS';
+recommends 'Cpanel::JSON::XS',
+    # Avoid versions with null/true/false bug:
+    # https://github.com/rurban/Cpanel-JSON-XS/issues/45
+    '!=3.0201, !=3.0202, !=3.0203, !=3.0204';
+
 recommends 'Text::CSV_XS', '0.99';
 recommends 'Term::ReadKey';
 
