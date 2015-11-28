@@ -2,8 +2,17 @@ use strict;
 use warnings;
 
 package App::RecordStream;
+use Module::Pluggable::Object;
 
 our $VERSION = "4.0.17";
+
+sub operation_packages {
+  sort { $a cmp $b }
+  Module::Pluggable::Object->new(
+    search_path => "App::RecordStream::Operation",
+    max_depth   => 4,
+  )->plugins
+}
 
 =encoding utf-8
 

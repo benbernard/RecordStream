@@ -12,7 +12,7 @@
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
-      "version" : "2"
+      "version" : 2
    },
    "name" : "App-RecordStream",
    "no_index" : {
@@ -226,6 +226,7 @@
          "requires" : {
             "File::Spec::Functions" : "0",
             "IPC::Open2" : "0",
+            "Module::Versions::Report" : "1.06",
             "Test::More" : "0.88"
          }
       }

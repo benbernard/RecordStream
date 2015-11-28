@@ -32,6 +32,7 @@ on 'test' => sub {
     requires 'Test::More', '0.88';
     requires 'File::Spec::Functions';
     requires 'IPC::Open2';
+    requires 'Module::Versions::Report', '1.06';
 };
 
 on 'develop' => sub {

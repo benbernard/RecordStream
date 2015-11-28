@@ -83,6 +83,7 @@ my %WriteMakefileArgs = (
   "TEST_REQUIRES" => {
     "File::Spec::Functions" => 0,
     "IPC::Open2" => 0,
+    "Module::Versions::Report" => "1.06",
     "Test::More" => "0.88"
   },
   "VERSION" => "4.0.17",
@@ -117,6 +118,7 @@ my %FallbackPrereqs = (
   "IPC::Open2" => 0,
   "JSON::MaybeXS" => "1.002005",
   "Module::Pluggable::Object" => "5.1",
+  "Module::Versions::Report" => "1.06",
   "Pod::Perldoc" => 0,
   "Scalar::Util" => 0,
   "Test::More" => "0.88",
