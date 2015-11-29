@@ -7,9 +7,14 @@ perl:
   - "5.12"
   - "5.10"
   - "5.8"
+sudo: false
+addons:
+  apt:
+    packages:
+      - libgd2-noxpm-dev
+      - libpcap-dev
+      - libexpat1-dev
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get -y install libgd2-noxpm-dev libpcap-dev libexpat1-dev
   - cpanm Module::CPANfile
 install:
   - cpanfile-dump --develop --recommends --suggests --with-all-features | grep -v Dist::Zilla | cpanm --notest
