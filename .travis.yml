@@ -17,6 +17,6 @@ addons:
 before_install:
   - cpanm Module::CPANfile
 install:
-  - cpanfile-dump --develop --recommends --suggests --with-all-features | grep -v Dist::Zilla | cpanm --notest
+  - cpanm --installdeps --notest --cpanfile <(./devel/author-testing-deps) .
   - env PERL_CPANM_OPT=--notest ./devel/update-fatlib --upgrade-local
 script: "perl Makefile.PL && env AUTHOR_TESTING=1 make test"

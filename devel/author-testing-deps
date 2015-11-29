@@ -1,0 +1,46 @@
+#!/usr/bin/env perl
+#
+# Output deps to install for author testing (either under `dzil test` or in the
+# Travis CI environment).  Notably this:
+#
+#   • Includes all recommended and suggested modules
+#   • Includes all feature requirements
+#   • Includes developer modules
+#   • Excludes anything to do with Dist::Zilla
+#   • Preserves version requirements
+#
+# Cribbed from cpanfile-dump (part of Module::CPANfile), but modified to output
+# a flattened, simplified cpanfile that preserves version requirements.
+#
+use strict;
+use warnings;
+use Module::CPANfile;
+use CPAN::Meta::Prereqs;
+
+my $file = Module::CPANfile->load("cpanfile");
+
+my @features = map { $_->identifier } $file->features;
+my $prereqs  = $file->prereqs_with( @features ); # CPAN::Meta::Prereqs object
+
+my $merged = CPAN::Meta::Prereqs->new;
+my @phases = qw(configure build test develop runtime);
+my @types  = qw(requires recommends suggests);
+
+for my $phase (@phases) {
+  for my $type (@types) {
+    my $requires = $prereqs->requirements_for($phase, $type)->as_string_hash;
+
+    delete $requires->{$_}
+      for grep { /Dist::Zilla/ } keys %$requires;
+
+    $merged = $merged->with_merged_prereqs(
+      CPAN::Meta::Prereqs->new({
+        runtime => {
+          requires => $requires,
+        }
+      })
+    );
+  }
+}
+
+print Module::CPANfile->from_prereqs($merged->as_string_hash)->to_string;
