@@ -56,7 +56,12 @@ sub create_executor {
 
   my $args = {
     xform => {
-      code => "\$line++; $snippet; \$r",
+      code => <<"      CODE",
+        \$line++;
+        $snippet
+          ; # Safe from a trailing comment in \$snippet
+        \$r
+      CODE
       arg_names => [qw(r filename B A)],
     },
     post_xform => {

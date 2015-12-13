@@ -25,7 +25,11 @@ sub init {
   $this->parse_options($args, $spec, ['bundling']);
 
   my $expression = $executor_options->get_string($args);
-  my $executor = App::RecordStream::Executor->new($expression . ';$r');
+  my $executor = App::RecordStream::Executor->new(<<"  CODE");
+    $expression
+      ; # Safe from a trailing comment in \$expression
+    \$r
+  CODE
 
   if ( ! $key_groups->has_any_group() ) {
     die "Must specify at least one --key, maybe you want recs-xform instead?\n";

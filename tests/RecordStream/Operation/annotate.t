@@ -1,4 +1,6 @@
-use Test::More qw(no_plan);
+use strict;
+use warnings;
+use Test::More;
 use App::RecordStream::Test::OperationHelper;
 
 BEGIN { use_ok( 'App::RecordStream::Operation::annotate' ) };
@@ -78,3 +80,18 @@ App::RecordStream::Test::OperationHelper->new(
   $output
 );
 
+# Test for GH #70:
+#   $ recs xform '42' <<<'{"foo":13}'
+#   {"foo":13}
+#   $ recs xform '42 #' <<<'{"foo":13}'
+#   42
+$input  = '{"foo":13}';
+$output = $input;
+App::RecordStream::Test::OperationHelper->do_match(
+  'annotate',
+  ['-k', 'foo', '42 #'],
+  $input,
+  $output,
+);
+
+done_testing;
