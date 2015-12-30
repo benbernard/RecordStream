@@ -86,7 +86,7 @@ my %WriteMakefileArgs = (
     "Module::Versions::Report" => "1.06",
     "Test::More" => "0.88"
   },
-  "VERSION" => "4.0.18",
+  "VERSION" => "4.0.19",
   "test" => {
     "TESTS" => "t/*.t"
   }

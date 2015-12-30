@@ -1,5 +1,13 @@
 {{$NEXT}}
 
+4.0.19-TRIAL  2015-12-30 13:58:01 PST - TRIAL DEVELOPMENT RELEASE
+    [Bug fixes]
+        * xform/annotate: Guard against trailing comments in snippets
+
+    [Tests]
+        * Travis CI: Use new container-based infrastructure for continuing support
+        * Travis CI: Install a more appropriate and limited set of dependencies
+
 4.0.18-TRIAL  2015-11-28 15:46:45 PST - TRIAL DEVELOPMENT RELEASE
     [Prereqs]
         * Avoid known-bad Cpanel::JSON::XS versions
