@@ -49,7 +49,7 @@ sub reduce
   my ($v1, $r1) = @$cookie1;
   my ($v2, $r2) = @$cookie2;
 
-  if($v1 > $v2)
+  if($v1 < $v2)
   {
     return $cookie1;
   }
