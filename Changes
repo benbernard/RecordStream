@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+4.0.20  2016-02-23 21:28:40 PST
+    All changes in the previous two trial releases, plus a bug fix:
+
+    [Bug fixes]
+        * collate: recformin aggregator was until now acting like recformax!
+
 4.0.19-TRIAL  2015-12-30 13:58:01 PST - TRIAL DEVELOPMENT RELEASE
     [Bug fixes]
         * xform/annotate: Guard against trailing comments in snippets
