@@ -46,7 +46,6 @@ on 'develop' => sub {
     # the rest of our deps.
     requires 'Dist::Zilla::Plugin::CheckChangesHasContent';
     requires 'Dist::Zilla::Plugin::ConfirmRelease';
-    requires 'Dist::Zilla::Plugin::ContributorsFromGit';
     requires 'Dist::Zilla::Plugin::CopyFilesFromBuild';
     requires 'Dist::Zilla::Plugin::CopyFilesFromRelease';
     requires 'Dist::Zilla::Plugin::CustomLicense';
@@ -55,6 +54,7 @@ on 'develop' => sub {
     requires 'Dist::Zilla::Plugin::GatherDir';
     requires 'Dist::Zilla::Plugin::Git::Check';
     requires 'Dist::Zilla::Plugin::Git::Commit';
+    requires 'Dist::Zilla::Plugin::Git::Contributors';
     requires 'Dist::Zilla::Plugin::Git::GatherDir';
     requires 'Dist::Zilla::Plugin::Git::Push';
     requires 'Dist::Zilla::Plugin::Git::Tag';
