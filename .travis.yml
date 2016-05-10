@@ -17,6 +17,7 @@ addons:
       - libpcap-dev
       - libexpat1-dev
 before_install:
+  - eval $(curl -fsS https://travis-perl.github.io/init) --perl
   - cpanm Module::CPANfile
 install:
   - cpanm --installdeps --notest --cpanfile <(./devel/author-testing-deps) .
