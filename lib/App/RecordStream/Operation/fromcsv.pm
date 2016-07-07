@@ -93,6 +93,15 @@ sub get_records_from_handle {
     }
     $this->push_record($record);
   }
+
+  # Parsing was a success only if we reached EOF and we got no error.  Code
+  # 2012 is used by Text::CSV_XS for normal EOF condition.
+  my ($code, $msg, $pos) = $parser->error_diag;
+  unless ($parser->eof and ($code == 0 or $code == 2012)) {
+      my ($line, $file) = ($., $this->get_current_filename);
+      die "fromcsv: parse error: $msg ($code)",
+          ", roughly at position $pos, line $line, file $file\n";
+  }
 }
 
 sub add_help_types {

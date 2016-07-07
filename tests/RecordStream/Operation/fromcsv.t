@@ -7,6 +7,7 @@ my $tester = App::RecordStream::Test::Tester->new('fromcsv');
 
 my $input;
 my $output;
+my $error;
 
 $input = <<INPUT;
 foo,bar,baz
@@ -86,5 +87,33 @@ App::RecordStream::Test::OperationHelper->do_match(
   '',
   $output,
 );
+
+# Test that we error on parse fail in middle of file
+$input = <<INPUT;
+foo "bar" bat
+baz
+INPUT
+
+ok !eval {
+  $tester->test_stdin(['--strict'], $input, ''); 1;
+  1;
+}, "Parsing bad input makes operation fail";
+$error = $@;
+like $error, qr/^fromcsv: parse error:/, "Parsing bad input produces error";
+like $error, qr/position \d, line 1, file NONE/, "Error contains position info"; # Text::CSV backends differ in ability to report character position
+
+# Test that we error on parse fail on last line
+$input = <<INPUT;
+baz
+foo "bar" bat
+INPUT
+
+ok !eval {
+  $tester->test_stdin(['--strict'], $input, ''); 1;
+  1;
+}, "Parsing bad input makes operation fail";
+$error = $@;
+like $error, qr/^fromcsv: parse error:/, "Parsing bad input produces error";
+like $error, qr/position \d, line 2, file NONE/, "Error contains position info"; # Text::CSV backends differ in ability to report character position
 
 done_testing;
