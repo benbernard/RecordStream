@@ -107,7 +107,7 @@ sub usage
   my $options = [
     [ 'key|k <keys>', 'Comma separated list of field names.  May be specified multiple times, may be key specs' ],
     [ 'header', 'Take field names from the first line of input' ],
-    [ 'strict', 'Do not trim whitespaces, allow loose quoting (quotes inside qutoes), or allow the use of escape characters when not strictly needed.  (not recommended, for most cases, though may help with parsing quoted fields containing newlines)' ],
+    [ 'strict', 'Do not trim whitespaces, allow loose quoting (quotes inside quotes), or allow the use of escape characters when not strictly needed.  (not recommended, for most cases, though may help with parsing quoted fields containing newlines)' ],
     [ 'delim|-d <character>', "Field delimiter to use when reading input lines (default ',')."],
   ];
 
