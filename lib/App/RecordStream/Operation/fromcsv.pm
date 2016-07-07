@@ -15,13 +15,15 @@ sub init {
   my @fields;
   my $header_line = undef;
   my $strict = 0;
-  my $delim = ',';
+  my $delim  = ',';
+  my $escape = '"';
 
   my $spec = {
     "keys|k|field|f=s" => sub { push @fields, split(/,/, $_[1]); },
     "header"           => \$header_line,
     "strict"           => \$strict,
     "delim|d=s"        => \$delim,
+    "escape=s"         => \$escape,
   };
 
   $this->parse_options($args, $spec);
@@ -30,9 +32,10 @@ sub init {
     unless length $delim == 1;
 
   my $csv_args = {
-    binary   => 1,
-    eol      => $/,
-    sep_char => $delim,
+    binary      => 1,
+    eol         => $/,
+    sep_char    => $delim,
+    escape_char => $escape,
   };
 
   if ( !$strict ) {
@@ -93,6 +96,15 @@ sub get_records_from_handle {
     }
     $this->push_record($record);
   }
+
+  # Parsing was a success only if we reached EOF and we got no error.  Code
+  # 2012 is used by Text::CSV_XS for normal EOF condition.
+  my ($code, $msg, $pos) = $parser->error_diag;
+  unless ($parser->eof and ($code == 0 or $code == 2012)) {
+      my ($line, $file) = ($., $this->get_current_filename);
+      die "fromcsv: parse error: $msg ($code)",
+          ", roughly at position $pos, line $line, file $file\n";
+  }
 }
 
 sub add_help_types {
@@ -107,8 +119,9 @@ sub usage
   my $options = [
     [ 'key|k <keys>', 'Comma separated list of field names.  May be specified multiple times, may be key specs' ],
     [ 'header', 'Take field names from the first line of input' ],
-    [ 'strict', 'Do not trim whitespaces, allow loose quoting (quotes inside qutoes), or allow the use of escape characters when not strictly needed.  (not recommended, for most cases, though may help with parsing quoted fields containing newlines)' ],
+    [ 'strict', 'Do not trim whitespaces, allow loose quoting (quotes inside quotes), or allow the use of escape characters when not strictly needed.  (not recommended, for most cases, though may help with parsing quoted fields containing newlines)' ],
     [ 'delim|-d <character>', "Field delimiter to use when reading input lines (default ',')."],
+    [ 'escape <character>', "Escape character used in quoted fields (default '\x22')."],
   ];
 
   my $args_string = $this->options_string($options);
