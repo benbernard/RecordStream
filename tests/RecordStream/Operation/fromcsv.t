@@ -116,4 +116,15 @@ $error = $@;
 like $error, qr/^fromcsv: parse error:/, "Parsing bad input produces error";
 like $error, qr/position \d, line 2, file NONE/, "Error contains position info"; # Text::CSV backends differ in ability to report character position
 
+# Custom escape character
+$input = <<INPUT;
+"foo \\"bar\\" bat"
+INPUT
+
+$output = <<OUTPUT;
+{"0":"foo \\"bar\\" bat"}
+OUTPUT
+
+$tester->test_stdin(['--strict', '--escape', '\\'], $input, $output);
+
 done_testing;
