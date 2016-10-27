@@ -1,5 +1,19 @@
 {{$NEXT}}
 
+4.0.21  2016-10-26 22:00:39 PDT
+    [Bug fixes]
+        * fromcsv: Fatalize parsing errors instead of silently stopping
+        * fromcsv: Support custom escape character to aid in parsing weird CSVs
+
+    [Documentation]
+        * Normalize more author names/addresses in the contributors list
+
+    [Tests]
+        * Travis CI: Test on Perl 5.22 and 5.24
+
+    [Development]
+        * Switch to Git::Contributors (away from ContributorsFromGit)
+
 4.0.20  2016-02-23 21:28:40 PST
     All changes in the previous two trial releases, plus a bug fix:
 

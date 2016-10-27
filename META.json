@@ -6,7 +6,7 @@
       "Thomas Sibley <tsibley@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.039, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Dist::Zilla version 6.005, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "mit"
    ],
@@ -18,15 +18,15 @@
    "no_index" : {
       "directory" : [
          "devel",
-         "local",
-         "fatlib",
-         "tests",
-         "t",
-         "xt",
-         "inc",
-         "share",
          "eg",
-         "examples"
+         "examples",
+         "fatlib",
+         "inc",
+         "local",
+         "share",
+         "t",
+         "tests",
+         "xt"
       ],
       "package" : [
          "KeyspecRecorder",
@@ -150,7 +150,6 @@
             "Dist::Zilla" : "0",
             "Dist::Zilla::Plugin::CheckChangesHasContent" : "0",
             "Dist::Zilla::Plugin::ConfirmRelease" : "0",
-            "Dist::Zilla::Plugin::ContributorsFromGit" : "0",
             "Dist::Zilla::Plugin::CopyFilesFromBuild" : "0",
             "Dist::Zilla::Plugin::CopyFilesFromRelease" : "0",
             "Dist::Zilla::Plugin::CustomLicense" : "0",
@@ -159,6 +158,7 @@
             "Dist::Zilla::Plugin::GatherDir" : "0",
             "Dist::Zilla::Plugin::Git::Check" : "0",
             "Dist::Zilla::Plugin::Git::Commit" : "0",
+            "Dist::Zilla::Plugin::Git::Contributors" : "0",
             "Dist::Zilla::Plugin::Git::GatherDir" : "0",
             "Dist::Zilla::Plugin::Git::Push" : "0",
             "Dist::Zilla::Plugin::Git::Tag" : "0",
@@ -244,7 +244,7 @@
          "web" : "https://github.com/benbernard/RecordStream"
       }
    },
-   "version" : "4.0.20",
+   "version" : "4.0.21",
    "x_contributors" : [
       "Ben Bernard <github@benjaminbernard.com>",
       "Brandon Forehand <b4hand@users.sf.net>",
