@@ -17,6 +17,7 @@ sub init {
   my $strict = 0;
   my $delim  = ',';
   my $escape = '"';
+  my $quote  = '"';
 
   my $spec = {
     "keys|k|field|f=s" => sub { push @fields, split(/,/, $_[1]); },
@@ -24,6 +25,7 @@ sub init {
     "strict"           => \$strict,
     "delim|d=s"        => \$delim,
     "escape=s"         => \$escape,
+    "quote=s"          => \$quote,
   };
 
   $this->parse_options($args, $spec);
@@ -36,6 +38,9 @@ sub init {
     eol         => $/,
     sep_char    => $delim,
     escape_char => $escape,
+
+    # Text::CSV wants undef, but it's easier to pass the empty string at the shell.
+    quote_char  => ($quote eq '' ? undef : $quote),
   };
 
   if ( !$strict ) {
@@ -122,6 +127,7 @@ sub usage
     [ 'strict', 'Do not trim whitespaces, allow loose quoting (quotes inside quotes), or allow the use of escape characters when not strictly needed.  (not recommended, for most cases, though may help with parsing quoted fields containing newlines)' ],
     [ 'delim|-d <character>', "Field delimiter to use when reading input lines (default ',')."],
     [ 'escape <character>', "Escape character used in quoted fields (default '\x22')."],
+    [ 'quote <character>', "Quote character used in quoted fields (default '\x22').  Use the empty string to indicate no quoted fields."],
   ];
 
   my $args_string = $this->options_string($options);

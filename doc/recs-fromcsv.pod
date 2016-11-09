@@ -24,6 +24,9 @@ recs-fromcsv
                                  (default ',').
     --escape <character>         Escape character used in quoted fields
                                  (default '"').
+    --quote <character>          Quote character used in quoted fields (default
+                                 '"'). Use the empty string to indicate no
+                                 quoted fields.
     --filename-key|fk <keyspec>  Add a key with the source filename (if no
                                  filename is applicable will put NONE)
  
