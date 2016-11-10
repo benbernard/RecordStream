@@ -20,7 +20,7 @@ This class knows out to look up a keyspec in a datastructure
 
 =cut
 
-our $VERSION = "4.0.21";
+our $VERSION = "4.0.22";
 
 use strict;
 use warnings;

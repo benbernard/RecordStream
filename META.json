@@ -6,7 +6,7 @@
       "Thomas Sibley <tsibley@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 6.005, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Dist::Zilla version 6.008, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "mit"
    ],
@@ -244,7 +244,7 @@
          "web" : "https://github.com/benbernard/RecordStream"
       }
    },
-   "version" : "4.0.21",
+   "version" : "4.0.22",
    "x_contributors" : [
       "Ben Bernard <github@benjaminbernard.com>",
       "Brandon Forehand <b4hand@users.sf.net>",
@@ -255,6 +255,7 @@
       "Shawn Halpenny <paxunix@gmail.com>",
       "Tomohiro Hosaka <bokutin@bokut.in>",
       "Torsten Blix <torsten.blix@gmail.com>"
-   ]
+   ],
+   "x_serialization_backend" : "Cpanel::JSON::XS version 3.0219"
 }
 

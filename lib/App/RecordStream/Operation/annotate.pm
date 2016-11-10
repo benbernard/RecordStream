@@ -1,6 +1,6 @@
 package App::RecordStream::Operation::annotate;
 
-our $VERSION = "4.0.21";
+our $VERSION = "4.0.22";
 
 use strict;
 
