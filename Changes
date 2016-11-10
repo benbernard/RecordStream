@@ -5,6 +5,9 @@
     [Documentation]
         * Correct contributor information for Punyashloka Biswal
 
+    [Development]
+        * Add required author dependency on Test::Pod 1.41
+
 4.0.21  2016-10-26 22:00:39 PDT
     [Bug fixes]
         * fromcsv: Fatalize parsing errors instead of silently stopping
