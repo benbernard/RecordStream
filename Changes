@@ -1,4 +1,9 @@
 {{$NEXT}}
+    [Features]
+        * fromcsv: Support custom quote character to aid in parsing weird CSVs
+
+    [Documentation]
+        * Correct contributor information for Punyashloka Biswal
 
 4.0.21  2016-10-26 22:00:39 PDT
     [Bug fixes]
