@@ -45,6 +45,7 @@ my $json = JSON->new();
 $json->allow_nonref(1);
 $json->allow_blessed(1);
 $json->convert_blessed(1);
+$json->canonical(1) if $ENV{HARNESS_ACTIVE};
 
 sub hashref_string {
   my $record = shift;
