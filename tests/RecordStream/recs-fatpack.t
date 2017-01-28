@@ -24,6 +24,15 @@ ok !keys %core_ops, '-l outputs all the core ops'
 # test aggregator (BaseRegistry) discovery
 is fatpack_ok('collate -a count', { stdin => '{}' }), '{"count":1}', 'json matches';
 
+# test running of external scripts, with standalone path and -- delimiter
+my $script = "$ENV{'BASE_TEST_DIR'}/files/load-test.pl";
+like fatpack_ok($script),       qr/^FatPacked::/, 'loaded module from fatpack';
+like fatpack_ok("--", $script), qr/^FatPacked::/, 'loaded module from fatpack';
+
+# test running of external scripts, with args
+is fatpack_ok("--", $script, qw[ foo bar baz ]), 'foo bar baz', 'args passed';
+
+
 sub fatpack_ok {
   my $opt = ref $_[-1] eq 'HASH' ? pop @_ : {};
   my $cmd = join ' ', $^X, '-Mlib::core::only', $recs, @_;
