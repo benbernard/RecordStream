@@ -1,4 +1,7 @@
 {{$NEXT}}
+    [Features]
+        * tojsonarray: A new command for outputting the record stream as a
+          single JSON array.  Complements the existing fromjsonarray.
 
 4.0.22  2016-11-09 16:24:48 PST
     [Features]
