@@ -125,7 +125,11 @@ sub version {
   print "\n";
   if (my @sites = App::RecordStream::Site::list_sites()) {
     print "Loaded sites:\n";
-    print "  $_\n" for sort { $a cmp $b } map { $_->{name} } @sites;
+    print "  ", join(" ", @$_), "\n"
+      for map { [$_, eval { $_->VERSION } || ()] }
+         sort { $a cmp $b }
+          map { $_->{name} }
+              @sites;
   }
   exit;
 }
