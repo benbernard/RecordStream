@@ -27,3 +27,6 @@ perl -pi -e 's{^#!perl$}{#!/usr/bin/env perl}' recs
 
 echo "Setting version to $version"
 perl -pi -e "s/(?<=^our \\\$VERSION)(?=;)/ = '$version'/" recs
+
+echo "Setting fatpack status"
+perl -pi -e "s/(?<=^our \\\$FATPACKED = )0(?=;)/1/" recs

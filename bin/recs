@@ -4,6 +4,7 @@ use warnings;
 no warnings 'exec';
 
 our $VERSION;
+our $FATPACKED = 0;
 
 use App::RecordStream;
 use App::RecordStream::Site;
@@ -120,7 +121,7 @@ sub _path_ops {
 
 sub version {
   print "recs/" . ($VERSION || $App::RecordStream::VERSION);
-  print " (fatpacked)" if grep { ref =~ /^FatPacked/ } @INC;
+  print " (fatpacked)" if $FATPACKED;
   print "\n";
   if (my @sites = App::RecordStream::Site::list_sites()) {
     print "Loaded sites:\n";

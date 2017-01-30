@@ -8,8 +8,15 @@ use IPC::Open2;
 my ($recs) = grep { -e } map { "$_/recs" }
   "$ENV{BASE_TEST_DIR}/..", $ENV{DZIL_ROOT_DIR};
 
-plan 'skip_all', "recs must exist and be executable and lib::core::only must be installed"
-  unless $recs and -x $recs and eval { require lib::core::only; 1 };
+my ($recs_original) = grep { -e } map { "$_/recs" }
+  "$ENV{BASE_TEST_DIR}/../bin", "$ENV{DZIL_ROOT_DIR}/scripts";
+
+plan 'skip_all', "both versions of recs must exist and lib::core::only must be installed"
+  unless $recs and $recs_original and eval { require lib::core::only; 1 };
+
+# check that version reports fatpack status correctly
+like   fatpack_ok("--version"),                qr/fatpacked/, "fatpacked version reports fatpacked";
+unlike run_ok("$^X $recs_original --version"), qr/fatpacked/, "original version does not report fatpacked";
 
 # test loading of both Text::CSV_PP and JSON::PP
 is_deeply decode_json(fatpack_ok('fromcsv', { stdin => 'foo,bar,baz' })), { 0 => "foo", 1 => "bar", 2 => "baz" }, 'json matches';
@@ -36,6 +43,12 @@ is fatpack_ok("--", $script, qw[ foo bar baz ]), 'foo bar baz', 'args passed';
 sub fatpack_ok {
   my $opt = ref $_[-1] eq 'HASH' ? pop @_ : {};
   my $cmd = join ' ', $^X, '-Mlib::core::only', $recs, @_;
+  return run_ok($cmd, $opt);
+}
+
+sub run_ok {
+  my $cmd = shift;
+  my $opt = shift || {};
   my $pid = open2(my $stdout, my $stdin, $cmd);
 
   print { $stdin } $opt->{stdin}, "\n" if defined $opt->{stdin};
