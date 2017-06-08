@@ -298,6 +298,6 @@ Thomas Sibley <tsibley@cpan.org>
 
 # COPYRIGHT AND LICENSE
 
-Copyright 2007–2015 by the AUTHORS
+Copyright 2007–2017 by the AUTHORS
 
 This software is released under the MIT and Artistic 1.0 licenses.
