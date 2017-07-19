@@ -17,6 +17,7 @@ sub operation_packages {
 =encoding utf-8
 
 =for markdown
+<img src="https://cdn.rawgit.com/benbernard/RecordStream/master/logos/logo-small.svg" align="right">
 [![CPAN version](https://badge.fury.io/pl/App-RecordStream.png)](https://metacpan.org/release/App-RecordStream)
 [![Build Status](https://travis-ci.org/benbernard/RecordStream.svg?branch=master)](https://travis-ci.org/benbernard/RecordStream)
 
@@ -343,7 +344,7 @@ Thomas Sibley <tsibley@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2007–2015 by the AUTHORS
+Copyright 2007–2017 by the AUTHORS
 
 This software is released under the MIT and Artistic 1.0 licenses.
 
