@@ -1,7 +1,17 @@
 {{$NEXT}}
+
+4.0.23  2017-07-19 10:18:50 PDT
     [Features]
         * tojsonarray: A new command for outputting the record stream as a
           single JSON array.  Complements the existing fromjsonarray.
+
+        * Support for running a Perl script under the recs libraries with:
+            recs -- file.pl [arguments]
+
+        * Site lib versions are reported by `recs --version` if available
+
+    [Bug fixes]
+        * More reliably determine the fatpack-status of recs
 
 4.0.22  2016-11-09 16:24:48 PST
     [Features]
