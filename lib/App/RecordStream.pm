@@ -18,6 +18,8 @@ sub operation_packages {
 
 =for markdown
 <img src="https://cdn.rawgit.com/benbernard/RecordStream/master/logos/logo-small.svg" align="right">
+
+=for markdown
 [![CPAN version](https://badge.fury.io/pl/App-RecordStream.png)](https://metacpan.org/release/App-RecordStream)
 [![Build Status](https://travis-ci.org/benbernard/RecordStream.svg?branch=master)](https://travis-ci.org/benbernard/RecordStream)
 
