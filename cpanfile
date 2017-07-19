@@ -112,10 +112,13 @@ feature 'recs-fromdb and recs-todb', 'SQL database support' => sub {
     suggests 'DBD::SQLite';
 };
 
-feature 'recs-frommongo', 'MongoDB data source' => sub {
-    requires 'MongoDB';
-    requires 'JSON::PP';
-};
+# MongoDB only supports 5.10+
+unless ($] lt '5.010') {
+    feature 'recs-frommongo', 'MongoDB data source' => sub {
+        requires 'MongoDB';
+        requires 'JSON::PP';
+    };
+}
 
 feature 'recs-fromps', 'Process list data source' => sub {
     requires 'Proc::ProcessTable';
