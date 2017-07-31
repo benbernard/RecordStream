@@ -16,7 +16,7 @@ STREAM
 
 my $stream2 = <<STREAM;
 {"value":"10.0.0.101","element":"address", "foo": "bar", "bar": "baz"}
-{"value":"10.0.1.101","element":"address", "bar": "baz2", "bar": "baz3"}
+{"value":"10.0.1.101","element":"address", "foo": "baz2", "bar": "baz3"}
 {"value":"10.0.0.102","element":null, "foo": "bar3", "bar": null}
 {"value":"10.0.0.103","foo": "bar", "bar": "baz3"}
 {"value":"10.0.1.103","element":"address2", "foo": "bar", "bar": "baz"}
