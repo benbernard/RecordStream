@@ -1,6 +1,6 @@
 package App::RecordStream::Test::Tester;
 
-our $VERSION = "4.0.23";
+our $VERSION = "4.0.24";
 
 use strict;
 use warnings;

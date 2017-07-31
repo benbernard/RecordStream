@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+4.0.24  2017-07-31 09:41:23 PDT
+    [Tests]
+        * Remove duplicate key in JSON input that caused errors from
+          Cpanel::JSON::XS on CPAN Testers.  Reported by Slaven Rezić as
+          [rt.cpan.org #122646].
+
 4.0.23  2017-07-19 10:18:50 PDT
     [Features]
         * tojsonarray: A new command for outputting the record stream as a

@@ -4,7 +4,7 @@ use warnings;
 package App::RecordStream;
 use Module::Pluggable::Object;
 
-our $VERSION = "4.0.23";
+our $VERSION = "4.0.24";
 
 sub operation_packages {
   sort { $a cmp $b }
