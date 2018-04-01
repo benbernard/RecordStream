@@ -155,6 +155,7 @@ sub do_match {
   my $args           = shift;
   my $input          = shift;
   my $output         = shift;
+  my $test_name      = shift;
 
   my $operation_class = "App::RecordStream::Operation::$operation_name";
   my $keeper = App::RecordStream::Test::OperationHelper::Keeper->new();
@@ -178,7 +179,7 @@ sub do_match {
     output    => $output,
   );
 
-  $helper->matches();
+  $helper->matches($test_name);
 
   return $helper;
 }

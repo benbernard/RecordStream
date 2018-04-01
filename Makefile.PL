@@ -73,12 +73,14 @@ my %WriteMakefileArgs = (
     "IO::String" => 0,
     "JSON::MaybeXS" => "1.002005",
     "Module::Pluggable::Object" => "5.1",
+    "POSIX" => 0,
     "Pod::Perldoc" => 0,
     "Scalar::Util" => 0,
     "Text::Autoformat" => 0,
     "Text::CSV" => 0,
     "Tie::Array" => 0,
-    "Tie::Hash" => 0
+    "Tie::Hash" => 0,
+    "Time::ParseDate" => "2013.1113"
   },
   "TEST_REQUIRES" => {
     "File::Spec::Functions" => 0,
@@ -119,13 +121,15 @@ my %FallbackPrereqs = (
   "JSON::MaybeXS" => "1.002005",
   "Module::Pluggable::Object" => "5.1",
   "Module::Versions::Report" => "1.06",
+  "POSIX" => 0,
   "Pod::Perldoc" => 0,
   "Scalar::Util" => 0,
   "Test::More" => "0.88",
   "Text::Autoformat" => 0,
   "Text::CSV" => 0,
   "Tie::Array" => 0,
-  "Tie::Hash" => 0
+  "Tie::Hash" => 0,
+  "Time::ParseDate" => "2013.1113"
 );
 
 unless ( eval { ExtUtils::MakeMaker->VERSION(6.63_03) } ) {
