@@ -18,7 +18,7 @@ recs-totable
                                  Does not print line of -s after header 2.
                                  Separates by single character rather than
                                  series of spaces
-    --delimiter <string>         Only useful with --spreadsheet, delimit with
+    --delim|d <string>           Only useful with --spreadsheet, delimit with
                                  <string> rather than the default of a tab
     --clear                      Put blanks in cells where all of the row so far
                                  matches the row above.
