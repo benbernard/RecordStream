@@ -170,10 +170,44 @@ note '--relative: +2d';
 }
 
 # XXX TODO
+#   https://github.com/benbernard/RecordStream/pull/74
+#   https://github.com/bestpractical/hiveminder/blob/master/lib/BTDT/DateTime.pm#L163-L186
+#   https://metacpan.org/pod/distribution/Date-Manip/lib/Date/Manip/DM5.pod#ParseDate
 note 'Special handling';
 {
-  # epochs... unparseable without special casing?
   # ISO8601
+  App::RecordStream::Test::OperationHelper->do_match(
+    'parsedate',
+    [qw[ -k when --to-tz UTC --format ], '%F %T'],
+    '{"when":"2016-02-28T10:45:18-0800"}',
+    '{"when":"2016-02-28 18:45:18"}',
+    "2016-02-28T10:45:18-0800 is 2016-02-28 18:45:18",
+  );
+
+  App::RecordStream::Test::OperationHelper->do_match(
+    'parsedate',
+    [qw[ -k when --to-tz UTC --format ], '%F %T'],
+    '{"when":"2016-02-28T10:45:18"}',
+    '{"when":"2016-02-28 18:45:18"}',
+    "2016-02-28T10:45:18 is 2016-02-28 18:45:18",
+  );
+
+  App::RecordStream::Test::OperationHelper->do_match(
+    'parsedate',
+    [qw[ -k when --to-tz UTC --format ], '%F %T'],
+    '{"when":"2016-02-28T10:45:18Z"}',
+    '{"when":"2016-02-28 10:45:18"}',
+    "2016-02-28T10:45:18Z is 2016-02-28 10:45:18",
+  );
+
+  # epochs... unparseable without special casing?
+  App::RecordStream::Test::OperationHelper->do_match(
+    'parsedate',
+    [qw[ -k when --to-tz UTC --format ], '%F %T'],
+    '{"when":"1456685118"}',
+    '{"when":"2016-02-28 18:45:18"}',
+    "1456685118 is 2016-02-28 18:45:18",
+  );
 };
 
 note 'Bug: datetimes on and around the epoch';
