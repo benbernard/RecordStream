@@ -225,7 +225,7 @@ sub usage {
     ['no-header|n', 'Do not print column headers'],
     ['key|k <field name>', 'May be comma separated, may be specified multiple times.  Specifies the fields to put in the table.  May be a keyspec or a keygroup, see --help-keys'],
     ['spreadsheet', 'Print out in a format suitable for excel.  1. Does not print line of -s after header 2. Separates by single character rather than series of spaces'],
-    ['delimiter <string>', 'Only useful with --spreadsheet, delimit with <string> rather than the default of a tab'],
+    ['delim|d <string>', 'Only useful with --spreadsheet, delimit with <string> rather than the default of a tab'],
     ['clear', 'Put blanks in cells where all of the row so far matches the row above.'],
   ];
 
