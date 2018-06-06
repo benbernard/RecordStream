@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+4.0.25  2018-06-06 08:48:39 PDT
+    [Documentation]
+        * totable: Correct --delim option name in help.  Thanks to Tomohiro
+          Hosaka for the report!
+
 4.0.24  2017-07-31 09:41:23 PDT
     [Tests]
         * Remove duplicate key in JSON input that caused errors from

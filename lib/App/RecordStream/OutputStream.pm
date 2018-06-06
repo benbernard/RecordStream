@@ -34,7 +34,7 @@ recs processes.
 
 =cut
 
-our $VERSION = "4.0.24";
+our $VERSION = "4.0.25";
 
 use strict;
 use warnings;
