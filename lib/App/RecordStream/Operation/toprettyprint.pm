@@ -101,7 +101,7 @@ sub output_value {
       $this->output_array($prefix . '   ', $value);
     }
     else {
-      $this->push_line($prefix . "$key = EMPTY ARAY");
+      $this->push_line($prefix . "$key = EMPTY ARRAY");
     }
   }
   else {
