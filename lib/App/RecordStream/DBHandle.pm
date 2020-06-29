@@ -166,7 +166,7 @@ sub pg_dbh {
   my $dbh = DBI->connect("DBI:Pg:database=$database;host=$host",
     $user,
     $password,
-    { RaiseError => 1, PrintError => 0 });
+    { RaiseError => 1, PrintError => 0, pg_enable_utf8 => 0 });
 
   return $dbh;
 }
