@@ -23,7 +23,8 @@ my $MODES = {
     'db' => ['=s', undef, 'Database name (tnsname) to connect to'],
   },
   'pg' => {
-    'host' => ['=s', undef, 'Hostname to connect to'],
+    'host' => ['=s', '',    'Hostname to connect to'],
+    'port' => ['=i', '',    'Port to connect to'],
     'db'   => ['=s', undef, 'Database to connect to'],
   },
   'main' => {
@@ -160,10 +161,17 @@ sub pg_dbh {
 
   my $database = $args->{'db'};
   my $host     = $args->{'host'};
+  my $port     = $args->{'port'};
   my $user     = $args->{'user'};
   my $password = $args->{'password'};
 
-  my $dbh = DBI->connect("DBI:Pg:database=$database;host=$host",
+  my $driver_dsn = join ";",
+    "database=$database",
+    ( $host ? "host=$host" : () ),
+    ( $port ? "port=$port" : () ),
+    ;
+
+  my $dbh = DBI->connect("DBI:Pg:$driver_dsn",
     $user,
     $password,
     { RaiseError => 1, PrintError => 0 });
