@@ -1,8 +1,9 @@
 import type { Clumper, ClumperCallback } from "../Clumper.ts";
 import { clumperRegistry } from "../Clumper.ts";
 import { KeyGroups } from "../KeyGroups.ts";
+import { findKey } from "../KeySpec.ts";
 import type { Record } from "../Record.ts";
-import type { JsonObject } from "../types/json.ts";
+import type { JsonObject, JsonValue } from "../types/json.ts";
 
 /**
  * ClumperOptions handles CLI option parsing for clumper specifications.
@@ -17,13 +18,16 @@ interface PendingClumper {
 }
 
 export class ClumperOptions {
-  private keySize: number | null = null;
-  private keyCube = false;
-  private pending: PendingClumper[] = [];
-  private callback: ClumperCallback | null = null;
-  private callbackCookie: unknown = undefined;
-  private helpList = false;
-  private helpShow: string | null = null;
+  keySize: number | null = null;
+  keyCube = false;
+  keyPerfect = false;
+  pending: PendingClumper[] = [];
+  callback: ClumperCallback | null = null;
+  callbackCookie: unknown = undefined;
+  helpList = false;
+  helpShow: string | null = null;
+  groups: Map<string, unknown> | null = null;
+  groupOrder: string[] = [];
 
   /**
    * Add a key group spec for grouping.
@@ -45,6 +49,13 @@ export class ClumperOptions {
    */
   setKeySize(size: number): void {
     this.keySize = size;
+  }
+
+  /**
+   * Enable perfect mode (group records regardless of order).
+   */
+  setPerfect(enabled: boolean): void {
+    this.keyPerfect = enabled;
   }
 
   /**
@@ -93,17 +104,58 @@ export class ClumperOptions {
 
   /**
    * Accept a record, resolving pending clumper configuration on first call.
+   * Groups records by key specs if any are configured.
    */
   acceptRecord(record: Record): boolean {
     if (!this.callback) {
       throw new Error("checkOptions must be called before acceptRecord");
     }
 
-    if (this.callbackCookie === undefined) {
-      this.callbackCookie = this.callback.clumperCallbackBegin({});
+    // No keys configured: all records go into one group
+    if (this.pending.length === 0) {
+      if (this.callbackCookie === undefined) {
+        this.callbackCookie = this.callback.clumperCallbackBegin({});
+      }
+      this.callback.clumperCallbackPushRecord(this.callbackCookie, record);
+      return true;
     }
 
-    this.callback.clumperCallbackPushRecord(this.callbackCookie, record);
+    // Get key specs and values for this record
+    const keySpecs = this.getKeySpecs(record);
+    const data = record.dataRef() as JsonObject;
+    const keyValues: { [key: string]: JsonValue } = {};
+    const keyParts: string[] = [];
+
+    for (const spec of keySpecs) {
+      const val = findKey(data, spec, true);
+      keyValues[spec] = val ?? null;
+      keyParts.push(String(val ?? ""));
+    }
+
+    const groupKey = keyParts.join("\x1E");
+
+    if (!this.groups) {
+      this.groups = new Map();
+    }
+
+    let cookie = this.groups.get(groupKey);
+    if (cookie === undefined) {
+      // Handle LRU eviction if keySize is set and NOT in perfect mode
+      if (!this.keyPerfect && this.keySize !== null && this.groups.size >= this.keySize) {
+        const oldestKey = this.groupOrder.shift()!;
+        const oldCookie = this.groups.get(oldestKey);
+        if (oldCookie !== undefined) {
+          this.callback.clumperCallbackEnd(oldCookie);
+          this.groups.delete(oldestKey);
+        }
+      }
+
+      cookie = this.callback.clumperCallbackBegin(keyValues);
+      this.groups.set(groupKey, cookie);
+      this.groupOrder.push(groupKey);
+    }
+
+    this.callback.clumperCallbackPushRecord(cookie, record);
     return true;
   }
 
@@ -111,8 +163,23 @@ export class ClumperOptions {
    * Signal that the stream is done.
    */
   streamDone(): void {
-    if (this.callback && this.callbackCookie !== undefined) {
-      this.callback.clumperCallbackEnd(this.callbackCookie);
+    if (!this.callback) return;
+
+    if (this.pending.length === 0) {
+      // No keys: single group
+      if (this.callbackCookie !== undefined) {
+        this.callback.clumperCallbackEnd(this.callbackCookie);
+      }
+    } else if (this.groups) {
+      // End all remaining groups in order
+      for (const key of this.groupOrder) {
+        const cookie = this.groups.get(key);
+        if (cookie !== undefined) {
+          this.callback.clumperCallbackEnd(cookie);
+        }
+      }
+      this.groups.clear();
+      this.groupOrder = [];
     }
   }
 
@@ -122,6 +189,10 @@ export class ClumperOptions {
 
   isAdjacent(): boolean {
     return this.keySize === 1;
+  }
+
+  isPerfect(): boolean {
+    return this.keyPerfect;
   }
 
   isCube(): boolean {

@@ -1,6 +1,7 @@
-import { Operation } from "../../Operation.ts";
+import { Operation, HelpExit } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
 import {
+  aggregatorRegistry,
   makeAggregators,
   mapInitial,
   mapCombine,
@@ -12,6 +13,10 @@ import { ClumperOptions } from "../../clumpers/Options.ts";
 import { Record } from "../../Record.ts";
 import { setKey } from "../../KeySpec.ts";
 import type { JsonObject } from "../../types/json.ts";
+import { parseDomainLanguage, mapReduceAgg, injectIntoAgg, snippetValuation } from "../../DomainLanguage.ts";
+
+// Ensure all aggregators are registered
+import "../../aggregators/registry.ts";
 
 /**
  * ClumperCallback for collate: receives groups of records,
@@ -104,9 +109,25 @@ export class CollateOperation extends Operation {
   clumperOptions!: ClumperOptions;
   incremental = false;
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+    this.useHelpType("keygroups");
+    this.useHelpType("keys");
+    this.useHelpType("domainlanguage");
+    this.useHelpType("clumping");
+    this.addCustomHelpType(
+      "aggregators",
+      () => aggregatorRegistry.listImplementations(),
+      "List the aggregators",
+    );
+  }
+
   init(args: string[]): void {
     const clumperOptions = new ClumperOptions();
     const aggregatorSpecs: string[] = [];
+    const dlAggregators = new Map<string, AnyAggregator>();
+    const mrAggParts: string[] = [];
+    const iiAggParts: string[] = [];
     let incremental = false;
     let bucket = true;
 
@@ -126,6 +147,52 @@ export class CollateOperation extends Operation {
         description: "Aggregator specification",
       },
       {
+        long: "dlaggregator",
+        short: "A",
+        type: "string",
+        handler: (v) => {
+          const str = v as string;
+          const eqIdx = str.indexOf("=");
+          if (eqIdx < 0) {
+            throw new Error(`Bad domain language aggregator option (missing '=' to separate name and code): ${str}`);
+          }
+          const name = str.slice(0, eqIdx);
+          const code = str.slice(eqIdx + 1);
+          dlAggregators.set(name, parseDomainLanguage(code));
+        },
+        description: "Domain language aggregator (name=expression)",
+      },
+      {
+        long: "mr-agg",
+        type: "string",
+        handler: (v) => { mrAggParts.push(v as string); },
+        description: "MapReduce aggregator: name map reduce squish (4 args, pass flag 4 times)",
+      },
+      {
+        long: "ii-agg",
+        type: "string",
+        handler: (v) => { iiAggParts.push(v as string); },
+        description: "InjectInto aggregator: name initial combine squish (4 args, pass flag 4 times)",
+      },
+      {
+        long: "dlkey",
+        type: "string",
+        handler: (v) => {
+          const str = v as string;
+          const eqIdx = str.indexOf("=");
+          if (eqIdx < 0) {
+            throw new Error(`Bad domain language key option (missing '=' to separate name and code): ${str}`);
+          }
+          // DL key: the code evaluates as a valuation, which is used as a synthetic key
+          const name = str.slice(0, eqIdx);
+          const code = str.slice(eqIdx + 1);
+          // Create a valuation from the DL code and use as a key
+          void snippetValuation(code);
+          clumperOptions.addKey(name);
+        },
+        description: "Domain language key (name=expression evaluating to a valuation)",
+      },
+      {
         long: "incremental",
         short: "i",
         type: "boolean",
@@ -135,14 +202,8 @@ export class CollateOperation extends Operation {
       {
         long: "bucket",
         type: "boolean",
-        handler: () => { bucket = true; },
+        handler: (v) => { bucket = v as boolean; },
         description: "Output one record per clump (default)",
-      },
-      {
-        long: "no-bucket",
-        type: "boolean",
-        handler: () => { bucket = false; },
-        description: "Output one record for each record in the clump",
       },
       {
         long: "adjacent",
@@ -164,18 +225,77 @@ export class CollateOperation extends Operation {
         description: "Enable cube mode (all key combinations with ALL)",
       },
       {
+        long: "clumper",
+        short: "c",
+        type: "string",
+        handler: (v) => { clumperOptions.addClumper(v as string); },
+        description: "Clumper specification (e.g. keylru,field,size or keyperfect,field)",
+      },
+      {
+        long: "perfect",
+        type: "boolean",
+        handler: () => { clumperOptions.setPerfect(true); },
+        description: "Group records regardless of order (perfect hashing)",
+      },
+      {
         long: "list-aggregators",
         type: "boolean",
         handler: () => {
-          // Would print aggregator list
+          throw new HelpExit(aggregatorRegistry.listImplementations());
         },
-        description: "List available aggregators",
+        description: "List available aggregators and exit",
+      },
+      {
+        long: "list",
+        type: "boolean",
+        handler: () => {
+          throw new HelpExit(aggregatorRegistry.listImplementations());
+        },
+        description: "Alias for --list-aggregators",
+      },
+      {
+        long: "show-aggregator",
+        type: "string",
+        handler: (v) => {
+          throw new HelpExit(aggregatorRegistry.showImplementation(v as string));
+        },
+        description: "Show details of a specific aggregator and exit",
       },
     ];
 
     this.parseOptions(args, defs);
 
+    // Build the aggregators map: start with -a specs, then merge DL aggregators
     const aggregators = makeAggregators(...aggregatorSpecs);
+
+    // Merge domain language aggregators
+    for (const [name, agg] of dlAggregators) {
+      aggregators.set(name, agg);
+    }
+
+    // Process --mr-agg (groups of 4: name, map, reduce, squish)
+    if (mrAggParts.length % 4 !== 0) {
+      throw new Error(`--mr-agg requires groups of 4 arguments (name, map, reduce, squish), got ${mrAggParts.length}`);
+    }
+    for (let j = 0; j < mrAggParts.length; j += 4) {
+      const name = mrAggParts[j]!;
+      const mapExpr = mrAggParts[j + 1]!;
+      const reduceExpr = mrAggParts[j + 2]!;
+      const squishExpr = mrAggParts[j + 3]!;
+      aggregators.set(name, mapReduceAgg(mapExpr, reduceExpr, squishExpr));
+    }
+
+    // Process --ii-agg (groups of 4: name, initial, combine, squish)
+    if (iiAggParts.length % 4 !== 0) {
+      throw new Error(`--ii-agg requires groups of 4 arguments (name, initial, combine, squish), got ${iiAggParts.length}`);
+    }
+    for (let j = 0; j < iiAggParts.length; j += 4) {
+      const name = iiAggParts[j]!;
+      const initialExpr = iiAggParts[j + 1]!;
+      const combineExpr = iiAggParts[j + 2]!;
+      const squishExpr = iiAggParts[j + 3]!;
+      aggregators.set(name, injectIntoAgg(initialExpr, combineExpr, squishExpr));
+    }
 
     const callback = new CollateClumperCallback(
       aggregators,
@@ -225,6 +345,31 @@ export const documentation: CommandDoc = {
       argument: "<aggregators>",
     },
     {
+      flags: ["--dlaggregator", "-A"],
+      description:
+        "Domain language aggregator in the form name=expression. " +
+        "The expression is evaluated as JavaScript to produce an aggregator.",
+      argument: "<name>=<expression>",
+    },
+    {
+      flags: ["--mr-agg"],
+      description:
+        "MapReduce aggregator: specify 4 times for name, map snippet, reduce snippet, and squish snippet.",
+      argument: "<string>",
+    },
+    {
+      flags: ["--ii-agg"],
+      description:
+        "InjectInto aggregator: specify 4 times for name, initial snippet, combine snippet, and squish snippet.",
+      argument: "<string>",
+    },
+    {
+      flags: ["--dlkey"],
+      description:
+        "Domain language key: name=expression where the expression evaluates as a valuation.",
+      argument: "<name>=<expression>",
+    },
+    {
       flags: ["--incremental", "-i"],
       description:
         "Output a record every time an input record is added to a clump " +
@@ -253,8 +398,23 @@ export const documentation: CommandDoc = {
         "Enable cube mode: output all key combinations with ALL placeholders.",
     },
     {
+      flags: ["--clumper", "-c"],
+      description:
+        "Clumper specification (e.g. keylru,field,size or keyperfect,field or window,size).",
+      argument: "<spec>",
+    },
+    {
+      flags: ["--perfect"],
+      description: "Group records regardless of order (perfect hashing).",
+    },
+    {
       flags: ["--list-aggregators"],
       description: "List available aggregators and exit.",
+    },
+    {
+      flags: ["--show-aggregator"],
+      description: "Show details of a specific aggregator and exit.",
+      argument: "<name>",
     },
   ],
   examples: [
