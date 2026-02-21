@@ -1,0 +1,77 @@
+.TH RECS\-FLATTEN 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-flatten \- Flatten nested hash/array structures in records into top\-level fields
+
+.SH SYNOPSIS
+.B recs flatten [options] [files...]
+
+.SH DESCRIPTION
+Flatten nested hash/array structures in records into top\-level fields. Note: this implements a strategy for dealing with nested structures that is almost always better handled by using keyspecs or keygroups.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--depth\fR \fI<number>\fR
+Change the default flatten depth. Negative values mean arbitrary depth. Default is 1.
+.TP
+\fB--key\fR, \fB-k\fR \fI<fields>\fR
+Comma\-separated list of fields to flatten at the default depth.
+.TP
+\fB--deep\fR \fI<fields>\fR
+Comma\-separated list of fields to flatten to arbitrary depth.
+.TP
+\fB--separator\fR \fI<string>\fR
+String used to separate joined field names. Default is \'\-\'.
+
+.SH EXAMPLES
+Flatten a nested field one level deep
+.PP
+.RS 4
+.nf
+\fBrecs flatten -k field\fR
+.fi
+.RE
+.PP
+Input:
+.RS 4
+.nf
+{"field":{"subfield":"value"}}
+.fi
+.RE
+.PP
+Output:
+.RS 4
+.nf
+{"field-subfield":"value"}
+.fi
+.RE
+
+Flatten a deeply nested structure to arbitrary depth
+.PP
+.RS 4
+.nf
+\fBrecs flatten --deep x\fR
+.fi
+.RE
+.PP
+Input:
+.RS 4
+.nf
+{"x":{"y":[{"z":"v"}]}}
+.fi
+.RE
+.PP
+Output:
+.RS 4
+.nf
+{"x-y-0-z":"v"}
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-xform\fR(1), \fBrecs\-stream2table\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

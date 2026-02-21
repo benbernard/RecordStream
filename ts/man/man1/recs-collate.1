@@ -1,0 +1,80 @@
+.TH RECS\-COLLATE 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-collate \- Take records, grouped together by \-\-keys, and compute statistics (like average, count, sum, concat, etc
+
+.SH SYNOPSIS
+.B recs collate [options] [files...]
+
+.SH DESCRIPTION
+Take records, grouped together by \-\-keys, and compute statistics (like average, count, sum, concat, etc.) within those groups.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--key\fR, \fB-k\fR \fI<keys>\fR
+Comma\-separated list of key fields for grouping. May be a key spec or key group.
+.TP
+\fB--aggregator\fR, \fB-a\fR \fI<aggregators>\fR
+Colon\-separated aggregator specification in the form [<fieldname>=]<aggregator>[,<arguments>].
+.TP
+\fB--incremental\fR, \fB-i\fR
+Output a record every time an input record is added to a clump (instead of every time a clump is flushed).
+.TP
+\fB--bucket\fR
+Output one record per clump (default).
+.TP
+\fB--no-bucket\fR
+Output one record for each record that went into the clump.
+.TP
+\fB--adjacent\fR
+Only group together adjacent records. Avoids spooling records into memory.
+.TP
+\fB--size\fR, \fB-n\fR \fI<number>\fR
+Number of running clumps to keep.
+.TP
+\fB--cube\fR
+Enable cube mode: output all key combinations with ALL placeholders.
+.TP
+\fB--list-aggregators\fR
+List available aggregators and exit.
+
+.SH EXAMPLES
+Count number of each x field value in the entire file
+.PP
+.RS 4
+.nf
+\fBrecs collate --key x --aggregator count\fR
+.fi
+.RE
+
+Find the maximum latency for each date, hour pair
+.PP
+.RS 4
+.nf
+\fBrecs collate --key date,hour --aggregator worst_latency=max,latency\fR
+.fi
+.RE
+
+Produce a cumulative sum of profit up to each date
+.PP
+.RS 4
+.nf
+\fBrecs collate --key date --adjacent --incremental --aggregator profit_to_date=sum,profit\fR
+.fi
+.RE
+
+Count clumps of adjacent lines with matching x fields
+.PP
+.RS 4
+.nf
+\fBrecs collate --adjacent --key x --aggregator count\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-decollate\fR(1), \fBrecs\-sort\fR(1), \fBrecs\-multiplex\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

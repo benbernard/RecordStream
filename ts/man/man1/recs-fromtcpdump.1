@@ -1,0 +1,29 @@
+.TH RECS\-FROMTCPDUMP 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-fromtcpdump \- Runs tcpdump and puts out records, one for each packet
+
+.SH SYNOPSIS
+.B recs fromtcpdump [options] <file1> [<file2> ...]
+
+.SH DESCRIPTION
+Runs tcpdump and puts out records, one for each packet. Expects pcap files. Will put the name of the originating capture file in the \'file\' field. Will parse packet types: ethernet, ip, udp, arp, tcp. The type key will indicate the highest level parsed. By default, data output is suppressed due to poor interaction with terminal programs.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--data\fR
+Include raw data bytes of deepest packet level.
+
+.SH EXAMPLES
+Get records for all packets
+.PP
+.RS 4
+.nf
+\fBrecs fromtcpdump capture.pcap\fR
+.fi
+.RE
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

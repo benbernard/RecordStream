@@ -1,0 +1,57 @@
+.TH RECS\-NORMALIZETIME 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-normalizetime \- Given a single key field containing a date/time value, construct a normalized version of the value and place it into a field named \'n_<key>\'
+
+.SH SYNOPSIS
+.B recs normalizetime [options] [files...]
+
+.SH DESCRIPTION
+Given a single key field containing a date/time value, construct a normalized version of the value and place it into a field named \'n_<key>\'. Used in conjunction with recs collate to aggregate information over normalized time buckets.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--key\fR, \fB-k\fR \fI<key>\fR
+Key field containing the date/time value. May be a key spec.
+.TP
+\fB--threshold\fR, \fB-n\fR \fI<time range>\fR
+Number of seconds in each bucket. May also be a duration string like \'1 week\' or \'5 minutes\'.
+.TP
+\fB--epoch\fR, \fB-e\fR
+Assumes the date/time field is expressed in epoch seconds (optional, defaults to non\-epoch).
+.TP
+\fB--strict\fR, \fB-s\fR
+Apply strict normalization (defaults to non\-strict).
+
+.SH EXAMPLES
+Tag records with normalized time in 5 minute buckets from the date field
+.PP
+.RS 4
+.nf
+\fBrecs normalizetime --strict --key date -n 300\fR
+.fi
+.RE
+
+Normalize time with fuzzy normalization into 1 minute buckets from an epoch\-relative time field
+.PP
+.RS 4
+.nf
+\fBrecs normalizetime --key time -e -n 60\fR
+.fi
+.RE
+
+Get 1 week buckets
+.PP
+.RS 4
+.nf
+\fBrecs normalizetime --key timestamp -n \'1 week\'\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-collate\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

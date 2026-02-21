@@ -1,0 +1,35 @@
+.TH RECS\-DECOLLATE 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-decollate \- Reverse of collate: takes a single record and produces multiple records using deaggregators
+
+.SH SYNOPSIS
+.B recs decollate [options] [files...]
+
+.SH DESCRIPTION
+Reverse of collate: takes a single record and produces multiple records using deaggregators. Decollate records of input into output records.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--deaggregator\fR, \fB-d\fR \fI<deaggregators>\fR
+Deaggregator specification (colon\-separated).
+.TP
+\fB--list-deaggregators\fR
+List available deaggregators and exit.
+
+.SH EXAMPLES
+Split the \'hosts\' field into individual \'host\' fields
+.PP
+.RS 4
+.nf
+\fBrecs decollate --deaggregator \'split,hosts,/\\s*,\\s*/,host\'\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-collate\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

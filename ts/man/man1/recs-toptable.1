@@ -1,0 +1,69 @@
+.TH RECS\-TOPTABLE 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-toptable \- Creates a multi\-dimensional pivot table with any number of x and y axes
+
+.SH SYNOPSIS
+.B recs toptable [options] [files...]
+
+.SH DESCRIPTION
+Creates a multi\-dimensional pivot table with any number of x and y axes. X and Y fields can take the special value \'FIELD\' which uses unused field names as values for the FIELD dimension.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--x-field\fR, \fB-x\fR \fI<field>\fR
+Add an x field (column axis). Values of the specified field will become columns in the table. May be a keyspec or a keygroup.
+.TP
+\fB--y-field\fR, \fB-y\fR \fI<field>\fR
+Add a y field (row axis). Values of the specified field will become rows in the table. May be a keyspec or a keygroup.
+.TP
+\fB--v-field\fR, \fB-v\fR \fI<field>\fR
+Specify the value field to display in the table. If multiple value fields are specified and FIELD is not placed in the x or y axes, then the last one wins. May be a keyspec or a keygroup.
+.TP
+\fB--pin\fR, \fB-p\fR \fI<field=value>\fR
+Pin a field to a certain value, only display records matching that value. Takes value of the form: field=pinnedValue.
+.TP
+\fB--sort\fR \fI<sort spec>\fR
+Sort specifications for x/y values in headers. See recs sort \-\-help for details of sort specifications.
+.TP
+\fB--noheaders\fR
+Do not print row and column headers.
+.TP
+\fB--records\fR, \fB--recs\fR
+Instead of printing a table, output records, one per row of the table.
+.TP
+\fB--sort-all-to-end\fR, \fB--sa\fR
+Sort ALL fields to the end, equivalent to \-\-sort FIELD=* for each \-\-x and \-\-y field.
+
+.SH EXAMPLES
+Collate and display in a nice table
+.PP
+.RS 4
+.nf
+\fB... | recs collate --key state,priority -a count | recs toptable --x state --y priority\fR
+.fi
+.RE
+
+Display left over field names as columns
+.PP
+.RS 4
+.nf
+\fB... | recs collate --key state,priority -a count -a sum,rss | recs toptable --x state,FIELD --y priority\fR
+.fi
+.RE
+
+Specify the displayed cell values
+.PP
+.RS 4
+.nf
+\fB... | recs collate --key state,priority -a count -a sum,rss | recs toptable --x state,FIELD --y priority --v sum_rss\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-collate\fR(1), \fBrecs\-totable\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+
