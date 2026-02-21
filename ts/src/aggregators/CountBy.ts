@@ -5,7 +5,7 @@ import { findKey } from "../KeySpec.ts";
 import { aggregatorRegistry } from "../Aggregator.ts";
 
 export class CountByAggregator implements Aggregator<JsonObject> {
-  private field: string;
+  field: string;
 
   constructor(field: string) {
     this.field = field;

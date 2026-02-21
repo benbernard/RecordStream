@@ -5,8 +5,8 @@ import { findKey } from "../KeySpec.ts";
 import { aggregatorRegistry } from "../Aggregator.ts";
 
 export class ConcatenateAggregator implements Aggregator<JsonArray> {
-  private delimiter: string;
-  private field: string;
+  delimiter: string;
+  field: string;
 
   constructor(delimiter: string, field: string) {
     this.delimiter = delimiter;

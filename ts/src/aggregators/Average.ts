@@ -7,7 +7,7 @@ import { aggregatorRegistry } from "../Aggregator.ts";
 type Ord2State = [number, number, number]; // [sum1, sumx, sumx2]
 
 export class AverageAggregator implements Aggregator<Ord2State | null> {
-  private field: string;
+  field: string;
 
   constructor(field: string) {
     this.field = field;

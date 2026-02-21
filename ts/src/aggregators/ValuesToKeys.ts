@@ -5,8 +5,8 @@ import { findKey } from "../KeySpec.ts";
 import { aggregatorRegistry } from "../Aggregator.ts";
 
 export class ValuesToKeysAggregator implements Aggregator<JsonObject | null> {
-  private keyField: string;
-  private valueField: string;
+  keyField: string;
+  valueField: string;
 
   constructor(keyField: string, valueField: string) {
     this.keyField = keyField;

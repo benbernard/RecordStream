@@ -9,13 +9,13 @@ interface KeyPerfectState {
 }
 
 export class KeyPerfectClumper implements Clumper {
-  protected field: string;
+  field: string;
 
   constructor(field: string) {
     this.field = field;
   }
 
-  protected getValues(value: string): string[] {
+  getValues(value: string): string[] {
     return [value];
   }
 

@@ -2,7 +2,7 @@ import { KeyPerfectClumper } from "./KeyPerfect.ts";
 import { clumperRegistry } from "../Clumper.ts";
 
 export class CubeKeyPerfectClumper extends KeyPerfectClumper {
-  protected override getValues(value: string): string[] {
+  override getValues(value: string): string[] {
     return [value, "ALL"];
   }
 }

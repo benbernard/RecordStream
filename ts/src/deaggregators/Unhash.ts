@@ -3,8 +3,8 @@ import { deaggregatorRegistry } from "../Deaggregator.ts";
 import type { JsonValue, JsonObject } from "../types/json.ts";
 
 export class UnhashDeaggregator extends FieldDeaggregator {
-  private newKeyField: string;
-  private newValueField: string | null;
+  newKeyField: string;
+  newValueField: string | null;
 
   constructor(oldField: string, newKeyField: string, newValueField?: string) {
     super(oldField);
@@ -12,7 +12,7 @@ export class UnhashDeaggregator extends FieldDeaggregator {
     this.newValueField = newValueField ?? null;
   }
 
-  protected deaggregateField(value: JsonValue | undefined): { [key: string]: JsonValue }[] {
+  deaggregateField(value: JsonValue | undefined): { [key: string]: JsonValue }[] {
     if (value === undefined || value === null || typeof value !== "object" || Array.isArray(value)) {
       return [];
     }

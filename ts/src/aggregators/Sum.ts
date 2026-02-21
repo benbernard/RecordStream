@@ -5,7 +5,7 @@ import { findKey } from "../KeySpec.ts";
 import { aggregatorRegistry } from "../Aggregator.ts";
 
 export class SumAggregator implements Aggregator<JsonValue> {
-  private field: string;
+  field: string;
 
   constructor(field: string) {
     this.field = field;

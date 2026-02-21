@@ -5,8 +5,8 @@ import { findKey } from "../KeySpec.ts";
 import { aggregatorRegistry } from "../Aggregator.ts";
 
 export class PercentileMapAggregator implements Aggregator<number[]> {
-  private percentiles: number[];
-  private field: string;
+  percentiles: number[];
+  field: string;
 
   constructor(percentiles: string, field: string) {
     this.percentiles = percentiles.split(/\s+/).map(Number);
