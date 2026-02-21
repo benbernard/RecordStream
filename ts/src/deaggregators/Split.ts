@@ -12,8 +12,8 @@ function makeDelim(delim: string): RegExp {
 }
 
 export class SplitDeaggregator extends FieldDeaggregator {
-  private delim: RegExp;
-  private newField: string;
+  delim: RegExp;
+  newField: string;
 
   constructor(oldField: string, delim: string, newField: string) {
     super(oldField);
@@ -21,7 +21,7 @@ export class SplitDeaggregator extends FieldDeaggregator {
     this.newField = newField;
   }
 
-  protected deaggregateField(value: JsonValue | undefined): { [key: string]: JsonValue }[] {
+  deaggregateField(value: JsonValue | undefined): { [key: string]: JsonValue }[] {
     if (value === undefined || value === null) return [];
     const parts = String(value).split(this.delim);
     return parts.map((part) => ({ [this.newField]: part }));

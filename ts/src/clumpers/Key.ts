@@ -9,7 +9,7 @@ interface KeyAdjacentState {
 }
 
 export class KeyAdjacentClumper implements Clumper {
-  private field: string;
+  field: string;
 
   constructor(field: string) {
     this.field = field;

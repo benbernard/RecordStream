@@ -43,8 +43,8 @@ function lruPurge(state: LRUState, maxSize: number, callback: ClumperCallback): 
 }
 
 export class KeyLRUClumper implements Clumper {
-  private field: string;
-  private size: number;
+  field: string;
+  size: number;
 
   constructor(field: string, size: string) {
     this.field = field;

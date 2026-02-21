@@ -5,7 +5,7 @@ import { findKey } from "../KeySpec.ts";
 import { aggregatorRegistry } from "../Aggregator.ts";
 
 export class ModeAggregator implements Aggregator<Map<string, number>> {
-  private field: string;
+  field: string;
 
   constructor(field: string) {
     this.field = field;

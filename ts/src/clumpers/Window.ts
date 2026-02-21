@@ -7,7 +7,7 @@ interface WindowState {
 }
 
 export class WindowClumper implements Clumper {
-  private size: number;
+  size: number;
 
   constructor(size: string) {
     this.size = Number(size);

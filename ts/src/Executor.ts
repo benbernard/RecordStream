@@ -16,30 +16,30 @@ export interface SnippetDef {
 }
 
 export class Executor {
-  private snippets: Map<string, CompiledSnippet>;
-  private lineCounter = 0;
-  private currentFilename = "NONE";
+  #snippets: Map<string, CompiledSnippet>;
+  #lineCounter = 0;
+  #currentFilename = "NONE";
 
   constructor(codeOrSnippets: string | { [name: string]: SnippetDef }) {
-    this.snippets = new Map();
+    this.#snippets = new Map();
 
     if (typeof codeOrSnippets === "string") {
-      this.addSnippet("__DEFAULT", {
+      this.#addSnippet("__DEFAULT", {
         code: codeOrSnippets,
         argNames: ["r"],
       });
     } else {
       for (const [name, def] of Object.entries(codeOrSnippets)) {
-        this.addSnippet(name, def);
+        this.#addSnippet(name, def);
       }
     }
   }
 
-  private addSnippet(name: string, def: SnippetDef): void {
+  #addSnippet(name: string, def: SnippetDef): void {
     const transformedCode = transformCode(def.code);
     const argNames = def.argNames ?? ["r"];
     const fn = compileSnippet(transformedCode, argNames);
-    this.snippets.set(name, { fn, argNames });
+    this.#snippets.set(name, { fn, argNames });
   }
 
   /**
@@ -54,29 +54,29 @@ export class Executor {
    * Execute a named snippet with the given arguments.
    */
   executeMethod(name: string, ...args: unknown[]): unknown {
-    const snippet = this.snippets.get(name);
+    const snippet = this.#snippets.get(name);
     if (!snippet) {
       throw new Error(`No such snippet: ${name}`);
     }
 
-    this.lineCounter++;
-    return snippet.fn(...args, this.lineCounter, this.currentFilename);
+    this.#lineCounter++;
+    return snippet.fn(...args, this.#lineCounter, this.#currentFilename);
   }
 
   setCurrentFilename(filename: string): void {
-    this.currentFilename = filename;
+    this.#currentFilename = filename;
   }
 
   getCurrentFilename(): string {
-    return this.currentFilename;
+    return this.#currentFilename;
   }
 
   getLine(): number {
-    return this.lineCounter;
+    return this.#lineCounter;
   }
 
   resetLine(): void {
-    this.lineCounter = 0;
+    this.#lineCounter = 0;
   }
 }
 
@@ -93,8 +93,9 @@ interface CompiledSnippet {
  */
 export function transformCode(code: string): string {
   // Replace {{keyspec}} = value with __set(r, "keyspec", value)
+  // Negative lookahead (?!=) ensures == and === are not matched as assignment
   let transformed = code.replace(
-    /\{\{(.*?)\}\}\s*=\s*([^;,\n]+)/g,
+    /\{\{(.*?)\}\}\s*=(?!=)\s*([^;,\n]+)/g,
     (_match, keyspec: string, value: string) => {
       return `__set(r, ${JSON.stringify(keyspec)}, ${value.trim()})`;
     }
@@ -109,6 +110,31 @@ export function transformCode(code: string): string {
   );
 
   return transformed;
+}
+
+/**
+ * Wrap a user expression so that it returns its result.
+ * In Perl, eval returns the last expression automatically; JS requires explicit return.
+ * If the code already contains 'return', it is left as-is.
+ * For multi-statement code (separated by ;), only the last statement is wrapped.
+ */
+export function autoReturn(code: string): string {
+  const trimmed = code.trim();
+  if (/\breturn\b/.test(trimmed)) return trimmed;
+
+  // Strip trailing semicolons
+  const stripped = trimmed.replace(/;+$/, "");
+  if (stripped.includes(";")) {
+    const lastSemi = stripped.lastIndexOf(";");
+    const prefix = stripped.substring(0, lastSemi + 1);
+    const lastExpr = stripped.substring(lastSemi + 1).trim();
+    if (lastExpr) {
+      return `${prefix}\nreturn (${lastExpr})`;
+    }
+    return stripped;
+  }
+
+  return `return (${stripped})`;
 }
 
 /**

@@ -8,7 +8,7 @@ import { aggregatorRegistry } from "../Aggregator.ts";
 type RecForState = JsonArray | null;
 
 export class RecordForMaximumAggregator implements Aggregator<RecForState> {
-  private field: string;
+  field: string;
 
   constructor(field: string) {
     this.field = field;

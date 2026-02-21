@@ -8,8 +8,8 @@ import { aggregatorRegistry } from "../Aggregator.ts";
 type Ord2BivState = [number, number, number, number, number, number];
 
 export class CovarianceAggregator implements Aggregator<Ord2BivState | null> {
-  private fieldX: string;
-  private fieldY: string;
+  fieldX: string;
+  fieldY: string;
 
   constructor(fieldX: string, fieldY: string) {
     this.fieldX = fieldX;

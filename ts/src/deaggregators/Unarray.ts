@@ -3,14 +3,14 @@ import { deaggregatorRegistry } from "../Deaggregator.ts";
 import type { JsonValue, JsonArray } from "../types/json.ts";
 
 export class UnarrayDeaggregator extends FieldDeaggregator {
-  private newField: string;
+  newField: string;
 
   constructor(oldField: string, newField: string) {
     super(oldField);
     this.newField = newField;
   }
 
-  protected deaggregateField(value: JsonValue | undefined): { [key: string]: JsonValue }[] {
+  deaggregateField(value: JsonValue | undefined): { [key: string]: JsonValue }[] {
     if (!Array.isArray(value)) return [];
     return (value as JsonArray).map((item) => ({ [this.newField]: item }));
   }

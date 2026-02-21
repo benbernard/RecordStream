@@ -5,8 +5,8 @@ import { findKey } from "../KeySpec.ts";
 import { aggregatorRegistry } from "../Aggregator.ts";
 
 export class PercentileAggregator implements Aggregator<number[]> {
-  private percentile: number;
-  private field: string;
+  percentile: number;
+  field: string;
 
   constructor(percentile: string, field: string) {
     this.percentile = Number(percentile);

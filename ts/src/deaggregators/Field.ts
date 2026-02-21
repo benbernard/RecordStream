@@ -4,7 +4,7 @@ import { findKey } from "../KeySpec.ts";
 import type { JsonValue } from "../types/json.ts";
 
 export abstract class FieldDeaggregator implements Deaggregator {
-  protected field: string;
+  field: string;
 
   constructor(field: string) {
     this.field = field;
@@ -22,7 +22,7 @@ export abstract class FieldDeaggregator implements Deaggregator {
     });
   }
 
-  protected abstract deaggregateField(
+  abstract deaggregateField(
     value: JsonValue | undefined
   ): { [key: string]: JsonValue }[];
 }
