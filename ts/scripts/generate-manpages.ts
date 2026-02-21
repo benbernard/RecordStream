@@ -5,11 +5,11 @@
  * Output: man/man1/recs-<command>.1 for each operation, plus recs.1
  */
 
-import type { CommandDoc, OptionDoc, ExampleDoc } from "../src/types/CommandDoc.ts";
-import { readdirSync, writeFileSync, mkdirSync } from "node:fs";
-import { join, basename } from "node:path";
+import type { CommandDoc } from "../src/types/CommandDoc.ts";
+import { loadAllDocs } from "../src/cli/help.ts";
+import { writeFileSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
 
-const OPS_ROOT = join(import.meta.dir, "..", "src", "operations");
 const MAN_DIR = join(import.meta.dir, "..", "man", "man1");
 const CATEGORIES = ["input", "transform", "output"] as const;
 const DATE = new Date().toISOString().slice(0, 10);
@@ -175,88 +175,15 @@ function generateMainManPage(allDocs: CommandDoc[]): string {
   return lines.join("\n") + "\n";
 }
 
-/**
- * Format a CommandDoc as terminal-friendly help text (for `recs help <cmd>`).
- */
-export function docToHelpText(doc: CommandDoc, width = 80): string {
-  const lines: string[] = [];
-
-  lines.push(`Usage: ${doc.synopsis}`);
-  lines.push("");
-  lines.push(wordWrap(doc.description, width));
-  lines.push("");
-
-  if (doc.options.length > 0) {
-    lines.push("Options:");
-    for (const opt of doc.options) {
-      const flags = opt.flags.join(", ");
-      const argStr = opt.argument ? ` ${opt.argument}` : "";
-      lines.push(`  ${flags}${argStr}`);
-      lines.push(`      ${wordWrap(opt.description, width - 6)}`);
-    }
-    lines.push("");
-  }
-
-  if (doc.examples.length > 0) {
-    lines.push("Examples:");
-    for (const ex of doc.examples) {
-      lines.push(`  ${ex.description}`);
-      lines.push(`    ${ex.command}`);
-      lines.push("");
-    }
-  }
-
-  if (doc.seeAlso && doc.seeAlso.length > 0) {
-    lines.push(`See also: ${doc.seeAlso.map((s) => `recs ${s}`).join(", ")}`);
-  }
-
-  return lines.join("\n");
-}
-
-function wordWrap(text: string, width: number): string {
-  const words = text.split(/\s+/);
-  const lines: string[] = [];
-  let current = "";
-
-  for (const word of words) {
-    if (current.length + word.length + 1 > width && current.length > 0) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = current ? current + " " + word : word;
-    }
-  }
-  if (current) lines.push(current);
-  return lines.join("\n");
-}
-
 async function main(): Promise<void> {
   mkdirSync(MAN_DIR, { recursive: true });
 
-  const allDocs: CommandDoc[] = [];
+  const allDocs = await loadAllDocs();
 
-  for (const category of CATEGORIES) {
-    const dir = join(OPS_ROOT, category);
-    const files = readdirSync(dir).filter(
-      (f) => f.endsWith(".ts") && f !== "index.ts"
-    );
-
-    for (const file of files) {
-      const modulePath = join(OPS_ROOT, category, file);
-      const mod = (await import(modulePath)) as Record<string, unknown>;
-      const doc = mod["documentation"] as CommandDoc | undefined;
-
-      if (!doc) {
-        console.warn(`Warning: ${file} has no documentation export, skipping`);
-        continue;
-      }
-
-      allDocs.push(doc);
-
-      const manContent = docToManPage(doc);
-      const manFile = join(MAN_DIR, `recs-${doc.name}.1`);
-      writeFileSync(manFile, manContent);
-    }
+  for (const doc of allDocs) {
+    const manContent = docToManPage(doc);
+    const manFile = join(MAN_DIR, `recs-${doc.name}.1`);
+    writeFileSync(manFile, manContent);
   }
 
   // Generate main recs.1 page

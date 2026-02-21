@@ -90,7 +90,7 @@ async function main(): Promise<void> {
 
 function validateDoc(
   doc: CommandDoc,
-  filename: string,
+  _filename: string,
   category: string
 ): string[] {
   const problems: string[] = [];
