@@ -228,3 +228,36 @@ function normalizeXmlObject(obj: JsonObject): JsonObject {
 
   return result;
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "fromxml",
+  category: "input",
+  synopsis: "recs fromxml [options] [<URIs>]",
+  description:
+    "Reads either from STDIN or from the specified URIs. Parses the XML documents and creates records for the specified elements. If multiple element types are specified, will add an 'element' field to the output record.",
+  options: [
+    {
+      flags: ["--element"],
+      argument: "<elements>",
+      description:
+        "May be comma separated, may be specified multiple times. Sets the elements/attributes to print records for.",
+    },
+    {
+      flags: ["--nested"],
+      description: "Search for elements at all levels of the XML document.",
+    },
+  ],
+  examples: [
+    {
+      description: "Create records for the bar element at the top level of myXMLDoc",
+      command: "recs fromxml --element bar file:myXMLDoc",
+    },
+    {
+      description: "Create records for all foo and bar elements from a URL",
+      command: "recs fromxml --element foo,bar --nested http://google.com",
+    },
+  ],
+  seeAlso: ["fromatomfeed"],
+};

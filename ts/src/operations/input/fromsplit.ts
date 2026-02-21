@@ -126,3 +126,51 @@ function readFileSync(path: string): string {
   const fs = require("node:fs") as typeof import("node:fs");
   return fs.readFileSync(path, "utf-8");
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "fromsplit",
+  category: "input",
+  synopsis: "recs fromsplit [options] [<files>]",
+  description:
+    "Each line of input (or lines of <files>) is split on the provided delimiter to produce an output record. Keys are named numerically (0, 1, etc.) or as given by --key.",
+  options: [
+    {
+      flags: ["--delim", "-d"],
+      argument: "<delim>",
+      description: "Delimiter to use for splitting input lines (default ',').",
+    },
+    {
+      flags: ["--key", "-k"],
+      argument: "<keys>",
+      description:
+        "Comma separated list of key names. May be specified multiple times, may be key specs.",
+    },
+    {
+      flags: ["--field", "-f"],
+      argument: "<keys>",
+      description:
+        "Comma separated list of key names. May be specified multiple times, may be key specs.",
+    },
+    {
+      flags: ["--header"],
+      description: "Take key names from the first line of input.",
+    },
+    {
+      flags: ["--strict"],
+      description: "Delimiter is not treated as a regex.",
+    },
+  ],
+  examples: [
+    {
+      description: "Parse space separated keys x and y",
+      command: "recs fromsplit --key x,y --delim ' '",
+    },
+    {
+      description: "Parse comma separated keys a, b, and c",
+      command: "recs fromsplit --key a,b,c",
+    },
+  ],
+  seeAlso: ["fromcsv", "fromre"],
+};

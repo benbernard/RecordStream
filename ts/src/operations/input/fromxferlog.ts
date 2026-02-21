@@ -59,3 +59,20 @@ export class FromXferlog extends Operation {
     return true;
   }
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "fromxferlog",
+  category: "input",
+  synopsis: "recs fromxferlog [files...]",
+  description:
+    "Each line of input (or lines of <files>) is parsed as an FTP transfer log (xferlog format) to produce an output record. Fields include day_name, month, day, current_time, year, transfer_time, remote_host, file_size, filename, transfer_type, special_action_flag, direction, access_mode, username, service_name, authentication_method, authenticated_user_id, and completion_status.",
+  options: [],
+  examples: [
+    {
+      description: "Get records from typical xferlog",
+      command: "recs fromxferlog < /var/log/xferlog",
+    },
+  ],
+};

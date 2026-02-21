@@ -192,3 +192,43 @@ function simplifyValue(obj: JsonObject): JsonValue {
   }
   return result;
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "fromatomfeed",
+  category: "input",
+  synopsis: "recs fromatomfeed [options] [<uris>]",
+  description:
+    "Produce records from atom feed entries. Recs fromatomfeed will get entries from paginated atom feeds and create a record stream from the results. The keys of the record will be the fields in the atom feed entry. By default, it follows 'next' links in a feed to retrieve all entries.",
+  options: [
+    {
+      flags: ["--follow"],
+      description: "Follow atom feed next links (default on).",
+    },
+    {
+      flags: ["--nofollow"],
+      description: "Do not follow next links.",
+    },
+    {
+      flags: ["--max"],
+      argument: "<n>",
+      description: "Print at most <n> entries and then exit.",
+    },
+  ],
+  examples: [
+    {
+      description: "Dump an entire feed",
+      command: 'recs fromatomfeed "http://my.xml.com"',
+    },
+    {
+      description: "Dump just the first page of entries",
+      command: 'recs fromatomfeed --nofollow "http://my.xml.com"',
+    },
+    {
+      description: "Dump just the first 10 entries",
+      command: 'recs fromatomfeed --max 10 "http://my.xml.com"',
+    },
+  ],
+  seeAlso: ["fromxml"],
+};

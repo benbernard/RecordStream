@@ -206,3 +206,56 @@ function parseRelaxedJson(input: string): JsonObject {
 
   return JSON.parse(normalized) as JsonObject;
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "frommongo",
+  category: "input",
+  synopsis: "recs frommongo --host <URI> --name <DB> --collection <COLL> --query <QUERY>",
+  description:
+    "Generate records from a MongoDB query. Connects to a MongoDB instance, runs the specified query against the given collection, and outputs each matching document as a record.",
+  options: [
+    {
+      flags: ["--host"],
+      argument: "<HOST_URI>",
+      description: "URI for your mongo instance, may include user:pass@URI.",
+      required: true,
+    },
+    {
+      flags: ["--user"],
+      argument: "<USER>",
+      description: "User to authenticate as.",
+    },
+    {
+      flags: ["--password", "--pass"],
+      argument: "<PASSWORD>",
+      description: "Password for --user.",
+    },
+    {
+      flags: ["--name", "--dbname"],
+      argument: "<DB_NAME>",
+      description: "Name of database to connect to.",
+      required: true,
+    },
+    {
+      flags: ["--collection"],
+      argument: "<COLLECTION_NAME>",
+      description: "Name of collection to query against.",
+      required: true,
+    },
+    {
+      flags: ["--query"],
+      argument: "<QUERY>",
+      description: "JSON query string to run against the collection.",
+      required: true,
+    },
+  ],
+  examples: [
+    {
+      description: "Make a query against a MongoDB instance",
+      command:
+        "recs frommongo --host mongodb://user:pass@dharma.mongohq.com:10069 --name my_app --collection my_collection --query '{doc_key: {$not: {$size: 0}}}'",
+    },
+  ],
+};

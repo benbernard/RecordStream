@@ -93,3 +93,43 @@ function readFileSync(path: string): string {
   const fs = require("node:fs") as typeof import("node:fs");
   return fs.readFileSync(path, "utf-8");
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "fromre",
+  category: "input",
+  synopsis: "recs fromre [options] <re> [<files>]",
+  description:
+    "The regex <re> is matched against each line of input (or lines of <files>). Each successful match results in one output record whose field values are the capture groups from the match. Lines that do not match are ignored. Keys are named numerically (0, 1, etc.) or as given by --key.",
+  options: [
+    {
+      flags: ["--key", "-k"],
+      argument: "<keys>",
+      description:
+        "Comma separated list of key names. May be specified multiple times, may be key specs.",
+    },
+    {
+      flags: ["--field", "-f"],
+      argument: "<keys>",
+      description:
+        "Comma separated list of key names. May be specified multiple times, may be key specs.",
+    },
+  ],
+  examples: [
+    {
+      description: "Parse greetings",
+      command:
+        "recs fromre --key name,age '^Hello, my name is (.*) and I am (\\d*) years? old$'",
+    },
+    {
+      description: "Parse a single key named time from a group of digits at the beginning of the line",
+      command: "recs fromre --key time '^(\\d+)'",
+    },
+    {
+      description: "Map three sets of <>s to a record with keys named 0, 1, and 2",
+      command: "recs fromre '<(.*)>\\s*<(.*)>\\s*<(.*)>'",
+    },
+  ],
+  seeAlso: ["fromsplit", "frommultire"],
+};

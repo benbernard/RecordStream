@@ -81,3 +81,31 @@ function readFileSync(path: string): string {
   const fs = require("node:fs") as typeof import("node:fs");
   return fs.readFileSync(path, "utf-8");
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "fromjsonarray",
+  category: "input",
+  synopsis: "recs fromjsonarray [options] [<files>]",
+  description:
+    "Import JSON objects from within a JSON array. Each object in the array becomes an output record.",
+  options: [
+    {
+      flags: ["--key", "-k"],
+      argument: "<keys>",
+      description:
+        "Optional comma separated list of field names to extract. If none specified, use all keys. May be specified multiple times, may be key specs.",
+    },
+  ],
+  examples: [
+    {
+      description: "Parse a JSON array file into records",
+      command: "recs fromjsonarray data.json",
+    },
+    {
+      description: "Extract only specific keys from a JSON array",
+      command: "recs fromjsonarray --key name,age data.json",
+    },
+  ],
+};
