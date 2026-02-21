@@ -1,6 +1,6 @@
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
-import { Executor, autoReturn } from "../../Executor.ts";
+import { Executor, autoReturn, snippetFromFileOption } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
 
 /**
@@ -14,7 +14,14 @@ export class AssertOperation extends Operation {
   diagnostic = "";
   verbose = false;
 
+  override addHelpTypes(): void {
+    this.useHelpType("snippet");
+    this.useHelpType("keyspecs");
+  }
+
   init(args: string[]): void {
+    let fileSnippet: string | null = null;
+
     const defs: OptionDef[] = [
       {
         long: "diagnostic",
@@ -30,10 +37,11 @@ export class AssertOperation extends Operation {
         handler: () => { this.verbose = true; },
         description: "Verbose output for failed assertions; dumps the current record",
       },
+      snippetFromFileOption((code) => { fileSnippet = code; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = remaining.join(" ");
+    const expression = fileSnippet ?? remaining.join(" ");
     if (!expression) {
       throw new Error("assert requires an expression argument");
     }

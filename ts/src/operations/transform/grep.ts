@@ -1,6 +1,6 @@
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
-import { Executor, autoReturn } from "../../Executor.ts";
+import { Executor, autoReturn, snippetFromFileOption } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
 
 /**
@@ -17,8 +17,14 @@ export class GrepOperation extends Operation {
   forcedOutput = 0;
   seenRecord = false;
 
+  override addHelpTypes(): void {
+    this.useHelpType("snippet");
+    this.useHelpType("keyspecs");
+  }
+
   init(args: string[]): void {
     let context = 0;
+    let fileSnippet: string | null = null;
 
     const defs: OptionDef[] = [
       {
@@ -49,6 +55,7 @@ export class GrepOperation extends Operation {
         handler: (v) => { this.beforeCount = Number(v); },
         description: "Print out the previous NUM records on a match",
       },
+      snippetFromFileOption((code) => { fileSnippet = code; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
@@ -58,7 +65,7 @@ export class GrepOperation extends Operation {
       this.beforeCount = context;
     }
 
-    const expression = remaining.join(" ");
+    const expression = fileSnippet ?? remaining.join(" ");
     if (!expression) {
       throw new Error("grep requires an expression argument");
     }

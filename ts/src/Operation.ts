@@ -1,4 +1,12 @@
 import { Record } from "./Record.ts";
+import {
+  snippetHelp,
+  keyspecsHelp,
+  keygroupsHelp,
+  keysHelp,
+  domainLanguageHelp,
+  clumpingHelp,
+} from "./cli/help-topics.ts";
 
 /**
  * Base class for all RecordStream operations.
@@ -48,15 +56,88 @@ export class CollectorReceiver implements RecordReceiver {
   }
 }
 
+/**
+ * Thrown to signal an early exit (e.g. --list-aggregators, --show-aggregator).
+ * The handler should print the message and exit.
+ */
+export class HelpExit extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "HelpExit";
+  }
+}
+
+/** Help type definition for --help-* flags */
+interface HelpType {
+  use: boolean;
+  skipInAll: boolean;
+  code: () => string;
+  optionName?: string;
+  description: string;
+}
+
 export abstract class Operation implements RecordReceiver {
   next: RecordReceiver;
   #filenameKey: string | null = null;
   #currentFilename = "NONE";
   #wantsHelp = false;
   #exitValue = 0;
+  #helpTypes: Map<string, HelpType>;
 
   constructor(next?: RecordReceiver) {
     this.next = next ?? new PrinterReceiver();
+    this.#helpTypes = new Map([
+      ["all", {
+        use: false,
+        skipInAll: true,
+        code: () => this.#allHelp(),
+        description: "Output all help for this script",
+      }],
+      ["snippet", {
+        use: false,
+        skipInAll: false,
+        code: snippetHelp,
+        description: "Help on code snippets",
+      }],
+      ["keygroups", {
+        use: false,
+        skipInAll: false,
+        code: keygroupsHelp,
+        description: "Help on keygroups, a way of specifying multiple keys",
+      }],
+      ["keyspecs", {
+        use: false,
+        skipInAll: false,
+        code: keyspecsHelp,
+        description: "Help on keyspecs, a way to index deeply and with regexes",
+      }],
+      ["basic", {
+        use: true,
+        skipInAll: false,
+        optionName: "help",
+        code: () => this.usage(),
+        description: "This help screen",
+      }],
+      ["keys", {
+        use: false,
+        skipInAll: true,
+        code: keysHelp,
+        description: "Help on keygroups and keyspecs",
+      }],
+      ["domainlanguage", {
+        use: false,
+        skipInAll: false,
+        code: domainLanguageHelp,
+        description: "Help on the recs domain language",
+      }],
+      ["clumping", {
+        use: false,
+        skipInAll: false,
+        code: clumpingHelp,
+        description: "Help on clumping; mechanisms to group records across a stream",
+      }],
+    ]);
+    this.addHelpTypes();
   }
 
   /**
@@ -171,13 +252,105 @@ export abstract class Operation implements RecordReceiver {
   }
 
   /**
+   * Hook for subclasses to enable help types.
+   * Override and call useHelpType() / addHelpType() as needed.
+   */
+  addHelpTypes(): void {
+    // default: no-op; subclasses override
+  }
+
+  /**
+   * Enable a built-in help type (e.g. "snippet", "keyspecs").
+   */
+  useHelpType(type: string): void {
+    const entry = this.#helpTypes.get(type);
+    if (entry) {
+      entry.use = true;
+    }
+    // Enabling any help type also enables --help-all
+    const allEntry = this.#helpTypes.get("all");
+    if (allEntry) {
+      allEntry.use = true;
+    }
+  }
+
+  /**
+   * Add a custom help type.
+   */
+  addCustomHelpType(
+    type: string,
+    code: () => string,
+    description: string,
+    skipInAll = false,
+    optionName?: string,
+  ): void {
+    this.#helpTypes.set(type, {
+      use: true,
+      skipInAll,
+      code,
+      description,
+      optionName,
+    });
+    // Also ensure --help-all is available
+    const allEntry = this.#helpTypes.get("all");
+    if (allEntry) {
+      allEntry.use = true;
+    }
+  }
+
+  /**
+   * Generate --help-all output: all enabled help types combined.
+   */
+  #allHelp(): string {
+    const parts: string[] = [];
+    for (const [type, info] of this.#helpTypes) {
+      if (!info.use || info.skipInAll) continue;
+      parts.push(`Help from: --help-${type}:\n`);
+      parts.push(info.code());
+      parts.push("");
+    }
+    return parts.join("\n");
+  }
+
+  /**
    * Parse command-line options. Provides a simple argument parser.
    * Returns remaining unparsed arguments.
+   *
+   * Supports:
+   * - --flag / -f for boolean options
+   * - --no-flag negation for boolean options
+   * - --flag value / --flag=value for string/number options
+   * - --filename-key / -fk auto-registered for record-outputting operations
+   * - --help-* flags for enabled help types
    */
   parseOptions(
     args: string[],
     optionDefs: OptionDef[]
   ): string[] {
+    // Build combined defs: user defs + auto-registered defs
+    const allDefs = [...optionDefs];
+
+    // Auto-register --filename-key / -fk if this operation outputs records
+    if (this.doesRecordOutput()) {
+      allDefs.push({
+        long: "filename-key",
+        short: "fk",
+        type: "string",
+        handler: (v) => { this.setFilenameKey(v as string); },
+        description: "Add a key with the source filename (if no filename is applicable, uses NONE)",
+      });
+    }
+
+    // Build help option handlers
+    const helpHandlers = new Map<string, () => void>();
+    for (const [type, info] of this.#helpTypes) {
+      if (!info.use) continue;
+      const optName = info.optionName ?? `help-${type}`;
+      helpHandlers.set(`--${optName}`, () => {
+        throw new HelpExit(info.code());
+      });
+    }
+
     const remaining: string[] = [];
     let i = 0;
 
@@ -185,13 +358,21 @@ export abstract class Operation implements RecordReceiver {
       const arg = args[i]!;
       let matched = false;
 
+      // Check help flags first
       if (arg === "--help" || arg === "-h") {
         this.#wantsHelp = true;
         i++;
         continue;
       }
 
-      for (const def of optionDefs) {
+      const helpHandler = helpHandlers.get(arg);
+      if (helpHandler) {
+        helpHandler();
+        i++;
+        continue;
+      }
+
+      for (const def of allDefs) {
         const longFlag = `--${def.long}`;
         const shortFlag = def.short ? `-${def.short}` : null;
 
@@ -211,6 +392,13 @@ export abstract class Operation implements RecordReceiver {
           break;
         }
 
+        // Handle --no-flag negation for boolean options
+        if (def.type === "boolean" && arg === `--no-${def.long}`) {
+          def.handler(false);
+          matched = true;
+          break;
+        }
+
         // Handle --flag=value syntax
         if (def.type !== "boolean" && arg.startsWith(longFlag + "=")) {
           const value = arg.slice(longFlag.length + 1);
@@ -221,8 +409,17 @@ export abstract class Operation implements RecordReceiver {
       }
 
       if (!matched) {
-        if (arg.startsWith("-") && arg !== "-") {
+        if (arg.startsWith("-") && arg !== "-" && arg !== "--") {
           throw new Error(`Unknown option: ${arg}`);
+        }
+        // "--" ends option parsing: push all remaining args as positional
+        if (arg === "--") {
+          i++;
+          while (i < args.length) {
+            remaining.push(args[i]!);
+            i++;
+          }
+          break;
         }
         remaining.push(arg);
       }

@@ -1,6 +1,6 @@
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
-import { Executor, autoReturn } from "../../Executor.ts";
+import { Executor, autoReturn, snippetFromFileOption } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
 
 /**
@@ -13,7 +13,14 @@ export class EvalOperation extends Operation {
   executor!: Executor;
   chomp = false;
 
+  override addHelpTypes(): void {
+    this.useHelpType("snippet");
+    this.useHelpType("keyspecs");
+  }
+
   init(args: string[]): void {
+    let fileSnippet: string | null = null;
+
     const defs: OptionDef[] = [
       {
         long: "chomp",
@@ -21,10 +28,11 @@ export class EvalOperation extends Operation {
         handler: () => { this.chomp = true; },
         description: "Chomp eval results (remove trailing newlines)",
       },
+      snippetFromFileOption((code) => { fileSnippet = code; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = remaining.join(" ");
+    const expression = fileSnippet ?? remaining.join(" ");
     if (!expression) {
       throw new Error("eval requires an expression argument");
     }

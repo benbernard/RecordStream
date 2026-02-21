@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { Operation } from "../../Operation.ts";
 import type { RecordReceiver, OptionDef } from "../../Operation.ts";
 import { Record } from "../../Record.ts";
@@ -27,7 +28,9 @@ export function createOperation(
   args: string[],
   next: RecordReceiver
 ): Operation {
-  const factory = operationFactories.get(name);
+  // Strip recs- prefix if present
+  const baseName = name.replace(/^recs-/, "");
+  const factory = operationFactories.get(baseName) ?? operationFactories.get(name);
   if (!factory) {
     throw new Error(`Unknown recs operation: ${name}`);
   }
@@ -37,8 +40,77 @@ export function createOperation(
 }
 
 /**
+ * A "shell operation" that pipes JSONL through an external command.
+ * Records are serialized to JSON, piped through the command's stdin/stdout,
+ * and parsed back to records. Used when chain encounters a non-recs command.
+ */
+class ShellOperation extends Operation {
+  command: string;
+  commandArgs: string[];
+  bufferedRecords: Record[] = [];
+
+  constructor(next: RecordReceiver, command: string, commandArgs: string[]) {
+    super(next);
+    this.command = command;
+    this.commandArgs = commandArgs;
+  }
+
+  init(_args: string[]): void {
+    // No-op: initialized via constructor
+  }
+
+  acceptRecord(record: Record): boolean {
+    this.bufferedRecords.push(record);
+    return true;
+  }
+
+  override streamDone(): void {
+    // Serialize all buffered records to JSONL
+    const input = this.bufferedRecords.map((r) => r.toString()).join("\n") + "\n";
+
+    // Spawn the shell command
+    const result = spawnSync(this.command, this.commandArgs, {
+      input,
+      encoding: "utf-8",
+      shell: false,
+      maxBuffer: 100 * 1024 * 1024, // 100MB
+    });
+
+    if (result.error) {
+      throw new Error(`Shell command '${this.command}' failed: ${result.error.message}`);
+    }
+
+    if (result.stderr && result.stderr.trim()) {
+      process.stderr.write(result.stderr);
+    }
+
+    // Parse output lines back as records
+    const output = result.stdout ?? "";
+    const lines = output.split("\n").filter((line: string) => line.trim() !== "");
+    for (const line of lines) {
+      try {
+        const record = Record.fromJSON(line);
+        this.pushRecord(record);
+      } catch {
+        // If the line isn't valid JSON, pass it through as a raw line
+        this.pushLine(line);
+      }
+    }
+  }
+}
+
+/**
+ * Check whether a command name refers to a known recs operation.
+ */
+function isKnownRecsOp(name: string): boolean {
+  const baseName = name.replace(/^recs-/, "");
+  return operationFactories.has(baseName) || operationFactories.has(name);
+}
+
+/**
  * Chain multiple recs operations in sequence, passing records
- * in-memory between them.
+ * in-memory between them. Non-recs commands are spawned as shell
+ * subprocesses with JSONL piped through them.
  *
  * Analogous to App::RecordStream::Operation::chain in Perl.
  */
@@ -85,6 +157,15 @@ export class ChainOperation extends Operation {
       commands.push(current);
     }
 
+    if (this.showChain) {
+      for (let idx = 0; idx < commands.length; idx++) {
+        const cmd = commands[idx]!;
+        const name = cmd[0]!;
+        const type = isKnownRecsOp(name) ? "recs" : "shell";
+        process.stderr.write(`Chain step ${idx + 1}: [${type}] ${cmd.join(" ")}\n`);
+      }
+    }
+
     if (this.dryRun) return;
 
     // Build the operation chain from right to left
@@ -96,7 +177,13 @@ export class ChainOperation extends Operation {
       const name = cmd[0]!;
       const cmdArgs = cmd.slice(1);
 
-      const op = createOperation(name, cmdArgs, receiver);
+      let op: Operation;
+      if (isKnownRecsOp(name)) {
+        op = createOperation(name, cmdArgs, receiver);
+      } else {
+        // Shell command: pipe JSONL through it
+        op = new ShellOperation(receiver, name, cmdArgs);
+      }
       ops.unshift(op);
       receiver = op;
     }
@@ -128,10 +215,6 @@ export class ChainOperation extends Operation {
   }
 
   override streamDone(): void {
-    if (this.showChain) {
-      // Print chain info
-    }
-
     if (this.dryRun) return;
 
     if (this.operations.length > 0) {

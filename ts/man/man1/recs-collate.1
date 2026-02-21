@@ -18,6 +18,18 @@ Comma\-separated list of key fields for grouping. May be a key spec or key group
 \fB--aggregator\fR, \fB-a\fR \fI<aggregators>\fR
 Colon\-separated aggregator specification in the form [<fieldname>=]<aggregator>[,<arguments>].
 .TP
+\fB--dlaggregator\fR, \fB-A\fR \fI<name>=<expression>\fR
+Domain language aggregator in the form name=expression. The expression is evaluated as JavaScript to produce an aggregator.
+.TP
+\fB--mr-agg\fR \fI<string>\fR
+MapReduce aggregator: specify 4 times for name, map snippet, reduce snippet, and squish snippet.
+.TP
+\fB--ii-agg\fR \fI<string>\fR
+InjectInto aggregator: specify 4 times for name, initial snippet, combine snippet, and squish snippet.
+.TP
+\fB--dlkey\fR \fI<name>=<expression>\fR
+Domain language key: name=expression where the expression evaluates as a valuation.
+.TP
 \fB--incremental\fR, \fB-i\fR
 Output a record every time an input record is added to a clump (instead of every time a clump is flushed).
 .TP
@@ -36,8 +48,17 @@ Number of running clumps to keep.
 \fB--cube\fR
 Enable cube mode: output all key combinations with ALL placeholders.
 .TP
+\fB--clumper\fR, \fB-c\fR \fI<spec>\fR
+Clumper specification (e.g. keylru,field,size or keyperfect,field or window,size).
+.TP
+\fB--perfect\fR
+Group records regardless of order (perfect hashing).
+.TP
 \fB--list-aggregators\fR
 List available aggregators and exit.
+.TP
+\fB--show-aggregator\fR \fI<name>\fR
+Show details of a specific aggregator and exit.
 
 .SH EXAMPLES
 Count number of each x field value in the entire file

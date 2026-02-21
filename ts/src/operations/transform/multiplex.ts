@@ -1,40 +1,56 @@
 import { Operation, CollectorReceiver } from "../../Operation.ts";
-import type { RecordReceiver, OptionDef } from "../../Operation.ts";
+import type { OptionDef } from "../../Operation.ts";
 import type { ClumperCallback } from "../../Clumper.ts";
 import { ClumperOptions } from "../../clumpers/Options.ts";
 import { Record } from "../../Record.ts";
+import { createOperation } from "./chain.ts";
+import { findKey } from "../../KeySpec.ts";
+import type { JsonObject } from "../../types/json.ts";
 
 /**
  * ClumperCallback for multiplex: creates a separate operation instance
  * for each group of records.
  */
 class MultiplexClumperCallback implements ClumperCallback {
-  operationFactory: (next: RecordReceiver) => Operation;
+  operationName: string;
   operationArgs: string[];
+  lineKey: string | null;
   pushRecordCb: (record: Record) => boolean;
+  pushLineCb: (line: string) => void;
 
   constructor(
-    operationFactory: (next: RecordReceiver) => Operation,
+    operationName: string,
     operationArgs: string[],
-    _lineKey: string | null,
+    lineKey: string | null,
     pushRecordCb: (record: Record) => boolean,
-    _pushLineCb: (line: string) => void
+    pushLineCb: (line: string) => void
   ) {
-    this.operationFactory = operationFactory;
+    this.operationName = operationName;
     this.operationArgs = operationArgs;
+    this.lineKey = lineKey;
     this.pushRecordCb = pushRecordCb;
+    this.pushLineCb = pushLineCb;
   }
 
   clumperCallbackBegin(_options: { [key: string]: unknown }): unknown {
     const collector = new CollectorReceiver();
-    const op = this.operationFactory(collector);
-    op.init([...this.operationArgs]);
+    const op = createOperation(this.operationName, [...this.operationArgs], collector);
     return { operation: op, collector };
   }
 
   clumperCallbackPushRecord(cookie: unknown, record: Record): void {
     const state = cookie as { operation: Operation; collector: CollectorReceiver };
-    state.operation.acceptRecord(record);
+
+    if (this.lineKey) {
+      // Use the value of lineKey as input line to the operation
+      const data = record.dataRef() as JsonObject;
+      const lineValue = findKey(data, this.lineKey, true);
+      if (lineValue !== undefined && lineValue !== null) {
+        state.operation.acceptLine(String(lineValue));
+      }
+    } else {
+      state.operation.acceptRecord(record);
+    }
   }
 
   clumperCallbackEnd(cookie: unknown): void {
@@ -56,6 +72,14 @@ class MultiplexClumperCallback implements ClumperCallback {
  */
 export class MultiplexOperation extends Operation {
   clumperOptions!: ClumperOptions;
+
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+    this.useHelpType("keygroups");
+    this.useHelpType("keys");
+    this.useHelpType("domainlanguage");
+    this.useHelpType("clumping");
+  }
 
   init(args: string[]): void {
     const clumperOptions = new ClumperOptions();
@@ -98,17 +122,18 @@ export class MultiplexOperation extends Operation {
 
     const remaining = this.parseOptions(args, defs);
 
-    // The remaining args are the operation to run on each group
-    // For now, this requires a factory function to be set
-    // In real usage, this would create the operation from the command args
+    // Parse the operation specification from remaining args.
+    // Format: <operation-name> [operation-args...]
+    if (remaining.length === 0) {
+      throw new Error("multiplex requires an operation to run on each group (after --)");
+    }
+
+    const operationName = remaining[0]!;
+    const operationArgs = remaining.slice(1);
 
     const callback = new MultiplexClumperCallback(
-      (next: RecordReceiver) => {
-        // Default: create a passthrough operation
-        // In real usage, this would be replaced by the actual operation factory
-        return new PassthroughForMultiplex(next);
-      },
-      remaining,
+      operationName,
+      operationArgs,
       lineKey,
       (record: Record) => this.pushRecord(record),
       (line: string) => this.pushLine(line)
@@ -125,16 +150,6 @@ export class MultiplexOperation extends Operation {
 
   override streamDone(): void {
     this.clumperOptions.streamDone();
-  }
-}
-
-class PassthroughForMultiplex extends Operation {
-  init(_args: string[]): void {
-    // no-op
-  }
-
-  acceptRecord(record: Record): boolean {
-    return this.pushRecord(record);
   }
 }
 
