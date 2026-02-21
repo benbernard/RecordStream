@@ -139,3 +139,37 @@ export class FromPs extends Operation {
     }
   }
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "fromps",
+  category: "input",
+  synopsis: "recs fromps [options]",
+  description:
+    "Generate records from the process table. Prints out JSON records converted from the process table. Fields default to all available fields from ps.",
+  options: [
+    {
+      flags: ["--key", "-k"],
+      argument: "<fields>",
+      description:
+        "Fields to output. May be specified multiple times, may be comma separated. Defaults to all fields.",
+    },
+    {
+      flags: ["--field", "-f"],
+      argument: "<fields>",
+      description:
+        "Fields to output. May be specified multiple times, may be comma separated. Defaults to all fields.",
+    },
+  ],
+  examples: [
+    {
+      description: "Get records for the process table",
+      command: "recs fromps",
+    },
+    {
+      description: "Only get uid and pid",
+      command: "recs fromps --key uid,pid",
+    },
+  ],
+};

@@ -108,3 +108,42 @@ export class FromKv extends Operation {
     }
   }
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "fromkv",
+  category: "input",
+  synopsis: "recs fromkv [options] [<files>]",
+  description:
+    "Records are generated from character input with the form \"<record><record-delim><record>...\". Records have the form \"<entry><entry-delim><entry>...\". Entries are pairs of the form \"<key><kv-delim><value>\".",
+  options: [
+    {
+      flags: ["--kv-delim", "-f"],
+      argument: "<delim>",
+      description: "Delimiter for separating key/value pairs within an entry (default ' ').",
+    },
+    {
+      flags: ["--entry-delim", "-e"],
+      argument: "<delim>",
+      description: "Delimiter for separating entries within records (default '\\n').",
+    },
+    {
+      flags: ["--record-delim", "-r"],
+      argument: "<delim>",
+      description: "Delimiter for separating records (default 'END\\n').",
+    },
+  ],
+  examples: [
+    {
+      description: "Parse memcached stat metrics into records",
+      command:
+        "echo -ne 'stats\\r\\n' | nc -i1 localhost 11211 | tr -d '\\r' | awk '{if (! /END/) {print $2\" \"$3} else {print $0}}' | recs fromkv",
+    },
+    {
+      description:
+        "Parse records separated by 'E\\n' with entries separated by '|' and pairs separated by '='",
+      command: "recs fromkv --kv-delim '=' --entry-delim '|' --record-delim $(echo -ne 'E\\n')",
+    },
+  ],
+};

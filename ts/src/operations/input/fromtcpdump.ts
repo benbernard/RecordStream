@@ -144,3 +144,25 @@ export class FromTcpdump extends Operation {
     return record;
   }
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "fromtcpdump",
+  category: "input",
+  synopsis: "recs fromtcpdump [options] <file1> [<file2> ...]",
+  description:
+    "Runs tcpdump and puts out records, one for each packet. Expects pcap files. Will put the name of the originating capture file in the 'file' field. Will parse packet types: ethernet, ip, udp, arp, tcp. The type key will indicate the highest level parsed. By default, data output is suppressed due to poor interaction with terminal programs.",
+  options: [
+    {
+      flags: ["--data"],
+      description: "Include raw data bytes of deepest packet level.",
+    },
+  ],
+  examples: [
+    {
+      description: "Get records for all packets",
+      command: "recs fromtcpdump capture.pcap",
+    },
+  ],
+};

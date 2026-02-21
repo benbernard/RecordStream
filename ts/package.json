@@ -8,14 +8,19 @@
     "build": "bun build src/index.ts --outdir dist --target bun",
     "test": "bun test",
     "lint": "bunx oxlint src/ tests/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check-docs": "bun scripts/check-docs.ts",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/bun": "latest",
     "@types/papaparse": "^5.5.2",
     "oxlint": "latest",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitepress": "^1.6.4"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.2",

@@ -102,3 +102,45 @@ export class FromDb extends Operation {
     }
   }
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "fromdb",
+  category: "input",
+  synopsis: "recs fromdb [options]",
+  description:
+    "Execute a select statement on a database and create a record stream from the results. The keys of the record will be the column names and the values the row values.",
+  options: [
+    {
+      flags: ["--table"],
+      argument: "<table>",
+      description: "Table name (shortcut for SELECT * FROM table).",
+    },
+    {
+      flags: ["--sql"],
+      argument: "<statement>",
+      description: "SQL select statement to run.",
+    },
+    {
+      flags: ["--dbfile"],
+      argument: "<path>",
+      description: "Path to the database file.",
+    },
+    {
+      flags: ["--type"],
+      argument: "<dbtype>",
+      description: "Database type (default: sqlite).",
+    },
+  ],
+  examples: [
+    {
+      description: "Dump a table",
+      command: "recs fromdb --type sqlite --dbfile testDb --table recs",
+    },
+    {
+      description: "Run a select statement",
+      command: "recs fromdb --dbfile testDb --sql 'SELECT * FROM recs WHERE id > 9'",
+    },
+  ],
+};

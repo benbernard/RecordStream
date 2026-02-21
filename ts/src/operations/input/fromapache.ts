@@ -282,3 +282,41 @@ function parseRequest(
   const path = parts.slice(1).join(" ");
   return { method, path, proto: null };
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "fromapache",
+  category: "input",
+  synopsis: "recs fromapache [options] [files...]",
+  description:
+    "Each line of input (or lines of <files>) is parsed to produce an output record from Apache access logs. Supports combined, common, and vhost_common log formats.",
+  options: [
+    {
+      flags: ["--fast"],
+      description:
+        "Use the fast parser which works relatively fast. It can process only 'common', 'combined' and custom styles with compatibility with 'common', and cannot work with backslash-quoted double-quotes in fields. This is the default.",
+    },
+    {
+      flags: ["--strict"],
+      description:
+        "Use the strict parser which works relatively slow. It can process any style format logs, with specification about separator, and checker for perfection. It can also process backslash-quoted double-quotes properly.",
+    },
+    {
+      flags: ["--verbose"],
+      description: "Verbose output.",
+    },
+  ],
+  examples: [
+    {
+      description: "Get records from typical apache log",
+      command: "recs fromapache < /var/log/httpd-access.log",
+    },
+    {
+      description: "Use strict parser with specific formats",
+      command:
+        'recs fromapache --strict \'["combined","common","vhost_common"]\' < /var/log/httpd-access.log',
+    },
+  ],
+  seeAlso: ["fromre", "frommultire"],
+};

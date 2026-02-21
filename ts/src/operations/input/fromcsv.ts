@@ -157,3 +157,67 @@ function readFileSync(path: string): string {
   const fs = require("node:fs") as typeof import("node:fs");
   return fs.readFileSync(path, "utf-8");
 }
+
+import type { CommandDoc } from "../../types/CommandDoc.ts";
+
+export const documentation: CommandDoc = {
+  name: "fromcsv",
+  category: "input",
+  synopsis: "recs fromcsv [options] [<files>]",
+  description:
+    "Each line of input (or lines of <files>) is split on commas to produce an output record. Fields are named numerically (0, 1, etc.), or as given by --key, or as read by --header. Lines may be split on delimiters other than commas by providing --delim.",
+  options: [
+    {
+      flags: ["--key", "-k"],
+      argument: "<keys>",
+      description:
+        "Comma separated list of field names. May be specified multiple times, may be key specs.",
+    },
+    {
+      flags: ["--field", "-f"],
+      argument: "<keys>",
+      description:
+        "Comma separated list of field names. May be specified multiple times, may be key specs.",
+    },
+    {
+      flags: ["--header"],
+      description: "Take field names from the first line of input.",
+    },
+    {
+      flags: ["--strict"],
+      description:
+        "Do not trim whitespace, allow loose quoting (quotes inside quotes), or allow the use of escape characters when not strictly needed.",
+    },
+    {
+      flags: ["--delim", "-d"],
+      argument: "<character>",
+      description: "Field delimiter to use when reading input lines (default ',').",
+    },
+    {
+      flags: ["--escape"],
+      argument: "<character>",
+      description: "Escape character used in quoted fields (default '\"').",
+    },
+    {
+      flags: ["--quote"],
+      argument: "<character>",
+      description:
+        "Quote character used in quoted fields (default '\"'). Use the empty string to indicate no quoted fields.",
+    },
+  ],
+  examples: [
+    {
+      description: "Parse csv separated fields x and y",
+      command: "recs fromcsv --field x,y",
+    },
+    {
+      description: "Parse data with a header line specifying fields",
+      command: "recs fromcsv --header",
+    },
+    {
+      description: "Parse tsv data (using bash syntax for a literal tab)",
+      command: "recs fromcsv --delim $'\\t'",
+    },
+  ],
+  seeAlso: ["fromsplit", "fromre"],
+};
