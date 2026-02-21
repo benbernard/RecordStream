@@ -1,0 +1,160 @@
+import type { Record as RsRecord } from "./Record.ts";
+import { findKey, setKey } from "./KeySpec.ts";
+import type { JsonValue, JsonObject } from "./types/json.ts";
+
+/**
+ * Executor handles compilation and execution of user code snippets.
+ * It transforms {{keyspec}} syntax into key lookups and creates
+ * sandboxed functions for evaluation.
+ *
+ * Analogous to App::RecordStream::Executor in Perl.
+ */
+
+export interface SnippetDef {
+  code: string;
+  argNames?: string[];
+}
+
+export class Executor {
+  private snippets: Map<string, CompiledSnippet>;
+  private lineCounter = 0;
+  private currentFilename = "NONE";
+
+  constructor(codeOrSnippets: string | { [name: string]: SnippetDef }) {
+    this.snippets = new Map();
+
+    if (typeof codeOrSnippets === "string") {
+      this.addSnippet("__DEFAULT", {
+        code: codeOrSnippets,
+        argNames: ["r"],
+      });
+    } else {
+      for (const [name, def] of Object.entries(codeOrSnippets)) {
+        this.addSnippet(name, def);
+      }
+    }
+  }
+
+  private addSnippet(name: string, def: SnippetDef): void {
+    const transformedCode = transformCode(def.code);
+    const argNames = def.argNames ?? ["r"];
+    const fn = compileSnippet(transformedCode, argNames);
+    this.snippets.set(name, { fn, argNames });
+  }
+
+  /**
+   * Execute the default snippet with the given record.
+   * Returns the result of the snippet execution.
+   */
+  executeCode(record: RsRecord): unknown {
+    return this.executeMethod("__DEFAULT", record);
+  }
+
+  /**
+   * Execute a named snippet with the given arguments.
+   */
+  executeMethod(name: string, ...args: unknown[]): unknown {
+    const snippet = this.snippets.get(name);
+    if (!snippet) {
+      throw new Error(`No such snippet: ${name}`);
+    }
+
+    this.lineCounter++;
+    return snippet.fn(...args, this.lineCounter, this.currentFilename);
+  }
+
+  setCurrentFilename(filename: string): void {
+    this.currentFilename = filename;
+  }
+
+  getCurrentFilename(): string {
+    return this.currentFilename;
+  }
+
+  getLine(): number {
+    return this.lineCounter;
+  }
+
+  resetLine(): void {
+    this.lineCounter = 0;
+  }
+}
+
+interface CompiledSnippet {
+  fn: (...args: unknown[]) => unknown;
+  argNames: string[];
+}
+
+/**
+ * Transform {{keyspec}} syntax into key lookups.
+ *
+ * {{foo/bar}} becomes calls to the __get helper function.
+ * {{foo/bar}} = value becomes calls to the __set helper function.
+ */
+export function transformCode(code: string): string {
+  // Replace {{keyspec}} = value with __set(r, "keyspec", value)
+  let transformed = code.replace(
+    /\{\{(.*?)\}\}\s*=\s*([^;,\n]+)/g,
+    (_match, keyspec: string, value: string) => {
+      return `__set(r, ${JSON.stringify(keyspec)}, ${value.trim()})`;
+    }
+  );
+
+  // Replace remaining {{keyspec}} with __get(r, "keyspec")
+  transformed = transformed.replace(
+    /\{\{(.*?)\}\}/g,
+    (_match, keyspec: string) => {
+      return `__get(r, ${JSON.stringify(keyspec)})`;
+    }
+  );
+
+  return transformed;
+}
+
+/**
+ * Compile a code snippet into a callable function.
+ * The function receives the user-specified arguments plus $line and $filename.
+ */
+function compileSnippet(
+  code: string,
+  argNames: string[]
+): (...args: unknown[]) => unknown {
+  // Build argument list: user args + line + filename
+  const allArgNames = [...argNames, "$line", "$filename"];
+
+  // Helper functions available to snippets
+  const helperCode = `
+    const __get = (r, keyspec) => {
+      const data = typeof r === 'object' && r !== null && 'dataRef' in r ? r.dataRef() : r;
+      return __findKey(data, '@' + keyspec);
+    };
+    const __set = (r, keyspec, value) => {
+      const data = typeof r === 'object' && r !== null && 'dataRef' in r ? r.dataRef() : r;
+      __setKey(data, '@' + keyspec, value);
+      return value;
+    };
+  `;
+
+  const fnBody = `
+    ${helperCode}
+    ${code}
+  `;
+
+  try {
+    // Create a function with the helper functions in closure
+    const factory = new Function(
+      "__findKey",
+      "__setKey",
+      `return function(${allArgNames.join(", ")}) { ${fnBody} }`
+    );
+    return factory(
+      (data: JsonObject, spec: string) => findKey(data, spec),
+      (data: JsonObject, spec: string, value: JsonValue) =>
+        setKey(data, spec, value)
+    );
+  } catch (e) {
+    throw new Error(
+      `Failed to compile code snippet: ${e instanceof Error ? e.message : String(e)}\nCode: ${code}`
+    );
+  }
+}
