@@ -1,6 +1,6 @@
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
-import { Executor } from "../../Executor.ts";
+import { Executor, snippetFromFileOption } from "../../Executor.ts";
 import { KeyGroups } from "../../KeyGroups.ts";
 import { findKey, setKey } from "../../KeySpec.ts";
 import { Record } from "../../Record.ts";
@@ -18,7 +18,15 @@ export class AnnotateOperation extends Operation {
   keyGroups = new KeyGroups();
   annotations = new Map<string, Map<string, JsonValue>>();
 
+  override addHelpTypes(): void {
+    this.useHelpType("snippet");
+    this.useHelpType("keyspecs");
+    this.useHelpType("keygroups");
+  }
+
   init(args: string[]): void {
+    let fileSnippet: string | null = null;
+
     const defs: OptionDef[] = [
       {
         long: "keys",
@@ -27,10 +35,11 @@ export class AnnotateOperation extends Operation {
         handler: (v) => { this.keyGroups.addGroups(v as string); },
         description: "Keys to match records by",
       },
+      snippetFromFileOption((code) => { fileSnippet = code; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = remaining.join(" ");
+    const expression = fileSnippet ?? remaining.join(" ");
 
     if (!this.keyGroups.hasAnyGroup()) {
       throw new Error("Must specify at least one --key, maybe you want xform instead?");

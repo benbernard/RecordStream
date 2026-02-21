@@ -1,6 +1,6 @@
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
-import { Executor, autoReturn } from "../../Executor.ts";
+import { Executor, autoReturn, snippetFromFileOption } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
 import type { JsonObject, JsonValue } from "../../types/json.ts";
 import { setKey } from "../../KeySpec.ts";
@@ -20,7 +20,14 @@ export class GenerateOperation extends Operation {
   keychain = "_chain";
   passthrough = false;
 
+  override addHelpTypes(): void {
+    this.useHelpType("snippet");
+    this.useHelpType("keyspecs");
+  }
+
   init(args: string[]): void {
+    let fileSnippet: string | null = null;
+
     const defs: OptionDef[] = [
       {
         long: "keychain",
@@ -34,10 +41,11 @@ export class GenerateOperation extends Operation {
         handler: () => { this.passthrough = true; },
         description: "Emit input record in addition to generated records",
       },
+      snippetFromFileOption((code) => { fileSnippet = code; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = remaining.join(" ");
+    const expression = fileSnippet ?? remaining.join(" ");
     if (!expression) {
       throw new Error("generate requires an expression argument");
     }

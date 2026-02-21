@@ -1,6 +1,6 @@
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
-import { Executor } from "../../Executor.ts";
+import { Executor, snippetFromFileOption } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
 import type { JsonObject } from "../../types/json.ts";
 
@@ -21,9 +21,15 @@ export class XformOperation extends Operation {
   spooledOutput: Record[] = [];
   suppressR = false;
 
+  override addHelpTypes(): void {
+    this.useHelpType("snippet");
+    this.useHelpType("keyspecs");
+  }
+
   init(args: string[]): void {
     let postSnippet = "";
     let preSnippet = "";
+    let fileSnippet: string | null = null;
 
     const defs: OptionDef[] = [
       {
@@ -59,10 +65,11 @@ export class XformOperation extends Operation {
         handler: (v) => { preSnippet = v as string; },
         description: "A snippet to run before the stream starts",
       },
+      snippetFromFileOption((code) => { fileSnippet = code; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = remaining.join(" ");
+    const expression = fileSnippet ?? remaining.join(" ");
     if (!expression) {
       throw new Error("xform requires an expression argument");
     }

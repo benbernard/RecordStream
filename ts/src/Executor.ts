@@ -1,6 +1,8 @@
+import { readFileSync } from "node:fs";
 import type { Record as RsRecord } from "./Record.ts";
 import { findKey, setKey } from "./KeySpec.ts";
 import type { JsonValue, JsonObject } from "./types/json.ts";
+import type { OptionDef } from "./Operation.ts";
 
 /**
  * Executor handles compilation and execution of user code snippets.
@@ -183,4 +185,24 @@ function compileSnippet(
       `Failed to compile code snippet: ${e instanceof Error ? e.message : String(e)}\nCode: ${code}`
     );
   }
+}
+
+/**
+ * Create a standard -E option def for reading snippet code from a file.
+ * The callback receives the file contents when -E is used.
+ */
+export function snippetFromFileOption(
+  onSnippet: (code: string) => void
+): OptionDef {
+  return {
+    long: "snippet-file",
+    short: "E",
+    type: "string",
+    handler: (v) => {
+      const filePath = v as string;
+      const code = readFileSync(filePath, "utf-8");
+      onSnippet(code);
+    },
+    description: "Read snippet code from a file instead of the command line",
+  };
 }

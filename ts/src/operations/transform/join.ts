@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
 import { findKey } from "../../KeySpec.ts";
@@ -19,6 +20,11 @@ export class JoinOperation extends Operation {
   operationExpr: string | null = null;
   db = new Map<string, Record[]>();
   keysPrinted = new Set<string>();
+
+  override addHelpTypes(): void {
+    this.useHelpType("snippet");
+    this.useHelpType("keyspecs");
+  }
 
   init(args: string[]): void {
     let left = false;
@@ -73,15 +79,26 @@ export class JoinOperation extends Operation {
 
     this.inputKey = remaining[0]!;
     this.dbKey = remaining[1]!;
-
-    // remaining[2] is dbfile - we'll load records from it
-    // In TS version, the db is loaded via loadDbRecords() method
+    const dbFile = remaining[2]!;
 
     this.keepLeft = left || outer;
     this.keepRight = right || outer;
 
     // Suppress unused var warnings for inner
     void inner;
+
+    // Load db records from the file
+    this.loadDbFromFile(dbFile);
+  }
+
+  /**
+   * Load db records from a JSONL file.
+   */
+  loadDbFromFile(filePath: string): void {
+    const content = readFileSync(filePath, "utf-8");
+    const lines = content.split("\n").filter((line) => line.trim() !== "");
+    const records = lines.map((line) => Record.fromJSON(line));
+    this.loadDbRecords(records);
   }
 
   /**
