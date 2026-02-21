@@ -1,0 +1,40 @@
+.TH RECS\-EVAL 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-eval \- Evaluate an expression on each record and print the result as a line of text
+
+.SH SYNOPSIS
+.B recs eval [options] <expression> [files...]
+
+.SH DESCRIPTION
+Evaluate an expression on each record and print the result as a line of text. This is NOT a record stream output \-\- it prints raw text lines. The expression is evaluated with r set to the current Record object and line set to the current line number (starting at 1).
+.PP
+
+.SH OPTIONS
+.TP
+\fB--chomp\fR
+Chomp eval results (remove trailing newlines to avoid duplicate newlines when already newline\-terminated).
+
+.SH EXAMPLES
+Print the host field from each record
+.PP
+.RS 4
+.nf
+\fBrecs eval \'r.host\'\fR
+.fi
+.RE
+
+Prepare to gnuplot field y against field x
+.PP
+.RS 4
+.nf
+\fBrecs eval \'r.x + " " + r.y\'\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-xform\fR(1), \fBrecs\-grep\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

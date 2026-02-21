@@ -1,0 +1,43 @@
+.TH RECS\-CHAIN 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-chain \- Creates an in\-memory chain of recs operations
+
+.SH SYNOPSIS
+.B recs chain <command> | <command> | ...
+
+.SH DESCRIPTION
+Creates an in\-memory chain of recs operations. This avoids serialization and deserialization of records at each step in a complex recs pipeline. Arguments are specified on the command line separated by pipes. For most shells, you will need to escape the pipe character to avoid having the shell interpret it as a shell pipe.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--show-chain\fR
+Before running the commands, print out what will happen in the chain.
+.TP
+\fB--dry-run\fR, \fB-n\fR
+Do not run commands. Implies \-\-show\-chain.
+
+.SH EXAMPLES
+Parse some fields, sort and collate, all in memory
+.PP
+.RS 4
+.nf
+\fBrecs chain recs-frommultire \'data,time=(\\S+) (\\S+)\' \\| recs-sort --key time=n \\| recs-collate --a perc,90,data\fR
+.fi
+.RE
+
+Use shell commands in your recs stream
+.PP
+.RS 4
+.nf
+\fBrecs chain recs-frommultire \'data,time=(\\S+) (\\S+)\' \\| recs-sort --key time=n \\| grep foo \\| recs-collate --a perc,90,data\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-collate\fR(1), \fBrecs\-sort\fR(1), \fBrecs\-xform\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

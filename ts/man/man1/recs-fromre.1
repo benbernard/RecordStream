@@ -1,0 +1,51 @@
+.TH RECS\-FROMRE 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-fromre \- The regex <re> is matched against each line of input (or lines of <files>)
+
+.SH SYNOPSIS
+.B recs fromre [options] <re> [<files>]
+
+.SH DESCRIPTION
+The regex <re> is matched against each line of input (or lines of <files>). Each successful match results in one output record whose field values are the capture groups from the match. Lines that do not match are ignored. Keys are named numerically (0, 1, etc.) or as given by \-\-key.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--key\fR, \fB-k\fR \fI<keys>\fR
+Comma separated list of key names. May be specified multiple times, may be key specs.
+.TP
+\fB--field\fR, \fB-f\fR \fI<keys>\fR
+Comma separated list of key names. May be specified multiple times, may be key specs.
+
+.SH EXAMPLES
+Parse greetings
+.PP
+.RS 4
+.nf
+\fBrecs fromre --key name,age \'^Hello, my name is (.*) and I am (\\d*) years? old$\'\fR
+.fi
+.RE
+
+Parse a single key named time from a group of digits at the beginning of the line
+.PP
+.RS 4
+.nf
+\fBrecs fromre --key time \'^(\\d+)\'\fR
+.fi
+.RE
+
+Map three sets of <>s to a record with keys named 0, 1, and 2
+.PP
+.RS 4
+.nf
+\fBrecs fromre \'<(.*)>\\s*<(.*)>\\s*<(.*)>\'\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-fromsplit\fR(1), \fBrecs\-frommultire\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

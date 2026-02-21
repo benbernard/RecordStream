@@ -1,0 +1,32 @@
+.TH RECS\-DELTA 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-delta \- Transforms absolute values into deltas between adjacent records
+
+.SH SYNOPSIS
+.B recs delta [options] [files...]
+
+.SH DESCRIPTION
+Transforms absolute values into deltas between adjacent records. Fields specified by \-\-key are replaced with the difference between the current and previous record values. Fields not in this list are passed through unchanged, using the first record of each delta pair.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--key\fR, \fB-k\fR \fI<keys>\fR
+Comma\-separated list of the fields that should be transformed. May be a keyspec or a keygroup.
+
+.SH EXAMPLES
+Transform a cumulative counter of errors into a count of errors per record
+.PP
+.RS 4
+.nf
+\fBrecs delta --key errors\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-xform\fR(1), \fBrecs\-collate\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

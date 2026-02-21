@@ -1,0 +1,58 @@
+.TH RECS\-TODB 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-todb \- Dumps a stream of input records into a database
+
+.SH SYNOPSIS
+.B recs todb [options] [files...]
+
+.SH DESCRIPTION
+Dumps a stream of input records into a database. The record fields you want inserted should have the same keys as the column names in the database, and the records should be key\-value pairs. This command will attempt to create the table if it is not already present.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--drop\fR
+Drop the table before running create/insert commands.
+.TP
+\fB--table\fR \fI<name>\fR
+Name of the table to work with (default: \'recs\').
+.TP
+\fB--debug\fR
+Print all the executed SQL.
+.TP
+\fB--key\fR, \fB-k\fR \fI<fields>\fR
+Fields to insert. Can be a name or a name=SQL_TYPE pair. If any fields are specified, they will be the only fields put into the db. May be specified multiple times or comma separated. Type defaults to VARCHAR(255).
+.TP
+\fB--fields\fR, \fB-f\fR \fI<fields>\fR
+Fields to insert. Can be a name or a name=SQL_TYPE pair. Alias for \-\-key.
+.TP
+\fB--dbfile\fR \fI<path>\fR
+Database file path (for SQLite).
+.TP
+\fB--type\fR \fI<type>\fR
+Database type (sqlite).
+
+.SH EXAMPLES
+Put all records into the recs table
+.PP
+.RS 4
+.nf
+\fBrecs todb --type sqlite --dbfile testDb --table recs\fR
+.fi
+.RE
+
+Specify fields and drop existing table
+.PP
+.RS 4
+.nf
+\fBrecs todb --dbfile testDb --drop --key status,description=TEXT --key user\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-fromdb\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

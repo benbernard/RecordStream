@@ -10,6 +10,7 @@
     "lint": "bunx oxlint src/ tests/",
     "typecheck": "tsc --noEmit",
     "check-docs": "bun scripts/check-docs.ts",
+    "generate-manpages": "bun scripts/generate-manpages.ts",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"

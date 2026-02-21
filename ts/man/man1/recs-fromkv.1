@@ -1,0 +1,43 @@
+.TH RECS\-FROMKV 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-fromkv \- Records are generated from character input with the form "<record><record\-delim><record>
+
+.SH SYNOPSIS
+.B recs fromkv [options] [<files>]
+
+.SH DESCRIPTION
+Records are generated from character input with the form "<record><record\-delim><record>...". Records have the form "<entry><entry\-delim><entry>...". Entries are pairs of the form "<key><kv\-delim><value>".
+.PP
+
+.SH OPTIONS
+.TP
+\fB--kv-delim\fR, \fB-f\fR \fI<delim>\fR
+Delimiter for separating key/value pairs within an entry (default \' \').
+.TP
+\fB--entry-delim\fR, \fB-e\fR \fI<delim>\fR
+Delimiter for separating entries within records (default \'\\n\').
+.TP
+\fB--record-delim\fR, \fB-r\fR \fI<delim>\fR
+Delimiter for separating records (default \'END\\n\').
+
+.SH EXAMPLES
+Parse memcached stat metrics into records
+.PP
+.RS 4
+.nf
+\fBecho -ne \'stats\\r\\n\' | nc -i1 localhost 11211 | tr -d \'\\r\' | awk \'{if (! /END/) {print $2" "$3} else {print $0}}\' | recs fromkv\fR
+.fi
+.RE
+
+Parse records separated by \'E\\n\' with entries separated by \'|\' and pairs separated by \'=\'
+.PP
+.RS 4
+.nf
+\fBrecs fromkv --kv-delim \'=\' --entry-delim \'|\' --record-delim $(echo -ne \'E\\n\')\fR
+.fi
+.RE
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

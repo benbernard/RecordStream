@@ -1,0 +1,40 @@
+.TH RECS\-ANNOTATE 1 "2026-02-21" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-annotate \- Evaluate an expression on each record and cache the resulting changes by key grouping
+
+.SH SYNOPSIS
+.B recs annotate [options] <expression> [files...]
+
+.SH DESCRIPTION
+Evaluate an expression on each record and cache the resulting changes by key grouping. When a record with the same key values is seen again, the cached annotation is applied instead of re\-evaluating the expression. Only use this if you have \-\-keys fields that are repeated; otherwise recs xform will be faster.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--keys\fR, \fB-k\fR \fI<keys>\fR
+Keys to match records by. May be specified multiple times. May be a keygroup or keyspec.
+
+.SH EXAMPLES
+Annotate records with IPs with hostnames, only doing lookup once
+.PP
+.RS 4
+.nf
+\fBrecs annotate --key ip \'r.hostname = lookupHost(r.ip)\'\fR
+.fi
+.RE
+
+Record md5sums of files
+.PP
+.RS 4
+.nf
+\fBrecs annotate --key filename \'r.md5 = computeMd5(r.filename)\'\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-xform\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+
