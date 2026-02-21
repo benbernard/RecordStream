@@ -7,7 +7,7 @@
   "scripts": {
     "build": "bun build src/index.ts --outdir dist --target bun",
     "test": "bun test",
-    "lint": "bunx oxlint src/ tests/",
+    "lint": "bunx oxlint src/ tests/ bin/ scripts/",
     "typecheck": "tsc --noEmit",
     "check-docs": "bun scripts/check-docs.ts",
     "generate-manpages": "bun scripts/generate-manpages.ts",

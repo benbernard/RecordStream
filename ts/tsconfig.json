@@ -22,5 +22,5 @@
     "exactOptionalPropertyTypes": false,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "bin/**/*.ts"]
+  "include": ["src/**/*.ts", "tests/**/*.ts", "bin/**/*.ts", "scripts/**/*.ts"]
 }
