@@ -9,13 +9,13 @@ import Papa from "papaparse";
  * Analogous to App::RecordStream::Operation::fromcsv in Perl.
  */
 export class FromCsv extends Operation {
-  private fields: string[] = [];
-  private headerLine = false;
-  private strict = false;
-  private delim = ",";
-  private escape = '"';
-  private quote: string | false = '"';
-  private extraArgs: string[] = [];
+  fields: string[] = [];
+  headerLine = false;
+  strict = false;
+  delim = ",";
+  escape = '"';
+  quote: string | false = '"';
+  extraArgs: string[] = [];
 
   init(args: string[]): void {
     const defs: OptionDef[] = [

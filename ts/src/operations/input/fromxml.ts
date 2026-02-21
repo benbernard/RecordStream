@@ -9,9 +9,9 @@ import type { JsonObject, JsonValue } from "../../types/json.ts";
  * Analogous to App::RecordStream::Operation::fromxml in Perl.
  */
 export class FromXml extends Operation {
-  private elements: string[] = [];
-  private nested = false;
-  private extraArgs: string[] = [];
+  elements: string[] = [];
+  nested = false;
+  extraArgs: string[] = [];
 
   acceptRecord(_record: Record): boolean {
     return true;
@@ -75,7 +75,7 @@ export class FromXml extends Operation {
     }
   }
 
-  private findElements(
+  findElements(
     obj: JsonValue,
     elementName: string,
     addElementField: boolean,
@@ -139,7 +139,7 @@ export class FromXml extends Operation {
     }
   }
 
-  private pushValue(value: JsonValue, defaults: JsonObject): void {
+  pushValue(value: JsonValue, defaults: JsonObject): void {
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
       const data = { ...(value as JsonObject) };
       for (const [k, v] of Object.entries(defaults)) {
@@ -156,7 +156,7 @@ export class FromXml extends Operation {
     }
   }
 
-  private getXmlString(uri: string): string | null {
+  getXmlString(uri: string): string | null {
     if (uri.startsWith("file:")) {
       const path = uri.slice(5);
       const fs = require("node:fs") as typeof import("node:fs");

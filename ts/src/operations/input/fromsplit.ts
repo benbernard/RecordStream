@@ -8,11 +8,11 @@ import { setKey } from "../../KeySpec.ts";
  * Analogous to App::RecordStream::Operation::fromsplit in Perl.
  */
 export class FromSplit extends Operation {
-  private fields: string[] = [];
-  private delimiter = ",";
-  private header = false;
-  private strict = false;
-  private extraArgs: string[] = [];
+  fields: string[] = [];
+  delimiter = ",";
+  header = false;
+  strict = false;
+  extraArgs: string[] = [];
 
   init(args: string[]): void {
     const defs: OptionDef[] = [
@@ -110,7 +110,7 @@ export class FromSplit extends Operation {
     return true;
   }
 
-  private splitLine(line: string): string[] {
+  splitLine(line: string): string[] {
     if (this.strict) {
       // Literal split using escapeRegex
       return line.split(this.delimiter);

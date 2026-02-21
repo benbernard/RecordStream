@@ -11,15 +11,15 @@ import type { JsonObject } from "../../types/json.ts";
  * Install with: bun add mongodb
  */
 export class FromMongo extends Operation {
-  private host: string | null = null;
-  private user: string | null = null;
-  private password: string | null = null;
-  private dbName: string | null = null;
-  private collection: string | null = null;
-  private query: JsonObject = {};
+  host: string | null = null;
+  user: string | null = null;
+  password: string | null = null;
+  dbName: string | null = null;
+  collection: string | null = null;
+  query: JsonObject = {};
 
   // For testing - allows injecting a mock cursor
-  private mockCursor: AsyncIterable<JsonObject> | null = null;
+  mockCursor: AsyncIterable<JsonObject> | null = null;
 
   acceptRecord(_record: Record): boolean {
     return true;

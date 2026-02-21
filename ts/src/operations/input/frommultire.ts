@@ -15,11 +15,11 @@ interface RegexDef {
  * Analogous to App::RecordStream::Operation::frommultire in Perl.
  */
 export class FromMultiRe extends Operation {
-  private regexes: RegexDef[] = [];
-  private clobber = false;
-  private keepAll = false;
-  private keepFields: Set<string> = new Set();
-  private currentRecord: Record = new Record();
+  regexes: RegexDef[] = [];
+  clobber = false;
+  keepAll = false;
+  keepFields: Set<string> = new Set();
+  currentRecord: Record = new Record();
 
   acceptRecord(_record: Record): boolean {
     return true;
@@ -130,7 +130,7 @@ export class FromMultiRe extends Operation {
     this.parseOptions(args, defs);
   }
 
-  private addRegex(
+  addRegex(
     spec: string,
     preFlush: boolean,
     postFlush: boolean
@@ -193,7 +193,7 @@ export class FromMultiRe extends Operation {
     }
   }
 
-  private getFieldValuePairs(
+  getFieldValuePairs(
     groups: string[],
     fields: string[],
     prefix: string
@@ -228,7 +228,7 @@ export class FromMultiRe extends Operation {
     return pairs;
   }
 
-  private flushRecord(): void {
+  flushRecord(): void {
     const record = this.currentRecord;
     if (record.keys().length === 0) return;
 

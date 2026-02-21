@@ -8,9 +8,9 @@ import { setKey } from "../../KeySpec.ts";
  * Analogous to App::RecordStream::Operation::fromre in Perl.
  */
 export class FromRe extends Operation {
-  private fields: string[] = [];
-  private pattern: RegExp | null = null;
-  private extraArgs: string[] = [];
+  fields: string[] = [];
+  pattern: RegExp | null = null;
+  extraArgs: string[] = [];
 
   init(args: string[]): void {
     const defs: OptionDef[] = [

@@ -8,10 +8,10 @@ import type { JsonObject } from "../../types/json.ts";
  * Analogous to App::RecordStream::Operation::fromkv in Perl.
  */
 export class FromKv extends Operation {
-  private kvDelim = " ";
-  private entryDelim = "\n";
-  private recordDelim = "END\n";
-  private acc: string | null = null;
+  kvDelim = " ";
+  entryDelim = "\n";
+  recordDelim = "END\n";
+  acc: string | null = null;
 
   acceptRecord(_record: Record): boolean {
     return true;

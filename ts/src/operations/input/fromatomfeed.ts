@@ -9,10 +9,10 @@ import type { JsonObject, JsonValue } from "../../types/json.ts";
  * Analogous to App::RecordStream::Operation::fromatomfeed in Perl.
  */
 export class FromAtomFeed extends Operation {
-  private follow = true;
-  private max: number | null = null;
-  private urls: string[] = [];
-  private count = 0;
+  follow = true;
+  max: number | null = null;
+  urls: string[] = [];
+  count = 0;
 
   acceptRecord(_record: Record): boolean {
     return true;
@@ -116,7 +116,7 @@ export class FromAtomFeed extends Operation {
     return false;
   }
 
-  private fetchContent(uri: string): string | null {
+  fetchContent(uri: string): string | null {
     if (uri.startsWith("file:")) {
       const path = uri.slice(5);
       const fs = require("node:fs") as typeof import("node:fs");
