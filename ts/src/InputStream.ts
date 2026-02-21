@@ -7,22 +7,22 @@ import { Record } from "./Record.ts";
  * Analogous to App::RecordStream::InputStream in Perl.
  */
 export class InputStream {
-  private lines: string[] | null = null;
-  private lineIndex = 0;
+  #lines: string[] | null = null;
+  #lineIndex = 0;
   // Using inline type to avoid Bun-specific ReadableStreamDefaultReader incompatibility
-  private byteReader: { read(): Promise<{ done: boolean; value?: Uint8Array }> } | null = null;
-  private decoder = new TextDecoder();
-  private buffer = "";
-  private done = false;
-  private next: InputStream | null;
-  private filename: string;
+  #byteReader: { read(): Promise<{ done: boolean; value?: Uint8Array }> } | null = null;
+  #decoder = new TextDecoder();
+  #buffer = "";
+  #done = false;
+  #next: InputStream | null;
+  #filename: string;
 
-  private constructor(options: {
+  constructor(options: {
     next?: InputStream | null;
     filename?: string;
   }) {
-    this.next = options.next ?? null;
-    this.filename = options.filename ?? "UNKNOWN";
+    this.#next = options.next ?? null;
+    this.#filename = options.filename ?? "UNKNOWN";
   }
 
   /**
@@ -30,7 +30,7 @@ export class InputStream {
    */
   static fromString(str: string, next?: InputStream): InputStream {
     const stream = new InputStream({ next, filename: "STRING_INPUT" });
-    stream.lines = str.split("\n").filter((l) => l.trim() !== "");
+    stream.#lines = str.split("\n").filter((l) => l.trim() !== "");
     return stream;
   }
 
@@ -39,7 +39,7 @@ export class InputStream {
    */
   static fromFile(filePath: string, next?: InputStream): InputStream {
     const stream = new InputStream({ next, filename: filePath });
-    stream._initFile(filePath);
+    stream.#initFile(filePath);
     return stream;
   }
 
@@ -51,7 +51,7 @@ export class InputStream {
     next?: InputStream
   ): InputStream {
     const stream = new InputStream({ next, filename: "STREAM_INPUT" });
-    stream.byteReader = readable.getReader();
+    stream.#byteReader = readable.getReader();
     return stream;
   }
 
@@ -83,9 +83,9 @@ export class InputStream {
     return lastStream!;
   }
 
-  private _initFile(filePath: string): void {
+  #initFile(filePath: string): void {
     const file = Bun.file(filePath);
-    this.byteReader = file.stream().getReader();
+    this.#byteReader = file.stream().getReader();
   }
 
   /**
@@ -93,66 +93,66 @@ export class InputStream {
    * Returns null when all streams are exhausted.
    */
   async getRecord(): Promise<Record | null> {
-    if (this.done) {
-      return this.callNextRecord();
+    if (this.#done) {
+      return this.#callNextRecord();
     }
 
     // String-based input
-    if (this.lines !== null) {
-      if (this.lineIndex < this.lines.length) {
-        const line = this.lines[this.lineIndex]!;
-        this.lineIndex++;
+    if (this.#lines !== null) {
+      if (this.#lineIndex < this.#lines.length) {
+        const line = this.#lines[this.#lineIndex]!;
+        this.#lineIndex++;
         return Record.fromJSON(line);
       }
-      this.done = true;
-      return this.callNextRecord();
+      this.#done = true;
+      return this.#callNextRecord();
     }
 
     // Stream-based input
-    if (this.byteReader) {
-      const line = await this.readLine();
+    if (this.#byteReader) {
+      const line = await this.#readLine();
       if (line !== null) {
         return Record.fromJSON(line);
       }
-      this.done = true;
-      return this.callNextRecord();
+      this.#done = true;
+      return this.#callNextRecord();
     }
 
     return null;
   }
 
-  private async readLine(): Promise<string | null> {
+  async #readLine(): Promise<string | null> {
     while (true) {
-      const newlineIndex = this.buffer.indexOf("\n");
+      const newlineIndex = this.#buffer.indexOf("\n");
       if (newlineIndex >= 0) {
-        const line = this.buffer.slice(0, newlineIndex).trim();
-        this.buffer = this.buffer.slice(newlineIndex + 1);
+        const line = this.#buffer.slice(0, newlineIndex).trim();
+        this.#buffer = this.#buffer.slice(newlineIndex + 1);
         if (line !== "") return line;
         continue;
       }
 
-      if (!this.byteReader) return null;
-      const { value, done } = await this.byteReader.read();
+      if (!this.#byteReader) return null;
+      const { value, done } = await this.#byteReader.read();
       if (done) {
         // Return any remaining content
-        const remaining = this.buffer.trim();
-        this.buffer = "";
+        const remaining = this.#buffer.trim();
+        this.#buffer = "";
         return remaining !== "" ? remaining : null;
       }
-      this.buffer += this.decoder.decode(value, { stream: true });
+      this.#buffer += this.#decoder.decode(value, { stream: true });
     }
   }
 
-  private async callNextRecord(): Promise<Record | null> {
-    if (!this.next) return null;
+  async #callNextRecord(): Promise<Record | null> {
+    if (!this.#next) return null;
 
     // Flatten chain to prevent deep recursion
-    if (this.next.done) {
-      this.next = this.next.next;
+    if (this.#next.#done) {
+      this.#next = this.#next.#next;
     }
-    if (!this.next) return null;
+    if (!this.#next) return null;
 
-    return this.next.getRecord();
+    return this.#next.getRecord();
   }
 
   /**
@@ -178,8 +178,8 @@ export class InputStream {
   }
 
   getFilename(): string {
-    if (!this.done) return this.filename;
-    if (this.next) return this.next.getFilename();
-    return this.filename;
+    if (!this.#done) return this.#filename;
+    if (this.#next) return this.#next.getFilename();
+    return this.#filename;
   }
 }

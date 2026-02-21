@@ -6,15 +6,15 @@ import type { Record } from "./Record.ts";
  * Analogous to App::RecordStream::OutputStream in Perl.
  */
 export class OutputStream {
-  private writer: WritableStreamDefaultWriter<string> | null = null;
-  private useStdout: boolean;
+  #writer: WritableStreamDefaultWriter<string> | null = null;
+  #useStdout: boolean;
 
   constructor(writable?: WritableStream<string>) {
     if (writable) {
-      this.writer = writable.getWriter();
-      this.useStdout = false;
+      this.#writer = writable.getWriter();
+      this.#useStdout = false;
     } else {
-      this.useStdout = true;
+      this.#useStdout = true;
     }
   }
 
@@ -23,10 +23,10 @@ export class OutputStream {
    */
   async write(record: Record): Promise<void> {
     const line = record.toString() + "\n";
-    if (this.useStdout) {
+    if (this.#useStdout) {
       await Bun.write(Bun.stdout, line);
-    } else if (this.writer) {
-      await this.writer.write(line);
+    } else if (this.#writer) {
+      await this.#writer.write(line);
     }
   }
 
@@ -35,10 +35,10 @@ export class OutputStream {
    */
   async writeLine(line: string): Promise<void> {
     const output = line.endsWith("\n") ? line : line + "\n";
-    if (this.useStdout) {
+    if (this.#useStdout) {
       await Bun.write(Bun.stdout, output);
-    } else if (this.writer) {
-      await this.writer.write(output);
+    } else if (this.#writer) {
+      await this.#writer.write(output);
     }
   }
 
@@ -46,8 +46,8 @@ export class OutputStream {
    * Close the output stream.
    */
   async close(): Promise<void> {
-    if (this.writer) {
-      await this.writer.close();
+    if (this.#writer) {
+      await this.#writer.close();
     }
   }
 

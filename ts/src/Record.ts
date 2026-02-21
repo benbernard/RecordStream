@@ -8,25 +8,25 @@ import type { JsonValue, JsonObject } from "./types/json.ts";
  * Analogous to App::RecordStream::Record in Perl.
  */
 export class Record {
-  private data: JsonObject;
+  #data: JsonObject;
 
   constructor(data?: JsonObject) {
-    this.data = data ?? {};
+    this.#data = data ?? {};
   }
 
   /**
    * Get a top-level field value. For nested access, use getKeySpec().
    */
   get(key: string): JsonValue | undefined {
-    return this.data[key];
+    return this.#data[key];
   }
 
   /**
    * Set a top-level field value. Returns the old value.
    */
   set(key: string, value: JsonValue): JsonValue | undefined {
-    const old = this.data[key];
-    this.data[key] = value;
+    const old = this.#data[key];
+    this.#data[key] = value;
     return old;
   }
 
@@ -35,8 +35,8 @@ export class Record {
    */
   remove(...keys: string[]): (JsonValue | undefined)[] {
     return keys.map((key) => {
-      const old = this.data[key];
-      delete this.data[key]; // eslint-disable-line @typescript-eslint/no-dynamic-delete
+      const old = this.#data[key];
+      delete this.#data[key]; // eslint-disable-line @typescript-eslint/no-dynamic-delete
       return old;
     });
   }
@@ -45,14 +45,14 @@ export class Record {
    * Check if a top-level field exists.
    */
   has(key: string): boolean {
-    return key in this.data;
+    return key in this.#data;
   }
 
   /**
    * Rename a field. If the old field did not exist, creates the new field with null.
    */
   rename(oldKey: string, newKey: string): void {
-    const value = this.has(oldKey) ? this.data[oldKey] : null;
+    const value = this.has(oldKey) ? this.#data[oldKey] : null;
     this.set(newKey, value!);
     this.remove(oldKey);
   }
@@ -64,7 +64,7 @@ export class Record {
     const keep = new Set(keys);
     for (const key of this.keys()) {
       if (!keep.has(key)) {
-        delete this.data[key]; // eslint-disable-line @typescript-eslint/no-dynamic-delete
+        delete this.#data[key]; // eslint-disable-line @typescript-eslint/no-dynamic-delete
       }
     }
   }
@@ -73,21 +73,21 @@ export class Record {
    * Return all top-level field names.
    */
   keys(): string[] {
-    return Object.keys(this.data);
+    return Object.keys(this.#data);
   }
 
   /**
    * Return a deep clone of this record.
    */
   clone(): Record {
-    return new Record(JSON.parse(JSON.stringify(this.data)) as JsonObject);
+    return new Record(JSON.parse(JSON.stringify(this.#data)) as JsonObject);
   }
 
   /**
    * Return the underlying data as a plain JSON object (shallow copy).
    */
   toJSON(): JsonObject {
-    return { ...this.data };
+    return { ...this.#data };
   }
 
   /**
@@ -95,14 +95,14 @@ export class Record {
    * Mutations to the returned object will affect the record.
    */
   dataRef(): JsonObject {
-    return this.data;
+    return this.#data;
   }
 
   /**
    * Serialize to a JSON line (no trailing newline).
    */
   toString(): string {
-    return JSON.stringify(this.data);
+    return JSON.stringify(this.#data);
   }
 
   /**
@@ -198,8 +198,8 @@ export class Record {
 
     const comparator = (a: Record, b: Record): number => {
       // Basic dot-path access for now (will be replaced by KeySpec later)
-      const aVal = getNestedValue(a.data, field);
-      const bVal = getNestedValue(b.data, field);
+      const aVal = getNestedValue(a.#data, field);
+      const bVal = getNestedValue(b.#data, field);
 
       let val: number | undefined;
 
