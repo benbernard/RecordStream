@@ -29,8 +29,8 @@ const VALID_OPTIONS: Record<string, string> = {
 };
 
 export class KeyGroups {
-  private groups: GroupMember[] = [];
-  private cachedSpecs: string[] | null = null;
+  #groups: GroupMember[] = [];
+  #cachedSpecs: string[] | null = null;
 
   constructor(...args: string[]) {
     for (const arg of args) {
@@ -39,19 +39,19 @@ export class KeyGroups {
   }
 
   hasAnyGroup(): boolean {
-    return this.groups.length > 0;
+    return this.#groups.length > 0;
   }
 
   addGroups(groups: string): void {
     for (const groupSpec of groups.split(",")) {
       if (groupSpec.startsWith("!")) {
-        this.groups.push(new KeyGroupRegex(groupSpec));
+        this.#groups.push(new KeyGroupRegex(groupSpec));
       } else {
-        this.groups.push(new KeyGroupKeySpec(groupSpec));
+        this.#groups.push(new KeyGroupKeySpec(groupSpec));
       }
     }
     // Invalidate cache when groups change
-    this.cachedSpecs = null;
+    this.#cachedSpecs = null;
   }
 
   /**
@@ -59,7 +59,7 @@ export class KeyGroups {
    */
   getKeyspecsForRecord(record: JsonObject): string[] {
     const specs: string[] = [];
-    for (const group of this.groups) {
+    for (const group of this.#groups) {
       specs.push(...group.getFields(record));
     }
     return specs;
@@ -69,10 +69,10 @@ export class KeyGroups {
    * Get keyspecs, caching after first call.
    */
   getKeyspecs(record: JsonObject): string[] {
-    if (this.cachedSpecs === null) {
-      this.cachedSpecs = this.getKeyspecsForRecord(record);
+    if (this.#cachedSpecs === null) {
+      this.#cachedSpecs = this.getKeyspecsForRecord(record);
     }
-    return this.cachedSpecs;
+    return this.#cachedSpecs;
   }
 }
 
@@ -80,15 +80,15 @@ export class KeyGroups {
  * A plain key spec group member - resolves a single key spec.
  */
 class KeyGroupKeySpec implements GroupMember {
-  private keySpec: KeySpec;
+  #keySpec: KeySpec;
 
   constructor(spec: string) {
-    this.keySpec = new KeySpec(spec);
+    this.#keySpec = new KeySpec(spec);
   }
 
   getFields(record: JsonObject): string[] {
-    if (this.keySpec.hasKeySpec(record)) {
-      const keyList = this.keySpec.getKeyListForSpec(record);
+    if (this.#keySpec.hasKeySpec(record)) {
+      const keyList = this.#keySpec.getKeyListForSpec(record);
       if (keyList.length > 0) {
         return [keyList.join("/")];
       }
@@ -187,7 +187,7 @@ class KeyGroupRegex implements GroupMember {
   getFields(record: JsonObject): string[] {
     const specs: string[] = [];
     const regex = new RegExp(this.regex);
-    const allSpecs = this.getSpecs(record);
+    const allSpecs = this.#getSpecs(record);
 
     for (const spec of allSpecs) {
       if (regex.test(spec)) {
@@ -202,7 +202,7 @@ class KeyGroupRegex implements GroupMember {
     return specs;
   }
 
-  private getSpecs(record: JsonObject): string[] {
+  #getSpecs(record: JsonObject): string[] {
     let minDepth = 1;
     let maxDepth = 1;
 
@@ -215,11 +215,11 @@ class KeyGroupRegex implements GroupMember {
     }
 
     const paths: string[][] = [];
-    this.getPaths(record, 1, minDepth, maxDepth, [], paths);
+    this.#getPaths(record, 1, minDepth, maxDepth, [], paths);
     return paths.map((p) => p.join("/"));
   }
 
-  private getPaths(
+  #getPaths(
     data: JsonValue,
     currentDepth: number,
     minDepth: number,
@@ -243,7 +243,7 @@ class KeyGroupRegex implements GroupMember {
     if (Array.isArray(data)) {
       for (let index = 0; index < data.length; index++) {
         if (currentDepth <= maxDepth || maxDepth === -1) {
-          this.getPaths(
+          this.#getPaths(
             data[index]!,
             currentDepth + 1,
             minDepth,
@@ -259,7 +259,7 @@ class KeyGroupRegex implements GroupMember {
     if (typeof data === "object" && data !== null && !Array.isArray(data)) {
       for (const key of Object.keys(data as JsonObject)) {
         if (currentDepth <= maxDepth || maxDepth === -1) {
-          this.getPaths(
+          this.#getPaths(
             (data as JsonObject)[key]!,
             currentDepth + 1,
             minDepth,

@@ -49,11 +49,11 @@ export class CollectorReceiver implements RecordReceiver {
 }
 
 export abstract class Operation implements RecordReceiver {
-  protected next: RecordReceiver;
-  private filenameKey: string | null = null;
-  private currentFilename = "NONE";
-  private wantsHelp = false;
-  private exitValue = 0;
+  next: RecordReceiver;
+  #filenameKey: string | null = null;
+  #currentFilename = "NONE";
+  #wantsHelp = false;
+  #exitValue = 0;
 
   constructor(next?: RecordReceiver) {
     this.next = next ?? new PrinterReceiver();
@@ -98,9 +98,9 @@ export abstract class Operation implements RecordReceiver {
   /**
    * Emit a record downstream.
    */
-  protected pushRecord(record: Record): boolean {
-    if (this.filenameKey) {
-      record.set(this.filenameKey, this.currentFilename);
+  pushRecord(record: Record): boolean {
+    if (this.#filenameKey) {
+      record.set(this.#filenameKey, this.#currentFilename);
     }
     return this.next.acceptRecord(record);
   }
@@ -108,7 +108,7 @@ export abstract class Operation implements RecordReceiver {
   /**
    * Emit a raw line downstream.
    */
-  protected pushLine(line: string): void {
+  pushLine(line: string): void {
     if (this.next.acceptLine) {
       this.next.acceptLine(line);
     }
@@ -132,18 +132,18 @@ export abstract class Operation implements RecordReceiver {
    * Set the filename key for annotating records with source filename.
    */
   setFilenameKey(key: string): void {
-    this.filenameKey = key;
+    this.#filenameKey = key;
   }
 
   /**
    * Update the current input filename.
    */
   updateCurrentFilename(filename: string): void {
-    this.currentFilename = filename;
+    this.#currentFilename = filename;
   }
 
   getCurrentFilename(): string {
-    return this.currentFilename;
+    return this.#currentFilename;
   }
 
   /**
@@ -155,26 +155,26 @@ export abstract class Operation implements RecordReceiver {
   }
 
   setWantsHelp(val: boolean): void {
-    this.wantsHelp = val;
+    this.#wantsHelp = val;
   }
 
   getWantsHelp(): boolean {
-    return this.wantsHelp;
+    return this.#wantsHelp;
   }
 
   setExitValue(val: number): void {
-    this.exitValue = val;
+    this.#exitValue = val;
   }
 
   getExitValue(): number {
-    return this.exitValue;
+    return this.#exitValue;
   }
 
   /**
    * Parse command-line options. Provides a simple argument parser.
    * Returns remaining unparsed arguments.
    */
-  protected parseOptions(
+  parseOptions(
     args: string[],
     optionDefs: OptionDef[]
   ): string[] {
@@ -186,7 +186,7 @@ export abstract class Operation implements RecordReceiver {
       let matched = false;
 
       if (arg === "--help" || arg === "-h") {
-        this.wantsHelp = true;
+        this.#wantsHelp = true;
         i++;
         continue;
       }

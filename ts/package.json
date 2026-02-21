@@ -11,8 +11,15 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/bun": "latest",
+    "@types/papaparse": "^5.5.2",
     "oxlint": "latest",
     "typescript": "^5"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "fast-xml-parser": "^5.3.7",
+    "papaparse": "^5.5.3"
   }
 }
