@@ -3,6 +3,10 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
   title: "RecordStream",
   description: "Your data's new best friend — a toolkit for taming JSON streams",
+  head: [
+    ["link", { rel: "icon", type: "image/svg+xml", href: "/logo-small.svg" }],
+    ["link", { rel: "icon", type: "image/png", href: "/logo.png" }],
+  ],
   vue: {
     template: {
       compilerOptions: {
@@ -13,6 +17,7 @@ export default defineConfig({
     },
   },
   themeConfig: {
+    logo: "/logo-small.svg",
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
       { text: "Reference", link: "/reference/" },
@@ -24,6 +29,8 @@ export default defineConfig({
           items: [
             { text: "Getting Started", link: "/guide/getting-started" },
             { text: "The Pipeline Model", link: "/guide/pipeline" },
+            { text: "Story", link: "/guide/story" },
+            { text: "Examples", link: "/guide/examples" },
           ],
         },
         {
