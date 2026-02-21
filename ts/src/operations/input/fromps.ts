@@ -71,9 +71,9 @@ class PsProcessTable implements ProcessTableSource {
  * Analogous to App::RecordStream::Operation::fromps in Perl.
  */
 export class FromPs extends Operation {
-  private fields: string[] = [];
-  private processTable: ProcessTableSource = new PsProcessTable();
-  private uidConverter: ((uid: JsonValue) => string) | null = null;
+  fields: string[] = [];
+  processTable: ProcessTableSource = new PsProcessTable();
+  uidConverter: ((uid: JsonValue) => string) | null = null;
 
   acceptRecord(_record: Record): boolean {
     return true;

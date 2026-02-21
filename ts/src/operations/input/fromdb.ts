@@ -9,10 +9,10 @@ import type { JsonObject, JsonValue } from "../../types/json.ts";
  * Analogous to App::RecordStream::Operation::fromdb in Perl.
  */
 export class FromDb extends Operation {
-  private tableName: string | null = null;
-  private sql: string | null = null;
-  private dbFile: string | null = null;
-  private dbType = "sqlite";
+  tableName: string | null = null;
+  sql: string | null = null;
+  dbFile: string | null = null;
+  dbType = "sqlite";
 
   acceptRecord(_record: Record): boolean {
     return true;

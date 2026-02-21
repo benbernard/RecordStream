@@ -11,8 +11,8 @@ import type { JsonObject, JsonValue } from "../../types/json.ts";
  * Analogous to App::RecordStream::Operation::fromtcpdump in Perl.
  */
 export class FromTcpdump extends Operation {
-  private includeData = false;
-  private files: string[] = [];
+  includeData = false;
+  files: string[] = [];
 
   acceptRecord(_record: Record): boolean {
     return true;
@@ -48,7 +48,7 @@ export class FromTcpdump extends Operation {
     }
   }
 
-  private dumpPackets(file: string): void {
+  dumpPackets(file: string): void {
     // Use tcpdump to read pcap file and output verbose text
     const tcpdumpArgs = [
       "tcpdump",
@@ -83,7 +83,7 @@ export class FromTcpdump extends Operation {
     }
   }
 
-  private parsePacketLine(line: string, file: string): JsonObject | null {
+  parsePacketLine(line: string, file: string): JsonObject | null {
     const record: JsonObject = { file };
 
     // Parse timestamp

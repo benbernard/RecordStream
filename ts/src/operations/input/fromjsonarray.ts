@@ -9,8 +9,8 @@ import type { JsonObject, JsonArray } from "../../types/json.ts";
  * Analogous to App::RecordStream::Operation::fromjsonarray in Perl.
  */
 export class FromJsonArray extends Operation {
-  private fields: string[] = [];
-  private extraArgs: string[] = [];
+  fields: string[] = [];
+  extraArgs: string[] = [];
 
   init(args: string[]): void {
     const defs: OptionDef[] = [

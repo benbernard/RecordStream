@@ -29,8 +29,8 @@ type ParseMode = "fast" | "strict";
  * Analogous to App::RecordStream::Operation::fromapache in Perl.
  */
 export class FromApache extends Operation {
-  private mode: ParseMode = "fast";
-  private strictFormats: string[] | null = null;
+  mode: ParseMode = "fast";
+  strictFormats: string[] | null = null;
 
   acceptRecord(_record: Record): boolean {
     return true;
@@ -135,7 +135,7 @@ export class FromApache extends Operation {
     return true;
   }
 
-  private parseLine(line: string): Record | null {
+  parseLine(line: string): Record | null {
     if (this.mode === "strict" && this.strictFormats) {
       // Try only the specified formats
       for (const format of this.strictFormats) {
@@ -152,7 +152,7 @@ export class FromApache extends Operation {
     return this.parseFast(line);
   }
 
-  private tryFormat(format: string, line: string): Record | null {
+  tryFormat(format: string, line: string): Record | null {
     if (format === "vhost_common") {
       return this.parseVhostCommon(line);
     }
@@ -165,15 +165,15 @@ export class FromApache extends Operation {
     return null;
   }
 
-  private parseFast(line: string): Record | null {
+  parseFast(line: string): Record | null {
     return this.parseCombined(line) ?? this.parseCommon(line);
   }
 
-  private parseStrict(line: string): Record | null {
+  parseStrict(line: string): Record | null {
     return this.parseCombined(line) ?? this.parseCommon(line) ?? this.parseVhostCommon(line);
   }
 
-  private parseCombined(line: string): Record | null {
+  parseCombined(line: string): Record | null {
     const m = COMBINED_RE.exec(line);
     if (!m) return null;
 
@@ -204,7 +204,7 @@ export class FromApache extends Operation {
     return new Record(data);
   }
 
-  private parseCommon(line: string): Record | null {
+  parseCommon(line: string): Record | null {
     const m = COMMON_RE.exec(line);
     if (!m) return null;
 
@@ -233,7 +233,7 @@ export class FromApache extends Operation {
     return new Record(data);
   }
 
-  private parseVhostCommon(line: string): Record | null {
+  parseVhostCommon(line: string): Record | null {
     const m = VHOST_COMMON_RE.exec(line);
     if (!m) return null;
 
