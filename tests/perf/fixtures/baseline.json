@@ -1,0 +1,170 @@
+{
+  "Record.fromJSON — 100 lines": {
+    "median": 0.07804099999999892,
+    "mean": 0.09482907999999952
+  },
+  "Record.fromJSON — 10K lines": {
+    "median": 7.48491649999994,
+    "mean": 7.433262499999955
+  },
+  "InputStream.fromString — 100 records": {
+    "median": 0.12687549999999703,
+    "mean": 0.1372508999999985
+  },
+  "InputStream.fromString — 10K records": {
+    "median": 11.464499500000016,
+    "mean": 11.937912100000005
+  },
+  "JSON.parse baseline — 10K lines (no Record)": {
+    "median": 7.742583499999995,
+    "mean": 7.690366499999999
+  },
+  "JSON.parse single array — 10K records": {
+    "median": 7.171791499999983,
+    "mean": 7.239741600000014
+  },
+  "Record.toString — 100 records": {
+    "median": 0.04374999999993179,
+    "mean": 0.04636331999999811
+  },
+  "Record.toString — 10K records": {
+    "median": 4.538271000000009,
+    "mean": 4.55037910000001
+  },
+  "Record.toJSON — 10K records": {
+    "median": 0.2603955000000724,
+    "mean": 0.26299150000002103
+  },
+  "JSON.stringify baseline — 10K objects (no Record)": {
+    "median": 4.338624999999979,
+    "mean": 4.440316600000005
+  },
+  "Batch join — 10K records (map+join)": {
+    "median": 4.938937499999952,
+    "mean": 4.966316899999981
+  },
+  "KeySpec — simple key (name)": {
+    "median": 0.3123954999999796,
+    "mean": 0.31734589999998664
+  },
+  "KeySpec — nested key (address/zip)": {
+    "median": 0.6776879999999892,
+    "mean": 0.7043957999999975
+  },
+  "KeySpec — deep nested (address/coords/lat)": {
+    "median": 1.0021669999999858,
+    "mean": 0.9514750000000163
+  },
+  "KeySpec — array index (tags/#0)": {
+    "median": 1.0778545000000008,
+    "mean": 1.1783916999999975
+  },
+  "Direct property access baseline (rec['name'])": {
+    "median": 0.035167000000058124,
+    "mean": 0.04622080000000324
+  },
+  "Direct nested access baseline (rec.address.coords.lat)": {
+    "median": 0.044541499999979806,
+    "mean": 0.046453999999994264
+  },
+  "KeySpec construction — cached (same spec 10K times)": {
+    "median": 0.17406199999999217,
+    "mean": 0.17237890000000106
+  },
+  "KeySpec construction — unique specs (10K different)": {
+    "median": 3.0554579999999305,
+    "mean": 3.0386165999999775
+  },
+  "grep — 10K records (r.age > 50)": {
+    "median": 0.2974794999999517,
+    "mean": 0.36340000000000144
+  },
+  "grep — 10K records (string match)": {
+    "median": 0.30937450000004674,
+    "mean": 0.4092833000000155
+  },
+  "eval — 10K records (add computed field)": {
+    "median": 1.2067915000000085,
+    "mean": 1.1782417999999892
+  },
+  "xform — 10K records (push each record)": {
+    "median": 1.1542504999999892,
+    "mean": 1.3152001000000042
+  },
+  "sort — 100 records (by score, numeric)": {
+    "median": 0.17712549999998828,
+    "mean": 0.18390210000000592
+  },
+  "sort — 10K records (by score, numeric)": {
+    "median": 25.477957999999944,
+    "mean": 25.74626639999999
+  },
+  "sort — 10K records (by name, lexical)": {
+    "median": 14.889624999999796,
+    "mean": 15.279858599999988
+  },
+  "collate — 100 records (count by city)": {
+    "median": 0.14935449999995853,
+    "mean": 0.15436460000004218
+  },
+  "collate — 10K records (count by city)": {
+    "median": 8.670540999999957,
+    "mean": 8.953825000000005
+  },
+  "fromcsv — 10K rows (parse CSV to records)": {
+    "median": 10.638000000000147,
+    "mean": 10.935175200000003
+  },
+  "chain — single op (grep), 10K records": {
+    "median": 5.176666999999952,
+    "mean": 5.462791599999946
+  },
+  "chain — 3 ops (grep | eval | grep), 10K records": {
+    "median": 5.347833000000037,
+    "mean": 5.330400000000009
+  },
+  "chain — 5 ops (grep|eval|grep|eval|grep), 10K records": {
+    "median": 5.323124999999891,
+    "mean": 5.297491799999944
+  },
+  "passthrough baseline — 10K records (direct collector)": {
+    "median": 4.8094374999999445,
+    "mean": 4.91285399999997
+  },
+  "new Record() — 10K objects": {
+    "median": 0.08018750000007913,
+    "mean": 0.09409375000000182
+  },
+  "new Record() empty — 10K": {
+    "median": 0.0957499999999527,
+    "mean": 0.12223954999999478
+  },
+  "Record.get — 10K records × 3 fields": {
+    "median": 0.04037500000004002,
+    "mean": 0.0402667000000406
+  },
+  "Record.set — 10K records × 1 field": {
+    "median": 0.05606250000005275,
+    "mean": 0.0567894999999794
+  },
+  "Record.clone — 10K records": {
+    "median": 12.539375000000064,
+    "mean": 12.641041600000062
+  },
+  "Record.dataRef — 10K records (zero-copy)": {
+    "median": 0.03014549999988958,
+    "mean": 0.035235399999987746
+  },
+  "Record.sort — 10K records (numeric field)": {
+    "median": 20.14316699999995,
+    "mean": 20.402541800000016
+  },
+  "Record.sort — 10K records (lexical field)": {
+    "median": 9.134458999999879,
+    "mean": 9.197875000000021
+  },
+  "Record.cmp — 1M comparisons (single field)": {
+    "median": 367.90916600000037,
+    "mean": 364.34010000000006
+  }
+}
