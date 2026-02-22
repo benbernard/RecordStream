@@ -1,9 +1,14 @@
+import stringWidth from "string-width";
 import { Record } from "../../Record.ts";
 import { Operation, type RecordReceiver, type OptionDef } from "../../Operation.ts";
 import { Accumulator } from "../../Accumulator.ts";
 import { KeyGroups } from "../../KeyGroups.ts";
 import { KeySpec } from "../../KeySpec.ts";
 import type { JsonObject } from "../../types/json.ts";
+
+function displayWidth(str: string): number {
+  return stringWidth(str);
+}
 
 /**
  * A node in the values tree used to track unique value tuples.
@@ -433,14 +438,14 @@ export class ToPtable extends Operation {
       table[heightOffset + j]![widthOffset + i] = v;
     }
 
-    // Calculate column widths
+    // Calculate column widths using visual display width
     const colWidths: number[] = [];
     for (const row of table) {
       while (colWidths.length < row.length) {
         colWidths.push(0);
       }
       for (let i = 0; i < row.length; i++) {
-        const l = row[i]!.length;
+        const l = displayWidth(row[i]!);
         if (l > colWidths[i]!) {
           colWidths[i] = l;
         }
@@ -615,7 +620,7 @@ function formatTableRow(
   let s = delim;
   for (let i = 0; i < widths.length; i++) {
     let cell = cellFn(i, widths[i]!);
-    cell += " ".repeat(Math.max(0, widths[i]! - cell.length));
+    cell += " ".repeat(Math.max(0, widths[i]! - displayWidth(cell)));
     s += cell + delim;
   }
   return s;

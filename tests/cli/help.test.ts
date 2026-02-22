@@ -8,9 +8,9 @@ import {
 import type { CommandDoc } from "../../src/types/CommandDoc.ts";
 
 describe("loadAllDocs", () => {
-  test("loads documentation for all 43 operations", async () => {
+  test("loads documentation for all 45 operations", async () => {
     const docs = await loadAllDocs();
-    expect(docs.length).toBe(43);
+    expect(docs.length).toBe(45);
   });
 
   test("every doc has required fields", async () => {

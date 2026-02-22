@@ -25,10 +25,10 @@ describe("man page generation", () => {
     const expectedCommands = [
       "fromapache", "fromatomfeed", "fromcsv", "fromdb", "fromjsonarray",
       "fromkv", "frommongo", "frommultire", "fromps", "fromre",
-      "fromsplit", "fromtcpdump", "fromxferlog", "fromxml",
+      "fromsplit", "fromtcpdump", "fromxferlog", "fromxls", "fromxml",
       "annotate", "assert", "chain", "collate", "decollate", "delta",
       "eval", "expandjson", "flatten", "generate", "grep", "join", "multiplex",
-      "normalizetime", "sort", "stream2table", "substream", "topn", "xform",
+      "normalizetime", "parsedate", "sort", "stream2table", "substream", "topn", "xform",
       "tochart", "tocsv", "todb", "togdgraph", "tognuplot", "tohtml",
       "tojsonarray", "toprettyprint", "toptable", "totable",
     ];
@@ -39,12 +39,12 @@ describe("man page generation", () => {
     }
   });
 
-  test("generates exactly 44 man pages (43 commands + recs.1)", () => {
+  test("generates exactly 46 man pages (45 commands + recs.1)", () => {
     const { readdirSync } = require("node:fs");
     const files = (readdirSync(MAN_DIR) as string[]).filter(
       (f: string) => f.endsWith(".1")
     );
-    expect(files.length).toBe(44);
+    expect(files.length).toBe(46);
   });
 
   test("recs.1 contains proper troff header", () => {

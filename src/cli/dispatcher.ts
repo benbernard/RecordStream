@@ -20,6 +20,7 @@ import { FromRe } from "../operations/input/fromre.ts";
 import { FromSplit } from "../operations/input/fromsplit.ts";
 import { FromTcpdump } from "../operations/input/fromtcpdump.ts";
 import { FromXferlog } from "../operations/input/fromxferlog.ts";
+import { FromXls } from "../operations/input/fromxls.ts";
 import { FromXml } from "../operations/input/fromxml.ts";
 
 // -- Transform operations --
@@ -40,6 +41,7 @@ import { JoinOperation } from "../operations/transform/join.ts";
 import { CollateOperation } from "../operations/transform/collate.ts";
 import { DecollateOperation } from "../operations/transform/decollate.ts";
 import { ExpandJsonOperation } from "../operations/transform/expandjson.ts";
+import { ParseDateOperation } from "../operations/transform/parsedate.ts";
 import { ChainOperation, registerOperationFactory } from "../operations/transform/chain.ts";
 import { MultiplexOperation } from "../operations/transform/multiplex.ts";
 
@@ -75,6 +77,7 @@ const operationRegistry = new Map<string, OpConstructor>([
   ["fromsplit", FromSplit],
   ["fromtcpdump", FromTcpdump],
   ["fromxferlog", FromXferlog],
+  ["fromxls", FromXls],
   ["fromxml", FromXml],
   // Transform
   ["grep", GrepOperation],
@@ -94,6 +97,7 @@ const operationRegistry = new Map<string, OpConstructor>([
   ["join", JoinOperation],
   ["collate", CollateOperation],
   ["decollate", DecollateOperation],
+  ["parsedate", ParseDateOperation],
   ["chain", ChainOperation],
   ["multiplex", MultiplexOperation],
   // Output
