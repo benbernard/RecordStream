@@ -1,6 +1,9 @@
 # dependencies (bun install)
 node_modules
 
+# compiled binary
+bin/recs
+
 # output
 out
 dist

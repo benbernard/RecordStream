@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target bun",
+    "build": "bun build ./bin/recs.ts --compile --outfile=./bin/recs",
     "test": "bun test",
     "lint": "bunx oxlint src/ tests/ bin/ scripts/",
     "typecheck": "tsc --noEmit",

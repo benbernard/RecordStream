@@ -16,8 +16,12 @@ git clone https://github.com/benbernard/RecordStream.git
 cd RecordStream
 bun install
 
-# Try it out
+# Try it out (via bun)
 echo '{"name":"alice","age":30}' | bun bin/recs.ts grep '{{age}} > 25'
+
+# Or compile a standalone binary
+bun run build
+echo '{"name":"alice","age":30}' | ./bin/recs grep '{{age}} > 25'
 ```
 
 ## Example Pipelines
@@ -67,6 +71,21 @@ Format and output record streams.
 Run `bun bin/recs.ts help` for the full command list, or `bun bin/recs.ts help <command>`
 for detailed help on any command.
 
+## Building
+
+Compile a standalone `recs` binary (no Bun runtime needed to run it):
+
+```bash
+bun run build
+```
+
+This creates `./bin/recs`, a self-contained executable:
+
+```bash
+echo '{"name":"alice","age":30}' | ./bin/recs grep '{{age}} > 25'
+./bin/recs fromps | ./bin/recs collate -k uid -a count | ./bin/recs totable
+```
+
 ## Development
 
 ```bash
@@ -78,6 +97,9 @@ bunx tsc --noEmit
 
 # Lint
 bunx oxlint src/ tests/ bin/ scripts/
+
+# Build standalone binary
+bun run build
 
 # Generate man pages
 bun scripts/generate-manpages.ts
