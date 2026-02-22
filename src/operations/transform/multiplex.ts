@@ -102,10 +102,20 @@ class MultiplexClumperCallback implements ClumperCallback {
         this.initializedFiles.add(state.outputFile);
       }
 
+      // Write collected lines (from output operations like tocsv)
+      for (const line of state.collector.lines) {
+        appendFileSync(state.outputFile, line + "\n");
+      }
+
+      // Write collected records (from transform operations)
       for (const record of state.collector.records) {
         appendFileSync(state.outputFile, record.toString() + "\n");
       }
     } else {
+      // Push lines to downstream
+      for (const line of state.collector.lines) {
+        this.pushLineCb(line);
+      }
       // Push records to downstream
       for (const record of state.collector.records) {
         this.pushRecordCb(record);
