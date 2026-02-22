@@ -35,7 +35,7 @@ export default defineConfig({
     },
   },
   themeConfig: {
-    logo: "/logo-small.svg",
+    logo: "/logo-small.png",
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
       { text: "Reference", link: "/reference/" },
