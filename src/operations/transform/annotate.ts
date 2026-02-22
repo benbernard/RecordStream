@@ -5,8 +5,6 @@ import { KeyGroups } from "../../KeyGroups.ts";
 import { findKey, setKey } from "../../KeySpec.ts";
 import { Record } from "../../Record.ts";
 import type { JsonValue, JsonObject } from "../../types/json.ts";
-import type { SnippetRunner } from "../../snippets/SnippetRunner.ts";
-import { createSnippetRunner, isJsLang, langOptionDef } from "../../snippets/index.ts";
 
 /**
  * Add computed fields to records, caching annotations by key grouping.
@@ -19,9 +17,6 @@ export class AnnotateOperation extends Operation {
   executor!: Executor;
   keyGroups = new KeyGroups();
   annotations = new Map<string, Map<string, JsonValue>>();
-  lang: string | null = null;
-  runner: SnippetRunner | null = null;
-  #bufferedRecords: Record[] = [];
 
   override addHelpTypes(): void {
     this.useHelpType("snippet");
@@ -41,7 +36,6 @@ export class AnnotateOperation extends Operation {
         description: "Keys to match records by",
       },
       snippetFromFileOption((code) => { fileSnippet = code; }),
-      langOptionDef((v) => { this.lang = v; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
@@ -51,22 +45,12 @@ export class AnnotateOperation extends Operation {
       throw new Error("Must specify at least one --key, maybe you want xform instead?");
     }
 
-    if (this.lang && !isJsLang(this.lang)) {
-      this.runner = createSnippetRunner(this.lang);
-      void this.runner.init(expression, { mode: "eval" });
-    } else {
-      // The expression modifies the record and returns it
-      const code = `${expression}\n; return r;`;
-      this.executor = new Executor(code);
-    }
+    // The expression modifies the record and returns it
+    const code = `${expression}\n; return r;`;
+    this.executor = new Executor(code);
   }
 
   acceptRecord(record: Record): boolean {
-    if (this.runner) {
-      this.#bufferedRecords.push(record);
-      return true;
-    }
-
     const data = record.dataRef() as JsonObject;
     const specs = this.keyGroups.getKeyspecsForRecord(data);
 
@@ -110,79 +94,6 @@ export class AnnotateOperation extends Operation {
     return true;
   }
 
-  override streamDone(): void {
-    if (this.runner && this.#bufferedRecords.length > 0) {
-      // For external runners, process all records through the runner
-      // in eval mode. Caching is done on the TS side using key groups.
-      const uncachedIndices: number[] = [];
-      const uncachedRecords: Record[] = [];
-
-      for (let i = 0; i < this.#bufferedRecords.length; i++) {
-        const record = this.#bufferedRecords[i]!;
-        const data = record.dataRef() as JsonObject;
-        const specs = this.keyGroups.getKeyspecsForRecord(data);
-
-        const values: string[] = [];
-        for (const key of [...specs].sort()) {
-          const value = findKey(data, key, true);
-          values.push(String(value ?? ""));
-        }
-        const syntheticKey = values.join("\x1E");
-
-        const cached = this.annotations.get(syntheticKey);
-        if (cached) {
-          // Apply cached annotation
-          for (const [keyspec, value] of cached) {
-            setKey(data, keyspec, value);
-          }
-          this.pushRecord(record);
-        } else {
-          uncachedIndices.push(i);
-          uncachedRecords.push(record);
-        }
-      }
-
-      if (uncachedRecords.length > 0) {
-        const results = this.runner.executeBatch(uncachedRecords);
-        for (let j = 0; j < results.length; j++) {
-          const result = results[j]!;
-          const record = uncachedRecords[j]!;
-
-          if (result.error) {
-            process.stderr.write(`annotate: ${result.error}\n`);
-            this.pushRecord(record);
-            continue;
-          }
-
-          if (result.record) {
-            const data = record.dataRef() as JsonObject;
-            const before = record.toJSON() as JsonObject;
-
-            // Apply modifications from runner
-            for (const [key, value] of Object.entries(result.record)) {
-              data[key] = value;
-            }
-
-            // Detect and cache changes
-            const specs = this.keyGroups.getKeyspecsForRecord(data);
-            const keyValues: string[] = [];
-            for (const key of [...specs].sort()) {
-              const value = findKey(data, key, true);
-              keyValues.push(String(value ?? ""));
-            }
-            const syntheticKey = keyValues.join("\x1E");
-
-            const changes = new Map<string, JsonValue>();
-            this.findChanges(before, data, "", changes);
-            this.annotations.set(syntheticKey, changes);
-          }
-
-          this.pushRecord(record);
-        }
-      }
-    }
-  }
-
   findChanges(
     before: JsonObject,
     after: JsonObject,
@@ -222,12 +133,6 @@ export const documentation: CommandDoc = {
         "May be a keygroup or keyspec.",
       argument: "<keys>",
       required: true,
-    },
-    {
-      flags: ["--lang", "-l"],
-      description:
-        "Snippet language: js (default), python/py, perl/pl.",
-      argument: "<lang>",
     },
   ],
   examples: [

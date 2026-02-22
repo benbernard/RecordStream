@@ -1,0 +1,55 @@
+.TH RECS\-JOIN 1 "2026-02-22" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-join \- Join two record streams on a key
+
+.SH SYNOPSIS
+.B recs join [options] <inputkey> <dbkey> <dbfile> [files...]
+
+.SH DESCRIPTION
+Join two record streams on a key. Records of input are joined against records in dbfile, using field inputkey from input and field dbkey from dbfile. Each pair of matches will be combined to form a larger record, with fields from the dbfile overwriting fields from the input stream.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--left\fR
+Do a left join (include unmatched db records).
+.TP
+\fB--right\fR
+Do a right join (include unmatched input records).
+.TP
+\fB--inner\fR
+Do an inner join (default). Only matched pairs are output.
+.TP
+\fB--outer\fR
+Do an outer join (include all unmatched records from both sides).
+.TP
+\fB--operation\fR \fI<expression>\fR
+A JS expression for merging two records together, in place of the default behavior of db fields overwriting input fields. Variables d and i are the db record and input record respectively.
+.TP
+\fB--accumulate-right\fR
+Accumulate all input records with the same key onto each db record matching that key.
+
+.SH EXAMPLES
+Join type from input and typeName from dbfile
+.PP
+.RS 4
+.nf
+\fBcat recs | recs join type typeName dbfile\fR
+.fi
+.RE
+
+Join host name from a mapping file to machines
+.PP
+.RS 4
+.nf
+\fBrecs join host host hostIpMapping machines\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-collate\fR(1), \fBrecs\-xform\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

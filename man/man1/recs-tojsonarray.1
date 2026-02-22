@@ -1,0 +1,27 @@
+.TH RECS\-TOJSONARRAY 1 "2026-02-22" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-tojsonarray \- Outputs the record stream as a single JSON array
+
+.SH SYNOPSIS
+.B recs tojsonarray [files...]
+
+.SH DESCRIPTION
+Outputs the record stream as a single JSON array. Complements the fromjsonarray command.
+.PP
+
+.SH EXAMPLES
+Save the record stream to a file suitable for loading by any JSON parser
+.PP
+.RS 4
+.nf
+\fB... | recs tojsonarray > recs.json\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-fromjsonarray\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

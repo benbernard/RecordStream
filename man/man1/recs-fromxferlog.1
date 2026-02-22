@@ -1,0 +1,24 @@
+.TH RECS\-FROMXFERLOG 1 "2026-02-22" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-fromxferlog \- Each line of input (or lines of <files>) is parsed as an FTP transfer log (xferlog format) to produce an output record
+
+.SH SYNOPSIS
+.B recs fromxferlog [files...]
+
+.SH DESCRIPTION
+Each line of input (or lines of <files>) is parsed as an FTP transfer log (xferlog format) to produce an output record. Fields include day_name, month, day, current_time, year, transfer_time, remote_host, file_size, filename, transfer_type, special_action_flag, direction, access_mode, username, service_name, authentication_method, authenticated_user_id, and completion_status.
+.PP
+
+.SH EXAMPLES
+Get records from typical xferlog
+.PP
+.RS 4
+.nf
+\fBrecs fromxferlog < /var/log/xferlog\fR
+.fi
+.RE
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+
