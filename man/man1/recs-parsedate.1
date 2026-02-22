@@ -1,0 +1,66 @@
+.TH RECS\-PARSEDATE 1 "2026-02-22" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-parsedate \- Parse date/time strings from a field and output them in a normalized format
+
+.SH SYNOPSIS
+.B recs parsedate [options] [files...]
+
+.SH DESCRIPTION
+Parse date/time strings from a field and output them in a normalized format. Supports epoch seconds, ISO 8601, and custom strftime\-style format strings for both input and output.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--key\fR, \fB-k\fR \fI<key>\fR
+Key field containing the date/time string to parse.
+.TP
+\fB--output\fR, \fB-o\fR \fI<key>\fR
+Output key for the parsed date (defaults to \'parsed_<key>\').
+.TP
+\fB--format\fR, \fB-f\fR \fI<format>\fR
+Input format for parsing (strftime\-style). Common directives: %Y (4\-digit year), %m (month), %d (day), %H (hour 24h), %M (minute), %S (second), %b (abbreviated month name), %p (AM/PM).
+.TP
+\fB--output-format\fR, \fB-F\fR \fI<format>\fR
+Output format (strftime\-style). Defaults to ISO 8601 if not specified.
+.TP
+\fB--epoch\fR, \fB-e\fR
+Input date is in epoch seconds.
+.TP
+\fB--output-epoch\fR, \fB-E\fR
+Output as epoch seconds instead of a formatted string.
+.TP
+\fB--timezone\fR, \fB-z\fR \fI<timezone>\fR
+Timezone for output formatting (IANA name like \'America/New_York\').
+
+.SH EXAMPLES
+Parse dates and output as epoch seconds
+.PP
+.RS 4
+.nf
+\fBrecs parsedate -k date -E\fR
+.fi
+.RE
+
+Parse a custom date format and reformat it
+.PP
+.RS 4
+.nf
+\fBrecs parsedate -k timestamp -f \'%d/%b/%Y:%H:%M:%S\' -F \'%Y-%m-%d %H:%M:%S\'\fR
+.fi
+.RE
+
+Convert epoch seconds to ISO 8601
+.PP
+.RS 4
+.nf
+\fBrecs parsedate -k time -e -o iso_time\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-normalizetime\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

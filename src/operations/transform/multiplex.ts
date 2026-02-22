@@ -1,3 +1,5 @@
+import { writeFileSync, appendFileSync, existsSync, mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import { Operation, CollectorReceiver } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
 import type { ClumperCallback } from "../../Clumper.ts";
@@ -16,34 +18,63 @@ class MultiplexClumperCallback implements ClumperCallback {
   operationName: string;
   operationArgs: string[];
   lineKey: string | null;
+  outputFileKey: string | null;
+  outputFileEval: string | null;
   pushRecordCb: (record: Record) => boolean;
   pushLineCb: (line: string) => void;
+  initializedFiles = new Set<string>();
 
   constructor(
     operationName: string,
     operationArgs: string[],
     lineKey: string | null,
+    outputFileKey: string | null,
+    outputFileEval: string | null,
     pushRecordCb: (record: Record) => boolean,
     pushLineCb: (line: string) => void
   ) {
     this.operationName = operationName;
     this.operationArgs = operationArgs;
     this.lineKey = lineKey;
+    this.outputFileKey = outputFileKey;
+    this.outputFileEval = outputFileEval;
     this.pushRecordCb = pushRecordCb;
     this.pushLineCb = pushLineCb;
   }
 
-  clumperCallbackBegin(_options: { [key: string]: unknown }): unknown {
+  resolveOutputFile(options: { [key: string]: unknown }): string | null {
+    if (this.outputFileKey) {
+      const val = options[this.outputFileKey];
+      if (val !== undefined && val !== null) {
+        return String(val);
+      }
+      return null;
+    }
+    if (this.outputFileEval) {
+      // Replace {{key}} placeholders with group values
+      let filename = this.outputFileEval;
+      for (const [key, val] of Object.entries(options)) {
+        filename = filename.replace(
+          new RegExp(`\\{\\{${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\}\\}`, "g"),
+          String(val ?? "")
+        );
+      }
+      return filename;
+    }
+    return null;
+  }
+
+  clumperCallbackBegin(options: { [key: string]: unknown }): unknown {
     const collector = new CollectorReceiver();
     const op = createOperation(this.operationName, [...this.operationArgs], collector);
-    return { operation: op, collector };
+    const outputFile = this.resolveOutputFile(options);
+    return { operation: op, collector, outputFile };
   }
 
   clumperCallbackPushRecord(cookie: unknown, record: Record): void {
-    const state = cookie as { operation: Operation; collector: CollectorReceiver };
+    const state = cookie as { operation: Operation; collector: CollectorReceiver; outputFile: string | null };
 
     if (this.lineKey) {
-      // Use the value of lineKey as input line to the operation
       const data = record.dataRef() as JsonObject;
       const lineValue = findKey(data, this.lineKey, true);
       if (lineValue !== undefined && lineValue !== null) {
@@ -55,12 +86,40 @@ class MultiplexClumperCallback implements ClumperCallback {
   }
 
   clumperCallbackEnd(cookie: unknown): void {
-    const state = cookie as { operation: Operation; collector: CollectorReceiver };
+    const state = cookie as { operation: Operation; collector: CollectorReceiver; outputFile: string | null };
     state.operation.finish();
 
-    // Push all collected records
-    for (const record of state.collector.records) {
-      this.pushRecordCb(record);
+    if (state.outputFile) {
+      // Write output to file
+      const dir = dirname(state.outputFile);
+      if (dir && dir !== "." && !existsSync(dir)) {
+        mkdirSync(dir, { recursive: true });
+      }
+
+      // Initialize file (truncate) on first write, then append
+      if (!this.initializedFiles.has(state.outputFile)) {
+        writeFileSync(state.outputFile, "");
+        this.initializedFiles.add(state.outputFile);
+      }
+
+      // Write collected lines (from output operations like tocsv)
+      for (const line of state.collector.lines) {
+        appendFileSync(state.outputFile, line + "\n");
+      }
+
+      // Write collected records (from transform operations)
+      for (const record of state.collector.records) {
+        appendFileSync(state.outputFile, record.toString() + "\n");
+      }
+    } else {
+      // Push lines to downstream
+      for (const line of state.collector.lines) {
+        this.pushLineCb(line);
+      }
+      // Push records to downstream
+      for (const record of state.collector.records) {
+        this.pushRecordCb(record);
+      }
     }
   }
 }
@@ -85,6 +144,8 @@ export class MultiplexOperation extends Operation {
   init(args: string[]): void {
     const clumperOptions = new ClumperOptions();
     let lineKey: string | null = null;
+    let outputFileKey: string | null = null;
+    let outputFileEval: string | null = null;
 
     const defs: OptionDef[] = [
       {
@@ -117,6 +178,20 @@ export class MultiplexOperation extends Operation {
         type: "string",
         handler: (v) => { lineKey = v as string; },
         description: "Use this key's value as line input for the nested operation",
+      },
+      {
+        long: "output-file-key",
+        short: "o",
+        type: "string",
+        handler: (v) => { outputFileKey = v as string; },
+        description: "Write each group's output to a file named by the value of this key field",
+      },
+      {
+        long: "output-file-eval",
+        short: "O",
+        type: "string",
+        handler: (v) => { outputFileEval = v as string; },
+        description: "Write each group's output to a filename derived from the given expression (supports {{key}} interpolation)",
       },
       {
         long: "adjacent",
@@ -186,6 +261,8 @@ export class MultiplexOperation extends Operation {
       operationName,
       operationArgs,
       lineKey,
+      outputFileKey,
+      outputFileEval,
       (record: Record) => this.pushRecord(record),
       (line: string) => this.pushLine(line)
     );
@@ -232,6 +309,19 @@ export const documentation: CommandDoc = {
       argument: "<key>",
     },
     {
+      flags: ["--output-file-key", "-o"],
+      description:
+        "Write each group's output to a separate file, using the value of the given key as the filename.",
+      argument: "<key>",
+    },
+    {
+      flags: ["--output-file-eval", "-O"],
+      description:
+        "Write each group's output to a separate file, with filename determined by the given expression. " +
+        "Supports {{key}} interpolation with group key values.",
+      argument: "<expression>",
+    },
+    {
       flags: ["--adjacent", "-1"],
       description: "Only group together adjacent records. Avoids spooling records into memory.",
     },
@@ -274,6 +364,11 @@ export const documentation: CommandDoc = {
         "Separate out a stream of text by PID into separate invocations of an operation",
       command:
         "recs fromre '^(.*PID=([0-9]*).*)$' -f line,pid | recs multiplex -L line -k pid -- recs frommultire ...",
+    },
+    {
+      description: "Write each group's CSV output to separate files by department",
+      command:
+        "recs multiplex -k department -O 'output-{{department}}.csv' -- recs tocsv",
     },
   ],
   seeAlso: ["collate", "chain"],

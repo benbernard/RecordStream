@@ -63,8 +63,8 @@ Options:
   --save-baseline         Save results as baseline for future comparison
   --ci                    Enable CI mode (machine-readable output, threshold
                           checking, and markdown/JSON report generation)
-  --fail-threshold <pct>  Exit with code 1 if any benchmark regresses more
-                          than <pct>% vs baseline (requires --ci, default: 25)
+  --fail-threshold <pct>  Warn if any benchmark regresses more than <pct>%
+                          vs baseline (advisory-only, requires --ci, default: 25)
   --markdown-file <path>  Write a markdown report table to <path> (requires --ci)
   --json-file <path>      Write JSON results to <path> (requires --ci)
   --baseline-file <path>  Read/write baseline from <path> instead of the
