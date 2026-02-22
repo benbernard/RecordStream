@@ -2,8 +2,6 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
     branches:
       - master
 
@@ -37,40 +35,45 @@ jobs:
       - name: Check documentation
         run: bun run check-docs
 
-  check-version:
+  determine-version:
     runs-on: ubuntu-latest
     outputs:
-      should_release: ${{ steps.check.outputs.should_release }}
-      version: ${{ steps.check.outputs.version }}
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Check if release needed
-        id: check
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Determine next version
+        id: version
         run: |
-          if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            echo "Triggered by tag push, proceeding with release"
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
-            echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          # Get the latest version tag (e.g., v0.2.0)
+          LATEST_TAG=$(git tag --list 'v*' --sort=-version:refname | head -n 1)
+
+          if [ -z "$LATEST_TAG" ]; then
+            # No tags exist — use package.json version as the starting point
+            CURRENT=$(jq -r .version package.json)
+            echo "No existing tags found, using package.json version: $CURRENT"
           else
-            VERSION="v$(jq -r .version package.json)"
-            echo "Version from package.json: $VERSION"
-            if gh release view "$VERSION" --repo "${{ github.repository }}" >/dev/null 2>&1; then
-              echo "Release $VERSION already exists, skipping"
-              echo "should_release=false" >> "$GITHUB_OUTPUT"
-            else
-              echo "No release found for $VERSION, proceeding"
-              echo "should_release=true" >> "$GITHUB_OUTPUT"
-            fi
-            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            # Strip the leading 'v'
+            CURRENT="${LATEST_TAG#v}"
+            echo "Latest tag: $LATEST_TAG (version: $CURRENT)"
           fi
 
+          # Bump patch version: split on dots, increment the last segment
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          NEXT_PATCH=$((PATCH + 1))
+          NEXT_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}"
+          NEXT_TAG="v${NEXT_VERSION}"
+
+          echo "Next version: $NEXT_VERSION (tag: $NEXT_TAG)"
+          echo "version=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$NEXT_TAG" >> "$GITHUB_OUTPUT"
+
   build:
-    needs: [ci, check-version]
-    if: needs.check-version.outputs.should_release == 'true'
+    needs: [ci, determine-version]
     strategy:
       matrix:
         include:
@@ -101,6 +104,11 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Stamp version in package.json
+        run: |
+          jq '.version = "${{ needs.determine-version.outputs.version }}"' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
       - name: Build binary
         run: bun build ./bin/recs.ts --compile --target=${{ matrix.target }} --outfile=${{ matrix.artifact }}
 
@@ -111,21 +119,17 @@ jobs:
           path: ${{ matrix.artifact }}
 
   release:
-    needs: [check-version, build]
-    if: needs.check-version.outputs.should_release == 'true'
+    needs: [determine-version, build]
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create tag for version
-        if: github.ref_type != 'tag'
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Create tag
         run: |
-          git tag "${{ needs.check-version.outputs.version }}"
-          git push origin "${{ needs.check-version.outputs.version }}"
+          git tag "${{ needs.determine-version.outputs.tag }}"
+          git push origin "${{ needs.determine-version.outputs.tag }}"
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -135,7 +139,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.check-version.outputs.version }}
+          tag_name: ${{ needs.determine-version.outputs.tag }}
+          name: ${{ needs.determine-version.outputs.tag }}
           generate_release_notes: true
           files: |
             artifacts/recs-linux-x64/recs-linux-x64
