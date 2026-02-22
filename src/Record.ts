@@ -80,7 +80,7 @@ export class Record {
    * Return a deep clone of this record.
    */
   clone(): Record {
-    return new Record(JSON.parse(JSON.stringify(this.#data)) as JsonObject);
+    return new Record(structuredClone(this.#data));
   }
 
   /**
