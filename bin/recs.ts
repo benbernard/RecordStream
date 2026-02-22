@@ -42,7 +42,7 @@ if (!command || command === "help" || command === "--help" || command === "-h") 
 
   if (subcommand) {
     // recs help <command>
-    const doc = await loadDocForCommand(subcommand);
+    const doc = loadDocForCommand(subcommand);
     if (!doc) {
       console.error(`Unknown command: ${subcommand}`);
       console.error("Run 'recs help' for a list of commands.");
@@ -51,7 +51,7 @@ if (!command || command === "help" || command === "--help" || command === "-h") 
     console.log(docToHelpText(doc));
   } else {
     // recs help  /  recs --help  /  recs (no args)
-    const docs = await loadAllDocs();
+    const docs = loadAllDocs();
     console.log(formatCommandList(docs));
   }
   process.exit(0);
@@ -63,7 +63,7 @@ if (command === "--version" || command === "-V") {
 }
 
 if (command === "--list" || command === "-l" || command === "list") {
-  const docs = await loadAllDocs();
+  const docs = loadAllDocs();
   for (const doc of docs.sort((a, b) => a.name.localeCompare(b.name))) {
     console.log(doc.name);
   }

@@ -1,7 +1,9 @@
 import { describe, test, expect } from "bun:test";
 import { join } from "node:path";
+import { existsSync } from "node:fs";
 
 const RECS_BIN = join(import.meta.dir, "..", "..", "bin", "recs.ts");
+const COMPILED_BIN = join(import.meta.dir, "..", "..", "bin", "recs");
 
 interface RecsResult {
   stdout: string;
@@ -562,5 +564,81 @@ describe("error handling", () => {
     const result = await recs(["grep"], records);
     expect(result.exitCode).not.toBe(0);
     expect(result.stderr.length).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Compiled binary tests
+// ---------------------------------------------------------------------------
+const hasCompiledBinary = existsSync(COMPILED_BIN);
+
+async function recsCompiled(args: string[], stdin?: string): Promise<RecsResult> {
+  const proc = Bun.spawn([COMPILED_BIN, ...args], {
+    stdin: stdin ? new Buffer(stdin) : undefined,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const stdout = await new Response(proc.stdout).text();
+  const stderr = await new Response(proc.stderr).text();
+  const exitCode = await proc.exited;
+  return { stdout, stderr, exitCode };
+}
+
+describe.if(hasCompiledBinary)("compiled binary", () => {
+  test("help lists available commands", async () => {
+    const result = await recsCompiled(["help"]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("fromcsv");
+    expect(result.stdout).toContain("grep");
+    expect(result.stdout).toContain("tocsv");
+    expect(result.stdout).toContain("collate");
+  });
+
+  test("help for a specific command shows that command's help", async () => {
+    const result = await recsCompiled(["help", "grep"]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("grep");
+    expect(result.stdout).toContain("expression");
+  });
+
+  test("--version prints version string", async () => {
+    const result = await recsCompiled(["--version"]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout.trim()).toMatch(/^recs \d+\.\d+\.\d+$/);
+    expect(result.stdout.trim()).not.toContain("0.0.0");
+  });
+
+  test("grep filters records", async () => {
+    const records = [
+      JSON.stringify({ name: "alice", age: 30 }),
+      JSON.stringify({ name: "bob", age: 25 }),
+    ].join("\n");
+
+    const result = await recsCompiled(["grep", "{{age}} > 28"], records);
+    expect(result.exitCode).toBe(0);
+    const output = parseRecords(result.stdout);
+    expect(output).toHaveLength(1);
+    expect(output[0]!["name"]).toBe("alice");
+  });
+
+  test("fromcsv | grep | tocsv pipeline", async () => {
+    const csv = "name,age\nalice,30\nbob,25\ncharlie,35";
+    const step1 = await recsCompiled(["fromcsv", "--header"], csv);
+    expect(step1.exitCode).toBe(0);
+
+    const step2 = await recsCompiled(["grep", "Number({{age}}) > 28"], step1.stdout);
+    expect(step2.exitCode).toBe(0);
+
+    const step3 = await recsCompiled(["tocsv"], step2.stdout);
+    expect(step3.exitCode).toBe(0);
+    expect(step3.stdout).toContain("alice");
+    expect(step3.stdout).toContain("charlie");
+    expect(step3.stdout).not.toContain("bob");
+  });
+
+  test("unknown command exits non-zero", async () => {
+    const result = await recsCompiled(["foobar"]);
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr).toContain("Unknown command");
   });
 });
