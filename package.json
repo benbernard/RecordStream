@@ -12,8 +12,9 @@
     "prepare": "lefthook install",
     "check-docs": "bun scripts/check-docs.ts",
     "generate-manpages": "bun scripts/generate-manpages.ts",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
+    "generate-docs": "bun scripts/generate-reference-docs.ts",
+    "docs:dev": "bun scripts/generate-reference-docs.ts && vitepress dev docs",
+    "docs:build": "bun scripts/generate-reference-docs.ts && vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
