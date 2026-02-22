@@ -5,6 +5,40 @@ A toolkit for creating, transforming, and outputting streams of JSON records.
 Records are JSON objects, one per line. RecordStream provides a set of composable
 CLI commands that can be piped together to build data processing pipelines.
 
+## Install
+
+Install a prebuilt binary with a single command:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/benbernard/RecordStream/master/install.sh | bash
+```
+
+This downloads the latest release for your platform and installs it to
+`/usr/local/bin` (or `~/.local/bin` if `/usr/local/bin` isn't writable).
+
+Override the install directory with `INSTALL_DIR`:
+
+```bash
+INSTALL_DIR=~/bin curl -fsSL https://raw.githubusercontent.com/benbernard/RecordStream/master/install.sh | bash
+```
+
+## Auto-update
+
+After installation, `recs` automatically checks for new versions in the
+background (at most once per 24 hours). If an update is available, you'll see a
+notice on the next run:
+
+```
+recs v1.2.0 available (current: v1.1.0). Run: recs --update
+```
+
+The notice is printed to stderr so it never interferes with piped data.
+
+- **`recs --update`** — download and install the latest version
+- **`recs --no-update-check`** — suppress the update check for this invocation
+
+Update state is stored in `$XDG_CONFIG_HOME/recs/` (defaults to `~/.config/recs/`).
+
 ## Quick Start
 
 ```bash

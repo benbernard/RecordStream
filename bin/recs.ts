@@ -11,9 +11,31 @@
 
 import { loadAllDocs, loadDocForCommand, docToHelpText, formatCommandList } from "../src/cli/help.ts";
 import { runOperation } from "../src/cli/dispatcher.ts";
+import {
+  printUpdateNotice, spawnUpdateCheck, performUpdateCheck,
+  selfUpdate, shouldCheck, getConfigDir, getCurrentVersion,
+} from "../src/updater.ts";
 
 const args = process.argv.slice(2);
 const command = args[0];
+const noUpdateCheck = args.includes("--no-update-check");
+
+// Handle internal --check-update-internal call (run in background subprocess)
+if (command === "--check-update-internal") {
+  await performUpdateCheck();
+  process.exit(0);
+}
+
+// Handle --update (self-update)
+if (command === "--update") {
+  await selfUpdate();
+  process.exit(0);
+}
+
+// Print update notice on startup (to stderr so it doesn't pollute pipelines)
+if (!noUpdateCheck) {
+  printUpdateNotice();
+}
 
 if (!command || command === "help" || command === "--help" || command === "-h") {
   const subcommand = args[1];
@@ -36,7 +58,7 @@ if (!command || command === "help" || command === "--help" || command === "-h") 
 }
 
 if (command === "--version" || command === "-V") {
-  console.log("recs 0.1.0");
+  console.log(`recs ${getCurrentVersion()}`);
   process.exit(0);
 }
 
@@ -78,4 +100,10 @@ if (command === "story") {
 
 // Dispatch to the operation
 const exitCode = await runOperation(command, args.slice(1));
+
+// Spawn background update check if due (detached, non-blocking)
+if (!noUpdateCheck && shouldCheck(getConfigDir())) {
+  spawnUpdateCheck();
+}
+
 process.exit(exitCode);

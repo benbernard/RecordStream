@@ -7,13 +7,30 @@ export default defineConfig({
     ["link", { rel: "icon", type: "image/svg+xml", href: "/logo-small.svg" }],
     ["link", { rel: "icon", type: "image/png", href: "/logo.png" }],
   ],
-  vue: {
-    template: {
-      compilerOptions: {
-        // Prevent Vue from treating {{ }} in our markdown as template expressions.
-        // RecordStream uses {{ }} extensively as its keyspec syntax.
-        delimiters: ["${{", "}}$"],
-      },
+  markdown: {
+    config: (md) => {
+      // RecordStream uses {{ }} extensively as its keyspec syntax in docs.
+      // Vue tries to evaluate {{ }} as template interpolation, which breaks
+      // rendering. We escape {{ and }} to HTML entities in inline content
+      // so Vue's template compiler ignores them. Fenced code blocks are
+      // already wrapped in v-pre by VitePress, so they're unaffected.
+      function escapeMustache(str: string): string {
+        return str
+          .replace(/\{\{/g, "&#123;&#123;")
+          .replace(/\}\}/g, "&#125;&#125;");
+      }
+
+      // Override text token rendering
+      md.renderer.rules.text = (tokens, idx) => {
+        const content = md.utils.escapeHtml(tokens[idx].content);
+        return escapeMustache(content);
+      };
+
+      // Override inline code rendering
+      md.renderer.rules.code_inline = (tokens, idx) => {
+        const content = md.utils.escapeHtml(tokens[idx].content);
+        return `<code>${escapeMustache(content)}</code>`;
+      };
     },
   },
   themeConfig: {
