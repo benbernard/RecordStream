@@ -5,6 +5,8 @@ import { KeyGroups } from "../../KeyGroups.ts";
 import { findKey, setKey } from "../../KeySpec.ts";
 import { Record } from "../../Record.ts";
 import type { JsonValue, JsonObject } from "../../types/json.ts";
+import type { SnippetRunner } from "../../snippets/SnippetRunner.ts";
+import { createSnippetRunner, isJsLang, langOptionDef } from "../../snippets/index.ts";
 
 /**
  * Add computed fields to records, caching annotations by key grouping.
@@ -17,6 +19,9 @@ export class AnnotateOperation extends Operation {
   executor!: Executor;
   keyGroups = new KeyGroups();
   annotations = new Map<string, Map<string, JsonValue>>();
+  lang: string | null = null;
+  runner: SnippetRunner | null = null;
+  #uncachedBatch: { index: number; record: Record; syntheticKey: string }[] = [];
 
   override addHelpTypes(): void {
     this.useHelpType("snippet");
@@ -26,6 +31,7 @@ export class AnnotateOperation extends Operation {
 
   init(args: string[]): void {
     let fileSnippet: string | null = null;
+    let exprSnippet: string | null = null;
 
     const defs: OptionDef[] = [
       {
@@ -35,19 +41,32 @@ export class AnnotateOperation extends Operation {
         handler: (v) => { this.keyGroups.addGroups(v as string); },
         description: "Keys to match records by",
       },
+      {
+        long: "expr",
+        short: "e",
+        type: "string",
+        handler: (v) => { exprSnippet = v as string; },
+        description: "Inline expression to evaluate (alternative to positional argument)",
+      },
       snippetFromFileOption((code) => { fileSnippet = code; }),
+      langOptionDef((v) => { this.lang = v; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = fileSnippet ?? remaining.join(" ");
+    const expression = exprSnippet ?? fileSnippet ?? remaining.join(" ");
 
     if (!this.keyGroups.hasAnyGroup()) {
       throw new Error("Must specify at least one --key, maybe you want xform instead?");
     }
 
-    // The expression modifies the record and returns it
-    const code = `${expression}\n; return r;`;
-    this.executor = new Executor(code);
+    if (this.lang && !isJsLang(this.lang)) {
+      this.runner = createSnippetRunner(this.lang);
+      void this.runner.init(expression, { mode: "eval" });
+    } else {
+      // The expression modifies the record and returns it
+      const code = `${expression}\n; return r;`;
+      this.executor = new Executor(code);
+    }
   }
 
   acceptRecord(record: Record): boolean {
@@ -72,6 +91,16 @@ export class AnnotateOperation extends Operation {
       return true;
     }
 
+    if (this.runner) {
+      // Queue this uncached record for batch processing
+      this.#uncachedBatch.push({
+        index: this.#uncachedBatch.length,
+        record,
+        syntheticKey,
+      });
+      return true;
+    }
+
     // Take a snapshot of the data before execution
     const before = JSON.parse(JSON.stringify(data)) as JsonObject;
 
@@ -92,6 +121,41 @@ export class AnnotateOperation extends Operation {
     }
 
     return true;
+  }
+
+  override streamDone(): void {
+    if (this.runner && this.#uncachedBatch.length > 0) {
+      const records = this.#uncachedBatch.map((entry) => entry.record);
+      const results = this.runner.executeBatch(records);
+
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i]!;
+        const entry = this.#uncachedBatch[i]!;
+
+        if (result.error) {
+          process.stderr.write(`annotate: ${result.error}\n`);
+          this.pushRecord(entry.record);
+          continue;
+        }
+
+        if (result.record) {
+          const before = entry.record.toJSON() as JsonObject;
+          const after = result.record as JsonObject;
+          const changes = new Map<string, JsonValue>();
+          this.findChanges(before, after, "", changes);
+          this.annotations.set(entry.syntheticKey, changes);
+
+          // Apply changes to the original record
+          const data = entry.record.dataRef() as JsonObject;
+          for (const [keyspec, value] of changes) {
+            setKey(data, keyspec, value);
+          }
+          this.pushRecord(entry.record);
+        } else {
+          this.pushRecord(entry.record);
+        }
+      }
+    }
   }
 
   findChanges(
@@ -133,6 +197,11 @@ export const documentation: CommandDoc = {
         "May be a keygroup or keyspec.",
       argument: "<keys>",
       required: true,
+    },
+    {
+      flags: ["--expr", "-e"],
+      description: "Inline expression to evaluate (alternative to positional argument).",
+      argument: "<code>",
     },
   ],
   examples: [

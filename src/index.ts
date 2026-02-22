@@ -21,6 +21,11 @@ export type { RecordReceiver, OptionDef } from "./Operation.ts";
 // Code execution
 export { Executor, transformCode } from "./Executor.ts";
 
+// Snippet runners
+export { createSnippetRunner } from "./snippets/index.ts";
+export type { SnippetRunner, SnippetContext, SnippetResult, SnippetMode } from "./snippets/index.ts";
+export type { SnippetOptions } from "./RecordStream.ts";
+
 // Aggregation framework
 export { aggregatorRegistry, makeAggregators, mapInitial, mapCombine, mapSquish } from "./Aggregator.ts";
 export type { Aggregator, AnyAggregator } from "./Aggregator.ts";

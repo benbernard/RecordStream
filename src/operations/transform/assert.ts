@@ -2,6 +2,8 @@ import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
 import { Executor, autoReturn, snippetFromFileOption } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
+import type { SnippetRunner } from "../../snippets/SnippetRunner.ts";
+import { createSnippetRunner, isJsLang, langOptionDef } from "../../snippets/index.ts";
 
 /**
  * Assert conditions on records, failing the pipeline if violated.
@@ -13,6 +15,9 @@ export class AssertOperation extends Operation {
   assertion = "";
   diagnostic = "";
   verbose = false;
+  lang: string | null = null;
+  runner: SnippetRunner | null = null;
+  #bufferedRecords: Record[] = [];
 
   override addHelpTypes(): void {
     this.useHelpType("snippet");
@@ -21,6 +26,7 @@ export class AssertOperation extends Operation {
 
   init(args: string[]): void {
     let fileSnippet: string | null = null;
+    let exprSnippet: string | null = null;
 
     const defs: OptionDef[] = [
       {
@@ -37,20 +43,39 @@ export class AssertOperation extends Operation {
         handler: () => { this.verbose = true; },
         description: "Verbose output for failed assertions; dumps the current record",
       },
+      {
+        long: "expr",
+        short: "e",
+        type: "string",
+        handler: (v) => { exprSnippet = v as string; },
+        description: "Inline expression to evaluate (alternative to positional argument)",
+      },
       snippetFromFileOption((code) => { fileSnippet = code; }),
+      langOptionDef((v) => { this.lang = v; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = fileSnippet ?? remaining.join(" ");
+    const expression = exprSnippet ?? fileSnippet ?? remaining.join(" ");
     if (!expression) {
       throw new Error("assert requires an expression argument");
     }
 
     this.assertion = expression;
-    this.executor = new Executor(autoReturn(expression));
+
+    if (this.lang && !isJsLang(this.lang)) {
+      this.runner = createSnippetRunner(this.lang);
+      void this.runner.init(expression, { mode: "grep" });
+    } else {
+      this.executor = new Executor(autoReturn(expression));
+    }
   }
 
   acceptRecord(record: Record): boolean {
+    if (this.runner) {
+      this.#bufferedRecords.push(record);
+      return true;
+    }
+
     if (!this.executor.executeCode(record)) {
       let message = `Assertion failed! ${this.diagnostic}\n`;
       message += `Expression: « ${this.assertion} »\n`;
@@ -66,6 +91,36 @@ export class AssertOperation extends Operation {
 
     this.pushRecord(record);
     return true;
+  }
+
+  override streamDone(): void {
+    if (this.runner && this.#bufferedRecords.length > 0) {
+      const results = this.runner.executeBatch(this.#bufferedRecords);
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i]!;
+        const record = this.#bufferedRecords[i]!;
+
+        if (result.error) {
+          throw new Error(`Assertion failed! ${this.diagnostic}\n` +
+            `Expression: « ${this.assertion} »\n` +
+            `Error: ${result.error}\n`);
+        }
+
+        if (!result.passed) {
+          let message = `Assertion failed! ${this.diagnostic}\n`;
+          message += `Expression: « ${this.assertion} »\n`;
+          message += `Line: ${i + 1}\n`;
+
+          if (this.verbose) {
+            message += `Record: ${JSON.stringify(record.toJSON(), null, 2)}\n`;
+          }
+
+          throw new Error(message);
+        }
+
+        this.pushRecord(record);
+      }
+    }
   }
 }
 
@@ -90,6 +145,11 @@ export const documentation: CommandDoc = {
     {
       flags: ["--verbose", "-v"],
       description: "Verbose output for failed assertions; dumps the current record.",
+    },
+    {
+      flags: ["--expr", "-e"],
+      description: "Inline expression to evaluate (alternative to positional argument).",
+      argument: "<code>",
     },
   ],
   examples: [

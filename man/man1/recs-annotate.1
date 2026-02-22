@@ -14,6 +14,9 @@ Evaluate an expression on each record and cache the resulting changes by key gro
 .TP
 \fB--keys\fR, \fB-k\fR \fI<keys>\fR
 Keys to match records by. May be specified multiple times. May be a keygroup or keyspec.
+.TP
+\fB--expr\fR, \fB-e\fR \fI<code>\fR
+Inline expression to evaluate (alternative to positional argument).
 
 .SH EXAMPLES
 Annotate records with IPs with hostnames, only doing lookup once
