@@ -28,6 +28,7 @@ export class EvalOperation extends Operation {
 
   init(args: string[]): void {
     let fileSnippet: string | null = null;
+    let exprSnippet: string | null = null;
 
     const defs: OptionDef[] = [
       {
@@ -36,12 +37,19 @@ export class EvalOperation extends Operation {
         handler: () => { this.chomp = true; },
         description: "Chomp eval results (remove trailing newlines)",
       },
+      {
+        long: "expr",
+        short: "e",
+        type: "string",
+        handler: (v) => { exprSnippet = v as string; },
+        description: "Inline code snippet (alternative to positional argument)",
+      },
       snippetFromFileOption((code) => { fileSnippet = code; }),
       langOptionDef((v) => { this.lang = v; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = fileSnippet ?? remaining.join(" ");
+    const expression = fileSnippet ?? exprSnippet ?? remaining.join(" ");
     if (!expression) {
       throw new Error("eval requires an expression argument");
     }

@@ -45,6 +45,7 @@ class CollateClumperCallback implements ClumperCallback {
       bucket: options as unknown,
       records: this.bucket ? null : ([] as Record[]),
       cookies: mapInitial(this.aggregators),
+      dirty: false,
     };
   }
 
@@ -54,6 +55,7 @@ class CollateClumperCallback implements ClumperCallback {
       state.records.push(record);
     }
     state.cookies = mapCombine(this.aggregators, state.cookies, record);
+    state.dirty = true;
 
     if (this.incremental) {
       this.clumperCallbackEnd(cookie);
@@ -62,6 +64,13 @@ class CollateClumperCallback implements ClumperCallback {
 
   clumperCallbackEnd(cookie: unknown): void {
     const state = cookie as CollateCookie;
+
+    // In incremental mode, skip if nothing new was pushed since last emission
+    if (this.incremental && !state.dirty) {
+      return;
+    }
+    state.dirty = false;
+
     const squished = mapSquish(this.aggregators, state.cookies);
 
     const protos = this.bucket
@@ -92,6 +101,7 @@ interface CollateCookie {
   bucket: unknown;
   records: Record[] | null;
   cookies: Map<string, unknown>;
+  dirty: boolean;
 }
 
 /**
@@ -165,17 +175,20 @@ export class CollateOperation extends Operation {
       {
         long: "mr-agg",
         type: "string",
+        nargs: 4,
         handler: (v) => { mrAggParts.push(v as string); },
-        description: "MapReduce aggregator: name map reduce squish (4 args, pass flag 4 times)",
+        description: "MapReduce aggregator: --mr-agg name map_snippet reduce_snippet squish_snippet",
       },
       {
         long: "ii-agg",
         type: "string",
+        nargs: 4,
         handler: (v) => { iiAggParts.push(v as string); },
-        description: "InjectInto aggregator: name initial combine squish (4 args, pass flag 4 times)",
+        description: "InjectInto aggregator: --ii-agg name initial_snippet combine_snippet squish_snippet",
       },
       {
         long: "dlkey",
+        short: "K",
         type: "string",
         handler: (v) => {
           const str = v as string;
@@ -207,6 +220,7 @@ export class CollateOperation extends Operation {
       },
       {
         long: "adjacent",
+        short: "1",
         type: "boolean",
         handler: () => { clumperOptions.setKeySize(1); },
         description: "Only group adjacent records",
@@ -217,6 +231,12 @@ export class CollateOperation extends Operation {
         type: "number",
         handler: (v) => { clumperOptions.setKeySize(Number(v)); },
         description: "Number of running clumps to keep",
+      },
+      {
+        long: "sz",
+        type: "number",
+        handler: (v) => { clumperOptions.setKeySize(Number(v)); },
+        description: "Alias for --size",
       },
       {
         long: "cube",
@@ -230,6 +250,13 @@ export class CollateOperation extends Operation {
         type: "string",
         handler: (v) => { clumperOptions.addClumper(v as string); },
         description: "Clumper specification (e.g. keylru,field,size or keyperfect,field)",
+      },
+      {
+        long: "dlclumper",
+        short: "C",
+        type: "string",
+        handler: (v) => { clumperOptions.addClumper(v as string); },
+        description: "Domain language clumper specification",
       },
       {
         long: "perfect",
@@ -260,6 +287,18 @@ export class CollateOperation extends Operation {
           throw new HelpExit(aggregatorRegistry.showImplementation(v as string));
         },
         description: "Show details of a specific aggregator and exit",
+      },
+      {
+        long: "list-clumpers",
+        type: "boolean",
+        handler: () => { clumperOptions.setHelpList(true); },
+        description: "List available clumpers and exit",
+      },
+      {
+        long: "show-clumper",
+        type: "string",
+        handler: (v) => { clumperOptions.setHelpShow(v as string); },
+        description: "Show details of a specific clumper and exit",
       },
     ];
 
@@ -314,11 +353,9 @@ export class CollateOperation extends Operation {
   }
 
   override streamDone(): void {
-    // In incremental mode, each push already emitted output;
-    // the final end would duplicate the last record
-    if (!this.incremental) {
-      this.clumperOptions.streamDone();
-    }
+    // Always flush remaining clumps. In incremental mode, the dirty flag
+    // in the callback prevents duplicate emissions for already-flushed state.
+    this.clumperOptions.streamDone();
   }
 }
 
@@ -354,17 +391,17 @@ export const documentation: CommandDoc = {
     {
       flags: ["--mr-agg"],
       description:
-        "MapReduce aggregator: specify 4 times for name, map snippet, reduce snippet, and squish snippet.",
-      argument: "<string>",
+        "MapReduce aggregator: takes 4 arguments: name, map snippet, reduce snippet, squish snippet.",
+      argument: "<name> <map> <reduce> <squish>",
     },
     {
       flags: ["--ii-agg"],
       description:
-        "InjectInto aggregator: specify 4 times for name, initial snippet, combine snippet, and squish snippet.",
-      argument: "<string>",
+        "InjectInto aggregator: takes 4 arguments: name, initial snippet, combine snippet, squish snippet.",
+      argument: "<name> <initial> <combine> <squish>",
     },
     {
-      flags: ["--dlkey"],
+      flags: ["--dlkey", "-K"],
       description:
         "Domain language key: name=expression where the expression evaluates as a valuation.",
       argument: "<name>=<expression>",
@@ -384,11 +421,11 @@ export const documentation: CommandDoc = {
       description: "Output one record for each record that went into the clump.",
     },
     {
-      flags: ["--adjacent"],
+      flags: ["--adjacent", "-1"],
       description: "Only group together adjacent records. Avoids spooling records into memory.",
     },
     {
-      flags: ["--size", "-n"],
+      flags: ["--size", "--sz", "-n"],
       description: "Number of running clumps to keep.",
       argument: "<number>",
     },
@@ -404,6 +441,11 @@ export const documentation: CommandDoc = {
       argument: "<spec>",
     },
     {
+      flags: ["--dlclumper", "-C"],
+      description: "Domain language clumper specification.",
+      argument: "<expression>",
+    },
+    {
       flags: ["--perfect"],
       description: "Group records regardless of order (perfect hashing).",
     },
@@ -414,6 +456,15 @@ export const documentation: CommandDoc = {
     {
       flags: ["--show-aggregator"],
       description: "Show details of a specific aggregator and exit.",
+      argument: "<name>",
+    },
+    {
+      flags: ["--list-clumpers"],
+      description: "List available clumpers and exit.",
+    },
+    {
+      flags: ["--show-clumper"],
+      description: "Show details of a specific clumper and exit.",
       argument: "<name>",
     },
   ],

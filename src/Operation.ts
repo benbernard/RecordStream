@@ -385,13 +385,16 @@ export abstract class Operation implements RecordReceiver {
           if (def.type === "boolean") {
             def.handler(true);
           } else {
-            // Needs a value argument
-            i++;
-            const value = args[i];
-            if (value === undefined) {
-              throw new Error(`Option ${arg} requires a value`);
+            // Consume nargs values (default 1)
+            const count = def.nargs ?? 1;
+            for (let n = 0; n < count; n++) {
+              i++;
+              const value = args[i];
+              if (value === undefined) {
+                throw new Error(`Option ${arg} requires ${count > 1 ? count + " values" : "a value"}`);
+              }
+              def.handler(value);
             }
-            def.handler(value);
           }
           matched = true;
           break;
@@ -440,6 +443,8 @@ export interface OptionDef {
   long: string;
   short?: string;
   type: "string" | "boolean" | "number";
+  /** Consume multiple values after this flag (like Perl Getopt::Long's =s{N}). Handler is called once per value. */
+  nargs?: number;
   handler: (value: string | boolean | number) => void;
   description: string;
 }

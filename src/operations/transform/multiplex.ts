@@ -5,6 +5,7 @@ import { ClumperOptions } from "../../clumpers/Options.ts";
 import { Record } from "../../Record.ts";
 import { createOperation } from "./chain.ts";
 import { findKey } from "../../KeySpec.ts";
+import { snippetValuation } from "../../DomainLanguage.ts";
 import type { JsonObject } from "../../types/json.ts";
 
 /**
@@ -94,6 +95,23 @@ export class MultiplexOperation extends Operation {
         description: "Key fields for grouping",
       },
       {
+        long: "dlkey",
+        short: "K",
+        type: "string",
+        handler: (v) => {
+          const str = v as string;
+          const eqIdx = str.indexOf("=");
+          if (eqIdx < 0) {
+            throw new Error(`Bad domain language key option (missing '=' to separate name and code): ${str}`);
+          }
+          const name = str.slice(0, eqIdx);
+          const code = str.slice(eqIdx + 1);
+          void snippetValuation(code);
+          clumperOptions.addKey(name);
+        },
+        description: "Domain language key (name=expression evaluating to a valuation)",
+      },
+      {
         long: "line-key",
         short: "L",
         type: "string",
@@ -102,21 +120,54 @@ export class MultiplexOperation extends Operation {
       },
       {
         long: "adjacent",
+        short: "1",
         type: "boolean",
         handler: () => { clumperOptions.setKeySize(1); },
         description: "Only group adjacent records",
       },
       {
         long: "size",
+        short: "n",
         type: "number",
         handler: (v) => { clumperOptions.setKeySize(Number(v)); },
         description: "Number of running clumps to keep",
+      },
+      {
+        long: "sz",
+        type: "number",
+        handler: (v) => { clumperOptions.setKeySize(Number(v)); },
+        description: "Alias for --size",
       },
       {
         long: "cube",
         type: "boolean",
         handler: () => { clumperOptions.setCube(true); },
         description: "Enable cube mode",
+      },
+      {
+        long: "clumper",
+        short: "c",
+        type: "string",
+        handler: (v) => { clumperOptions.addClumper(v as string); },
+        description: "Clumper specification (e.g. keylru,field,size or keyperfect,field)",
+      },
+      {
+        long: "dlclumper",
+        type: "string",
+        handler: (v) => { clumperOptions.addClumper(v as string); },
+        description: "Domain language clumper specification",
+      },
+      {
+        long: "list-clumpers",
+        type: "boolean",
+        handler: () => { clumperOptions.setHelpList(true); },
+        description: "List available clumpers and exit",
+      },
+      {
+        long: "show-clumper",
+        type: "string",
+        handler: (v) => { clumperOptions.setHelpShow(v as string); },
+        description: "Show details of a specific clumper and exit",
       },
     ];
 
@@ -169,6 +220,11 @@ export const documentation: CommandDoc = {
       argument: "<keys>",
     },
     {
+      flags: ["--dlkey", "-K"],
+      description: "Domain language key: name=expression where the expression evaluates as a valuation.",
+      argument: "<name>=<expression>",
+    },
+    {
       flags: ["--line-key", "-L"],
       description:
         "Use the value of this key as line input for the nested operation " +
@@ -176,17 +232,36 @@ export const documentation: CommandDoc = {
       argument: "<key>",
     },
     {
-      flags: ["--adjacent"],
+      flags: ["--adjacent", "-1"],
       description: "Only group together adjacent records. Avoids spooling records into memory.",
     },
     {
-      flags: ["--size"],
+      flags: ["--size", "--sz", "-n"],
       description: "Number of running clumps to keep.",
       argument: "<number>",
     },
     {
       flags: ["--cube"],
       description: "Enable cube mode.",
+    },
+    {
+      flags: ["--clumper", "-c"],
+      description: "Clumper specification (e.g. keylru,field,size or keyperfect,field).",
+      argument: "<spec>",
+    },
+    {
+      flags: ["--dlclumper"],
+      description: "Domain language clumper specification.",
+      argument: "<expression>",
+    },
+    {
+      flags: ["--list-clumpers"],
+      description: "List available clumpers and exit.",
+    },
+    {
+      flags: ["--show-clumper"],
+      description: "Show details of a specific clumper and exit.",
+      argument: "<name>",
     },
   ],
   examples: [

@@ -12,8 +12,15 @@ export class FromXml extends Operation {
   elements: string[] = [];
   nested = false;
   extraArgs: string[] = [];
+  stdinLines: string[] = [];
 
   acceptRecord(_record: Record): boolean {
+    return true;
+  }
+
+  override acceptLine(line: string): boolean {
+    // When reading from stdin, accumulate raw XML lines
+    this.stdinLines.push(line);
     return true;
   }
 
@@ -44,7 +51,7 @@ export class FromXml extends Operation {
   }
 
   override wantsInput(): boolean {
-    return false;
+    return this.extraArgs.length === 0;
   }
 
   override streamDone(): void {
@@ -56,6 +63,10 @@ export class FromXml extends Operation {
           this.parseXml(xml);
         }
       }
+    } else if (this.stdinLines.length > 0) {
+      this.updateCurrentFilename("STDIN");
+      const xml = this.stdinLines.join("\n");
+      this.parseXml(xml);
     }
   }
 
