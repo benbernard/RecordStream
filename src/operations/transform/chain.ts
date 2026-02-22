@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { Operation } from "../../Operation.ts";
 import type { RecordReceiver } from "../../Operation.ts";
 import { Record } from "../../Record.ts";
+import { resolveAlias } from "../../aliases.ts";
 
 /**
  * Registry of operation factories, for creating operations by name.
@@ -154,6 +155,17 @@ export class ChainOperation extends Operation {
     }
     if (current.length > 0) {
       commands.push(current);
+    }
+
+    // Resolve aliases in each command group
+    for (let i = 0; i < commands.length; i++) {
+      const cmd = commands[i]!;
+      const name = cmd[0]!;
+      const cmdArgs = cmd.slice(1);
+      const aliasResult = resolveAlias(name, cmdArgs);
+      if (aliasResult) {
+        commands[i] = [aliasResult.command, ...aliasResult.args];
+      }
     }
 
     if (this.showChain) {

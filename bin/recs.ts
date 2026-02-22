@@ -15,6 +15,7 @@ import {
   printUpdateNotice, spawnUpdateCheck, performUpdateCheck,
   selfUpdate, shouldCheck, getConfigDir, getCurrentVersion,
 } from "../src/updater.ts";
+import { loadAliases, setAlias, removeAlias, resolveAlias } from "../src/aliases.ts";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -98,14 +99,79 @@ if (command === "story") {
   process.exit(0);
 }
 
+// Handle alias management subcommand
+if (command === "alias") {
+  const aliasArgs = args.slice(1);
+
+  // recs alias --remove <name>  /  recs alias -r <name>
+  if (aliasArgs[0] === "--remove" || aliasArgs[0] === "-r") {
+    const name = aliasArgs[1];
+    if (!name) {
+      console.error("Usage: recs alias --remove <name>");
+      process.exit(1);
+    }
+    if (removeAlias(name)) {
+      console.log(`Removed alias: ${name}`);
+    } else {
+      console.error(`Alias not found: ${name}`);
+      process.exit(1);
+    }
+    process.exit(0);
+  }
+
+  // recs alias (no args) — list all
+  if (aliasArgs.length === 0) {
+    const aliases = loadAliases();
+    const names = Object.keys(aliases).sort();
+    if (names.length === 0) {
+      console.log("No aliases defined.");
+      console.log("Use 'recs alias <name> <command> [args...]' to create one.");
+    } else {
+      for (const name of names) {
+        console.log(`${name} = ${aliases[name]!.join(" ")}`);
+      }
+    }
+    process.exit(0);
+  }
+
+  // recs alias <name> (show single alias)
+  if (aliasArgs.length === 1) {
+    const aliases = loadAliases();
+    const expansion = aliases[aliasArgs[0]!];
+    if (expansion) {
+      console.log(`${aliasArgs[0]} = ${expansion.join(" ")}`);
+    } else {
+      console.error(`Alias not found: ${aliasArgs[0]}`);
+      process.exit(1);
+    }
+    process.exit(0);
+  }
+
+  // recs alias <name> <command> [args...] — set alias
+  const name = aliasArgs[0]!;
+  const expansion = aliasArgs.slice(1);
+  setAlias(name, expansion);
+  console.log(`${name} = ${expansion.join(" ")}`);
+  process.exit(0);
+}
+
+// Resolve aliases before dispatch
+let resolvedCommand = command!;
+let restArgs = args.slice(1);
+
+const aliasResult = resolveAlias(resolvedCommand, restArgs);
+if (aliasResult) {
+  resolvedCommand = aliasResult.command;
+  restArgs = aliasResult.args;
+}
+
 // Dispatch to the operation.
 // If remaining args contain a bare "|", treat the whole invocation as an implicit chain.
 // e.g. `recs grep "..." \| collate --key foo` becomes `recs chain grep "..." | collate --key foo`
-const restArgs = args.slice(1);
-const hasImplicitChain = command !== "chain" && restArgs.includes("|");
+const hasImplicitChain = resolvedCommand !== "chain" && restArgs.includes("|");
 const exitCode = hasImplicitChain
-  ? await runOperation("chain", [command, ...restArgs])
-  : await runOperation(command, restArgs);
+  ? await runOperation("chain", [resolvedCommand, ...restArgs])
+  : await runOperation(resolvedCommand, restArgs);
 
 // Spawn background update check if due (detached, non-blocking)
 if (!noUpdateCheck && shouldCheck(getConfigDir())) {
