@@ -4,6 +4,12 @@ import { Executor } from "./Executor.ts";
 import { findKey } from "./KeySpec.ts";
 import type { AnyAggregator } from "./Aggregator.ts";
 import { mapInitial, mapCombine, mapSquish } from "./Aggregator.ts";
+import { createSnippetRunner, isJsLang } from "./snippets/index.ts";
+import type { SnippetRunner } from "./snippets/SnippetRunner.ts";
+
+export interface SnippetOptions {
+  lang?: string;
+}
 
 /**
  * Fluent pipeline API for RecordStream.
@@ -78,7 +84,11 @@ export class RecordStream {
   /**
    * Filter records by a predicate function or code snippet.
    */
-  grep(predicate: string | ((r: Record) => boolean)): RecordStream {
+  grep(predicate: string | ((r: Record) => boolean), options?: SnippetOptions): RecordStream {
+    if (typeof predicate === "string" && options?.lang && !isJsLang(options.lang)) {
+      const runner = createSnippetRunner(options.lang);
+      return new RecordStream(runnerGrepAsync(this.#source, predicate, runner));
+    }
     const fn =
       typeof predicate === "string"
         ? makeRecordPredicate(predicate)
@@ -91,7 +101,11 @@ export class RecordStream {
    * Evaluate a code snippet against each record (for side effects like
    * adding/modifying fields). The record is modified in-place.
    */
-  eval(snippet: string): RecordStream {
+  eval(snippet: string, options?: SnippetOptions): RecordStream {
+    if (options?.lang && !isJsLang(options.lang)) {
+      const runner = createSnippetRunner(options.lang);
+      return new RecordStream(runnerEvalAsync(this.#source, snippet, runner));
+    }
     const executor = new Executor(`${snippet}; return r;`);
     const src = this.#source;
     return new RecordStream(
@@ -107,8 +121,13 @@ export class RecordStream {
    * The function should return an array of records for each input.
    */
   xform(
-    snippetOrFn: string | ((r: Record) => Record[])
+    snippetOrFn: string | ((r: Record) => Record[]),
+    options?: SnippetOptions,
   ): RecordStream {
+    if (typeof snippetOrFn === "string" && options?.lang && !isJsLang(options.lang)) {
+      const runner = createSnippetRunner(options.lang);
+      return new RecordStream(runnerXformAsync(this.#source, snippetOrFn, runner));
+    }
     const fn =
       typeof snippetOrFn === "string"
         ? makeRecordXform(snippetOrFn)
@@ -549,4 +568,62 @@ function makeRecordXform(snippet: string): (r: Record) => Record[] {
     if (Array.isArray(result)) return result as Record[];
     return [r];
   };
+}
+
+// ─── External runner helpers (batch mode) ───────────────────────
+
+async function* runnerGrepAsync(
+  source: AsyncIterable<Record>,
+  code: string,
+  runner: SnippetRunner,
+): AsyncIterable<Record> {
+  void runner.init(code, { mode: "grep" });
+  const records: Record[] = [];
+  for await (const record of source) {
+    records.push(record);
+  }
+  const results = runner.executeBatch(records);
+  for (let i = 0; i < results.length; i++) {
+    if (results[i]!.passed) {
+      yield records[i]!;
+    }
+  }
+}
+
+async function* runnerEvalAsync(
+  source: AsyncIterable<Record>,
+  code: string,
+  runner: SnippetRunner,
+): AsyncIterable<Record> {
+  void runner.init(code, { mode: "eval" });
+  const records: Record[] = [];
+  for await (const record of source) {
+    records.push(record);
+  }
+  const results = runner.executeBatch(records);
+  for (const result of results) {
+    if (result.record) {
+      yield new Record(result.record);
+    }
+  }
+}
+
+async function* runnerXformAsync(
+  source: AsyncIterable<Record>,
+  code: string,
+  runner: SnippetRunner,
+): AsyncIterable<Record> {
+  void runner.init(code, { mode: "xform" });
+  const records: Record[] = [];
+  for await (const record of source) {
+    records.push(record);
+  }
+  const results = runner.executeBatch(records);
+  for (const result of results) {
+    if (result.records) {
+      for (const rec of result.records) {
+        yield new Record(rec);
+      }
+    }
+  }
 }
