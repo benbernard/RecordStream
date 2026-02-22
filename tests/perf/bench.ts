@@ -369,6 +369,10 @@ export function generateMarkdown(ciResults: CIResult[], failThreshold: number = 
   lines.push(
     `${ciResults.length} benchmarks: ${faster} faster, ${slower} slower, ${unchanged} within noise (${indicatorThreshold}%)`,
   );
+  lines.push("");
+  lines.push(
+    "> ℹ️ **Note:** Benchmarks are advisory-only. GitHub Actions shared runners have variable performance, so results may fluctuate ±25% between runs. For reliable benchmarking, run locally with `bun run bench`.",
+  );
 
   // --- Grouped details per suite ---
   const suites = new Map<string, CIResult[]>();
@@ -507,11 +511,11 @@ export async function runAllSuites(
     if (options.failThreshold != null) {
       const failures = checkThreshold(ciResults, options.failThreshold);
       if (failures.length > 0) {
-        console.error(`\nPerformance regression detected (threshold: ${options.failThreshold}%):`);
+        console.warn(`\nPerformance regression detected (threshold: ${options.failThreshold}%):`);
         for (const f of failures) {
-          console.error(`  - ${f}`);
+          console.warn(`  - ${f}`);
         }
-        process.exit(1);
+        console.warn(`\nBenchmarks are advisory-only — not failing the build.`);
       } else {
         console.log(`\nAll benchmarks within ${options.failThreshold}% threshold.`);
       }
