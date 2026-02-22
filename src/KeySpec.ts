@@ -29,10 +29,138 @@ const specRegistry = new Map<string, KeySpec>();
 // Cache for fuzzy key resolution: "keyChain" -> searchString -> resolvedKey
 const fuzzyKeyCache = new Map<string, Map<string, string>>();
 
+// ---------------------------------------------------------------------------
+// Compiled accessor infrastructure
+// ---------------------------------------------------------------------------
+
+type CompiledGetter = (data: JsonObject) => JsonValue | undefined;
+type CompiledSetter = (data: JsonObject, value: JsonValue) => void;
+
+/** Convert a parsed key step: "#N" → numeric index, others → string. */
+function resolveStep(key: string): string | number {
+  if (key.length > 1 && key.charCodeAt(0) === 35 /* # */) {
+    const n = parseInt(key.slice(1), 10);
+    if (n === n) return n; // fast NaN check
+  }
+  return key;
+}
+
+/** Compile a fast getter closure from resolved key steps. Unrolls for depth ≤ 4. */
+function compileGetter(keys: string[]): CompiledGetter {
+  const steps = keys.map(resolveStep);
+  const len = steps.length;
+
+  if (len === 1) {
+    const k0 = steps[0]!;
+    return (data) => (data as any)[k0];
+  }
+
+  if (len === 2) {
+    const k0 = steps[0]!, k1 = steps[1]!;
+    return (data) => {
+      const v0 = (data as any)[k0];
+      if (v0 == null) return undefined;
+      return v0[k1];
+    };
+  }
+
+  if (len === 3) {
+    const k0 = steps[0]!, k1 = steps[1]!, k2 = steps[2]!;
+    return (data) => {
+      const v0 = (data as any)[k0];
+      if (v0 == null) return undefined;
+      const v1 = v0[k1];
+      if (v1 == null) return undefined;
+      return v1[k2];
+    };
+  }
+
+  if (len === 4) {
+    const k0 = steps[0]!, k1 = steps[1]!, k2 = steps[2]!, k3 = steps[3]!;
+    return (data) => {
+      const v0 = (data as any)[k0];
+      if (v0 == null) return undefined;
+      const v1 = v0[k1];
+      if (v1 == null) return undefined;
+      const v2 = v1[k2];
+      if (v2 == null) return undefined;
+      return v2[k3];
+    };
+  }
+
+  // General case: loop for depth > 4
+  return (data) => {
+    let current: any = data;
+    for (let i = 0; i < len; i++) {
+      if (current == null) return undefined;
+      current = current[steps[i]!];
+    }
+    return current;
+  };
+}
+
+/** Compile a fast setter closure from resolved key steps. Vivifies intermediates. */
+function compileSetter(keys: string[]): CompiledSetter {
+  const steps = keys.map(resolveStep);
+  const len = steps.length;
+
+  if (len === 2) {
+    const k0 = steps[0]!, k1 = steps[1]!;
+    const viv0 = typeof steps[1] === "number";
+    return (data, value) => {
+      let v0 = (data as any)[k0];
+      if (v0 == null || typeof v0 !== "object") {
+        v0 = viv0 ? [] : {};
+        (data as any)[k0] = v0;
+      }
+      v0[k1] = value;
+    };
+  }
+
+  if (len === 3) {
+    const k0 = steps[0]!, k1 = steps[1]!, k2 = steps[2]!;
+    const viv0 = typeof steps[1] === "number";
+    const viv1 = typeof steps[2] === "number";
+    return (data, value) => {
+      let v0 = (data as any)[k0];
+      if (v0 == null || typeof v0 !== "object") {
+        v0 = viv0 ? [] : {};
+        (data as any)[k0] = v0;
+      }
+      let v1 = v0[k1];
+      if (v1 == null || typeof v1 !== "object") {
+        v1 = viv1 ? [] : {};
+        v0[k1] = v1;
+      }
+      v1[k2] = value;
+    };
+  }
+
+  // General case
+  return (data, value) => {
+    let current: any = data;
+    for (let i = 0; i < len - 1; i++) {
+      let next = current[steps[i]!];
+      if (next == null || typeof next !== "object") {
+        next = typeof steps[i + 1] === "number" ? [] : {};
+        current[steps[i]!] = next;
+      }
+      current = next;
+    }
+    current[steps[len - 1]!] = value;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// KeySpec class
+// ---------------------------------------------------------------------------
+
 export class KeySpec {
   readonly spec: string;
   readonly parsedKeys: string[];
   readonly fuzzy: boolean;
+  private _compiledGetter: CompiledGetter | null = null;
+  private _compiledSetter: CompiledSetter | null = null;
 
   constructor(spec: string) {
     // Check cache first
@@ -41,6 +169,8 @@ export class KeySpec {
       this.spec = cached.spec;
       this.parsedKeys = cached.parsedKeys;
       this.fuzzy = cached.fuzzy;
+      this._compiledGetter = cached._compiledGetter;
+      this._compiledSetter = cached._compiledSetter;
       return;
     }
 
@@ -52,6 +182,12 @@ export class KeySpec {
       const { keys, fuzzy } = parseKeySpec(spec);
       this.parsedKeys = keys;
       this.fuzzy = fuzzy;
+    }
+
+    // Eagerly compile for non-fuzzy multi-key specs
+    if (!this.fuzzy && this.parsedKeys.length > 1) {
+      this._compiledGetter = compileGetter(this.parsedKeys);
+      this._compiledSetter = compileSetter(this.parsedKeys);
     }
 
     specRegistry.set(spec, this);
@@ -78,7 +214,15 @@ export class KeySpec {
       return { value: data[key], found: true };
     }
 
-    return guessKeyRecurse(
+    // Compiled getter fast path (read-only traversal, no throwError
+    // to preserve original error types for scalar-in-path cases)
+    if (this._compiledGetter && noVivify && !throwError) {
+      const value = this._compiledGetter(data);
+      if (value !== undefined) return { value, found: true };
+      return { value: undefined, found: false };
+    }
+
+    const result = guessKeyRecurse(
       data,
       [],
       this.parsedKeys,
@@ -88,6 +232,37 @@ export class KeySpec {
       this.fuzzy,
       false
     ) as { value: JsonValue | undefined; found: boolean };
+
+    // Lazy compile for fuzzy specs after first successful resolution
+    if (this.fuzzy && !this._compiledGetter && result.found) {
+      const resolvedKeys = this.getKeyListForSpec(data);
+      if (resolvedKeys.length > 0) {
+        this._compiledGetter = compileGetter(resolvedKeys);
+        this._compiledSetter = compileSetter(resolvedKeys);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Fast value-only resolution (noVivify=true). Avoids {value,found} allocation.
+   */
+  resolveValue(data: JsonObject, throwError = false): JsonValue | undefined {
+    // Single non-fuzzy key
+    if (this.parsedKeys.length === 1 && !this.fuzzy) {
+      const key = this.parsedKeys[0]!;
+      if (throwError && !(key in data)) throw new NoSuchKeyError();
+      return data[key];
+    }
+    // Compiled getter
+    if (this._compiledGetter) {
+      const value = this._compiledGetter(data);
+      if (value !== undefined) return value;
+      if (throwError) throw new NoSuchKeyError();
+      return undefined;
+    }
+    return this.resolve(data, true, throwError).value;
   }
 
   /**
@@ -99,7 +274,23 @@ export class KeySpec {
       data[this.parsedKeys[0]!] = value;
       return;
     }
+
+    // Compiled setter fast path
+    if (this._compiledSetter) {
+      this._compiledSetter(data, value);
+      return;
+    }
+
     setNestedValue(data, this.parsedKeys, value, this.fuzzy);
+
+    // Lazy compile for fuzzy specs after first set
+    if (this.fuzzy && !this._compiledSetter) {
+      const resolvedKeys = this.getKeyListForSpec(data);
+      if (resolvedKeys.length > 0) {
+        this._compiledGetter = compileGetter(resolvedKeys);
+        this._compiledSetter = compileSetter(resolvedKeys);
+      }
+    }
   }
 
   /**
@@ -154,6 +345,8 @@ export function findKey(
     return data[spec];
   }
   const ks = new KeySpec(spec);
+  // Use resolveValue for noVivify path — avoids {value,found} allocation
+  if (noVivify) return ks.resolveValue(data, throwError);
   const result = ks.resolve(data, noVivify, throwError);
   return result.value;
 }

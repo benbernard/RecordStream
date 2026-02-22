@@ -118,5 +118,51 @@ export function createKeySpecSuite(filter?: string): BenchmarkSuite {
     { iterations: 5, recordCount: count },
   );
 
+  // ---- Compiled accessor benchmarks ----
+
+  const nestedSpec = new KeySpec("address/zip");
+  suite.add(
+    "Compiled KeySpec.resolveValue — nested (address/zip)",
+    () => {
+      for (const rec of records) {
+        nestedSpec.resolveValue(rec);
+      }
+    },
+    { iterations: 10, recordCount: count },
+  );
+
+  const deepSpec = new KeySpec("address/coords/lat");
+  suite.add(
+    "Compiled KeySpec.resolveValue — deep (address/coords/lat)",
+    () => {
+      for (const rec of records) {
+        deepSpec.resolveValue(rec);
+      }
+    },
+    { iterations: 10, recordCount: count },
+  );
+
+  const arraySpec = new KeySpec("tags/#0");
+  suite.add(
+    "Compiled KeySpec.resolveValue — array (tags/#0)",
+    () => {
+      for (const rec of records) {
+        arraySpec.resolveValue(rec);
+      }
+    },
+    { iterations: 10, recordCount: count },
+  );
+
+  const setSpec = new KeySpec("address/zip");
+  suite.add(
+    "Compiled KeySpec.setValue — nested (address/zip)",
+    () => {
+      for (const rec of records) {
+        setSpec.setValue(rec, 99999);
+      }
+    },
+    { iterations: 10, recordCount: count },
+  );
+
   return suite;
 }
