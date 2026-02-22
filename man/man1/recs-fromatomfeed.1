@@ -1,0 +1,54 @@
+.TH RECS\-FROMATOMFEED 1 "2026-02-22" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-fromatomfeed \- Produce records from atom feed entries
+
+.SH SYNOPSIS
+.B recs fromatomfeed [options] [<uris>]
+
+.SH DESCRIPTION
+Produce records from atom feed entries. Recs fromatomfeed will get entries from paginated atom feeds and create a record stream from the results. The keys of the record will be the fields in the atom feed entry. By default, it follows \'next\' links in a feed to retrieve all entries.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--follow\fR
+Follow atom feed next links (default on).
+.TP
+\fB--nofollow\fR
+Do not follow next links.
+.TP
+\fB--max\fR \fI<n>\fR
+Print at most <n> entries and then exit.
+
+.SH EXAMPLES
+Dump an entire feed
+.PP
+.RS 4
+.nf
+\fBrecs fromatomfeed "http://my.xml.com"\fR
+.fi
+.RE
+
+Dump just the first page of entries
+.PP
+.RS 4
+.nf
+\fBrecs fromatomfeed --nofollow "http://my.xml.com"\fR
+.fi
+.RE
+
+Dump just the first 10 entries
+.PP
+.RS 4
+.nf
+\fBrecs fromatomfeed --max 10 "http://my.xml.com"\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-fromxml\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

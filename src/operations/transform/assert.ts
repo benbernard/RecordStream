@@ -2,8 +2,6 @@ import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
 import { Executor, autoReturn, snippetFromFileOption } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
-import type { SnippetRunner } from "../../snippets/SnippetRunner.ts";
-import { createSnippetRunner, isJsLang, langOptionDef } from "../../snippets/index.ts";
 
 /**
  * Assert conditions on records, failing the pipeline if violated.
@@ -15,9 +13,6 @@ export class AssertOperation extends Operation {
   assertion = "";
   diagnostic = "";
   verbose = false;
-  lang: string | null = null;
-  runner: SnippetRunner | null = null;
-  #bufferedRecords: Record[] = [];
 
   override addHelpTypes(): void {
     this.useHelpType("snippet");
@@ -37,12 +32,12 @@ export class AssertOperation extends Operation {
       },
       {
         long: "verbose",
+        short: "v",
         type: "boolean",
         handler: () => { this.verbose = true; },
         description: "Verbose output for failed assertions; dumps the current record",
       },
       snippetFromFileOption((code) => { fileSnippet = code; }),
-      langOptionDef((v) => { this.lang = v; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
@@ -52,24 +47,13 @@ export class AssertOperation extends Operation {
     }
 
     this.assertion = expression;
-
-    if (this.lang && !isJsLang(this.lang)) {
-      this.runner = createSnippetRunner(this.lang);
-      void this.runner.init(expression, { mode: "grep" });
-    } else {
-      this.executor = new Executor(autoReturn(expression));
-    }
+    this.executor = new Executor(autoReturn(expression));
   }
 
   acceptRecord(record: Record): boolean {
-    if (this.runner) {
-      this.#bufferedRecords.push(record);
-      return true;
-    }
-
     if (!this.executor.executeCode(record)) {
       let message = `Assertion failed! ${this.diagnostic}\n`;
-      message += `Expression: \u00AB ${this.assertion} \u00BB\n`;
+      message += `Expression: « ${this.assertion} »\n`;
       message += `Filename: ${this.getCurrentFilename()}\n`;
       message += `Line: ${this.executor.getLine()}\n`;
 
@@ -82,38 +66,6 @@ export class AssertOperation extends Operation {
 
     this.pushRecord(record);
     return true;
-  }
-
-  override streamDone(): void {
-    if (this.runner && this.#bufferedRecords.length > 0) {
-      const results = this.runner.executeBatch(this.#bufferedRecords);
-      for (let i = 0; i < results.length; i++) {
-        const result = results[i]!;
-        const record = this.#bufferedRecords[i]!;
-
-        if (result.error) {
-          let message = `Assertion failed! ${this.diagnostic}\n`;
-          message += `Expression: \u00AB ${this.assertion} \u00BB\n`;
-          message += `Error: ${result.error}\n`;
-          if (this.verbose) {
-            message += `Record: ${JSON.stringify(record.toJSON(), null, 2)}\n`;
-          }
-          throw new Error(message);
-        }
-
-        if (!result.passed) {
-          let message = `Assertion failed! ${this.diagnostic}\n`;
-          message += `Expression: \u00AB ${this.assertion} \u00BB\n`;
-          message += `Line: ${i + 1}\n`;
-          if (this.verbose) {
-            message += `Record: ${JSON.stringify(record.toJSON(), null, 2)}\n`;
-          }
-          throw new Error(message);
-        }
-
-        this.pushRecord(record);
-      }
-    }
   }
 }
 
@@ -136,14 +88,8 @@ export const documentation: CommandDoc = {
       argument: "<text>",
     },
     {
-      flags: ["--verbose"],
+      flags: ["--verbose", "-v"],
       description: "Verbose output for failed assertions; dumps the current record.",
-    },
-    {
-      flags: ["--lang", "-l"],
-      description:
-        "Snippet language: js (default), python/py, perl/pl.",
-      argument: "<lang>",
     },
   ],
   examples: [

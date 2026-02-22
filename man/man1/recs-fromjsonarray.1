@@ -1,0 +1,37 @@
+.TH RECS\-FROMJSONARRAY 1 "2026-02-22" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-fromjsonarray \- Import JSON objects from within a JSON array
+
+.SH SYNOPSIS
+.B recs fromjsonarray [options] [<files>]
+
+.SH DESCRIPTION
+Import JSON objects from within a JSON array. Each object in the array becomes an output record.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--key\fR, \fB-k\fR \fI<keys>\fR
+Optional comma separated list of field names to extract. If none specified, use all keys. May be specified multiple times, may be key specs.
+
+.SH EXAMPLES
+Parse a JSON array file into records
+.PP
+.RS 4
+.nf
+\fBrecs fromjsonarray data.json\fR
+.fi
+.RE
+
+Extract only specific keys from a JSON array
+.PP
+.RS 4
+.nf
+\fBrecs fromjsonarray --key name,age data.json\fR
+.fi
+.RE
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+
