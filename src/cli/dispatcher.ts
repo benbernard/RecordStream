@@ -39,6 +39,7 @@ import { SubstreamOperation } from "../operations/transform/substream.ts";
 import { JoinOperation } from "../operations/transform/join.ts";
 import { CollateOperation } from "../operations/transform/collate.ts";
 import { DecollateOperation } from "../operations/transform/decollate.ts";
+import { ExpandJsonOperation } from "../operations/transform/expandjson.ts";
 import { ChainOperation } from "../operations/transform/chain.ts";
 import { MultiplexOperation } from "../operations/transform/multiplex.ts";
 
@@ -82,6 +83,7 @@ const operationRegistry = new Map<string, OpConstructor>([
   ["topn", TopnOperation],
   ["assert", AssertOperation],
   ["delta", DeltaOperation],
+  ["expandjson", ExpandJsonOperation],
   ["flatten", FlattenOperation],
   ["annotate", AnnotateOperation],
   ["generate", GenerateOperation],

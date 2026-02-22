@@ -36,6 +36,7 @@ These commands reshape, filter, sort, and aggregate records.
 | [decollate](./decollate) | Reverse of collate: takes a single record and produces multiple records using deaggregators |
 | [delta](./delta) | Transforms absolute values into deltas between adjacent records |
 | [eval](./eval) | Evaluate an expression on each record and print the result as a line of text |
+| [expandjson](./expandjson) | Expand JSON strings embedded in record fields into actual JSON values |
 | [flatten](./flatten) | Flatten nested hash/array structures in records into top-level fields |
 | [generate](./generate) | Execute an expression for each record to generate new records |
 | [grep](./grep) | Filter records where an expression evaluates to true |

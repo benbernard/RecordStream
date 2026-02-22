@@ -1,0 +1,65 @@
+.TH RECS\-EXPANDJSON 1 "2026-02-22" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-expandjson \- Expand JSON strings embedded in record fields into actual JSON values
+
+.SH SYNOPSIS
+.B recs expandjson [options] [files...]
+
+.SH DESCRIPTION
+Expand JSON strings embedded in record fields into actual JSON values. When a field contains a string that is valid JSON (object, array, etc.), this operation parses it and replaces the string with the parsed structure. With no \-\-key options, all top\-level string fields that look like JSON are expanded.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--key\fR, \fB-k\fR \fI<key>\fR
+Key containing a JSON string to expand. May be a keyspec. May be specified multiple times for multiple keys.
+.TP
+\fB--recursive\fR, \fB-r\fR
+Recursively expand JSON strings found in nested values after initial expansion.
+
+.SH EXAMPLES
+Expand a metadata field containing a JSON string
+.PP
+.RS 4
+.nf
+\fBrecs expandjson --key metadata\fR
+.fi
+.RE
+.PP
+Input:
+.RS 4
+.nf
+{"name":"alice","metadata":"{\\"role\\":\\"admin\\",\\"level\\":3}"}
+.fi
+.RE
+.PP
+Output:
+.RS 4
+.nf
+{"name":"alice","metadata":{"role":"admin","level":3}}
+.fi
+.RE
+
+Recursively expand nested JSON strings
+.PP
+.RS 4
+.nf
+\fBrecs expandjson -r --key payload\fR
+.fi
+.RE
+
+Expand all JSON\-like string fields automatically
+.PP
+.RS 4
+.nf
+\fBrecs expandjson\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-flatten\fR(1), \fBrecs\-eval\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+
