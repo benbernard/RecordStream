@@ -6,6 +6,8 @@ on:
     paths:
       - 'docs/**'
       - 'src/types/CommandDoc.ts'
+      - 'src/operations/**'
+      - 'scripts/generate-reference-docs.ts'
   workflow_dispatch:
 
 permissions:
