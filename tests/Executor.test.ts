@@ -98,6 +98,53 @@ describe("Executor", () => {
     });
   });
 
+  describe("persistent state across records", () => {
+    test("state object persists across executeCode calls", () => {
+      const executor = new Executor("state.count = (state.count || 0) + 1; return state.count");
+      const r = new Record({});
+      expect(executor.executeCode(r)).toBe(1);
+      expect(executor.executeCode(r)).toBe(2);
+      expect(executor.executeCode(r)).toBe(3);
+    });
+
+    test("state accumulates values across records", () => {
+      const executor = new Executor(
+        "state.sum = (state.sum || 0) + r.get('val'); return state.sum"
+      );
+      expect(executor.executeCode(new Record({ val: 10 }))).toBe(10);
+      expect(executor.executeCode(new Record({ val: 20 }))).toBe(30);
+      expect(executor.executeCode(new Record({ val: 5 }))).toBe(35);
+    });
+
+    test("state is shared across named snippets in same executor", () => {
+      const executor = new Executor({
+        inc: {
+          code: "state.n = (state.n || 0) + 1; return state.n",
+          argNames: ["r"],
+        },
+        get: {
+          code: "return state.n || 0",
+          argNames: ["r"],
+        },
+      });
+      const r = new Record({});
+      expect(executor.executeMethod("get", r)).toBe(0);
+      executor.executeMethod("inc", r);
+      executor.executeMethod("inc", r);
+      expect(executor.executeMethod("get", r)).toBe(2);
+    });
+
+    test("state can store arrays and objects", () => {
+      const executor = new Executor(
+        "if (!state.items) state.items = []; state.items.push(r.get('name')); return state.items"
+      );
+      executor.executeCode(new Record({ name: "a" }));
+      executor.executeCode(new Record({ name: "b" }));
+      const result = executor.executeCode(new Record({ name: "c" }));
+      expect(result).toEqual(["a", "b", "c"]);
+    });
+  });
+
   describe("error handling", () => {
     test("throws on invalid code", () => {
       expect(() => new Executor("this is not valid {{{ javascript")).toThrow();
