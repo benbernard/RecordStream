@@ -4,6 +4,9 @@ hero:
   name: RecordStream
   text: Your data's new best friend
   tagline: A toolkit for taming JSON streams with Unix pipes — because your data called, and it wants to be transformed.
+  image:
+    src: /logo.svg
+    alt: RecordStream
   actions:
     - theme: brand
       text: Get Started
