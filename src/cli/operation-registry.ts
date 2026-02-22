@@ -22,6 +22,7 @@ import { documentation as fromre } from "../operations/input/fromre.ts";
 import { documentation as fromsplit } from "../operations/input/fromsplit.ts";
 import { documentation as fromtcpdump } from "../operations/input/fromtcpdump.ts";
 import { documentation as fromxferlog } from "../operations/input/fromxferlog.ts";
+import { documentation as fromxls } from "../operations/input/fromxls.ts";
 import { documentation as fromxml } from "../operations/input/fromxml.ts";
 
 // ── Transform operations ────────────────────────────────────────
@@ -39,6 +40,7 @@ import { documentation as grep } from "../operations/transform/grep.ts";
 import { documentation as join } from "../operations/transform/join.ts";
 import { documentation as multiplex } from "../operations/transform/multiplex.ts";
 import { documentation as normalizetime } from "../operations/transform/normalizetime.ts";
+import { documentation as parsedate } from "../operations/transform/parsedate.ts";
 import { documentation as sort } from "../operations/transform/sort.ts";
 import { documentation as stream2table } from "../operations/transform/stream2table.ts";
 import { documentation as substream } from "../operations/transform/substream.ts";
@@ -72,6 +74,7 @@ export const allDocs: CommandDoc[] = [
   fromsplit,
   fromtcpdump,
   fromxferlog,
+  fromxls,
   fromxml,
   // Transform
   annotate,
@@ -88,6 +91,7 @@ export const allDocs: CommandDoc[] = [
   join,
   multiplex,
   normalizetime,
+  parsedate,
   sort,
   stream2table,
   substream,

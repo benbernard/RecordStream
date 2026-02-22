@@ -53,6 +53,9 @@ Runs tcpdump and puts out records, one for each packet
 \fBrecs fromxferlog\fR
 Each line of input (or lines of <files>) is parsed as an FTP transfer log (xferlog format) to produce an output record
 .TP
+\fBrecs fromxls\fR
+Parse Excel files (xls, xlsx, xlsb, xlsm) into records
+.TP
 \fBrecs fromxml\fR
 Reads either from STDIN or from the specified URIs
 
@@ -99,6 +102,9 @@ Take records, grouped together by \-\-keys, and run a separate operation instanc
 .TP
 \fBrecs normalizetime\fR
 Given a single key field containing a date/time value, construct a normalized version of the value and place it into a field named \'n_<key>\'
+.TP
+\fBrecs parsedate\fR
+Parse date/time strings from a field and output them in a normalized format
 .TP
 \fBrecs sort\fR
 Sort records from input or from files

@@ -15,6 +15,9 @@ Reverse of collate: takes a single record and produces multiple records using de
 \fB--deaggregator\fR, \fB-d\fR \fI<deaggregators>\fR
 Deaggregator specification (colon\-separated).
 .TP
+\fB--only\fR, \fB-o\fR
+Only output deaggregated fields, excluding original record fields. Useful when you only want the expanded data, not the source record.
+.TP
 \fB--list-deaggregators\fR
 List available deaggregators and exit.
 
@@ -24,6 +27,14 @@ Split the \'hosts\' field into individual \'host\' fields
 .RS 4
 .nf
 \fBrecs decollate --deaggregator \'split,hosts,/\\s*,\\s*/,host\'\fR
+.fi
+.RE
+
+Decollate and only keep deaggregated fields
+.PP
+.RS 4
+.nf
+\fBrecs decollate --only -d \'unarray,items,,item\'\fR
 .fi
 .RE
 

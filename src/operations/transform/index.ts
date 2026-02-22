@@ -14,5 +14,6 @@ export { SubstreamOperation } from "./substream.ts";
 export { JoinOperation } from "./join.ts";
 export { CollateOperation } from "./collate.ts";
 export { DecollateOperation } from "./decollate.ts";
+export { ParseDateOperation } from "./parsedate.ts";
 export { ChainOperation, registerOperationFactory, isRecsOperation, createOperation } from "./chain.ts";
 export { MultiplexOperation } from "./multiplex.ts";
