@@ -4,8 +4,8 @@ export default defineConfig({
   title: "RecordStream",
   description: "Your data's new best friend — a toolkit for taming JSON streams",
   head: [
-    ["link", { rel: "icon", type: "image/svg+xml", href: "/logo-small.svg" }],
-    ["link", { rel: "icon", type: "image/png", href: "/logo.png" }],
+    ["link", { rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
+    ["link", { rel: "icon", type: "image/png", href: "/favicon.png" }],
   ],
   markdown: {
     config: (md) => {
