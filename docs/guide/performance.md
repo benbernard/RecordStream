@@ -6,31 +6,31 @@ RecordStream is built on [Bun](https://bun.sh) and takes advantage of its optimi
 
 The single biggest performance win in RecordStream is using **in-memory chaining** instead of shell pipes. When you connect recs commands with `|`, each command runs as a separate process — data gets serialized to JSON, piped through the OS, and re-parsed on the other side.
 
-With `recs chain` (or implicit chaining), operations run in the same process with zero serialization overhead:
+Both `recs chain` and implicit chaining (`\|`) use the same in-memory `ChainOperation` code path with zero serialization overhead:
 
 ```bash
-# Shell pipes: ~48K records/sec (5 stages, 10K records)
+# Shell pipes: ~43K records/sec (5 stages, 10K records)
 recs grep '{{age}} > 25' | recs eval '{{x}} = 1' | recs grep '{{x}}' | recs eval '{{y}} = 2' | recs grep '{{y}}'
 
-# In-memory chain: ~33.5M records/sec — 700x faster
+# In-memory chain: ~22M records/sec — 500x+ faster
 recs chain 'grep "{{age}} > 25"' 'eval "{{x}} = 1"' 'grep "{{x}}"' 'eval "{{y}} = 2"' 'grep "{{y}}"'
 
-# Implicit chaining (detected automatically): ~228K records/sec — 5x faster than pipes
+# Implicit chaining uses the same in-memory path — identical performance
 recs grep '{{age}} > 25' \| eval '{{x}} = 1' \| grep '{{x}}' \| eval '{{y}} = 2' \| grep '{{y}}'
 ```
 
 ### Why the difference?
 
-Each shell pipe stage costs ~40-45ms of Bun startup time, plus JSON serialization/deserialization at every boundary. In-memory chain passes Record objects directly between operations — no process spawning, no JSON roundtrips.
+Each shell pipe stage costs ~40-50ms of Bun startup time, plus JSON serialization/deserialization at every boundary. In-memory chain passes Record objects directly between operations — no process spawning, no JSON roundtrips.
 
 | Pipeline | 100 records | 1K records | 10K records |
 |----------|-------------|------------|-------------|
-| 2 ops (chain) | 79µs | 163µs | 456µs |
-| 2 ops (pipe) | 85ms | 87ms | 122ms |
-| 5 ops (chain) | 63µs | 96µs | 298µs |
-| 5 ops (pipe) | 209ms | 215ms | 209ms |
+| 2 ops (chain) | 84µs | 146µs | 517µs |
+| 2 ops (pipe) | 91ms | 87ms | 92ms |
+| 5 ops (chain) | 54µs | 90µs | 450µs |
+| 5 ops (pipe) | 235ms | 235ms | 235ms |
 
-**Recommendation**: For recs-only pipelines, always prefer `recs chain` or implicit chaining. Use shell pipes only when mixing recs with other Unix tools.
+**Recommendation**: For recs-only pipelines, always prefer `recs chain` or implicit chaining — both are equivalent. Use shell pipes only when mixing recs with other Unix tools.
 
 ## Core Throughput
 
@@ -115,7 +115,7 @@ The benchmark harness uses `Bun.nanoseconds()` for high-resolution timing and re
 
 ## Tips for Fast Pipelines
 
-1. **Use `recs chain` for multi-stage recs pipelines** — 700x+ faster than shell pipes
+1. **Use `recs chain` or implicit chaining for multi-stage recs pipelines** — 500x+ faster than shell pipes
 2. **Put streaming operations first** — `grep` and `eval` before `sort` or `collate` to reduce buffered data
 3. **Use `dataRef()` instead of `toJSON()` when you don't need a copy** — zero-copy access is 10x faster
 4. **Prefer simple key specs** — `name` is 6x faster than `address/coords/lat`
