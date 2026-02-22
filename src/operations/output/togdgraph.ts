@@ -281,7 +281,7 @@ export class ToGdGraph extends Operation {
   }
 
   override usage(): string {
-    return `Usage: recs-togdgraph <args> [<files>]
+    return `Usage: recs togdgraph <args> [<files>]
   Create a bar, scatter, or line graph.
 
 Args:
@@ -297,8 +297,8 @@ Args:
   --dump-use-spec        Dump usage spec (for testing)
 
 Examples:
-  recs-togdgraph --keys uid,ct --png-file login-graph.png --graph-title '# of logins'
-  recs-togdgraph --keys uid,ct --type line`;
+  recs togdgraph --keys uid,ct --png-file login-graph.png --graph-title '# of logins'
+  recs togdgraph --keys uid,ct --type line`;
   }
 }
 

@@ -95,7 +95,7 @@ export class ToCsv extends Operation {
   }
 
   override usage(): string {
-    return `Usage: recs-tocsv <options> [files]
+    return `Usage: recs tocsv <options> [files]
    This script outputs csv formatted recs.  With the --delim option, it can
    output tsv or other line-based formats with character-separated fields.
 
@@ -106,10 +106,10 @@ Arguments:
 
 Examples
   # Print records to csv format with headers
-  recs-tocsv myrecords
+  recs tocsv myrecords
 
   # Only print time and a nested value of stat/avg
-  ... | recs-tocsv --key time,stat/avg`;
+  ... | recs tocsv --key time,stat/avg`;
   }
 }
 

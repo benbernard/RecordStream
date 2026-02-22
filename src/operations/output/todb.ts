@@ -187,7 +187,7 @@ export class ToDb extends Operation {
   }
 
   override usage(): string {
-    return `Usage: recs-todb <options> [<files>]
+    return `Usage: recs todb <options> [<files>]
    Dumps a stream of input records into a database.
 
 Arguments:
@@ -200,10 +200,10 @@ Arguments:
 
 Examples:
    # Put all records into the recs table
-   recs-todb --type sqlite --dbfile testDb --table recs
+   recs todb --type sqlite --dbfile testDb --table recs
 
    # Specify fields and drop existing table
-   recs-todb --dbfile testDb --drop --key status,description=TEXT --key user`;
+   recs todb --dbfile testDb --drop --key status,description=TEXT --key user`;
   }
 }
 

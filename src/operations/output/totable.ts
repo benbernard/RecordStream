@@ -208,7 +208,7 @@ export class ToTable extends Operation {
   }
 
   override usage(): string {
-    return `Usage: recs-totable <args> [<files>]
+    return `Usage: recs totable <args> [<files>]
    Pretty prints a table of records to the screen. Will read in the entire
    record stream to determine column size, and number of columns.
 
@@ -221,11 +221,11 @@ Arguments:
 
 Examples:
    Display a table
-      recs-totable
+      recs totable
    Display only one field
-      recs-totable -f foo
+      recs totable -f foo
    Display two fields without a header
-      recs-totable -f foo -f bar --no-header`;
+      recs totable -f foo -f bar --no-header`;
   }
 }
 

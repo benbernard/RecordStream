@@ -271,7 +271,7 @@ export class ToGnuplot extends Operation {
   }
 
   override usage(): string {
-    return `Usage: recs-tognuplot <args> [<files>]
+    return `Usage: recs tognuplot <args> [<files>]
    Create a graph of points from a record stream using GNU Plot.
 
 Arguments:
@@ -289,9 +289,9 @@ Arguments:
 
 Examples:
    Graph the count field
-      recs-tognuplot --field count
+      recs tognuplot --field count
    Graph count vs. date with a threshold line
-      recs-tognuplot --field count,date --plot "5 title 'threshold'"`;
+      recs tognuplot --field count,date --plot "5 title 'threshold'"`;
   }
 }
 
