@@ -17,6 +17,7 @@ import { createOperationsSuite } from "./suites/operations.bench.ts";
 import { createPipelineSuite } from "./suites/pipeline.bench.ts";
 import { createRecordSuite } from "./suites/record.bench.ts";
 import { createChainVsPipeSuite } from "./suites/chain-vs-pipe.bench.ts";
+import { createLineReadingSuite } from "./suites/line-reading.bench.ts";
 
 // ---------------------------------------------------------------------------
 // Parse CLI flags
@@ -41,7 +42,7 @@ for (let i = 0; i < args.length; i++) {
 Options:
   --filter <str>     Only run benchmarks whose name contains <str>
   --suite <name>     Only run a specific suite (parsing, serialization, keyspec,
-                     operations, pipeline, record, chain-vs-pipe)
+                     operations, pipeline, record, chain-vs-pipe, line-reading)
   --save-baseline    Save results as baseline for future comparison
   --help             Show this help message
 `);
@@ -61,6 +62,7 @@ const allSuiteFactories: Record<string, (f?: string) => BenchmarkSuite> = {
   pipeline: createPipelineSuite,
   record: createRecordSuite,
   "chain-vs-pipe": createChainVsPipeSuite,
+  "line-reading": createLineReadingSuite,
 };
 
 const suiteNames = suiteFilter
