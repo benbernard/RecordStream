@@ -126,6 +126,68 @@ describe("JoinOperation", () => {
     }).toThrow("Usage: join");
   });
 
+  test("accumulate-right outputs each matched db record once", () => {
+    // Bug test: accumulate-right was outputting ALL db records in streamDone,
+    // causing duplicates for records that already matched during acceptRecord.
+    const { op, collector, dbFile } = makeOp(
+      ["--accumulate-right", "type", "typeName", "dbfile"],
+      [
+        new Record({ typeName: "foo", total: 0 }),
+        new Record({ typeName: "bar", total: 0 }),
+      ],
+    );
+    feedRecords(op, [
+      new Record({ type: "foo", val: 10 }),
+      new Record({ type: "foo", val: 20 }),
+    ]);
+    unlinkSync(dbFile);
+
+    // Only matched db records should be output (foo matched, bar did not)
+    // In inner join (default), unmatched db records are NOT output
+    expect(collector.records.length).toBe(1);
+    expect(collector.records[0]!.get("typeName")).toBe("foo");
+    expect(collector.records[0]!.get("total")).toBe(0);
+  });
+
+  test("accumulate-right with --left outputs unmatched db records too", () => {
+    const { op, collector, dbFile } = makeOp(
+      ["--left", "--accumulate-right", "type", "typeName", "dbfile"],
+      [
+        new Record({ typeName: "foo", total: 0 }),
+        new Record({ typeName: "bar", total: 0 }),
+      ],
+    );
+    feedRecords(op, [
+      new Record({ type: "foo", val: 10 }),
+    ]);
+    unlinkSync(dbFile);
+
+    // foo matched, bar did not — but left join includes unmatched db records
+    expect(collector.records.length).toBe(2);
+    const names = collector.records.map((r) => r.get("typeName"));
+    expect(names).toContain("foo");
+    expect(names).toContain("bar");
+  });
+
+  test("accumulate-right with --operation merges correctly", () => {
+    const { op, collector, dbFile } = makeOp(
+      [
+        "--accumulate-right",
+        "--operation", "d.total = (d.total || 0) + i.val",
+        "type", "typeName", "dbfile",
+      ],
+      [new Record({ typeName: "foo", total: 0 })],
+    );
+    feedRecords(op, [
+      new Record({ type: "foo", val: 10 }),
+      new Record({ type: "foo", val: 20 }),
+    ]);
+    unlinkSync(dbFile);
+
+    expect(collector.records.length).toBe(1);
+    expect(collector.records[0]!.get("total")).toBe(30);
+  });
+
   test("loadDbRecords still works directly", () => {
     // Test the programmatic API
     const dbFile = writeTempJsonl([]);
