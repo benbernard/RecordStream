@@ -64,6 +64,7 @@ export default defineConfig({
           text: "Advanced",
           items: [
             { text: "Programmatic API", link: "/guide/programmatic-api" },
+            { text: "Performance", link: "/guide/performance" },
             { text: "Cookbook", link: "/guide/cookbook" },
           ],
         },
