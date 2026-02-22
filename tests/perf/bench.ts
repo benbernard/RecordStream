@@ -30,6 +30,7 @@ export interface BenchmarkResult {
 
 export interface CIResult {
   name: string;
+  suite: string;
   median: number;
   mean: number;
   min: number;
@@ -151,11 +152,11 @@ function deltaPercent(current: number, baseline: number): number {
   return ((current - baseline) / baseline) * 100;
 }
 
-function fmtDeltaMarkdown(pct: number): string {
+function fmtDeltaMarkdown(pct: number, threshold: number = 10): string {
   const sign = pct > 0 ? "+" : "";
   const text = `${sign}${pct.toFixed(1)}%`;
-  if (pct > 5) return `**${text}** :red_circle:`;
-  if (pct < -5) return `${text} :green_circle:`;
+  if (pct > threshold) return `**${text}** :red_circle:`;
+  if (pct < -threshold) return `${text} :green_circle:`;
   return `${text}`;
 }
 
@@ -305,12 +306,14 @@ export class BenchmarkSuite {
 function buildCIResults(
   results: BenchmarkResult[],
   baseline: BaselineData | null,
+  suite: string = "",
 ): CIResult[] {
   return results.map((r) => {
     const base = baseline?.[r.name];
     const delta = base ? deltaPercent(r.median, base.median) : undefined;
     return {
       name: r.name,
+      suite,
       median: r.median,
       mean: r.mean,
       min: r.min,
@@ -324,48 +327,93 @@ function buildCIResults(
   });
 }
 
-export function generateMarkdown(ciResults: CIResult[]): string {
+export function generateMarkdown(ciResults: CIResult[], failThreshold: number = 25): string {
   const lines: string[] = [];
-  lines.push("## Performance Benchmark Results\n");
-  lines.push(
-    "| Benchmark | Median | Baseline | Delta | Throughput |",
-  );
-  lines.push(
-    "|-----------|--------|----------|-------|------------|",
-  );
 
+  // Classify results using the visual indicator threshold (10%)
+  const indicatorThreshold = 10;
   let faster = 0;
   let slower = 0;
   let unchanged = 0;
+  const regressions: CIResult[] = [];
 
   for (const r of ciResults) {
-    const medianStr = fmtMs(r.median);
-    const baseStr = r.baselineMedian != null ? fmtMs(r.baselineMedian) : "—";
-    let deltaStr = "—";
     if (r.deltaPercent != null) {
-      deltaStr = fmtDeltaMarkdown(r.deltaPercent);
-      if (r.deltaPercent > 5) slower++;
-      else if (r.deltaPercent < -5) faster++;
+      if (r.deltaPercent > indicatorThreshold) slower++;
+      else if (r.deltaPercent < -indicatorThreshold) faster++;
       else unchanged++;
+      if (r.deltaPercent > failThreshold) regressions.push(r);
     } else {
       unchanged++;
     }
+  }
 
-    const throughputParts: string[] = [];
-    if (r.recordsPerSec) throughputParts.push(`${fmtRate(r.recordsPerSec)} rec/s`);
-    if (r.mbPerSec) throughputParts.push(`${r.mbPerSec.toFixed(1)} MB/s`);
-    const throughputStr = throughputParts.join(", ") || "—";
+  // --- Top-level summary ---
+  lines.push("## Performance Benchmark Results\n");
 
-    lines.push(
-      `| ${r.name} | ${medianStr} | ${baseStr} | ${deltaStr} | ${throughputStr} |`,
-    );
+  if (regressions.length === 0) {
+    lines.push(`:white_check_mark: **All ${ciResults.length} benchmarks passed** (threshold: ${failThreshold}%)`);
+  } else {
+    lines.push(`:warning: **${regressions.length} regression${regressions.length > 1 ? "s" : ""} detected** out of ${ciResults.length} benchmarks (threshold: ${failThreshold}%)`);
+    lines.push("");
+    lines.push("| Benchmark | Median | Baseline | Delta |");
+    lines.push("|-----------|--------|----------|-------|");
+    for (const r of regressions) {
+      lines.push(
+        `| ${r.name} | ${fmtMs(r.median)} | ${r.baselineMedian != null ? fmtMs(r.baselineMedian) : "—"} | ${fmtDeltaMarkdown(r.deltaPercent!, indicatorThreshold)} |`,
+      );
+    }
   }
 
   lines.push("");
-  const total = ciResults.length;
   lines.push(
-    `**Summary**: ${total} benchmarks: ${faster} faster, ${slower} slower, ${unchanged} unchanged`,
+    `${ciResults.length} benchmarks: ${faster} faster, ${slower} slower, ${unchanged} within noise (${indicatorThreshold}%)`,
   );
+  lines.push("");
+  lines.push(
+    "> ℹ️ **Note:** Benchmarks are advisory-only. GitHub Actions shared runners have variable performance, so results may fluctuate ±25% between runs. For reliable benchmarking, run locally with `bun run bench`.",
+  );
+
+  // --- Grouped details per suite ---
+  const suites = new Map<string, CIResult[]>();
+  for (const r of ciResults) {
+    const key = r.suite || "other";
+    if (!suites.has(key)) suites.set(key, []);
+    suites.get(key)!.push(r);
+  }
+
+  lines.push("");
+  lines.push("<details>");
+  lines.push("<summary>Full benchmark results</summary>");
+  lines.push("");
+
+  for (const [suite, results] of suites) {
+    lines.push(`### ${suite}\n`);
+    lines.push("| Benchmark | Median | Baseline | Delta | Throughput |");
+    lines.push("|-----------|--------|----------|-------|------------|");
+
+    for (const r of results) {
+      const medianStr = fmtMs(r.median);
+      const baseStr = r.baselineMedian != null ? fmtMs(r.baselineMedian) : "—";
+      let deltaStr = "—";
+      if (r.deltaPercent != null) {
+        deltaStr = fmtDeltaMarkdown(r.deltaPercent, indicatorThreshold);
+      }
+
+      const throughputParts: string[] = [];
+      if (r.recordsPerSec) throughputParts.push(`${fmtRate(r.recordsPerSec)} rec/s`);
+      if (r.mbPerSec) throughputParts.push(`${r.mbPerSec.toFixed(1)} MB/s`);
+      const throughputStr = throughputParts.join(", ") || "—";
+
+      lines.push(
+        `| ${r.name} | ${medianStr} | ${baseStr} | ${deltaStr} | ${throughputStr} |`,
+      );
+    }
+
+    lines.push("");
+  }
+
+  lines.push("</details>");
 
   return lines.join("\n");
 }
@@ -404,10 +452,12 @@ export async function runAllSuites(
   console.log(`Date: ${new Date().toISOString()}`);
 
   const allResults: BenchmarkResult[] = [];
+  const suiteResults: { suite: BenchmarkSuite; results: BenchmarkResult[] }[] = [];
 
   for (const suite of suites) {
     const results = await suite.run();
     allResults.push(...results);
+    suiteResults.push({ suite, results });
   }
 
   console.log(`\n${"=".repeat(70)}`);
@@ -442,7 +492,10 @@ export async function runAllSuites(
       baseline = loadBaseline();
     }
 
-    const ciResults = buildCIResults(allResults, baseline);
+    const ciResults: CIResult[] = [];
+    for (const { suite, results } of suiteResults) {
+      ciResults.push(...buildCIResults(results, baseline, suite.name));
+    }
 
     if (options.jsonFile) {
       writeFileSync(options.jsonFile, JSON.stringify(ciResults, null, 2) + "\n");
@@ -450,7 +503,7 @@ export async function runAllSuites(
     }
 
     if (options.markdownFile) {
-      const md = generateMarkdown(ciResults);
+      const md = generateMarkdown(ciResults, options.failThreshold ?? 25);
       writeFileSync(options.markdownFile, md + "\n");
       console.log(`Markdown report saved to ${options.markdownFile}`);
     }
@@ -458,11 +511,11 @@ export async function runAllSuites(
     if (options.failThreshold != null) {
       const failures = checkThreshold(ciResults, options.failThreshold);
       if (failures.length > 0) {
-        console.error(`\nPerformance regression detected (threshold: ${options.failThreshold}%):`);
+        console.warn(`\nPerformance regression detected (threshold: ${options.failThreshold}%):`);
         for (const f of failures) {
-          console.error(`  - ${f}`);
+          console.warn(`  - ${f}`);
         }
-        process.exit(1);
+        console.warn(`\nBenchmarks are advisory-only — not failing the build.`);
       } else {
         console.log(`\nAll benchmarks within ${options.failThreshold}% threshold.`);
       }

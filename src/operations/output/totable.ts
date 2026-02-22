@@ -1,8 +1,29 @@
+import stringWidth from "string-width";
 import { Record } from "../../Record.ts";
 import { Operation, type RecordReceiver, type OptionDef } from "../../Operation.ts";
 import { Accumulator } from "../../Accumulator.ts";
 import { KeyGroups } from "../../KeyGroups.ts";
 import { findKey } from "../../KeySpec.ts";
+
+/**
+ * Compute the visual display width of a string, accounting for
+ * East Asian wide characters, emoji, and other Unicode oddities.
+ */
+function displayWidth(str: string): number {
+  return stringWidth(str);
+}
+
+/**
+ * Escape control characters (newlines, tabs, etc.) in a string so
+ * they don't break table alignment.
+ */
+function escapeForTable(str: string): string {
+  return str
+    .replace(/\\/g, "\\\\")
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t");
+}
 
 /**
  * Pretty prints records as an ASCII table with column alignment.
@@ -99,8 +120,9 @@ export class ToTable extends Operation {
         }
         const val = this.extractField(record, field);
         const currentMax = widths.get(field)!;
-        if (val.length > currentMax) {
-          widths.set(field, val.length);
+        const w = displayWidth(val);
+        if (w > currentMax) {
+          widths.set(field, w);
         }
       }
     }
@@ -109,8 +131,9 @@ export class ToTable extends Operation {
     if (!this.noHeader) {
       for (const field of fields) {
         const currentMax = widths.get(field)!;
-        if (field.length > currentMax) {
-          widths.set(field, field.length);
+        const w = displayWidth(field);
+        if (w > currentMax) {
+          widths.set(field, w);
         }
       }
     }
@@ -179,8 +202,8 @@ export class ToTable extends Operation {
     for (const field of fields) {
       let fieldStr = formatter(field, field);
 
-      if (!this.spreadsheet && fieldStr.length < widths.get(field)!) {
-        fieldStr += " ".repeat(widths.get(field)! - fieldStr.length);
+      if (!this.spreadsheet && displayWidth(fieldStr) < widths.get(field)!) {
+        fieldStr += " ".repeat(widths.get(field)! - displayWidth(fieldStr));
       }
 
       if (first) {
@@ -199,8 +222,8 @@ export class ToTable extends Operation {
     const data = record.dataRef();
     const val = findKey(data, field, true);
     if (val === undefined || val === null) return "";
-    if (typeof val === "object") return JSON.stringify(val);
-    return String(val);
+    if (typeof val === "object") return escapeForTable(JSON.stringify(val));
+    return escapeForTable(String(val));
   }
 
   override doesRecordOutput(): boolean {

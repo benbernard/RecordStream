@@ -21,6 +21,12 @@ Domain language key: name=expression where the expression evaluates as a valuati
 \fB--line-key\fR, \fB-L\fR \fI<key>\fR
 Use the value of this key as line input for the nested operation (rather than the entire record). Use with recs from* operations generally.
 .TP
+\fB--output-file-key\fR, \fB-o\fR \fI<key>\fR
+Write each group\'s output to a separate file, using the value of the given key as the filename.
+.TP
+\fB--output-file-eval\fR, \fB-O\fR \fI<expression>\fR
+Write each group\'s output to a separate file, with filename determined by the given expression. Supports {{key}} interpolation with group key values.
+.TP
 \fB--adjacent\fR, \fB-1\fR
 Only group together adjacent records. Avoids spooling records into memory.
 .TP
@@ -56,6 +62,14 @@ Separate out a stream of text by PID into separate invocations of an operation
 .RS 4
 .nf
 \fBrecs fromre \'^(.*PID=([0-9]*).*)$\' -f line,pid | recs multiplex -L line -k pid -- recs frommultire ...\fR
+.fi
+.RE
+
+Write each group\'s CSV output to separate files by department
+.PP
+.RS 4
+.nf
+\fBrecs multiplex -k department -O \'output-{{department}}.csv\' -- recs tocsv\fR
 .fi
 .RE
 

@@ -3,6 +3,7 @@ import type { OptionDef } from "../../Operation.ts";
 import { deaggregatorRegistry } from "../../Deaggregator.ts";
 import type { Deaggregator } from "../../Deaggregator.ts";
 import { Record } from "../../Record.ts";
+import type { JsonValue } from "../../types/json.ts";
 
 /**
  * Reverse of collate: takes a single record and produces multiple records
@@ -12,6 +13,7 @@ import { Record } from "../../Record.ts";
  */
 export class DecollateOperation extends Operation {
   deaggregators: Deaggregator[] = [];
+  onlyDeaggregated = false;
 
   init(args: string[]): void {
     const deaggSpecs: string[] = [];
@@ -26,6 +28,13 @@ export class DecollateOperation extends Operation {
           deaggSpecs.push(...(v as string).split(":"));
         },
         description: "Deaggregator specification (colon-separated)",
+      },
+      {
+        long: "only",
+        short: "o",
+        type: "boolean",
+        handler: () => { this.onlyDeaggregated = true; },
+        description: "Only output deaggregated fields, excluding original record fields",
       },
       {
         long: "list-deaggregators",
@@ -55,11 +64,24 @@ export class DecollateOperation extends Operation {
       const results = deaggregator.deaggregate(record);
 
       for (const deaggregated of results) {
-        // Merge original record with deaggregated fields
-        const merged = new Record({
-          ...record.toJSON(),
-          ...deaggregated.toJSON(),
-        });
+        let merged: Record;
+        if (this.onlyDeaggregated) {
+          // Extract only the fields that differ from the original record
+          const origData = record.toJSON();
+          const deaggData = deaggregated.toJSON();
+          const onlyNew: { [key: string]: JsonValue } = {};
+          for (const [k, v] of Object.entries(deaggData)) {
+            if (!(k in origData) || origData[k] !== v) {
+              onlyNew[k] = v;
+            }
+          }
+          merged = new Record(onlyNew);
+        } else {
+          merged = new Record({
+            ...record.toJSON(),
+            ...deaggregated.toJSON(),
+          });
+        }
         this.deaggregateRecursive(depth + 1, merged);
       }
     } else {
@@ -84,6 +106,12 @@ export const documentation: CommandDoc = {
       argument: "<deaggregators>",
     },
     {
+      flags: ["--only", "-o"],
+      description:
+        "Only output deaggregated fields, excluding original record fields. " +
+        "Useful when you only want the expanded data, not the source record.",
+    },
+    {
       flags: ["--list-deaggregators"],
       description: "List available deaggregators and exit.",
     },
@@ -92,6 +120,10 @@ export const documentation: CommandDoc = {
     {
       description: "Split the 'hosts' field into individual 'host' fields",
       command: "recs decollate --deaggregator 'split,hosts,/\\s*,\\s*/,host'",
+    },
+    {
+      description: "Decollate and only keep deaggregated fields",
+      command: "recs decollate --only -d 'unarray,items,,item'",
     },
   ],
   seeAlso: ["collate"],

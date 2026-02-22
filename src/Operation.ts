@@ -50,9 +50,15 @@ export class PrinterReceiver implements RecordReceiver {
  */
 export class CollectorReceiver implements RecordReceiver {
   readonly records: Record[] = [];
+  readonly lines: string[] = [];
 
   acceptRecord(record: Record): boolean {
     this.records.push(record);
+    return true;
+  }
+
+  acceptLine(line: string): boolean {
+    this.lines.push(line);
     return true;
   }
 
