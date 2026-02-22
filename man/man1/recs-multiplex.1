@@ -15,17 +15,32 @@ Take records, grouped together by \-\-keys, and run a separate operation instanc
 \fB--key\fR, \fB-k\fR \fI<keys>\fR
 Comma\-separated list of key fields for grouping. May be a key spec or key group.
 .TP
+\fB--dlkey\fR, \fB-K\fR \fI<name>=<expression>\fR
+Domain language key: name=expression where the expression evaluates as a valuation.
+.TP
 \fB--line-key\fR, \fB-L\fR \fI<key>\fR
 Use the value of this key as line input for the nested operation (rather than the entire record). Use with recs\-from* operations generally.
 .TP
-\fB--adjacent\fR
+\fB--adjacent\fR, \fB-1\fR
 Only group together adjacent records. Avoids spooling records into memory.
 .TP
-\fB--size\fR \fI<number>\fR
+\fB--size\fR, \fB--sz\fR, \fB-n\fR \fI<number>\fR
 Number of running clumps to keep.
 .TP
 \fB--cube\fR
 Enable cube mode.
+.TP
+\fB--clumper\fR, \fB-c\fR \fI<spec>\fR
+Clumper specification (e.g. keylru,field,size or keyperfect,field).
+.TP
+\fB--dlclumper\fR \fI<expression>\fR
+Domain language clumper specification.
+.TP
+\fB--list-clumpers\fR
+List available clumpers and exit.
+.TP
+\fB--show-clumper\fR \fI<name>\fR
+Show details of a specific clumper and exit.
 
 .SH EXAMPLES
 Tag lines with counts by thread

@@ -30,6 +30,7 @@ export class GrepOperation extends Operation {
   init(args: string[]): void {
     let context = 0;
     let fileSnippet: string | null = null;
+    let exprSnippet: string | null = null;
 
     const defs: OptionDef[] = [
       {
@@ -38,6 +39,13 @@ export class GrepOperation extends Operation {
         type: "boolean",
         handler: () => { this.antiMatch = true; },
         description: "Anti-match: records NOT matching expr will be returned",
+      },
+      {
+        long: "expr",
+        short: "e",
+        type: "string",
+        handler: (v) => { exprSnippet = v as string; },
+        description: "Inline code snippet (alternative to positional argument)",
       },
       {
         long: "context",
@@ -71,7 +79,7 @@ export class GrepOperation extends Operation {
       this.beforeCount = context;
     }
 
-    const expression = fileSnippet ?? remaining.join(" ");
+    const expression = fileSnippet ?? exprSnippet ?? remaining.join(" ");
     if (!expression) {
       throw new Error("grep requires an expression argument");
     }

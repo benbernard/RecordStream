@@ -35,6 +35,7 @@ export class XformOperation extends Operation {
     let postSnippet = "";
     let preSnippet = "";
     let fileSnippet: string | null = null;
+    let exprSnippet: string | null = null;
 
     const defs: OptionDef[] = [
       {
@@ -70,12 +71,19 @@ export class XformOperation extends Operation {
         handler: (v) => { preSnippet = v as string; },
         description: "A snippet to run before the stream starts",
       },
+      {
+        long: "expr",
+        short: "e",
+        type: "string",
+        handler: (v) => { exprSnippet = v as string; },
+        description: "Inline code snippet (alternative to positional argument)",
+      },
       snippetFromFileOption((code) => { fileSnippet = code; }),
       langOptionDef((v) => { this.lang = v; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = fileSnippet ?? remaining.join(" ");
+    const expression = fileSnippet ?? exprSnippet ?? remaining.join(" ");
     if (!expression) {
       throw new Error("xform requires an expression argument");
     }

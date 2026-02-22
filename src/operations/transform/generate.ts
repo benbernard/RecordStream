@@ -4,6 +4,8 @@ import { Executor, autoReturn, snippetFromFileOption } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
 import type { JsonObject, JsonValue } from "../../types/json.ts";
 import { setKey } from "../../KeySpec.ts";
+import type { SnippetRunner } from "../../snippets/SnippetRunner.ts";
+import { createSnippetRunner, isJsLang, langOptionDef } from "../../snippets/index.ts";
 
 /**
  * Generate new records from a JS snippet. The snippet returns an array
@@ -19,6 +21,9 @@ export class GenerateOperation extends Operation {
   executor!: Executor;
   keychain = "_chain";
   passthrough = false;
+  lang: string | null = null;
+  runner: SnippetRunner | null = null;
+  #bufferedRecords: Record[] = [];
 
   override addHelpTypes(): void {
     this.useHelpType("snippet");
@@ -27,6 +32,7 @@ export class GenerateOperation extends Operation {
 
   init(args: string[]): void {
     let fileSnippet: string | null = null;
+    let exprSnippet: string | null = null;
 
     const defs: OptionDef[] = [
       {
@@ -41,19 +47,37 @@ export class GenerateOperation extends Operation {
         handler: () => { this.passthrough = true; },
         description: "Emit input record in addition to generated records",
       },
+      {
+        long: "expr",
+        short: "e",
+        type: "string",
+        handler: (v) => { exprSnippet = v as string; },
+        description: "Inline code snippet (alternative to positional argument)",
+      },
       snippetFromFileOption((code) => { fileSnippet = code; }),
+      langOptionDef((v) => { this.lang = v; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = fileSnippet ?? remaining.join(" ");
+    const expression = fileSnippet ?? exprSnippet ?? remaining.join(" ");
     if (!expression) {
       throw new Error("generate requires an expression argument");
     }
 
-    this.executor = new Executor(autoReturn(expression));
+    if (this.lang && !isJsLang(this.lang)) {
+      this.runner = createSnippetRunner(this.lang);
+      void this.runner.init(expression, { mode: "generate" });
+    } else {
+      this.executor = new Executor(autoReturn(expression));
+    }
   }
 
   acceptRecord(record: Record): boolean {
+    if (this.runner) {
+      this.#bufferedRecords.push(record);
+      return true;
+    }
+
     if (this.passthrough) {
       this.pushRecord(record);
     }
@@ -83,6 +107,38 @@ export class GenerateOperation extends Operation {
     }
 
     return true;
+  }
+
+  override streamDone(): void {
+    if (this.runner && this.#bufferedRecords.length > 0) {
+      const results = this.runner.executeBatch(this.#bufferedRecords);
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i]!;
+        const inputRecord = this.#bufferedRecords[i]!;
+
+        if (result.error) {
+          process.stderr.write(`generate: ${result.error}\n`);
+          continue;
+        }
+
+        if (this.passthrough) {
+          this.pushRecord(inputRecord);
+        }
+
+        if (result.records) {
+          for (const rec of result.records) {
+            const genRecord = new Record(rec as JsonObject);
+            // Add chain link to original record
+            setKey(
+              genRecord.dataRef() as JsonObject,
+              this.keychain,
+              inputRecord.toJSON() as JsonValue
+            );
+            this.pushRecord(genRecord);
+          }
+        }
+      }
+    }
   }
 }
 
