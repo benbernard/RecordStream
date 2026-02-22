@@ -56,13 +56,11 @@ cat api-response.json                       \
 ## Install
 
 ```bash
-# Homebrew (macOS / Linux)
-brew install recs
-
-# Or grab a binary from releases
-curl -fsSL https://github.com/benbernard/RecordStream/releases/latest/download/recs-$(uname -s)-$(uname -m) -o recs
-chmod +x recs
+# One-liner (macOS / Linux)
+curl -fsSL https://raw.githubusercontent.com/benbernard/RecordStream/master/install.sh | bash
 ```
+
+That detects your platform, downloads the right binary, and puts it in your `$PATH`. Updates happen automatically — recs checks for new versions in the background and tells you when one is available. Run `recs --update` to upgrade in place.
 
 ## Philosophy
 
