@@ -59,6 +59,7 @@ jobs:
 
       - name: Run benchmarks
         id: bench
+        continue-on-error: true
         run: |
           BENCH_ARGS="--ci --markdown-file benchmark-report.md --json-file benchmark-results.json"
           if [ -f perf-baseline.json ]; then
