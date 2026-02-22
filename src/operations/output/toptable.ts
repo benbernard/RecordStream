@@ -585,7 +585,7 @@ export class ToPtable extends Operation {
   }
 
   override usage(): string {
-    return `Usage: recs-toptable <args> [<files>]
+    return `Usage: recs toptable <args> [<files>]
    Creates a multi-dimensional pivot table with any number of x and y axes.
 
 Arguments:
@@ -600,10 +600,10 @@ Arguments:
 
 Examples:
   # Collate and display in a nice table
-  ... | recs-collate --key state,priority -a count | recs-toptable --x state --y priority
+  ... | recs collate --key state,priority -a count | recs toptable --x state --y priority
 
   # Display left over field names as columns
-  ... | recs-toptable --x state,FIELD --y priority`;
+  ... | recs toptable --x state,FIELD --y priority`;
   }
 }
 

@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { Operation } from "../../Operation.ts";
-import type { RecordReceiver, OptionDef } from "../../Operation.ts";
+import type { RecordReceiver } from "../../Operation.ts";
 import { Record } from "../../Record.ts";
 
 /**
@@ -20,7 +20,7 @@ export function registerOperationFactory(
 }
 
 export function isRecsOperation(name: string): boolean {
-  return operationFactories.has(name) || name.startsWith("recs-");
+  return operationFactories.has(name);
 }
 
 export function createOperation(
@@ -28,9 +28,7 @@ export function createOperation(
   args: string[],
   next: RecordReceiver
 ): Operation {
-  // Strip recs- prefix if present
-  const baseName = name.replace(/^recs-/, "");
-  const factory = operationFactories.get(baseName) ?? operationFactories.get(name);
+  const factory = operationFactories.get(name);
   if (!factory) {
     throw new Error(`Unknown recs operation: ${name}`);
   }
@@ -103,8 +101,7 @@ class ShellOperation extends Operation {
  * Check whether a command name refers to a known recs operation.
  */
 function isKnownRecsOp(name: string): boolean {
-  const baseName = name.replace(/^recs-/, "");
-  return operationFactories.has(baseName) || operationFactories.has(name);
+  return operationFactories.has(name);
 }
 
 /**
@@ -120,24 +117,26 @@ export class ChainOperation extends Operation {
   dryRun = false;
 
   init(args: string[]): void {
-    const defs: OptionDef[] = [
-      {
-        long: "show-chain",
-        type: "boolean",
-        handler: () => { this.showChain = true; },
-        description: "Print out what will happen in the chain before running",
-      },
-      {
-        long: "dry-run",
-        short: "n",
-        type: "boolean",
-        handler: () => { this.showChain = true; this.dryRun = true; },
-        description: "Do not run commands, implies --show-chain",
-      },
-    ];
-
-    // Find first non-option arg and treat everything after as the chain
-    const remaining = this.parseOptions(args, defs);
+    // Parse only chain-specific flags (--show-chain, --dry-run / -n) from the
+    // leading args. Stop as soon as we hit the first positional arg (the first
+    // sub-command name) so that sub-command flags like --header aren't rejected
+    // as unknown chain options.
+    const remaining: string[] = [];
+    let i = 0;
+    while (i < args.length) {
+      const arg = args[i]!;
+      if (arg === "--show-chain") {
+        this.showChain = true;
+      } else if (arg === "--dry-run" || arg === "-n") {
+        this.showChain = true;
+        this.dryRun = true;
+      } else {
+        // First non-chain-option arg: the rest is the sub-command pipeline
+        remaining.push(...args.slice(i));
+        break;
+      }
+      i++;
+    }
     if (remaining.length === 0) return;
 
     // Split by | into individual command groups
@@ -192,14 +191,72 @@ export class ChainOperation extends Operation {
   }
 
   override wantsInput(): boolean {
+    if (this.operations.length === 0) return false;
+    const first = this.operations[0]!;
+    // Transform ops (grep, sort) consume records from stdin
+    if (first.wantsInput()) return true;
+    // Line-oriented input ops (fromre, frommultire) consume raw lines
+    if (this.firstOpHasCustomAcceptLine()) return true;
+    // Bulk-content input ops (fromcsv, fromkv) need all stdin fed via parseContent
+    if (this.firstOpNeedsBulkStdin()) return true;
     return false;
   }
+
+  /**
+   * Whether the first operation overrides acceptLine (line-oriented input op).
+   */
+  private firstOpHasCustomAcceptLine(): boolean {
+    const first = this.operations[0];
+    if (!first) return false;
+    const proto = Object.getPrototypeOf(first) as { [key: string]: unknown };
+    return typeof proto["acceptLine"] === "function" &&
+      proto["acceptLine"] !== Operation.prototype.acceptLine;
+  }
+
+  /**
+   * Whether the first operation has a parseContent method and no file args
+   * (bulk-content input ops like fromcsv, fromjsonarray that need stdin).
+   */
+  private firstOpNeedsBulkStdin(): boolean {
+    const first = this.operations[0];
+    if (!first) return false;
+    const opAny = first as unknown as { [key: string]: unknown };
+    if (typeof opAny["parseContent"] !== "function" && typeof opAny["parseXml"] !== "function") return false;
+    const extraArgs = opAny["extraArgs"];
+    if (Array.isArray(extraArgs) && extraArgs.length > 0) return false;
+    return true;
+  }
+
+  /** Buffer for bulk stdin content when first op needs parseContent */
+  private bulkStdinLines: string[] = [];
 
   acceptRecord(record: Record): boolean {
     if (this.operations.length > 0) {
       return this.operations[0]!.acceptRecord(record);
     }
     return this.pushRecord(record);
+  }
+
+  override acceptLine(line: string): boolean {
+    if (this.operations.length === 0) return true;
+    const first = this.operations[0]!;
+
+    if (this.firstOpHasCustomAcceptLine()) {
+      // Line-oriented input op (fromre, frommultire): forward raw lines
+      return first.acceptLine!(line);
+    }
+    if (this.firstOpNeedsBulkStdin()) {
+      // Bulk-content input op (fromcsv): buffer lines for parseContent
+      this.bulkStdinLines.push(line);
+      return true;
+    }
+    // Transform op: parse as JSON record
+    try {
+      const record = Record.fromJSON(line);
+      return first.acceptRecord(record);
+    } catch {
+      return true;
+    }
   }
 
   /**
@@ -218,6 +275,17 @@ export class ChainOperation extends Operation {
     if (this.dryRun) return;
 
     if (this.operations.length > 0) {
+      // If we buffered bulk stdin content, feed it to the first op now
+      if (this.bulkStdinLines.length > 0) {
+        const content = this.bulkStdinLines.join("\n") + "\n";
+        const first = this.operations[0]!;
+        const opAny = first as unknown as { [key: string]: unknown };
+        if (typeof opAny["parseXml"] === "function") {
+          (opAny["parseXml"] as (xml: string) => void)(content);
+        } else if (typeof opAny["parseContent"] === "function") {
+          (opAny["parseContent"] as (content: string) => void)(content);
+        }
+      }
       this.operations[0]!.finish();
     }
   }
@@ -255,12 +323,12 @@ export const documentation: CommandDoc = {
     {
       description: "Parse some fields, sort and collate, all in memory",
       command:
-        "recs chain recs-frommultire 'data,time=(\\S+) (\\S+)' \\| recs-sort --key time=n \\| recs-collate --a perc,90,data",
+        "recs chain frommultire 'data,time=(\\S+) (\\S+)' \\| sort --key time=n \\| collate --a perc,90,data",
     },
     {
       description: "Use shell commands in your recs stream",
       command:
-        "recs chain recs-frommultire 'data,time=(\\S+) (\\S+)' \\| recs-sort --key time=n \\| grep foo \\| recs-collate --a perc,90,data",
+        "recs chain frommultire 'data,time=(\\S+) (\\S+)' \\| sort --key time=n \\| grep foo \\| collate --a perc,90,data",
     },
   ],
   seeAlso: ["collate", "sort", "xform"],

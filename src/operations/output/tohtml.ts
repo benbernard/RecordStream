@@ -137,7 +137,7 @@ export class ToHtml extends Operation {
   }
 
   override usage(): string {
-    return `Usage: recs-tohtml <args> [<files>]
+    return `Usage: recs tohtml <args> [<files>]
    Prints out an html table for the records from input or from <files>.
 
 Arguments:
@@ -148,9 +148,9 @@ Arguments:
 
 Examples:
    Print all fields
-      recs-tohtml
+      recs tohtml
    Print foo and bar fields, without a header
-      recs-tohtml --fields foo,bar --noheader`;
+      recs tohtml --fields foo,bar --noheader`;
   }
 }
 
