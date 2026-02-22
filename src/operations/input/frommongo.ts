@@ -136,7 +136,6 @@ export class FromMongo extends Operation {
     }
 
     // Dynamically import mongodb (optional dependency, not bundled)
-    // @ts-expect-error mongodb is an optional peer dependency
     const { MongoClient } = await import("mongodb");
 
     let uri = this.host!;
