@@ -53,6 +53,7 @@ import { ToHtml } from "../operations/output/tohtml.ts";
 import { ToGnuplot } from "../operations/output/tognuplot.ts";
 import { ToGdGraph } from "../operations/output/togdgraph.ts";
 import { ToDb } from "../operations/output/todb.ts";
+import { ToChart } from "../operations/output/tochart.ts";
 
 type OpConstructor = new (next?: RecordReceiver) => Operation;
 
@@ -105,6 +106,7 @@ const operationRegistry = new Map<string, OpConstructor>([
   ["tognuplot", ToGnuplot],
   ["togdgraph", ToGdGraph],
   ["todb", ToDb],
+  ["tochart", ToChart],
 ]);
 
 // Register all built-in operations with the chain factory so that

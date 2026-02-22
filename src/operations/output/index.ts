@@ -7,6 +7,7 @@ export { ToHtml } from "./tohtml.ts";
 export { ToGnuplot } from "./tognuplot.ts";
 export { ToGdGraph } from "./togdgraph.ts";
 export { ToDb } from "./todb.ts";
+export { ToChart } from "./tochart.ts";
 
 import type { Operation, RecordReceiver } from "../../Operation.ts";
 import { ToCsv } from "./tocsv.ts";
@@ -18,6 +19,7 @@ import { ToHtml } from "./tohtml.ts";
 import { ToGnuplot } from "./tognuplot.ts";
 import { ToGdGraph } from "./togdgraph.ts";
 import { ToDb } from "./todb.ts";
+import { ToChart } from "./tochart.ts";
 
 type OpConstructor = new (next?: RecordReceiver) => Operation;
 
@@ -34,3 +36,4 @@ outputOperations.set("tohtml", ToHtml);
 outputOperations.set("tognuplot", ToGnuplot);
 outputOperations.set("togdgraph", ToGdGraph);
 outputOperations.set("todb", ToDb);
+outputOperations.set("tochart", ToChart);

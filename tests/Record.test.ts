@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { Record } from "../src/Record.ts";
+import { Record, clearSortCache } from "../src/Record.ts";
 
 describe("Record", () => {
   describe("constructor", () => {
@@ -290,6 +290,171 @@ describe("Record", () => {
       expect(
         sorted.map((r) => (r.get("info") as { age: number }).age)
       ).toEqual([20, 25, 30]);
+    });
+
+    test("sorts by deeply nested field descending", () => {
+      const records = [
+        new Record({ a: { b: { c: 5 } } }),
+        new Record({ a: { b: { c: 1 } } }),
+        new Record({ a: { b: { c: 3 } } }),
+      ];
+      const sorted = Record.sort(records, "a/b/c=-numeric");
+      expect(
+        sorted.map((r) => ((r.get("a") as { b: { c: number } }).b.c))
+      ).toEqual([5, 3, 1]);
+    });
+
+    test("sorts with array index access", () => {
+      const records = [
+        new Record({ items: [30, 10] }),
+        new Record({ items: [10, 20] }),
+        new Record({ items: [20, 30] }),
+      ];
+      const sorted = Record.sort(records, "items/#0=numeric");
+      expect(
+        sorted.map((r) => (r.get("items") as number[])[0])
+      ).toEqual([10, 20, 30]);
+    });
+  });
+
+  describe("cached comparators", () => {
+    test("cached comparator produces same results as uncached", () => {
+      clearSortCache();
+      const records = [
+        new Record({ val: 10 }),
+        new Record({ val: 2 }),
+        new Record({ val: 20 }),
+      ];
+      // First call populates cache
+      const sorted1 = Record.sort([...records], "val=numeric");
+      // Second call uses cache
+      const sorted2 = Record.sort([...records], "val=numeric");
+      expect(sorted1.map((r) => r.get("val"))).toEqual([2, 10, 20]);
+      expect(sorted2.map((r) => r.get("val"))).toEqual([2, 10, 20]);
+    });
+
+    test("cmp uses cached comparators consistently", () => {
+      clearSortCache();
+      const a = new Record({ x: 1 });
+      const b = new Record({ x: 2 });
+      // Multiple cmp calls with the same spec should all produce correct results
+      expect(a.cmp(b, "x=numeric")).toBeLessThan(0);
+      expect(a.cmp(b, "x=numeric")).toBeLessThan(0);
+      expect(b.cmp(a, "x=numeric")).toBeGreaterThan(0);
+    });
+
+    test("clearSortCache resets the cache", () => {
+      const a = new Record({ x: "a" });
+      const b = new Record({ x: "b" });
+      // Populate cache
+      a.cmp(b, "x");
+      // Clear it
+      clearSortCache();
+      // Should still produce correct result after clearing
+      expect(a.cmp(b, "x")).toBeLessThan(0);
+    });
+
+    test("all comparator type aliases produce correct results", () => {
+      const records = [
+        new Record({ v: 10 }),
+        new Record({ v: 2 }),
+        new Record({ v: 20 }),
+      ];
+      for (const alias of ["n", "nat", "natural", "num", "numeric"]) {
+        clearSortCache();
+        const sorted = Record.sort([...records], `v=${alias}`);
+        expect(sorted.map((r) => r.get("v"))).toEqual([2, 10, 20]);
+      }
+      for (const alias of ["", "l", "lex", "lexical"]) {
+        clearSortCache();
+        const sorted = Record.sort([...records], `v=${alias}`);
+        // Lexical: "10" < "2" < "20"
+        expect(sorted.map((r) => r.get("v"))).toEqual([10, 2, 20]);
+      }
+    });
+  });
+
+  describe("sort edge cases", () => {
+    test("empty array sort", () => {
+      const sorted = Record.sort([], "name");
+      expect(sorted).toEqual([]);
+    });
+
+    test("single element sort", () => {
+      const records = [new Record({ name: "only" })];
+      const sorted = Record.sort(records, "name");
+      expect(sorted.map((r) => r.get("name"))).toEqual(["only"]);
+    });
+
+    test("all equal values sort", () => {
+      const records = [
+        new Record({ x: "same", idx: 0 }),
+        new Record({ x: "same", idx: 1 }),
+        new Record({ x: "same", idx: 2 }),
+      ];
+      const sorted = Record.sort(records, "x");
+      // Stable sort: original order preserved
+      expect(sorted.map((r) => r.get("idx"))).toEqual([0, 1, 2]);
+    });
+
+    test("sort with missing field values", () => {
+      const records = [
+        new Record({ name: "b" }),
+        new Record({}),
+        new Record({ name: "a" }),
+      ];
+      const sorted = Record.sort(records, "name");
+      // undefined -> "" via String(), so empty sorts first
+      expect(sorted.map((r) => r.get("name"))).toEqual([undefined, "a", "b"]);
+    });
+
+    test("sort with null values", () => {
+      const records = [
+        new Record({ val: 5 }),
+        new Record({ val: null }),
+        new Record({ val: 1 }),
+      ];
+      const sorted = Record.sort(records, "val=numeric");
+      // null -> Number(null) = 0
+      expect(sorted.map((r) => r.get("val"))).toEqual([null, 1, 5]);
+    });
+
+    test("numeric sort with NaN values sorts them first", () => {
+      const records = [
+        new Record({ val: 5 }),
+        new Record({ val: "abc" }),
+        new Record({ val: 1 }),
+      ];
+      const sorted = Record.sort(records, "val=numeric");
+      // NaN sorts before numbers (returns -1)
+      expect(sorted.map((r) => r.get("val"))).toEqual(["abc", 1, 5]);
+    });
+
+    test("ALL hack with descending sort", () => {
+      const records = [
+        new Record({ g: "ALL" }),
+        new Record({ g: "c" }),
+        new Record({ g: "a" }),
+      ];
+      const sorted = Record.sort(records, "g=-lexical*");
+      // Direction reversal also applies to ALL hack placement
+      expect(sorted.map((r) => r.get("g"))).toEqual(["ALL", "c", "a"]);
+    });
+
+    test("multi-field sort with mixed types", () => {
+      const records = [
+        new Record({ group: "A", score: 10 }),
+        new Record({ group: "B", score: 5 }),
+        new Record({ group: "A", score: 5 }),
+        new Record({ group: "B", score: 10 }),
+      ];
+      const sorted = Record.sort(records, "group", "score=-numeric");
+      expect(sorted.map((r) => [r.get("group"), r.get("score")])).toEqual([
+        ["A", 10],
+        ["A", 5],
+        ["B", 10],
+        ["B", 5],
+      ]);
     });
   });
 });

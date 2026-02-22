@@ -50,6 +50,7 @@ import { documentation as tocsv } from "../operations/output/tocsv.ts";
 import { documentation as todb } from "../operations/output/todb.ts";
 import { documentation as togdgraph } from "../operations/output/togdgraph.ts";
 import { documentation as tognuplot } from "../operations/output/tognuplot.ts";
+import { documentation as tochart } from "../operations/output/tochart.ts";
 import { documentation as tohtml } from "../operations/output/tohtml.ts";
 import { documentation as tojsonarray } from "../operations/output/tojsonarray.ts";
 import { documentation as toprettyprint } from "../operations/output/toprettyprint.ts";
@@ -95,6 +96,7 @@ export const allDocs: CommandDoc[] = [
   // Output
   tocsv,
   todb,
+  tochart,
   togdgraph,
   tognuplot,
   tohtml,
