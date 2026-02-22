@@ -32,6 +32,7 @@ import { documentation as collate } from "../operations/transform/collate.ts";
 import { documentation as decollate } from "../operations/transform/decollate.ts";
 import { documentation as delta } from "../operations/transform/delta.ts";
 import { documentation as eval_ } from "../operations/transform/eval.ts";
+import { documentation as expandjson } from "../operations/transform/expandjson.ts";
 import { documentation as flatten } from "../operations/transform/flatten.ts";
 import { documentation as generate } from "../operations/transform/generate.ts";
 import { documentation as grep } from "../operations/transform/grep.ts";
@@ -79,6 +80,7 @@ export const allDocs: CommandDoc[] = [
   decollate,
   delta,
   eval_,
+  expandjson,
   flatten,
   generate,
   grep,

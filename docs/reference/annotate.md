@@ -17,6 +17,7 @@ Evaluate an expression on each record and cache the resulting changes by key gro
 | Flag | Description |
 |------|-------------|
 | `--keys` / `-k` `<keys>` | Keys to match records by. May be specified multiple times. May be a keygroup or keyspec. **(required)** |
+| `--expr` / `-e` `<code>` | Inline expression to evaluate (alternative to positional argument). |
 
 ## Examples
 

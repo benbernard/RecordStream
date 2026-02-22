@@ -18,6 +18,7 @@ Asserts that every record in the stream must pass the given expression. The expr
 |------|-------------|
 | `--diagnostic` / `-d` `<text>` | Include this diagnostic string in any failed assertion errors. |
 | `--verbose` / `-v` | Verbose output for failed assertions; dumps the current record. |
+| `--expr` / `-e` `<code>` | Inline expression to evaluate (alternative to positional argument). |
 
 ## Examples
 
