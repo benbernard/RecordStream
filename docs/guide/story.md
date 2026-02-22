@@ -7,7 +7,7 @@ tools. Please read with tongue firmly planted in cheek.
 
 Every ninja knows the value of tools. How could one accomplish anything without
 a mouse quenched in the blood of a live and willing dragon or a monitor whose
-CRT is hewn from a single enormous diamond, formed in the fire of Hades?
+OLED pixels are hewn from single enormous diamonds, formed in the fire of Hades?
 Indeed, most ninja scholars agree unanimously that the hundred-handed
 conference room reservation prana cannot be done without a keyboard each key
 of which is greased with the blood of a different enemy of your ancestors'.
