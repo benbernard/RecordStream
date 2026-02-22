@@ -228,7 +228,7 @@ export const documentation: CommandDoc = {
       flags: ["--line-key", "-L"],
       description:
         "Use the value of this key as line input for the nested operation " +
-        "(rather than the entire record). Use with recs-from* operations generally.",
+        "(rather than the entire record). Use with recs from* operations generally.",
       argument: "<key>",
     },
     {
@@ -267,13 +267,13 @@ export const documentation: CommandDoc = {
   examples: [
     {
       description: "Tag lines with counts by thread",
-      command: "recs multiplex -k thread -- recs-eval 'r.nbr = ++nbr'",
+      command: "recs multiplex -k thread -- recs eval 'r.nbr = ++nbr'",
     },
     {
       description:
         "Separate out a stream of text by PID into separate invocations of an operation",
       command:
-        "recs fromre '^(.*PID=([0-9]*).*)$' -f line,pid | recs multiplex -L line -k pid -- recs-frommultire ...",
+        "recs fromre '^(.*PID=([0-9]*).*)$' -f line,pid | recs multiplex -L line -k pid -- recs frommultire ...",
     },
   ],
   seeAlso: ["collate", "chain"],

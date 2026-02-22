@@ -169,7 +169,7 @@ export class ToPrettyPrint extends Operation {
   }
 
   override usage(): string {
-    return `Usage: recs-toprettyprint [files]
+    return `Usage: recs toprettyprint [files]
    Pretty print records, one key to a line, with a line of dashes (---)
    separating records.
 
@@ -182,10 +182,10 @@ Arguments:
 
 Examples
   # Pretty print records
-  recs-toprettyprint
+  recs toprettyprint
 
   # Find all keys with 'time' in the name or value
-  ... | recs-toprettyprint --one | grep time`;
+  ... | recs toprettyprint --one | grep time`;
   }
 }
 
