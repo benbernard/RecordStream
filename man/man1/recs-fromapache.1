@@ -1,0 +1,46 @@
+.TH RECS\-FROMAPACHE 1 "2026-02-22" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-fromapache \- Each line of input (or lines of <files>) is parsed to produce an output record from Apache access logs
+
+.SH SYNOPSIS
+.B recs fromapache [options] [files...]
+
+.SH DESCRIPTION
+Each line of input (or lines of <files>) is parsed to produce an output record from Apache access logs. Supports combined, common, and vhost_common log formats.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--fast\fR
+Use the fast parser which works relatively fast. It can process only \'common\', \'combined\' and custom styles with compatibility with \'common\', and cannot work with backslash\-quoted double\-quotes in fields. This is the default.
+.TP
+\fB--strict\fR
+Use the strict parser which works relatively slow. It can process any style format logs, with specification about separator, and checker for perfection. It can also process backslash\-quoted double\-quotes properly.
+.TP
+\fB--verbose\fR
+Verbose output.
+
+.SH EXAMPLES
+Get records from typical apache log
+.PP
+.RS 4
+.nf
+\fBrecs fromapache < /var/log/httpd-access.log\fR
+.fi
+.RE
+
+Use strict parser with specific formats
+.PP
+.RS 4
+.nf
+\fBrecs fromapache --strict \'["combined","common","vhost_common"]\' < /var/log/httpd-access.log\fR
+.fi
+.RE
+
+.SH SEE ALSO
+\fBrecs\-fromre\fR(1), \fBrecs\-frommultire\fR(1)
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+

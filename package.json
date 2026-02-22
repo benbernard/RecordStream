@@ -1,0 +1,36 @@
+{
+  "name": "recs",
+  "version": "0.1.0",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "bun build ./bin/recs.ts --compile --outfile=./bin/recs",
+    "test": "bun test",
+    "lint": "bunx oxlint src/ tests/ bin/ scripts/",
+    "typecheck": "tsc --noEmit",
+    "prepare": "lefthook install",
+    "check-docs": "bun scripts/check-docs.ts",
+    "generate-manpages": "bun scripts/generate-manpages.ts",
+    "generate-docs": "bun scripts/generate-reference-docs.ts",
+    "docs:dev": "bun scripts/generate-reference-docs.ts && vitepress dev docs",
+    "docs:build": "bun scripts/generate-reference-docs.ts && vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/bun": "latest",
+    "@types/papaparse": "^5.5.2",
+    "lefthook": "^2.1.1",
+    "oxlint": "latest",
+    "typescript": "^5",
+    "vitepress": "^1.6.4"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "fast-xml-parser": "^5.3.7",
+    "mongodb": "^7.1.0",
+    "openai": "^6.22.0",
+    "papaparse": "^5.5.3"
+  }
+}
