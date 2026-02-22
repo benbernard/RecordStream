@@ -15,6 +15,8 @@ import {
   mapReduceAgg,
   subsetAgg,
   xformAgg,
+  forFieldAgg,
+  forField2Agg,
 } from "../src/DomainLanguage.ts";
 
 function runAggregator(agg: { initial(): unknown; combine(s: unknown, r: Record): unknown; squish(s: unknown): unknown }, records: Record[]): unknown {
@@ -142,6 +144,100 @@ describe("DomainLanguage", () => {
     });
   });
 
+  describe("forFieldAgg", () => {
+    test("aggregates per matching field with regex", () => {
+      const agg = forFieldAgg(/^t/, (f) => aggregatorRegistry.parse(`sum,${f}`));
+      const records = [
+        new Record({ t_a: 1, t_b: 10, other: 100 }),
+        new Record({ t_a: 2, t_b: 20, other: 200 }),
+        new Record({ t_a: 3, t_b: 30, other: 300 }),
+      ];
+      const result = runAggregator(agg, records);
+      expect(result).toEqual({ t_a: 6, t_b: 60 });
+    });
+
+    test("aggregates per matching field with string pattern", () => {
+      const agg = forFieldAgg("^score", (f) => aggregatorRegistry.parse(`average,${f}`));
+      const records = [
+        new Record({ score_math: 80, score_english: 90, name: "alice" }),
+        new Record({ score_math: 100, score_english: 70, name: "bob" }),
+      ];
+      const result = runAggregator(agg, records);
+      expect(result).toEqual({ score_math: 90, score_english: 80 });
+    });
+
+    test("returns empty map when no fields match", () => {
+      const agg = forFieldAgg(/^zzz/, (f) => aggregatorRegistry.parse(`sum,${f}`));
+      const records = [new Record({ a: 1, b: 2 })];
+      const result = runAggregator(agg, records);
+      expect(result).toEqual({});
+    });
+
+    test("handles fields appearing in later records", () => {
+      const agg = forFieldAgg(/^x/, (f) => aggregatorRegistry.parse(`sum,${f}`));
+      const records = [
+        new Record({ x_a: 1 }),
+        new Record({ x_a: 2, x_b: 10 }),
+        new Record({ x_a: 3, x_b: 20 }),
+      ];
+      const result = runAggregator(agg, records);
+      // x_a seen in all 3 records, x_b only in last 2
+      expect(result).toEqual({ x_a: 6, x_b: 30 });
+    });
+
+    test("works with count aggregator (no field arg)", () => {
+      const agg = forFieldAgg(/^t/, (_f) => aggregatorRegistry.parse("count"));
+      const records = [
+        new Record({ t_a: 1, t_b: 10 }),
+        new Record({ t_a: 2, t_b: 20 }),
+      ];
+      const result = runAggregator(agg, records);
+      expect(result).toEqual({ t_a: 2, t_b: 2 });
+    });
+  });
+
+  describe("forField2Agg", () => {
+    test("aggregates per pair of matching fields", () => {
+      const agg = forField2Agg(/^x/, /^y/, (f1, _f2) =>
+        aggregatorRegistry.parse(`sum,${f1}`)
+      );
+      const records = [
+        new Record({ x1: 1, x2: 10, y1: 100, y2: 200 }),
+        new Record({ x1: 2, x2: 20, y1: 300, y2: 400 }),
+      ];
+      const result = runAggregator(agg, records);
+      // Pairs: x1,y1 x1,y2 x2,y1 x2,y2 — all summing their first field
+      expect(result).toEqual({
+        "x1,y1": 3,
+        "x1,y2": 3,
+        "x2,y1": 30,
+        "x2,y2": 30,
+      });
+    });
+
+    test("returns empty map when no pairs match", () => {
+      const agg = forField2Agg(/^aaa/, /^bbb/, (_f1, _f2) =>
+        aggregatorRegistry.parse("count")
+      );
+      const records = [new Record({ x: 1, y: 2 })];
+      const result = runAggregator(agg, records);
+      expect(result).toEqual({});
+    });
+
+    test("handles count aggregator for field pairs", () => {
+      const agg = forField2Agg(/^x/, /^y/, (_f1, _f2) =>
+        aggregatorRegistry.parse("count")
+      );
+      const records = [
+        new Record({ x1: 1, y1: 10 }),
+        new Record({ x1: 2, y1: 20 }),
+        new Record({ x1: 3, y1: 30 }),
+      ];
+      const result = runAggregator(agg, records);
+      expect(result).toEqual({ "x1,y1": 3 });
+    });
+  });
+
   describe("parseDomainLanguage", () => {
     test("parses simple aggregator expression", () => {
       const agg = parseDomainLanguage('sum("x")');
@@ -165,6 +261,70 @@ describe("DomainLanguage", () => {
       const records = [new Record({})];
       const result = runAggregator(agg, records);
       expect(result).toBe(1);
+    });
+
+    test("parses for_field with regex", () => {
+      const agg = parseDomainLanguage('for_field(/^t/, ($f) => sum($f))');
+      const records = [
+        new Record({ t_a: 1, t_b: 10, other: 100 }),
+        new Record({ t_a: 2, t_b: 20, other: 200 }),
+      ];
+      const result = runAggregator(agg, records);
+      expect(result).toEqual({ t_a: 3, t_b: 30 });
+    });
+
+    test("parses for_field with string pattern", () => {
+      const agg = parseDomainLanguage('for_field("^score", ($f) => average($f))');
+      const records = [
+        new Record({ score_math: 80, score_english: 90, name: "a" }),
+        new Record({ score_math: 100, score_english: 70, name: "b" }),
+      ];
+      const result = runAggregator(agg, records);
+      expect(result).toEqual({ score_math: 90, score_english: 80 });
+    });
+
+    test("parses for_field with two regexes", () => {
+      const agg = parseDomainLanguage('for_field(/^x/, /^y/, ($f1, $f2) => count())');
+      const records = [
+        new Record({ x1: 1, y1: 10 }),
+        new Record({ x1: 2, y1: 20 }),
+      ];
+      const result = runAggregator(agg, records);
+      expect(result).toEqual({ "x1,y1": 2 });
+    });
+
+    test("parses subset_agg with count", () => {
+      const agg = parseDomainLanguage('subset_agg("{{x}} > 2", count())');
+      const records = [
+        new Record({ x: 1 }),
+        new Record({ x: 3 }),
+        new Record({ x: 5 }),
+        new Record({ x: 2 }),
+      ];
+      const result = runAggregator(agg, records);
+      expect(result).toBe(2);
+    });
+
+    test("parses subset_agg with sum", () => {
+      const agg = parseDomainLanguage(`subset_agg("{{status}} === 'active'", sum("value"))`);
+      const records = [
+        new Record({ status: "active", value: 10 }),
+        new Record({ status: "inactive", value: 20 }),
+        new Record({ status: "active", value: 30 }),
+      ];
+      const result = runAggregator(agg, records);
+      expect(result).toBe(40);
+    });
+
+    test("parses subset_aggregator alias", () => {
+      const agg = parseDomainLanguage('subset_aggregator("{{x}} >= 5", count())');
+      const records = [
+        new Record({ x: 3 }),
+        new Record({ x: 5 }),
+        new Record({ x: 7 }),
+      ];
+      const result = runAggregator(agg, records);
+      expect(result).toBe(2);
     });
   });
 });
