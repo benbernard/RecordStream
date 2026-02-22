@@ -23,7 +23,7 @@ Parse some fields, sort and collate, all in memory
 .PP
 .RS 4
 .nf
-\fBrecs chain recs-frommultire \'data,time=(\\S+) (\\S+)\' \\| recs-sort --key time=n \\| recs-collate --a perc,90,data\fR
+\fBrecs chain frommultire \'data,time=(\\S+) (\\S+)\' \\| sort --key time=n \\| collate --a perc,90,data\fR
 .fi
 .RE
 
@@ -31,7 +31,7 @@ Use shell commands in your recs stream
 .PP
 .RS 4
 .nf
-\fBrecs chain recs-frommultire \'data,time=(\\S+) (\\S+)\' \\| recs-sort --key time=n \\| grep foo \\| recs-collate --a perc,90,data\fR
+\fBrecs chain frommultire \'data,time=(\\S+) (\\S+)\' \\| sort --key time=n \\| grep foo \\| collate --a perc,90,data\fR
 .fi
 .RE
 

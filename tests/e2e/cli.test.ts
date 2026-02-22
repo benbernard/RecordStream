@@ -568,6 +568,70 @@ describe("error handling", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Implicit chaining (bare | in args)
+// ---------------------------------------------------------------------------
+describe("implicit chaining", () => {
+  test("recs grep '...' | totable routes through chain", async () => {
+    const records = [
+      JSON.stringify({ name: "alice", age: 30 }),
+      JSON.stringify({ name: "bob", age: 25 }),
+    ].join("\n");
+
+    // Simulate: recs grep '{{age}} > 28' \| totable
+    // The shell passes | as a literal arg
+    const result = await recs(["grep", "{{age}} > 28", "|", "totable"], records);
+    expect(result.exitCode).toBe(0);
+    // totable produces an ASCII table with header
+    expect(result.stdout).toContain("name");
+    expect(result.stdout).toContain("alice");
+    // bob (age 25) should be filtered out by grep
+    expect(result.stdout).not.toContain("bob");
+  });
+
+  test("recs grep '...' (no pipe) routes normally", async () => {
+    const records = [
+      JSON.stringify({ name: "alice", age: 30 }),
+      JSON.stringify({ name: "bob", age: 25 }),
+    ].join("\n");
+
+    const result = await recs(["grep", "{{age}} > 28"], records);
+    expect(result.exitCode).toBe(0);
+    const output = parseRecords(result.stdout);
+    expect(output).toHaveLength(1);
+    expect(output[0]!["name"]).toBe("alice");
+  });
+
+  test("multi-step chain works: fromcsv --header | grep '...' | tocsv", async () => {
+    const csv = "name,age\nalice,30\nbob,25\ncharlie,35";
+
+    // Simulate: recs fromcsv --header \| grep 'Number({{age}}) > 28' \| tocsv
+    const result = await recs(
+      ["fromcsv", "--header", "|", "grep", "Number({{age}}) > 28", "|", "tocsv"],
+      csv,
+    );
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("alice");
+    expect(result.stdout).toContain("charlie");
+    expect(result.stdout).not.toContain("bob");
+  });
+
+  test("explicit recs chain still works", async () => {
+    const records = [
+      JSON.stringify({ name: "alice", age: 30 }),
+      JSON.stringify({ name: "bob", age: 25 }),
+    ].join("\n");
+
+    const result = await recs(
+      ["chain", "grep", "{{age}} > 28", "|", "totable"],
+      records,
+    );
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("alice");
+    expect(result.stdout).not.toContain("bob");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Compiled binary tests
 // ---------------------------------------------------------------------------
 const hasCompiledBinary = existsSync(COMPILED_BIN);

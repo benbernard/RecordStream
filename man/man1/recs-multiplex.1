@@ -19,7 +19,7 @@ Comma\-separated list of key fields for grouping. May be a key spec or key group
 Domain language key: name=expression where the expression evaluates as a valuation.
 .TP
 \fB--line-key\fR, \fB-L\fR \fI<key>\fR
-Use the value of this key as line input for the nested operation (rather than the entire record). Use with recs\-from* operations generally.
+Use the value of this key as line input for the nested operation (rather than the entire record). Use with recs from* operations generally.
 .TP
 \fB--adjacent\fR, \fB-1\fR
 Only group together adjacent records. Avoids spooling records into memory.
@@ -47,7 +47,7 @@ Tag lines with counts by thread
 .PP
 .RS 4
 .nf
-\fBrecs multiplex -k thread -- recs-eval \'r.nbr = ++nbr\'\fR
+\fBrecs multiplex -k thread -- recs eval \'r.nbr = ++nbr\'\fR
 .fi
 .RE
 
@@ -55,7 +55,7 @@ Separate out a stream of text by PID into separate invocations of an operation
 .PP
 .RS 4
 .nf
-\fBrecs fromre \'^(.*PID=([0-9]*).*)$\' -f line,pid | recs multiplex -L line -k pid -- recs-frommultire ...\fR
+\fBrecs fromre \'^(.*PID=([0-9]*).*)$\' -f line,pid | recs multiplex -L line -k pid -- recs frommultire ...\fR
 .fi
 .RE
 

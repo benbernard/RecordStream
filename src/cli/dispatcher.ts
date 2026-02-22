@@ -40,7 +40,7 @@ import { JoinOperation } from "../operations/transform/join.ts";
 import { CollateOperation } from "../operations/transform/collate.ts";
 import { DecollateOperation } from "../operations/transform/decollate.ts";
 import { ExpandJsonOperation } from "../operations/transform/expandjson.ts";
-import { ChainOperation } from "../operations/transform/chain.ts";
+import { ChainOperation, registerOperationFactory } from "../operations/transform/chain.ts";
 import { MultiplexOperation } from "../operations/transform/multiplex.ts";
 
 // -- Output operations --
@@ -107,6 +107,14 @@ const operationRegistry = new Map<string, OpConstructor>([
   ["todb", ToDb],
 ]);
 
+// Register all built-in operations with the chain factory so that
+// ChainOperation can instantiate them by name (not just plugins).
+for (const [name, Ctor] of operationRegistry) {
+  if (name !== "chain") {
+    registerOperationFactory(name, (next: RecordReceiver) => new Ctor(next));
+  }
+}
+
 /**
  * Input operations that can consume bulk stdin content via parseContent().
  * When they have no file args, we read all of stdin and call parseContent().
@@ -162,11 +170,10 @@ async function readStdinLines(callback: (line: string) => boolean): Promise<void
 }
 
 /**
- * Look up an operation constructor by name (supports bare name or recs- prefix).
+ * Look up an operation constructor by name.
  */
 export function lookupOperation(name: string): OpConstructor | undefined {
-  const baseName = name.replace(/^recs-/, "");
-  return operationRegistry.get(baseName) ?? operationRegistry.get(name);
+  return operationRegistry.get(name);
 }
 
 /**
