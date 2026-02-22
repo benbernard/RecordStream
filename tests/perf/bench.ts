@@ -7,7 +7,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,6 +26,19 @@ export interface BenchmarkResult {
   recordsPerSec?: number;
   /** megabytes processed per second (if applicable) */
   mbPerSec?: number;
+}
+
+export interface CIResult {
+  name: string;
+  median: number;
+  mean: number;
+  min: number;
+  p95: number;
+  max: number;
+  recordsPerSec?: number;
+  mbPerSec?: number;
+  baselineMedian?: number;
+  deltaPercent?: number;
 }
 
 export interface BenchmarkOptions {
@@ -132,6 +145,18 @@ function fmtDelta(current: number, baseline: number): string {
   const sign = pct > 0 ? "+" : "";
   const color = pct > 5 ? "\x1b[31m" : pct < -5 ? "\x1b[32m" : "\x1b[33m";
   return `${color}${sign}${pct.toFixed(1)}%\x1b[0m`;
+}
+
+function deltaPercent(current: number, baseline: number): number {
+  return ((current - baseline) / baseline) * 100;
+}
+
+function fmtDeltaMarkdown(pct: number): string {
+  const sign = pct > 0 ? "+" : "";
+  const text = `${sign}${pct.toFixed(1)}%`;
+  if (pct > 5) return `**${text}** :red_circle:`;
+  if (pct < -5) return `${text} :green_circle:`;
+  return `${text}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -274,12 +299,105 @@ export class BenchmarkSuite {
 }
 
 // ---------------------------------------------------------------------------
+// CI / machine-readable output
+// ---------------------------------------------------------------------------
+
+function buildCIResults(
+  results: BenchmarkResult[],
+  baseline: BaselineData | null,
+): CIResult[] {
+  return results.map((r) => {
+    const base = baseline?.[r.name];
+    const delta = base ? deltaPercent(r.median, base.median) : undefined;
+    return {
+      name: r.name,
+      median: r.median,
+      mean: r.mean,
+      min: r.min,
+      p95: r.p95,
+      max: r.max,
+      recordsPerSec: r.recordsPerSec,
+      mbPerSec: r.mbPerSec,
+      baselineMedian: base?.median,
+      deltaPercent: delta,
+    };
+  });
+}
+
+export function generateMarkdown(ciResults: CIResult[]): string {
+  const lines: string[] = [];
+  lines.push("## Performance Benchmark Results\n");
+  lines.push(
+    "| Benchmark | Median | Baseline | Delta | Throughput |",
+  );
+  lines.push(
+    "|-----------|--------|----------|-------|------------|",
+  );
+
+  let faster = 0;
+  let slower = 0;
+  let unchanged = 0;
+
+  for (const r of ciResults) {
+    const medianStr = fmtMs(r.median);
+    const baseStr = r.baselineMedian != null ? fmtMs(r.baselineMedian) : "—";
+    let deltaStr = "—";
+    if (r.deltaPercent != null) {
+      deltaStr = fmtDeltaMarkdown(r.deltaPercent);
+      if (r.deltaPercent > 5) slower++;
+      else if (r.deltaPercent < -5) faster++;
+      else unchanged++;
+    } else {
+      unchanged++;
+    }
+
+    const throughputParts: string[] = [];
+    if (r.recordsPerSec) throughputParts.push(`${fmtRate(r.recordsPerSec)} rec/s`);
+    if (r.mbPerSec) throughputParts.push(`${r.mbPerSec.toFixed(1)} MB/s`);
+    const throughputStr = throughputParts.join(", ") || "—";
+
+    lines.push(
+      `| ${r.name} | ${medianStr} | ${baseStr} | ${deltaStr} | ${throughputStr} |`,
+    );
+  }
+
+  lines.push("");
+  const total = ciResults.length;
+  lines.push(
+    `**Summary**: ${total} benchmarks: ${faster} faster, ${slower} slower, ${unchanged} unchanged`,
+  );
+
+  return lines.join("\n");
+}
+
+export function checkThreshold(ciResults: CIResult[], threshold: number): string[] {
+  const failures: string[] = [];
+  for (const r of ciResults) {
+    if (r.deltaPercent != null && r.deltaPercent > threshold) {
+      failures.push(
+        `${r.name}: +${r.deltaPercent.toFixed(1)}% regression (threshold: ${threshold}%)`,
+      );
+    }
+  }
+  return failures;
+}
+
+// ---------------------------------------------------------------------------
 // CLI entry point
 // ---------------------------------------------------------------------------
 
+export interface RunOptions {
+  saveBaseline?: boolean;
+  ci?: boolean;
+  failThreshold?: number;
+  markdownFile?: string;
+  jsonFile?: string;
+  baselineFile?: string;
+}
+
 export async function runAllSuites(
   suites: BenchmarkSuite[],
-  options?: { saveBaseline?: boolean },
+  options?: RunOptions,
 ): Promise<void> {
   console.log("RecordStream Performance Benchmarks");
   console.log(`Runtime: Bun ${typeof Bun !== "undefined" ? Bun.version : "N/A"}`);
@@ -297,7 +415,57 @@ export async function runAllSuites(
   console.log(`${"=".repeat(70)}\n`);
 
   if (options?.saveBaseline) {
-    saveBaseline(allResults);
-    console.log(`Baseline saved to ${BASELINE_FILE}\n`);
+    const targetFile = options.baselineFile ?? BASELINE_FILE;
+    const data: BaselineData = {};
+    for (const r of allResults) {
+      data[r.name] = { median: r.median, mean: r.mean };
+    }
+    const dir = dirname(targetFile);
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(targetFile, JSON.stringify(data, null, 2) + "\n");
+    console.log(`Baseline saved to ${targetFile}\n`);
+  }
+
+  if (options?.ci) {
+    let baseline: BaselineData | null = null;
+    if (options.baselineFile) {
+      try {
+        if (existsSync(options.baselineFile)) {
+          baseline = JSON.parse(
+            readFileSync(options.baselineFile, "utf-8"),
+          ) as BaselineData;
+        }
+      } catch {
+        // no baseline available
+      }
+    } else {
+      baseline = loadBaseline();
+    }
+
+    const ciResults = buildCIResults(allResults, baseline);
+
+    if (options.jsonFile) {
+      writeFileSync(options.jsonFile, JSON.stringify(ciResults, null, 2) + "\n");
+      console.log(`CI JSON results saved to ${options.jsonFile}`);
+    }
+
+    if (options.markdownFile) {
+      const md = generateMarkdown(ciResults);
+      writeFileSync(options.markdownFile, md + "\n");
+      console.log(`Markdown report saved to ${options.markdownFile}`);
+    }
+
+    if (options.failThreshold != null) {
+      const failures = checkThreshold(ciResults, options.failThreshold);
+      if (failures.length > 0) {
+        console.error(`\nPerformance regression detected (threshold: ${options.failThreshold}%):`);
+        for (const f of failures) {
+          console.error(`  - ${f}`);
+        }
+        process.exit(1);
+      } else {
+        console.log(`\nAll benchmarks within ${options.failThreshold}% threshold.`);
+      }
+    }
   }
 }
