@@ -26,16 +26,29 @@ export function RecordTable({
     scrollOffset + maxRows,
   );
 
+  // Auto-calculate column widths from field names + data
+  const COL_MIN = 4;
+  const COL_MAX = 30;
+  const colWidths = fields.map((field) => {
+    let maxWidth = field.length;
+    for (const record of visibleRecords) {
+      const val = record.get(field);
+      const str = val === null || val === undefined ? "" : String(val);
+      maxWidth = Math.max(maxWidth, str.length);
+    }
+    return Math.min(Math.max(maxWidth, COL_MIN), COL_MAX);
+  });
+
   // Build header
-  const header = "#   " + fields.map((f) => f.padEnd(15).slice(0, 15)).join("  ");
+  const header = "#   " + fields.map((f, i) => f.padEnd(colWidths[i]!).slice(0, colWidths[i]!)).join("  ");
 
   // Build rows
   const rows = visibleRecords.map((record, idx) => {
     const rowNum = String(scrollOffset + idx + 1).padStart(3);
-    const cells = fields.map((field) => {
+    const cells = fields.map((field, i) => {
       const val = record.get(field);
       const str = val === null || val === undefined ? "" : String(val);
-      return str.padEnd(15).slice(0, 15);
+      return str.padEnd(colWidths[i]!).slice(0, colWidths[i]!);
     });
     return `${rowNum} ${cells.join("  ")}`;
   });

@@ -20,29 +20,27 @@ PIPELINE (left panel)
   d            Delete stage (with confirm)
   e            Edit stage arguments
   Space        Toggle stage enabled/disabled
+  J/K          Reorder stage down/up
+  r            Re-run from cursor stage
+  v            Export records to temp file
+  x            Export pipeline → clipboard
+  X            Export pipeline (choose format)
   Enter/Tab    Focus inspector panel
 
 INSPECTOR (right panel)
   ↑/k, ↓/j    Scroll records
   PgUp/PgDn    Page scroll
-  t            Cycle view: table → prettyprint → json → schema
+  t            Cycle view: table → prettyprint → json
   /            Search records
   Esc/Tab      Return to pipeline
 
 GLOBAL
   Tab          Toggle focus: pipeline ↔ inspector
-  f            Fork at cursor
-  b            Switch fork branch
-  i            Switch input file
-  r            Re-run from first stale stage
-  v            Open records in $EDITOR
-  x            Export pipeline (shell pipe script → clipboard)
-  X            Export pipeline (choose format)
   u            Undo last pipeline edit
   Ctrl+R       Redo last undone edit
-  p            Pin/unpin stage for selective caching
+  Ctrl+C       Quit
   ?            Toggle this help
-  q            Quit (auto-saves session)`;
+  q            Quit`;
 
 export function HelpPanel({ onClose }: HelpPanelProps) {
   useKeyboard((key) => {

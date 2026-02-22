@@ -12,7 +12,7 @@ export function StatusBar({ state, statusMessage }: StatusBarProps) {
   // Context-sensitive keybindings based on focused panel
   const keys =
     state.focusedPanel === "pipeline"
-      ? "a:add d:del e:edit u:undo x:export f:fork v:vim ?:help q:quit"
+      ? "a:add d:del e:edit J/K:move x:export v:vim u:undo ?:help q:quit"
       : "↑↓:scroll t:view /:search Tab:back";
 
   return (

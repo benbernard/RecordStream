@@ -1,5 +1,5 @@
 import type { PipelineState } from "../model/types.ts";
-import { getCursorStage, getCursorOutput } from "../model/selectors.ts";
+import { getCursorStage, getCursorOutput, getActivePath, getStageOutput } from "../model/selectors.ts";
 
 export interface InspectorHeaderProps {
   state: PipelineState;
@@ -41,7 +41,21 @@ export function InspectorHeader({ state }: InspectorHeaderProps) {
     );
   }
 
-  const countStr = output ? `${output.recordCount} records` : "not cached";
+  // Get total record count from first stage for ratio display
+  const activePath = getActivePath(state);
+  const firstStage = activePath[0];
+  const firstOutput = firstStage ? getStageOutput(state, firstStage.id) : undefined;
+  const totalRecords = firstOutput?.recordCount;
+
+  let countStr: string;
+  if (!output) {
+    countStr = "not cached";
+  } else if (totalRecords && totalRecords > 0 && output.recordCount !== totalRecords) {
+    const pct = Math.round((output.recordCount / totalRecords) * 100);
+    countStr = `${output.recordCount} of ${totalRecords} records (${pct}%)`;
+  } else {
+    countStr = `${output.recordCount} records`;
+  }
   const cacheAge = output ? `, cached ${formatCacheAge(output.computedAt)}` : "";
 
   return (
