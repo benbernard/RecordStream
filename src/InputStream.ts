@@ -122,6 +122,12 @@ export class InputStream {
     return null;
   }
 
+  // Benchmarked against TextDecoderStream, bulk text+split, Node readline,
+  // binary 0x0A scanning, and Bun native stdin (see line-reading.bench.ts).
+  // This manual buffer+indexOf approach is fastest at scale. Binary scanning
+  // is 2x slower due to per-segment TextDecoder overhead; Bun native stdin
+  // adds subprocess cost. Line reading is ~10% of getRecord() time; JSON
+  // parsing dominates.
   async #readLine(): Promise<string | null> {
     while (true) {
       const newlineIndex = this.#buffer.indexOf("\n", this.#bufferOffset);
