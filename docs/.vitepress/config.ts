@@ -1,6 +1,7 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
+  base: "/RecordStream/",
   title: "RecordStream",
   description: "Your data's new best friend — a toolkit for taming JSON streams",
   head: [
