@@ -21,6 +21,7 @@ export class Executor {
   #snippets: Map<string, CompiledSnippet>;
   #lineCounter = 0;
   #currentFilename = "NONE";
+  #state: Record<string, unknown> = {};
 
   constructor(codeOrSnippets: string | { [name: string]: SnippetDef }) {
     this.#snippets = new Map();
@@ -40,7 +41,7 @@ export class Executor {
   #addSnippet(name: string, def: SnippetDef): void {
     const transformedCode = transformCode(def.code);
     const argNames = def.argNames ?? ["r"];
-    const fn = compileSnippet(transformedCode, argNames);
+    const fn = compileSnippet(transformedCode, argNames, this.#state);
     this.#snippets.set(name, { fn, argNames });
   }
 
@@ -142,10 +143,14 @@ export function autoReturn(code: string): string {
 /**
  * Compile a code snippet into a callable function.
  * The function receives the user-specified arguments plus $line and $filename.
+ * A shared state object is captured in the closure so that user-assigned
+ * variables on `state` persist across invocations (analogous to Perl's
+ * persistent lexical scope across eval calls).
  */
 function compileSnippet(
   code: string,
-  argNames: string[]
+  argNames: string[],
+  state: Record<string, unknown>,
 ): (...args: unknown[]) => unknown {
   // Build argument list: user args + line + filename
   const allArgNames = [...argNames, "$line", "$filename"];
@@ -169,16 +174,18 @@ function compileSnippet(
   `;
 
   try {
-    // Create a function with the helper functions in closure
+    // Create a function with the helper functions and shared state in closure
     const factory = new Function(
       "__findKey",
       "__setKey",
+      "state",
       `return function(${allArgNames.join(", ")}) { ${fnBody} }`
     );
     return factory(
       (data: JsonObject, spec: string) => findKey(data, spec),
       (data: JsonObject, spec: string, value: JsonValue) =>
-        setKey(data, spec, value)
+        setKey(data, spec, value),
+      state,
     );
   } catch (e) {
     throw new Error(
