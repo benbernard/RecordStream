@@ -77,10 +77,8 @@ jobs:
               console.log('No benchmark report found, skipping comment.');
               return;
             }
-            let body = fs.readFileSync(reportPath, 'utf-8').trim();
+            const body = fs.readFileSync(reportPath, 'utf-8').trim();
             if (!body) return;
-
-            body += '\n\n---\n*Compared against master baseline. Threshold: 25% regression.*';
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
