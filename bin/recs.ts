@@ -98,8 +98,14 @@ if (command === "story") {
   process.exit(0);
 }
 
-// Dispatch to the operation
-const exitCode = await runOperation(command, args.slice(1));
+// Dispatch to the operation.
+// If remaining args contain a bare "|", treat the whole invocation as an implicit chain.
+// e.g. `recs grep "..." \| collate --key foo` becomes `recs chain grep "..." | collate --key foo`
+const restArgs = args.slice(1);
+const hasImplicitChain = command !== "chain" && restArgs.includes("|");
+const exitCode = hasImplicitChain
+  ? await runOperation("chain", [command, ...restArgs])
+  : await runOperation(command, restArgs);
 
 // Spawn background update check if due (detached, non-blocking)
 if (!noUpdateCheck && shouldCheck(getConfigDir())) {
