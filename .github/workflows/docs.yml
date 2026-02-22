@@ -2,7 +2,7 @@ name: Deploy Documentation
 
 on:
   push:
-    branches: [master]
+    branches: [master, ts-port]
     paths:
       - 'docs/**'
       - 'src/types/CommandDoc.ts'
