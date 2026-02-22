@@ -149,33 +149,27 @@ function runShellPipeline(stages: string[][], jsonlInput: string): string {
 }
 
 /**
- * Run the implicit chain path: `bun bin/recs.ts <first-cmd> <args> | <next-cmd> <args> ...`
- * This mimics what bin/recs.ts does when it detects "|" in the args.
+ * Run the implicit chain path in-memory: simulate what bin/recs.ts does when
+ * it detects "|" in the CLI args.  bin/recs.ts calls:
+ *
+ *   runOperation("chain", [resolvedCommand, ...restArgs])
+ *
+ * which creates a ChainOperation and feeds it the pipe-delimited args — the
+ * exact same in-memory code path as explicit `recs chain`.  The previous
+ * implementation spawned a subprocess, which measured Bun startup time (~44ms)
+ * instead of the actual implicit chain overhead (~0).
  */
-function runImplicitChain(spec: ChainSpec, jsonlInput: string): string {
-  // Build the flat args: first-command args... | next-command args... | ...
+function runImplicitChain(spec: ChainSpec, records: Record[]): Record[] {
+  // Build the flat args the same way bin/recs.ts would construct them:
+  // [first-command, first-args..., |, next-command, next-args..., ...]
   const flatArgs: string[] = [];
   for (let i = 0; i < spec.pipeStages.length; i++) {
     if (i > 0) flatArgs.push("|");
     flatArgs.push(...spec.pipeStages[i]!);
   }
 
-  // The first element is the command, rest are args (including pipe tokens)
-  const command = flatArgs[0]!;
-  const rest = flatArgs.slice(1);
-
-  const result = spawnSync("bun", [RECS_BIN, command, "--no-update-check", ...rest], {
-    input: jsonlInput,
-    encoding: "utf-8",
-    shell: false,
-    maxBuffer: 100 * 1024 * 1024,
-  });
-
-  if (result.error) {
-    throw new Error(`Implicit chain failed: ${result.error.message}`);
-  }
-
-  return result.stdout ?? "";
+  // This is identical to what bin/recs.ts passes to runOperation("chain", ...)
+  return runChain(flatArgs, records);
 }
 
 // ---------------------------------------------------------------------------
@@ -222,13 +216,13 @@ export function createChainVsPipeSuite(filter?: string): BenchmarkSuite {
         { iterations: pipeIter, recordCount: size },
       );
 
-      // --- Implicit chain (single process, detected by bin/recs.ts) ---
+      // --- Implicit chain (in-memory, same code path bin/recs.ts uses) ---
       suite.add(
         `implicit — ${spec.label}, ${sizeLabel} records`,
         () => {
-          runImplicitChain(spec, jsonl);
+          runImplicitChain(spec, records);
         },
-        { iterations: pipeIter, recordCount: size },
+        { iterations: chainIter, recordCount: size },
       );
     }
   }
