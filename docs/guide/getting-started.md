@@ -5,15 +5,18 @@ Five minutes. That's all it takes to go from "what is this?" to "how did I live 
 ## Installation
 
 ```bash
-# Homebrew (macOS / Linux)
-brew install recs
+# One-liner (macOS / Linux)
+curl -fsSL https://raw.githubusercontent.com/benbernard/RecordStream/master/install.sh | bash
+```
 
-# Or download a prebuilt binary
-curl -fsSL https://github.com/benbernard/RecordStream/releases/latest/download/recs-$(uname -s)-$(uname -m) -o recs
-chmod +x recs && sudo mv recs /usr/local/bin/
+This detects your platform (linux/darwin, x64/arm64), downloads the correct binary from GitHub releases, and installs it to `/usr/local/bin` (or `~/.local/bin` if that's not writable). You can customize with environment variables:
 
-# Or install from npm
-npm install -g recs
+```bash
+# Install to a specific directory
+INSTALL_DIR=~/bin curl -fsSL https://raw.githubusercontent.com/benbernard/RecordStream/master/install.sh | bash
+
+# Install a specific version
+VERSION=v1.0.0 curl -fsSL https://raw.githubusercontent.com/benbernard/RecordStream/master/install.sh | bash
 ```
 
 Verify it works:
@@ -24,6 +27,22 @@ echo '{"name":"world"}' | recs eval '"Hello, {{name}}!"'
 ```
 
 If you see that, you're in business.
+
+## Updating
+
+recs checks for updates automatically in the background (at most once per day). When a new version is available, you'll see a notice:
+
+```
+recs v1.1.0 available (current: v1.0.0). Run: recs --update
+```
+
+To update:
+
+```bash
+recs --update
+```
+
+To disable update checks (e.g. in CI), pass `--no-update-check`.
 
 ## Your First Pipeline
 
