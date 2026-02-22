@@ -163,5 +163,42 @@ export function createRecordSuite(filter?: string): BenchmarkSuite {
     { iterations: 5, recordCount: 1_000_000 },
   );
 
+  // ---- Record.sort with nested field ----
+
+  const nestedData = mediumData.map((d) => ({ info: d }));
+
+  suite.add(
+    "Record.sort — 10K records (nested field numeric)",
+    () => {
+      const recs = nestedData.map((d) => new Record(d));
+      Record.sort(recs, "info/score=numeric");
+    },
+    { iterations: 5, recordCount: count },
+  );
+
+  // ---- Record.cmp with multi-field spec ----
+
+  suite.add(
+    "Record.cmp — 1M comparisons (multi-field cached)",
+    () => {
+      for (let i = 0; i < 1_000_000; i++) {
+        recA.cmp(recB, "name", "score=numeric");
+      }
+    },
+    { iterations: 5, recordCount: 1_000_000 },
+  );
+
+  // ---- Record.sort with pre-warmed cache vs cold cache ----
+
+  suite.add(
+    "Record.sort — 10K records (cached comparator reuse)",
+    () => {
+      // Comparator is cached from previous benchmark runs
+      const recs = mediumData.map((d) => new Record(d));
+      Record.sort(recs, "score=numeric");
+    },
+    { iterations: 10, recordCount: count },
+  );
+
   return suite;
 }

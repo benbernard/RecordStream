@@ -172,6 +172,9 @@ export class Record {
     comparator: (a: Record, b: Record) => number;
     field: string;
   } {
+    const cached = comparatorCache.get(spec);
+    if (cached) return cached;
+
     let field: string;
     let direction: string;
     let comparatorName: string;
@@ -196,28 +199,63 @@ export class Record {
       throw new Error(`Not a valid comparator: ${comparatorName}`);
     }
 
-    const comparator = (a: Record, b: Record): number => {
-      // Basic dot-path access for now (will be replaced by KeySpec later)
-      const aVal = getNestedValue(a.#data, field);
-      const bVal = getNestedValue(b.#data, field);
+    // Pre-split the key path so we don't split on every comparison
+    const parts = field.split("/");
+    const isSimple = parts.length === 1 && !parts[0]!.startsWith("#");
+    const simpleKey = isSimple ? parts[0]! : "";
+    const reverse = direction === "-";
 
-      let val: number | undefined;
+    let comparator: (a: Record, b: Record) => number;
 
-      if (allHack) {
-        if (aVal === "ALL" && bVal !== "ALL") val = 1;
-        if (aVal !== "ALL" && bVal === "ALL") val = -1;
-        if (aVal === "ALL" && bVal === "ALL") return 0;
-      }
+    if (isSimple && !allHack && !reverse) {
+      // Fast path: simple field, ascending, no ALL hack
+      comparator = (a: Record, b: Record): number => {
+        return cmpFn(a.#data[simpleKey], b.#data[simpleKey]);
+      };
+    } else if (isSimple && !allHack && reverse) {
+      // Fast path: simple field, descending, no ALL hack
+      comparator = (a: Record, b: Record): number => {
+        return -cmpFn(a.#data[simpleKey], b.#data[simpleKey]);
+      };
+    } else {
+      // General path: nested keys or ALL hack
+      comparator = (a: Record, b: Record): number => {
+        const aVal = isSimple ? a.#data[simpleKey] : getNestedValueFromParts(a.#data, parts);
+        const bVal = isSimple ? b.#data[simpleKey] : getNestedValueFromParts(b.#data, parts);
 
-      if (val === undefined) {
-        val = cmpFn(aVal, bVal);
-      }
+        let val: number | undefined;
 
-      return direction === "-" ? -val : val;
-    };
+        if (allHack) {
+          if (aVal === "ALL" && bVal !== "ALL") val = 1;
+          if (aVal !== "ALL" && bVal === "ALL") val = -1;
+          if (aVal === "ALL" && bVal === "ALL") return 0;
+        }
 
-    return { comparator, field };
+        if (val === undefined) {
+          val = cmpFn(aVal, bVal);
+        }
+
+        return reverse ? -val : val;
+      };
+    }
+
+    const result = { comparator, field };
+    comparatorCache.set(spec, result);
+    return result;
   }
+}
+
+// --- Comparator cache ---
+const comparatorCache = new Map<
+  string,
+  { comparator: (a: Record, b: Record) => number; field: string }
+>();
+
+/**
+ * Clear the sort comparator cache (useful for testing).
+ */
+export function clearSortCache(): void {
+  comparatorCache.clear();
 }
 
 // --- Comparator implementations ---
@@ -257,20 +295,19 @@ const COMPARATOR_TYPES: {
 };
 
 /**
- * Basic dot-path nested value access (temporary until KeySpec is implemented).
+ * Nested value access using pre-split key parts.
  * Supports "foo/bar" for nested hash and "#N" for array indices.
  */
-function getNestedValue(
+function getNestedValueFromParts(
   data: JsonValue | undefined,
-  keySpec: string
+  parts: string[]
 ): JsonValue | undefined {
-  const parts = keySpec.split("/");
   let current: JsonValue | undefined = data;
 
   for (const part of parts) {
     if (current === null || current === undefined) return undefined;
 
-    if (part.startsWith("#")) {
+    if (part.charCodeAt(0) === 35 /* # */) {
       // Array index access
       const index = parseInt(part.slice(1), 10);
       if (Array.isArray(current)) {
