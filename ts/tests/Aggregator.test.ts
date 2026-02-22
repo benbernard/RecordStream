@@ -25,7 +25,8 @@ class CountAggregator implements Aggregator<number> {
 
 // Test aggregator: sums a field
 class SumAggregator implements Aggregator<number> {
-  constructor(private field: string) {}
+  field: string;
+  constructor(field: string) { this.field = field; }
   initial(): number {
     return 0;
   }

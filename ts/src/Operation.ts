@@ -35,6 +35,11 @@ export class PrinterReceiver implements RecordReceiver {
     return true;
   }
 
+  acceptLine(line: string): boolean {
+    console.log(line);
+    return true;
+  }
+
   finish(): void {
     // nothing to do
   }
