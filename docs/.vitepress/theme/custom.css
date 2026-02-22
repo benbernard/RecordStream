@@ -46,3 +46,28 @@
 .VPHero .name {
   font-size: 3rem !important;
 }
+
+/* Tighter hero section */
+.VPHero {
+  padding-bottom: 32px !important;
+}
+
+/* Tighter feature cards */
+.VPFeatures {
+  padding-top: 0 !important;
+  padding-bottom: 24px !important;
+}
+
+/* Hero image styling */
+.VPHero .image-container {
+  transform: scale(1.1);
+}
+
+.VPHero .image-bg {
+  background: linear-gradient(135deg, #cba6f740 0%, #89b4fa40 50%, #94e2d540 100%);
+}
+
+/* Tighter spacing for homepage content sections */
+.vp-doc h2 {
+  margin-top: 32px;
+}
