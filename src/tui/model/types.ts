@@ -129,7 +129,8 @@ export type PipelineAction =
   | { type: "SET_ERROR"; stageId: StageId; message: string }
   | { type: "CLEAR_ERROR" }
   | { type: "SET_EXECUTING"; executing: boolean }
-  | { type: "TOGGLE_FOCUS" };
+  | { type: "TOGGLE_FOCUS" }
+  | { type: "SET_VIEW_MODE"; viewMode: InspectorState["viewMode"] };
 
 // ── File Size Warning ─────────────────────────────────────────────
 

@@ -5,6 +5,7 @@ import type {
   Stage,
   StageId,
   Fork,
+  CachedResult,
   CacheConfig,
   InspectorState,
 } from "./types.ts";
@@ -316,7 +317,9 @@ export function pipelineReducer(
         config: { ...stage.config, args: [...action.args] },
       });
 
-      return { ...state, stages };
+      const cache = invalidateStageAndDownstream(state.cache, state.forks, stage);
+
+      return { ...state, stages, cache };
     }
 
     // ── Toggle stage enabled ────────────────────────────────────
@@ -330,7 +333,9 @@ export function pipelineReducer(
         config: { ...stage.config, enabled: !stage.config.enabled },
       });
 
-      return { ...state, stages };
+      const cache = invalidateStageAndDownstream(state.cache, state.forks, stage);
+
+      return { ...state, stages, cache };
     }
 
     // ── Reorder stage ───────────────────────────────────────────
@@ -536,6 +541,13 @@ export function pipelineReducer(
           state.focusedPanel === "pipeline" ? "inspector" : "pipeline",
       };
 
+    // ── Inspector view mode ─────────────────────────────────────
+    case "SET_VIEW_MODE":
+      return {
+        ...state,
+        inspector: { ...state.inspector, viewMode: action.viewMode },
+      };
+
     default:
       return state;
   }
@@ -575,6 +587,37 @@ function rebuildLinksForFork(
       childIds: childId ? [childId] : [],
     });
   }
+}
+
+/**
+ * Remove cache entries for a stage and all downstream stages in the same fork.
+ * Called when a stage's config changes (args update, toggle enabled) to ensure
+ * the inspector doesn't show stale cached results.
+ */
+function invalidateStageAndDownstream(
+  cache: Map<string, CachedResult>,
+  forks: Map<string, Fork>,
+  stage: Stage,
+): Map<string, CachedResult> {
+  const fork = forks.get(stage.forkId);
+  if (!fork) return cache;
+
+  const idx = fork.stageIds.indexOf(stage.id);
+  if (idx === -1) return cache;
+
+  // This stage + all stages after it in the fork
+  const toInvalidate = new Set(fork.stageIds.slice(idx));
+
+  const newCache = new Map(cache);
+  for (const [key] of newCache) {
+    for (const sid of toInvalidate) {
+      if (key.endsWith(`:${sid}`)) {
+        newCache.delete(key);
+        break;
+      }
+    }
+  }
+  return newCache;
 }
 
 /**

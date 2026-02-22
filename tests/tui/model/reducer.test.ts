@@ -295,6 +295,47 @@ describe("pipelineReducer", () => {
       state = pipelineReducer(state, { type: "TOGGLE_STAGE", stageId: id });
       expect(state.stages.get(id)!.config.enabled).toBe(true);
     });
+
+    test("invalidates cache for toggled stage and downstream stages", () => {
+      state = addStage(state, "fromre");
+      const fromreId = state.cursorStageId!;
+      state = addStage(state, "grep");
+      const grepId = state.cursorStageId!;
+      state = addStage(state, "sort");
+      const sortId = state.cursorStageId!;
+
+      // Populate cache
+      const makeCacheResult = (stageId: string) => ({
+        key: `key-${stageId}`,
+        stageId,
+        inputId: state.activeInputId,
+        records: [],
+        spillFile: null,
+        recordCount: 10,
+        fieldNames: ["a"],
+        computedAt: Date.now(),
+        sizeBytes: 100,
+        computeTimeMs: 5,
+      });
+
+      for (const id of [fromreId, grepId, sortId]) {
+        state = pipelineReducer(state, {
+          type: "CACHE_RESULT",
+          inputId: state.activeInputId,
+          stageId: id,
+          result: makeCacheResult(id),
+        });
+      }
+
+      expect(state.cache.size).toBe(3);
+
+      // Toggle grep — should invalidate grep + sort, but NOT fromre
+      state = pipelineReducer(state, { type: "TOGGLE_STAGE", stageId: grepId });
+
+      expect(getStageOutput(state, fromreId)).toBeDefined();
+      expect(getStageOutput(state, grepId)).toBeUndefined();
+      expect(getStageOutput(state, sortId)).toBeUndefined();
+    });
   });
 
   // ── UPDATE_STAGE_ARGS ───────────────────────────────────────
@@ -311,6 +352,61 @@ describe("pipelineReducer", () => {
       });
 
       expect(state.stages.get(id)!.config.args).toEqual(["status=404"]);
+    });
+
+    test("invalidates cache for modified stage and downstream stages", () => {
+      state = addStage(state, "fromre");
+      const fromreId = state.cursorStageId!;
+      state = addStage(state, "grep", ["status=200"]);
+      const grepId = state.cursorStageId!;
+      state = addStage(state, "sort");
+      const sortId = state.cursorStageId!;
+
+      // Populate cache for all stages
+      const makeCacheResult = (stageId: string) => ({
+        key: `key-${stageId}`,
+        stageId,
+        inputId: state.activeInputId,
+        records: [],
+        spillFile: null,
+        recordCount: 10,
+        fieldNames: ["a"],
+        computedAt: Date.now(),
+        sizeBytes: 100,
+        computeTimeMs: 5,
+      });
+
+      state = pipelineReducer(state, {
+        type: "CACHE_RESULT",
+        inputId: state.activeInputId,
+        stageId: fromreId,
+        result: makeCacheResult(fromreId),
+      });
+      state = pipelineReducer(state, {
+        type: "CACHE_RESULT",
+        inputId: state.activeInputId,
+        stageId: grepId,
+        result: makeCacheResult(grepId),
+      });
+      state = pipelineReducer(state, {
+        type: "CACHE_RESULT",
+        inputId: state.activeInputId,
+        stageId: sortId,
+        result: makeCacheResult(sortId),
+      });
+
+      expect(state.cache.size).toBe(3);
+
+      // Update grep args — should invalidate grep + sort (downstream), but NOT fromre (upstream)
+      state = pipelineReducer(state, {
+        type: "UPDATE_STAGE_ARGS",
+        stageId: grepId,
+        args: ["status=404"],
+      });
+
+      expect(getStageOutput(state, fromreId)).toBeDefined();
+      expect(getStageOutput(state, grepId)).toBeUndefined();
+      expect(getStageOutput(state, sortId)).toBeUndefined();
     });
   });
 

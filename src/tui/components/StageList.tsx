@@ -13,7 +13,7 @@ export function StageList({ state }: StageListProps) {
 
   return (
     <box
-      width={28}
+      width={32}
       flexDirection="column"
       borderStyle="single"
       borderColor={isFocused ? "#FFFFFF" : "#555555"}

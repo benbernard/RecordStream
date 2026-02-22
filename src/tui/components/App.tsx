@@ -14,7 +14,9 @@ import type { CliRenderer } from "@opentui/core";
 import type { TuiOptions } from "../index.tsx";
 import type { PipelineAction, StageConfig } from "../model/types.ts";
 import { pipelineReducer, createInitialState } from "../model/reducer.ts";
-import { getCursorStage } from "../model/selectors.ts";
+import { getCursorStage, getCursorOutput, getDownstreamStages } from "../model/selectors.ts";
+import { exportAsPipeScript, exportAsChainCommand, copyToClipboard } from "../model/serialization.ts";
+import { ExportPicker, type ExportFormat } from "./modals/ExportPicker.tsx";
 import { TitleBar } from "./TitleBar.tsx";
 import { StageList } from "./StageList.tsx";
 import { InspectorPanel } from "./InspectorPanel.tsx";
@@ -34,7 +36,8 @@ type ModalState =
   | { kind: "addStage" }
   | { kind: "editStage" }
   | { kind: "confirmDelete"; stageId: string }
-  | { kind: "help" };
+  | { kind: "help" }
+  | { kind: "exportPicker" };
 
 export function App({ options, renderer }: AppProps) {
   const hasInput = Boolean(options.inputFile || options.sessionId);
@@ -86,6 +89,36 @@ export function App({ options, renderer }: AppProps) {
       dispatch({ type: "TOGGLE_FOCUS" });
       return;
     }
+    if (key.name === "c" && key.ctrl) {
+      renderer.destroy();
+      return;
+    }
+    if (key.raw === "x") {
+      const script = exportAsPipeScript(state);
+      void copyToClipboard(script).then((ok) => {
+        showStatus(ok ? "Copied pipe script!" : "Export: clipboard failed");
+      });
+      return;
+    }
+    if (key.raw === "X") {
+      setModal({ kind: "exportPicker" });
+      return;
+    }
+    if (key.raw === "v") {
+      const output = getCursorOutput(state);
+      if (output && output.records.length > 0) {
+        const tmpPath = `/tmp/recs-${Date.now()}.jsonl`;
+        const jsonl = output.records.map((r) => JSON.stringify(r.toJSON())).join("\n") + "\n";
+        void Bun.write(tmpPath, jsonl).then(() => {
+          void copyToClipboard(tmpPath).then(() => {
+            showStatus(`Records exported to ${tmpPath}`);
+          });
+        });
+      } else {
+        showStatus("No records to export");
+      }
+      return;
+    }
 
     // Pipeline panel keys
     if (state.focusedPanel === "pipeline") {
@@ -119,6 +152,29 @@ export function App({ options, renderer }: AppProps) {
         }
         return;
       }
+      if (key.raw === "r") {
+        if (state.cursorStageId) {
+          dispatch({ type: "INVALIDATE_STAGE", stageId: state.cursorStageId });
+          const downstream = getDownstreamStages(state, state.cursorStageId);
+          for (const s of downstream) {
+            dispatch({ type: "INVALIDATE_STAGE", stageId: s.id });
+          }
+          showStatus("Re-running from cursor...");
+        }
+        return;
+      }
+      if (key.raw === "J") {
+        if (state.cursorStageId) {
+          dispatch({ type: "REORDER_STAGE", stageId: state.cursorStageId, direction: "down" });
+        }
+        return;
+      }
+      if (key.raw === "K") {
+        if (state.cursorStageId) {
+          dispatch({ type: "REORDER_STAGE", stageId: state.cursorStageId, direction: "up" });
+        }
+        return;
+      }
       if (key.name === "return" || key.name === "tab") {
         dispatch({ type: "TOGGLE_FOCUS" });
         return;
@@ -129,6 +185,13 @@ export function App({ options, renderer }: AppProps) {
     if (state.focusedPanel === "inspector") {
       if (key.name === "escape") {
         dispatch({ type: "TOGGLE_FOCUS" });
+        return;
+      }
+      if (key.raw === "t") {
+        const modes = ["table", "prettyprint", "json"] as const;
+        const currentIdx = modes.indexOf(state.inspector.viewMode as typeof modes[number]);
+        const nextIdx = (currentIdx + 1) % modes.length;
+        dispatch({ type: "SET_VIEW_MODE", viewMode: modes[nextIdx]! });
         return;
       }
     }
@@ -173,6 +236,31 @@ export function App({ options, renderer }: AppProps) {
     }
     setModal({ kind: "none" });
   }, [modal, showStatus]);
+
+  const handleExportFormat = useCallback(
+    (format: ExportFormat) => {
+      setModal({ kind: "none" });
+      if (format === "pipe-script") {
+        const text = exportAsPipeScript(state);
+        void copyToClipboard(text).then((ok) => {
+          showStatus(ok ? "Copied pipe script!" : "Export: clipboard failed");
+        });
+      } else if (format === "chain-command") {
+        const text = exportAsChainCommand(state);
+        void copyToClipboard(text).then((ok) => {
+          showStatus(ok ? "Copied chain command!" : "Export: clipboard failed");
+        });
+      } else {
+        // save-file
+        const script = exportAsPipeScript(state);
+        const tmpPath = `/tmp/recs-pipeline-${Date.now()}.sh`;
+        void Bun.write(tmpPath, script).then(() => {
+          showStatus(`Saved to ${tmpPath}`);
+        });
+      }
+    },
+    [state, showStatus],
+  );
 
   if (!hasInput) {
     return (
@@ -229,6 +317,12 @@ export function App({ options, renderer }: AppProps) {
       )}
       {modal.kind === "help" && (
         <HelpPanel onClose={() => setModal({ kind: "none" })} />
+      )}
+      {modal.kind === "exportPicker" && (
+        <ExportPicker
+          onSelect={handleExportFormat}
+          onCancel={() => setModal({ kind: "none" })}
+        />
       )}
     </box>
   );
