@@ -13,6 +13,16 @@ import type { JsonValue, JsonObject, JsonArray } from "./types/json.ts";
  * Analogous to App::RecordStream::KeySpec in Perl.
  */
 
+// Fast path: detect simple keys that need no parsing (no /, #, @, \)
+function isSimpleKey(spec: string): boolean {
+  if (spec.length === 0 || spec.charCodeAt(0) === 64 /* @ */) return false;
+  for (let i = 0; i < spec.length; i++) {
+    const ch = spec.charCodeAt(i);
+    if (ch === 47 /* / */ || ch === 92 /* \ */ || ch === 35 /* # */) return false;
+  }
+  return true;
+}
+
 // Cache for parsed KeySpec objects
 const specRegistry = new Map<string, KeySpec>();
 
@@ -35,9 +45,14 @@ export class KeySpec {
     }
 
     this.spec = spec;
-    const { keys, fuzzy } = parseKeySpec(spec);
-    this.parsedKeys = keys;
-    this.fuzzy = fuzzy;
+    if (isSimpleKey(spec)) {
+      this.parsedKeys = [spec];
+      this.fuzzy = false;
+    } else {
+      const { keys, fuzzy } = parseKeySpec(spec);
+      this.parsedKeys = keys;
+      this.fuzzy = fuzzy;
+    }
 
     specRegistry.set(spec, this);
   }
@@ -54,6 +69,15 @@ export class KeySpec {
     noVivify = false,
     throwError = false
   ): { value: JsonValue | undefined; found: boolean } {
+    // Fast path: single non-fuzzy key
+    if (this.parsedKeys.length === 1 && !this.fuzzy) {
+      const key = this.parsedKeys[0]!;
+      const exists = key in data;
+      if (!exists && throwError) throw new NoSuchKeyError();
+      if (!exists && noVivify) return { value: undefined, found: false };
+      return { value: data[key], found: true };
+    }
+
     return guessKeyRecurse(
       data,
       [],
@@ -70,6 +94,11 @@ export class KeySpec {
    * Set a value at this key spec location, creating intermediate structures.
    */
   setValue(data: JsonObject, value: JsonValue): void {
+    // Fast path: single non-fuzzy key
+    if (this.parsedKeys.length === 1 && !this.fuzzy) {
+      data[this.parsedKeys[0]!] = value;
+      return;
+    }
     setNestedValue(data, this.parsedKeys, value, this.fuzzy);
   }
 
@@ -119,6 +148,11 @@ export function findKey(
   noVivify = false,
   throwError = false
 ): JsonValue | undefined {
+  // Fast path: simple keys bypass KeySpec entirely
+  if (isSimpleKey(spec)) {
+    if (throwError && !(spec in data)) throw new NoSuchKeyError();
+    return data[spec];
+  }
   const ks = new KeySpec(spec);
   const result = ks.resolve(data, noVivify, throwError);
   return result.value;
@@ -132,6 +166,11 @@ export function setKey(
   spec: string,
   value: JsonValue
 ): void {
+  // Fast path: simple keys bypass KeySpec entirely
+  if (isSimpleKey(spec)) {
+    data[spec] = value;
+    return;
+  }
   const ks = new KeySpec(spec);
   ks.setValue(data, value);
 }
