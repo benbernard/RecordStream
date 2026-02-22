@@ -45,3 +45,4 @@ perl/pm_to_blib
 perl/MYMETA.*
 perl/MANIFEST.bak
 perl/.build
+docs/.vitepress/cache/
