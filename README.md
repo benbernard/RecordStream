@@ -1,304 +1,212 @@
+<p align="center">
+  <img src="docs/public/logo-hero.png" alt="RecordStream" width="200">
+</p>
 
-<img src="https://cdn.rawgit.com/benbernard/RecordStream/master/logos/logo-small.svg" align="right">
+<h1 align="center">RecordStream</h1>
 
+<p align="center">
+  A toolkit for creating, transforming, and outputting streams of JSON records.
+  <br>
+  <a href="https://benbernard.github.io/RecordStream/">Documentation</a> · <a href="https://benbernard.github.io/RecordStream/guide/getting-started">Getting Started</a> · <a href="https://benbernard.github.io/RecordStream/reference/">Command Reference</a>
+</p>
 
-[![CPAN version](https://badge.fury.io/pl/App-RecordStream.png)](https://metacpan.org/release/App-RecordStream)
-[![Build Status](https://travis-ci.org/benbernard/RecordStream.svg?branch=master)](https://travis-ci.org/benbernard/RecordStream)
+---
 
-# NAME
+Records are JSON objects, one per line. RecordStream provides 40+ composable CLI
+commands that pipe together to build data processing pipelines — Unix philosophy
+meets structured data.
 
-App::RecordStream - recs - A system for command-line analysis of data
+## Install
 
-# SYNOPSIS
+```bash
+curl -fsSL https://raw.githubusercontent.com/benbernard/RecordStream/master/install.sh | bash
+```
 
-A set of programs for creating, manipulating, and outputting a stream of
-Records, or JSON hashes.  Inspired by Monad.
+This detects your platform (linux/darwin, x64/arm64), downloads the correct
+binary, and installs it to `/usr/local/bin` (or `~/.local/bin` if that's not
+writable).
 
-# INSTALLATION
+```bash
+# Custom install directory
+INSTALL_DIR=~/bin curl -fsSL https://raw.githubusercontent.com/benbernard/RecordStream/master/install.sh | bash
 
-## Quick, standalone bundle
+# Specific version
+VERSION=v1.0.0 curl -fsSL https://raw.githubusercontent.com/benbernard/RecordStream/master/install.sh | bash
+```
 
-The quickest way to start using recs is via the minimal, standalone bundle:
+### Auto-update
 
-    curl -fsSL https://recs.pl > recs
-    chmod +x recs
-    ./recs --help
+`recs` checks for new versions in the background (at most once per day). When an
+update is available, you'll see a notice on stderr:
 
-This is also known as the "fatpacked" recs.
+```
+recs v1.2.0 available (current: v1.1.0). Run: recs --update
+```
 
-## From CPAN
+- **`recs --update`** — download and install the latest version
+- **`recs --no-update-check`** — suppress the check for this invocation
 
-You can also install recs from [CPAN](http://cpan.org) as App::RecordStream:
+## Quick Example
 
-    cpanm --interactive App::RecordStream
-
-Using [cpanm](https://metacpan.org/pod/cpanm) in interactive mode will prompt you for optional feature
-support.  Other CPAN clients such as [cpan](https://metacpan.org/pod/cpan) and [cpanp](https://metacpan.org/pod/cpanp) also work fine, but
-you can't opt to use any optional features (just like cpanm in non-interactive
-mode).  A kitchen-sink install of App::RecordStream looks like:
-
-    cpanm --with-recommends --with-all-features App::RecordStream
-
-If you don't have [cpanm](https://metacpan.org/pod/cpanm) itself, you can install it easily with:
-
-    curl -fsSL https://cpanmin.us | perl - App::cpanminus
-
-# DESCRIPTION
-
-The recs system consists of three basic sets of commands:
-
-- _Input_ commands responsible for generating streams of record objects
-- _Manipulation_ commands responsible for analyzing, selecting, and manipulating records
-- _Output_ commands responsible for taking record streams and producing output for humans or other programs
-
-These commands can interface with other systems to retrieve data, parse existing
-files, or just regex out some values from a text stream.
-
-Commands are run using `recs command [options and arguments]`.  If you're using
-a CPAN-based install, you may also run commands directly as `recs-command`,
-though this is no longer recommended for forwards compatibility.  Both
-[installation methods](#installation) provide a top-level `recs` executable
-which dispatches to commands, so this is the preferred invocation style.
-
-The core recs commands are briefly summarized below, and you can list all
-available commands by running `recs --list`.
-
-To read more about each command, run `recs command --help`.  Longer
-documentation is available as `recs command --help-all` or `perldoc recs-command`.
-For example, to read more about ["fromcsv"](#fromcsv), you might run any of the
-following:
-
-    recs fromcsv --help
-    recs fromcsv --help-all
-    perldoc recs-fromcsv
-
-# COMMANDS
-
-## Input Generation
-
-- fromcsv
-
-    Produces records from a csv file/stream
-
-- fromdb
-
-    Produces records for a db table, or from a SELECT statement into a db.
-
-- fromre
-
-    Matches input streams against a regex, puts capture groups into hashes
-
-- frommongo
-
-    Generate a record stream from a MongoDB query.
-
-- frommultire
-
-    Matches input streams against several regexes, puts capture groups into the record
-
-- fromsplit
-
-    Splits input stream on a delimiter
-
-- fromps
-
-    Generate records from the process tree
-
-- fromatomfeed
-
-    Produces records for an optionally paginated atom feed.
-
-- fromxml
-
-    Produces records for an XML document.
-
-- fromkv
-
-    Produces records from input streams containing loosely formed key/value pairs
-
-- fromtcpdump
-
-    Produces records from packet capture files (.pcap) as made by tcpdump
-
-## Stream Manipulation
-
-- annotate
-
-    Annotate records with common fields, will memoize additions to speed up common
-    annotations
-
-- collate
-
-    Perforce aggregation operations on records.  Group by a field, get an average,
-    sum, correlation, etc.  Very powerful
-
-- delta
-
-    Transform values into deltas between adjacent records
-
-- eval
-
-    Eval a string of Perl against each record
-
-- flatten
-
-    Flatten records of input to one level
-
-- grep
-
-    Select records for which a string of Perl evaluates to true.
-
-- multiplex
-
-    Take records, grouped by keys, and run a separate recs command for each group.
-
-- normalizetime
-
-    Based on a time field, tag records with a normalized time, i.e. every 5 minute buckets
-
-- join
-
-    Perform an inner join of two record streams.  Associate records in one stream
-    with another stream.
-
-- substream
-
-    Filter to a range of matching records with paired Perl snippets `--start` and `--end`.
-
-- sort
-
-    Sort records based on keys, may specify multiple levels of sorting, as well as
-    numerical or lexical sort ordering
-
-- topn
-
-    Outputs the top _n_ records. You may segment the input based on a list of keys
-    such that unique values of keys are treated as distinct input streams. This
-    enables top _n_ listings per value groupings.
-
-- xform
-
-    Perform a block of Perl on each record, which may modify the record, Record is
-    then output
-
-- generate
-
-    Perform a block of Perl on each record to generate a record stream, which is
-    then output with a chain link back to the original record.
-
-## Output Generation
-
-- todb
-
-    Inserts records into a DBI supported SQL database.  Will create a local SQLite
-    database by default
-
-- tocsv
-
-    Generates correctly quoted CSV files from record streams.
-
-- tognuplot
-
-    Create a graph of field values in a record using GNU Plot.
-
-- totable
-
-    Pretty prints a table of results.
-
-- tohtml
-
-    Prints out an HTML table of the record stream
-
-- toprettyprint
-
-    Prettily prints records, one key to a line, great for making sense of very large records
-
-- toptable
-
-    Prints a multi-dimensional (pivot) table of values.  Very powerful.
-
-# KEY SPECS
-
-Many of the commands above take key arguments to specify or assign to a key in a
-record. Almost all of the places where you can specify a key (which normally
-means a first level key in the record), you can instead specify a key spec.
-
-A key spec may be nested, and may index into arrays.  Use a `/` to nest into a
-hash and a `#NUM` to index into an array (i.e. `#2`)
-
-An example is in order, take a record like this:
-
-    {"biz":["a","b","c"],"foo":{"bar 1":1},"zap":"blah1"}
-    {"biz":["a","b","c"],"foo":{"bar 1":2},"zap":"blah2"}
-    {"biz":["a","b","c"],"foo":{"bar 1":3},"zap":"blah3"}
-
-In this case a key spec of `foo/bar 1` would have the values 1, 2, and 3
-respectively.
-
-Similarly, `biz/#0` would have the value of `a` for all 3 records
-
-## Fuzzy matching
-
-You can also prefix key specs with `@` to engage the fuzzy matching logic.
-Matching is tried like this, in order, with the first key to match winning:
-
-- 1. Exact match (`eq`)
-- 2. Prefix match (`m/^/`)
-- 3. Match anywhere in the key (`m//`)
-
-Given the above example data and the fuzzy key spec `@b/#2`, the `b` portion
-would expand to `biz` and `2` would be the index into the array, so all
-records would have the value of `c`.
-
-Simiarly, `@f/b` would have values 1, 2, and 3.
-
-# WRITING YOUR OWN COMMANDS
-
-The data stream format of the recs commands is JSON hashes separated by new
-lines.  If you wish to write your own recs command in your own language, just
-get a JSON parser and you should be good to go.  The recs commands use
-[JSON::MaybeXS](https://metacpan.org/pod/JSON::MaybeXS).
-
-If you name your command as `recs-mycommand` and put it somewhere in your
-`PATH` environment variable, the `recs` command will dispatch to it when
-called as `recs mycommand`.  It will also be included in `recs --list`
-output.
-
-If you want to write your new command in Perl, you can use the same Perl API
-that the standard recs toolkit uses.  See the various
-[App::RecordStream::Operation](https://metacpan.org/pod/App::RecordStream::Operation) subclasses.  Once your new operation class is
-installed in perl's library paths, `recs` will find it automatically without
-the need for any executable command shim.
-
-# EXAMPLES
-
-    # look in the custom access log for all accesses with greater than 5 seconds,
-    # display in a table
-    cat access.log \
-      | recs fromre --fields ip,time '^(\d+).*TIME: (\d+)' \
-      | recs grep '$r->{time} > 5' \
-      | recs totable
-
-# SEE ALSO
-
-Each of the commands discussed have a `--help` mode available to print out
-usage and examples for the particular command.  See that documentation for
-detailed information on the operation of each of the commands.  Also see some
-other man pages:
-
-- Run `recs examples` or see [App::RecordStream::Manual::Examples](https://metacpan.org/pod/App::RecordStream::Manual::Examples) for a set of simple recs examples
-- Run `recs story` or see [App::RecordStream::Manual::Story](https://metacpan.org/pod/App::RecordStream::Manual::Story) for a humorous introduction to RecordStream
-
-# AUTHORS
-
-Benjamin Bernard <perlhacker@benjaminbernard.com>
-
-Keith Amling <keith.amling@gmail.com>
-
-Thomas Sibley <tsibley@cpan.org>
-
-# COPYRIGHT AND LICENSE
-
-Copyright 2007–2017 by the AUTHORS
-
-This software is released under the MIT and Artistic 1.0 licenses.
+```bash
+# Who's spending the most?
+recs fromcsv --header purchases.csv          \
+  | recs collate --key customer -a sum,amount \
+  | recs sort --key amount=-n                 \
+  | recs totable
+```
+
+```
+customer   sum_amount
+--------   ----------
+Alice      9402.50
+Bob        7281.00
+Charlie    3104.75
+```
+
+## More Examples
+
+```bash
+# How many processes per user?
+recs fromps \
+  | recs collate --key uid -a count \
+  | recs sort --key count=-n \
+  | recs totable
+
+# Parse CSV, filter, and output as a table
+recs fromcsv --header < data.csv \
+  | recs grep '{{age}} > 25' \
+  | recs totable
+
+# Transform records
+cat data.jsonl \
+  | recs xform '{{upper}} = {{name}}.toUpperCase()' \
+  | recs sort --key name
+
+# Parse nested JSON out of string fields
+cat logs.jsonl \
+  | recs expandjson --key payload --recursive \
+  | recs grep '{{payload/level}} === "error"'
+```
+
+Run `recs help` for the full command list, or `recs help <command>` for detailed
+help on any command.
+
+## Commands
+
+### Input (`from*`)
+
+Read data from various sources into record streams.
+
+`fromapache` `fromatomfeed` `fromcsv` `fromdb` `fromjsonarray` `fromkv`
+`frommongo` `frommultire` `fromps` `fromre` `fromsplit` `fromtcpdump`
+`fromxferlog` `fromxml`
+
+### Transform
+
+Filter, sort, aggregate, and modify record streams.
+
+`annotate` `assert` `chain` `collate` `decollate` `delta` `eval` `expandjson`
+`flatten` `generate` `grep` `join` `multiplex` `normalizetime` `sort`
+`stream2table` `substream` `topn` `xform`
+
+### Output (`to*`)
+
+Format and output record streams.
+
+`tocsv` `todb` `togdgraph` `tognuplot` `tohtml` `tojsonarray` `toprettyprint`
+`toptable` `totable`
+
+## Documentation
+
+Full documentation is at **[benbernard.github.io/RecordStream](https://benbernard.github.io/RecordStream/)**.
+
+- [Getting Started](https://benbernard.github.io/RecordStream/guide/getting-started) — five-minute intro
+- [The Pipeline Model](https://benbernard.github.io/RecordStream/guide/pipeline) — philosophy and design
+- [Key Specs](https://benbernard.github.io/RecordStream/guide/key-specs) — navigating nested data with `{{key/path}}`
+- [Snippets](https://benbernard.github.io/RecordStream/guide/snippets) — inline code expressions
+- [Aggregators](https://benbernard.github.io/RecordStream/guide/aggregators) — count, sum, avg, percentile, and more
+- [Command Reference](https://benbernard.github.io/RecordStream/reference/) — every command, every flag
+
+You can also run `recs story` or `recs examples` for built-in guides.
+
+## Architecture
+
+RecordStream is built with [Bun](https://bun.sh) and TypeScript. It compiles to
+a standalone binary with no runtime dependencies.
+
+```
+bin/recs.ts              CLI entry point
+src/
+  Record.ts              Core Record class (JSON object wrapper)
+  RecordStream.ts        Fluent API for programmatic use
+  Operation.ts           Base class for all operations
+  InputStream.ts         Read JSON lines from stdin/files
+  OutputStream.ts        Write records to stdout/streams
+  Executor.ts            Compile and run user code snippets
+  Aggregator.ts          Aggregation framework (count, sum, percentile, etc.)
+  KeySpec.ts             Nested key access (e.g. "foo/bar")
+  KeyGroups.ts           Key group specifications
+  updater.ts             Background auto-update system
+  cli/
+    dispatcher.ts        Route commands to operations
+    help.ts              Help system and man page rendering
+    operation-registry.ts  Static registry of all operations
+  operations/
+    input/               from* operations (14 commands)
+    transform/           grep, sort, collate, etc. (19 commands)
+    output/              to* operations (9 commands)
+  snippets/              Multi-language snippet runners (JS, Python, Perl)
+scripts/
+  generate-manpages.ts   Generate man pages from CommandDoc metadata
+  generate-reference-docs.ts  Generate VitePress reference pages
+  check-docs.ts          Verify every operation has documentation
+tests/                   Test suite (681 tests, bun:test)
+docs/                    VitePress documentation site
+install.sh               curl|bash installer
+```
+
+## Development
+
+```bash
+# Install Bun (https://bun.sh)
+curl -fsSL https://bun.sh/install | bash
+
+# Clone and install
+git clone https://github.com/benbernard/RecordStream.git
+cd RecordStream
+bun install
+
+# Run tests
+bun test
+
+# Type check
+bun run typecheck
+
+# Lint
+bun run lint
+
+# Build standalone binary
+bun run build
+
+# Run docs site locally
+bun run docs:dev
+```
+
+## History
+
+RecordStream was originally written in Perl as
+[App::RecordStream](https://metacpan.org/pod/App::RecordStream) and published on
+CPAN. The original Perl implementation (v4.0.25) is preserved in the `perl/`
+directory for historical reference. The Perl code, tests, Dist::Zilla config,
+and Travis CI config in that directory are **not actively maintained** — they
+exist purely as a record of the project's origins.
+
+The TypeScript rewrite is a ground-up reimplementation that preserves the
+original command names, flag interfaces, and pipeline semantics while taking
+advantage of modern tooling (Bun for runtime and compilation, VitePress for
+docs, GitHub Actions for CI/CD and releases).
+
+## License
+
+MIT

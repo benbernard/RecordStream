@@ -1,0 +1,18 @@
+export { GrepOperation } from "./grep.ts";
+export { EvalOperation } from "./eval.ts";
+export { XformOperation } from "./xform.ts";
+export { SortOperation } from "./sort.ts";
+export { TopnOperation } from "./topn.ts";
+export { AssertOperation } from "./assert.ts";
+export { DeltaOperation } from "./delta.ts";
+export { FlattenOperation } from "./flatten.ts";
+export { AnnotateOperation } from "./annotate.ts";
+export { GenerateOperation } from "./generate.ts";
+export { NormalizeTimeOperation } from "./normalizetime.ts";
+export { Stream2TableOperation } from "./stream2table.ts";
+export { SubstreamOperation } from "./substream.ts";
+export { JoinOperation } from "./join.ts";
+export { CollateOperation } from "./collate.ts";
+export { DecollateOperation } from "./decollate.ts";
+export { ChainOperation, registerOperationFactory, isRecsOperation, createOperation } from "./chain.ts";
+export { MultiplexOperation } from "./multiplex.ts";

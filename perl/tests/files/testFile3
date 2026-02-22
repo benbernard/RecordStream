@@ -1,0 +1,5 @@
+{"value":"10.0.0.101","element":"address", "foo": "bar"}
+{"value":"10.0.1.101","element":"address", "foo": "bar3"}
+{"value":"10.0.0.102","element":"address2", "foo": "bar3"}
+{"value":"10.0.0.103","element":"address2", "foo": "bar"}
+{"value":"10.0.1.103","element":"address2", "foo": "bar"}

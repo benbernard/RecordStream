@@ -1,0 +1,46 @@
+.TH RECS\-FROMDB 1 "2026-02-22" "recs 0.1.0" "RecordStream Manual"
+
+.SH NAME
+recs\-fromdb \- Execute a select statement on a database and create a record stream from the results
+
+.SH SYNOPSIS
+.B recs fromdb [options]
+
+.SH DESCRIPTION
+Execute a select statement on a database and create a record stream from the results. The keys of the record will be the column names and the values the row values.
+.PP
+
+.SH OPTIONS
+.TP
+\fB--table\fR \fI<table>\fR
+Table name (shortcut for SELECT * FROM table).
+.TP
+\fB--sql\fR \fI<statement>\fR
+SQL select statement to run.
+.TP
+\fB--dbfile\fR \fI<path>\fR
+Path to the database file.
+.TP
+\fB--type\fR \fI<dbtype>\fR
+Database type (default: sqlite).
+
+.SH EXAMPLES
+Dump a table
+.PP
+.RS 4
+.nf
+\fBrecs fromdb --type sqlite --dbfile testDb --table recs\fR
+.fi
+.RE
+
+Run a select statement
+.PP
+.RS 4
+.nf
+\fBrecs fromdb --dbfile testDb --sql \'SELECT * FROM recs WHERE id > 9\'\fR
+.fi
+.RE
+
+.SH AUTHOR
+Benjamin Bernard <perlhacker@benjaminbernard.com>
+
