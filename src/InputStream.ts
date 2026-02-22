@@ -13,6 +13,7 @@ export class InputStream {
   #byteReader: { read(): Promise<{ done: boolean; value?: Uint8Array }> } | null = null;
   #decoder = new TextDecoder();
   #buffer = "";
+  #bufferOffset = 0;
   #done = false;
   #next: InputStream | null;
   #filename: string;
@@ -123,10 +124,10 @@ export class InputStream {
 
   async #readLine(): Promise<string | null> {
     while (true) {
-      const newlineIndex = this.#buffer.indexOf("\n");
+      const newlineIndex = this.#buffer.indexOf("\n", this.#bufferOffset);
       if (newlineIndex >= 0) {
-        const line = this.#buffer.slice(0, newlineIndex).trim();
-        this.#buffer = this.#buffer.slice(newlineIndex + 1);
+        const line = this.#buffer.slice(this.#bufferOffset, newlineIndex).trim();
+        this.#bufferOffset = newlineIndex + 1;
         if (line !== "") return line;
         continue;
       }
@@ -135,9 +136,15 @@ export class InputStream {
       const { value, done } = await this.#byteReader.read();
       if (done) {
         // Return any remaining content
-        const remaining = this.#buffer.trim();
+        const remaining = this.#buffer.slice(this.#bufferOffset).trim();
         this.#buffer = "";
+        this.#bufferOffset = 0;
         return remaining !== "" ? remaining : null;
+      }
+      // Compact consumed portion before appending new data
+      if (this.#bufferOffset > 0) {
+        this.#buffer = this.#buffer.slice(this.#bufferOffset);
+        this.#bufferOffset = 0;
       }
       this.#buffer += this.#decoder.decode(value, { stream: true });
     }
