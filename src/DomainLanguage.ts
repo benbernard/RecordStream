@@ -204,6 +204,114 @@ export function subsetAgg(
 }
 
 /**
+ * ForField aggregator: scan record keys matching a regex, create a sub-aggregator
+ * per matching field, and return a map of field -> aggregated value.
+ *
+ * The factory function receives the field name and must return an aggregator.
+ * Analogous to App::RecordStream::Aggregator::Internal::ForField in Perl.
+ */
+export function forFieldAgg(
+  pattern: RegExp | string,
+  factory: (field: string) => AnyAggregator
+): AnyAggregator {
+  const regex = typeof pattern === "string" ? new RegExp(pattern) : pattern;
+
+  return {
+    initial(): unknown {
+      return new Map<string, [AnyAggregator, unknown]>();
+    },
+    combine(state: unknown, record: Record): unknown {
+      const fieldMap = state as Map<string, [AnyAggregator, unknown]>;
+      const keys = Object.keys(record.dataRef());
+
+      for (const key of keys) {
+        if (!regex.test(key)) continue;
+
+        if (!fieldMap.has(key)) {
+          const agg = factory(key);
+          fieldMap.set(key, [agg, agg.initial()]);
+        }
+
+        const entry = fieldMap.get(key)!;
+        entry[1] = entry[0].combine(entry[1], record);
+      }
+
+      return fieldMap;
+    },
+    squish(state: unknown): JsonValue {
+      const fieldMap = state as Map<string, [AnyAggregator, unknown]>;
+      const result: { [key: string]: JsonValue } = {};
+
+      for (const [field, [agg, cookie]] of fieldMap) {
+        result[field] = agg.squish(cookie);
+      }
+
+      return result;
+    },
+  };
+}
+
+/**
+ * ForField2 aggregator: scan record keys matching two regexes, create a
+ * sub-aggregator per pair of matching fields, and return a map of
+ * "field1,field2" -> aggregated value.
+ *
+ * The factory function receives two field names and must return an aggregator.
+ * Analogous to App::RecordStream::Aggregator::Internal::ForField2 in Perl.
+ */
+export function forField2Agg(
+  pattern1: RegExp | string,
+  pattern2: RegExp | string,
+  factory: (field1: string, field2: string) => AnyAggregator
+): AnyAggregator {
+  const regex1 = typeof pattern1 === "string" ? new RegExp(pattern1) : pattern1;
+  const regex2 = typeof pattern2 === "string" ? new RegExp(pattern2) : pattern2;
+
+  return {
+    initial(): unknown {
+      return new Map<string, [AnyAggregator, unknown]>();
+    },
+    combine(state: unknown, record: Record): unknown {
+      const pairMap = state as Map<string, [AnyAggregator, unknown]>;
+      const keys = Object.keys(record.dataRef());
+
+      const fields1: string[] = [];
+      const fields2: string[] = [];
+      for (const key of keys) {
+        if (regex1.test(key)) fields1.push(key);
+        if (regex2.test(key)) fields2.push(key);
+      }
+
+      for (const f1 of fields1) {
+        for (const f2 of fields2) {
+          const pairKey = `${f1},${f2}`;
+
+          if (!pairMap.has(pairKey)) {
+            const agg = factory(f1, f2);
+            pairMap.set(pairKey, [agg, agg.initial()]);
+          }
+
+          const entry = pairMap.get(pairKey)!;
+          entry[1] = entry[0].combine(entry[1], record);
+        }
+      }
+
+      return pairMap;
+    },
+    squish(state: unknown): JsonValue {
+      const pairMap = state as Map<string, [AnyAggregator, unknown]>;
+      const result: { [key: string]: JsonValue } = {};
+
+      for (const [pairKey, [agg, cookie]] of pairMap) {
+        result[pairKey] = agg.squish(cookie);
+      }
+
+      return result;
+    },
+  };
+}
+
+/**
  * Transform aggregator: apply a transform to an aggregator's result.
  */
 export function xformAgg(
@@ -237,6 +345,30 @@ export function xformAgg(
 }
 
 /**
+ * Dispatches for_field() calls. Overloaded:
+ *   for_field(pattern, factory)          -> forFieldAgg (single regex)
+ *   for_field(pattern1, pattern2, factory) -> forField2Agg (two regexes)
+ */
+function forFieldDispatch(
+  ...args: unknown[]
+): AnyAggregator {
+  if (args.length === 2) {
+    return forFieldAgg(
+      args[0] as RegExp | string,
+      args[1] as (field: string) => AnyAggregator
+    );
+  }
+  if (args.length === 3) {
+    return forField2Agg(
+      args[0] as RegExp | string,
+      args[1] as RegExp | string,
+      args[2] as (f1: string, f2: string) => AnyAggregator
+    );
+  }
+  throw new Error(`for_field expects 2 or 3 arguments, got ${args.length}`);
+}
+
+/**
  * Parse a domain language expression string and produce an aggregator.
  * This is the main entry point for --dla/-e style aggregator definitions.
  *
@@ -257,6 +389,7 @@ export function parseDomainLanguage(expr: string): AnyAggregator {
     map_reduce_aggregator: mapReduceAgg,
     subset_agg: subsetAgg,
     subset_aggregator: subsetAgg,
+    for_field: forFieldDispatch,
     xform: xformAgg,
     snip: snippetValuation,
     rec: () => new RecordValuation(),
