@@ -1,4 +1,5 @@
 import type { Record } from "./Record.ts";
+import type { FileSink } from "bun";
 
 /**
  * OutputStream writes Records as JSON lines to stdout or a writable stream.
@@ -7,14 +8,13 @@ import type { Record } from "./Record.ts";
  */
 export class OutputStream {
   #writer: WritableStreamDefaultWriter<string> | null = null;
-  #useStdout: boolean;
+  #sink: FileSink | null = null;
 
   constructor(writable?: WritableStream<string>) {
     if (writable) {
       this.#writer = writable.getWriter();
-      this.#useStdout = false;
     } else {
-      this.#useStdout = true;
+      this.#sink = Bun.stdout.writer();
     }
   }
 
@@ -23,8 +23,8 @@ export class OutputStream {
    */
   async write(record: Record): Promise<void> {
     const line = record.toString() + "\n";
-    if (this.#useStdout) {
-      await Bun.write(Bun.stdout, line);
+    if (this.#sink) {
+      this.#sink.write(line);
     } else if (this.#writer) {
       await this.#writer.write(line);
     }
@@ -35,8 +35,8 @@ export class OutputStream {
    */
   async writeLine(line: string): Promise<void> {
     const output = line.endsWith("\n") ? line : line + "\n";
-    if (this.#useStdout) {
-      await Bun.write(Bun.stdout, output);
+    if (this.#sink) {
+      this.#sink.write(output);
     } else if (this.#writer) {
       await this.#writer.write(output);
     }
@@ -46,7 +46,9 @@ export class OutputStream {
    * Close the output stream.
    */
   async close(): Promise<void> {
-    if (this.#writer) {
+    if (this.#sink) {
+      await this.#sink.flush();
+    } else if (this.#writer) {
       await this.#writer.close();
     }
   }
