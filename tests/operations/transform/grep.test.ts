@@ -125,4 +125,52 @@ describe("GrepOperation", () => {
       makeOp([]);
     }).toThrow("grep requires an expression");
   });
+
+  describe("context with --lang python", () => {
+    test("after context with -A works with python", () => {
+      const { op, collector } = makeOp(["--lang", "python", "-A", "1", 'r["x"] == 3']);
+      feedRecords(op, [
+        new Record({ x: 1 }),
+        new Record({ x: 2 }),
+        new Record({ x: 3 }),
+        new Record({ x: 4 }),
+        new Record({ x: 5 }),
+      ]);
+
+      expect(collector.records.length).toBe(2);
+      expect(collector.records[0]!.get("x")).toBe(3);
+      expect(collector.records[1]!.get("x")).toBe(4);
+    });
+
+    test("before context with -B works with python", () => {
+      const { op, collector } = makeOp(["--lang", "python", "-B", "1", 'r["x"] == 3']);
+      feedRecords(op, [
+        new Record({ x: 1 }),
+        new Record({ x: 2 }),
+        new Record({ x: 3 }),
+        new Record({ x: 4 }),
+        new Record({ x: 5 }),
+      ]);
+
+      expect(collector.records.length).toBe(2);
+      expect(collector.records[0]!.get("x")).toBe(2);
+      expect(collector.records[1]!.get("x")).toBe(3);
+    });
+
+    test("full context with -C works with python", () => {
+      const { op, collector } = makeOp(["--lang", "python", "-C", "1", 'r["x"] == 3']);
+      feedRecords(op, [
+        new Record({ x: 1 }),
+        new Record({ x: 2 }),
+        new Record({ x: 3 }),
+        new Record({ x: 4 }),
+        new Record({ x: 5 }),
+      ]);
+
+      expect(collector.records.length).toBe(3);
+      expect(collector.records[0]!.get("x")).toBe(2);
+      expect(collector.records[1]!.get("x")).toBe(3);
+      expect(collector.records[2]!.get("x")).toBe(4);
+    });
+  });
 });

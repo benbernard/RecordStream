@@ -84,20 +84,42 @@ export class GrepOperation extends Operation {
     }
   }
 
+  #hasContext(): boolean {
+    return this.afterCount > 0 || this.beforeCount > 0;
+  }
+
   acceptRecord(record: Record): boolean {
-    if (this.runner) {
+    if (this.runner && !this.#hasContext()) {
       this.#bufferedRecords.push(record);
       return true;
     }
 
-    let result = this.executor.executeCode(record);
-    if (this.antiMatch) {
-      result = !result;
+    if (this.runner) {
+      // Context mode with non-JS lang: evaluate one record at a time
+      // so the context logic below can work properly
+      const results = this.runner.executeBatch([record]);
+      const result = results[0];
+      let passed = result?.passed ?? false;
+      if (result?.error) {
+        process.stderr.write(`grep: ${result.error}\n`);
+        return true;
+      }
+      if (this.antiMatch) passed = !passed;
+      return this.#applyContext(record, passed);
     }
 
+    let matched = this.executor.executeCode(record);
+    if (this.antiMatch) {
+      matched = !matched;
+    }
+
+    return this.#applyContext(record, !!matched);
+  }
+
+  #applyContext(record: Record, matched: boolean): boolean {
     let pushedRecord = false;
 
-    if (result) {
+    if (matched) {
       // Flush before-context buffer
       if (this.beforeCount > 0) {
         while (this.accumulator.length > 0) {

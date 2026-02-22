@@ -3,6 +3,8 @@ import type { OptionDef } from "../../Operation.ts";
 import { Executor, snippetFromFileOption } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
 import type { JsonObject } from "../../types/json.ts";
+import type { SnippetRunner } from "../../snippets/SnippetRunner.ts";
+import { createSnippetRunner, isJsLang, langOptionDef } from "../../snippets/index.ts";
 
 /**
  * Transform records with a JS snippet. The snippet can modify $r in place,
@@ -20,6 +22,9 @@ export class XformOperation extends Operation {
   spooledInput: Record[] = [];
   spooledOutput: Record[] = [];
   suppressR = false;
+  lang: string | null = null;
+  runner: SnippetRunner | null = null;
+  #bufferedRecords: Record[] = [];
 
   override addHelpTypes(): void {
     this.useHelpType("snippet");
@@ -66,6 +71,7 @@ export class XformOperation extends Operation {
         description: "A snippet to run before the stream starts",
       },
       snippetFromFileOption((code) => { fileSnippet = code; }),
+      langOptionDef((v) => { this.lang = v; }),
     ];
 
     const remaining = this.parseOptions(args, defs);
@@ -74,13 +80,18 @@ export class XformOperation extends Operation {
       throw new Error("xform requires an expression argument");
     }
 
-    this.executor = this.createExecutor(expression, postSnippet, preSnippet);
+    if (this.lang && !isJsLang(this.lang)) {
+      this.runner = createSnippetRunner(this.lang);
+      void this.runner.init(expression, { mode: "xform" });
+    } else {
+      this.executor = this.createExecutor(expression, postSnippet, preSnippet);
 
-    // Execute pre-snippet
-    this.executor.executeMethod("pre_xform");
-    this.handleSpools();
-    // Reset line counter so $line starts at 1 for the first record
-    this.executor.resetLine();
+      // Execute pre-snippet
+      this.executor.executeMethod("pre_xform");
+      this.handleSpools();
+      // Reset line counter so $line starts at 1 for the first record
+      this.executor.resetLine();
+    }
   }
 
   createExecutor(snippet: string, postSnippet: string, preSnippet: string): Executor {
@@ -107,7 +118,23 @@ export class XformOperation extends Operation {
     return executor;
   }
 
+  #hasContext(): boolean {
+    return this.beforeCount > 0 || this.afterCount > 0;
+  }
+
   acceptRecord(record: Record): boolean {
+    if (this.runner && !this.#hasContext()) {
+      this.#bufferedRecords.push(record);
+      return true;
+    }
+
+    if (this.runner) {
+      // Context mode with non-JS lang: process one record at a time
+      // so the context sliding window logic below can work
+      this.#runSingleWithRunner(record);
+      return true;
+    }
+
     if (this.beforeCount === 0 && this.afterCount === 0) {
       return this.runRecordWithContext(record);
     }
@@ -144,7 +171,38 @@ export class XformOperation extends Operation {
     return this.runRecordWithContext(this.currentRecord, this.beforeArray, this.afterArray);
   }
 
+  #runSingleWithRunner(record: Record): void {
+    if (!this.runner) return;
+    const results = this.runner.executeBatch([record]);
+    const result = results[0];
+    if (result?.error) {
+      process.stderr.write(`xform: ${result.error}\n`);
+      return;
+    }
+    if (result?.records) {
+      for (const rec of result.records) {
+        this.pushRecord(new Record(rec as JsonObject));
+      }
+    }
+  }
+
   override streamDone(): void {
+    if (this.runner && this.#bufferedRecords.length > 0) {
+      const results = this.runner.executeBatch(this.#bufferedRecords);
+      for (const result of results) {
+        if (result.error) {
+          process.stderr.write(`xform: ${result.error}\n`);
+          continue;
+        }
+        if (result.records) {
+          for (const rec of result.records) {
+            this.pushRecord(new Record(rec as JsonObject));
+          }
+        }
+      }
+      return;
+    }
+
     if (this.afterArray.length > 0) {
       while (this.afterArray.length > 0) {
         const newRecord = this.afterArray.shift()!;
