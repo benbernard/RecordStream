@@ -9,8 +9,9 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync, renameSync, chmodSync, unlinkSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join } from "node:path";
 import { spawnSync, spawn } from "node:child_process";
+import pkg from "../package.json";
 
 const REPO = "benbernard/RecordStream";
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -35,13 +36,7 @@ export function ensureConfigDir(): string {
 // ── Version helpers ─────────────────────────────────────────────
 
 export function getCurrentVersion(): string {
-  try {
-    const pkgPath = join(dirname(import.meta.dir), "package.json");
-    const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
-    return pkg.version;
-  } catch {
-    return "0.0.0";
-  }
+  return pkg.version;
 }
 
 /**

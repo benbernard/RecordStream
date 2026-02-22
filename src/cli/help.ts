@@ -5,46 +5,24 @@
  */
 
 import type { CommandDoc } from "../types/CommandDoc.ts";
-import { readdirSync } from "node:fs";
-import { join } from "node:path";
-
-const OPS_ROOT = join(import.meta.dir, "..", "operations");
-const CATEGORIES = ["input", "transform", "output"] as const;
+import { allDocs } from "./operation-registry.ts";
 
 /**
  * Load all CommandDoc exports from every operation file.
+ * Uses a static registry so this works in compiled binaries.
  */
-export async function loadAllDocs(): Promise<CommandDoc[]> {
-  const docs: CommandDoc[] = [];
-
-  for (const category of CATEGORIES) {
-    const dir = join(OPS_ROOT, category);
-    const files = readdirSync(dir).filter(
-      (f) => f.endsWith(".ts") && f !== "index.ts"
-    );
-
-    for (const file of files) {
-      const modulePath = join(OPS_ROOT, category, file);
-      const mod = (await import(modulePath)) as Record<string, unknown>;
-      const doc = mod["documentation"] as CommandDoc | undefined;
-      if (doc) {
-        docs.push(doc);
-      }
-    }
-  }
-
-  return docs;
+export function loadAllDocs(): CommandDoc[] {
+  return allDocs;
 }
 
 /**
  * Load the CommandDoc for a single command by name.
  * Returns undefined if no matching command is found.
  */
-export async function loadDocForCommand(
+export function loadDocForCommand(
   commandName: string
-): Promise<CommandDoc | undefined> {
-  const docs = await loadAllDocs();
-  return docs.find((d) => d.name === commandName);
+): CommandDoc | undefined {
+  return allDocs.find((d) => d.name === commandName);
 }
 
 function wordWrap(text: string, width: number): string {
