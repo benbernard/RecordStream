@@ -20,6 +20,7 @@ export class JoinOperation extends Operation {
   operationExpr: string | null = null;
   db = new Map<string, Record[]>();
   keysPrinted = new Set<string>();
+  matchedDbKeys = new Set<string>();
 
   override addHelpTypes(): void {
     this.useHelpType("snippet");
@@ -134,6 +135,7 @@ export class JoinOperation extends Operation {
     if (dbRecords) {
       for (const dbRecord of dbRecords) {
         if (this.accumulateRight) {
+          this.matchedDbKeys.add(value);
           if (this.operationExpr) {
             this.runExpression(dbRecord, record);
           } else {
@@ -185,6 +187,23 @@ export class JoinOperation extends Operation {
   }
 
   override streamDone(): void {
+    if (this.accumulateRight) {
+      // Output matched db records (they've been accumulated into)
+      for (const [key, dbRecords] of this.db) {
+        if (this.matchedDbKeys.has(key)) {
+          for (const dbRecord of dbRecords) {
+            this.pushRecord(dbRecord);
+          }
+        } else if (this.keepLeft) {
+          // Unmatched db records only in left/outer join mode
+          for (const dbRecord of dbRecords) {
+            this.pushRecord(dbRecord);
+          }
+        }
+      }
+      return;
+    }
+
     if (this.keepLeft) {
       for (const [, dbRecords] of this.db) {
         for (const dbRecord of dbRecords) {
@@ -192,15 +211,6 @@ export class JoinOperation extends Operation {
           if (!this.keysPrinted.has(value)) {
             this.pushRecord(dbRecord);
           }
-        }
-      }
-    }
-
-    // If accumulate-right, output the db records at the end
-    if (this.accumulateRight) {
-      for (const [, dbRecords] of this.db) {
-        for (const dbRecord of dbRecords) {
-          this.pushRecord(dbRecord);
         }
       }
     }
