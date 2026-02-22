@@ -19,7 +19,7 @@ import { clumperRegistry } from "../../src/Clumper.ts";
 
 class TestCallback implements ClumperCallback {
   groups: Record[][] = [];
-  private current: Record[] | null = null;
+  current: Record[] | null = null;
 
   clumperCallbackBegin(_options: { [key: string]: unknown }): unknown {
     this.current = [];

@@ -10,6 +10,7 @@
  */
 
 import { loadAllDocs, loadDocForCommand, docToHelpText, formatCommandList } from "../src/cli/help.ts";
+import { runOperation } from "../src/cli/dispatcher.ts";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -39,10 +40,42 @@ if (command === "--version" || command === "-V") {
   process.exit(0);
 }
 
+if (command === "--list" || command === "-l" || command === "list") {
+  const docs = await loadAllDocs();
+  for (const doc of docs.sort((a, b) => a.name.localeCompare(b.name))) {
+    console.log(doc.name);
+  }
+  process.exit(0);
+}
+
+if (command === "examples") {
+  const { readFileSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const docsDir = join(import.meta.dir, "..", "docs", "guide");
+  try {
+    const content = readFileSync(join(docsDir, "examples.md"), "utf-8");
+    console.log(content);
+  } catch {
+    console.error("Examples documentation not found.");
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
+if (command === "story") {
+  const { readFileSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const docsDir = join(import.meta.dir, "..", "docs", "guide");
+  try {
+    const content = readFileSync(join(docsDir, "story.md"), "utf-8");
+    console.log(content);
+  } catch {
+    console.error("Story documentation not found.");
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
 // Dispatch to the operation
-// For now, the CLI entry point handles help; actual operation dispatch
-// will be implemented by the CLI dispatcher task (#11).
-console.error(
-  `Command dispatch not yet implemented. Use 'recs help ${command}' for help.`
-);
-process.exit(1);
+const exitCode = await runOperation(command, args.slice(1));
+process.exit(exitCode);

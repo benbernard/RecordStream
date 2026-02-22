@@ -11,7 +11,8 @@ class CountAgg implements Aggregator<number> {
 }
 
 class SumAgg implements Aggregator<number> {
-  constructor(private field: string) {}
+  field: string;
+  constructor(field: string) { this.field = field; }
   initial() { return 0; }
   combine(s: number, r: Record) { return s + (Number(r.get(this.field)) || 0); }
   squish(s: number) { return s; }

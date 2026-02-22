@@ -19,8 +19,8 @@ class PassthroughOp extends Operation {
 
 // A grep-like operation for testing
 class FilterOp extends Operation {
-  private field = "";
-  private value: string | number = "";
+  field = "";
+  value: string | number = "";
 
   init(args: string[]): void {
     const defs: OptionDef[] = [
