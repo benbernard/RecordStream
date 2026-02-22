@@ -54,9 +54,9 @@ Benchmark results on macOS (Apple Silicon), Bun 1.3.4:
 | Access Pattern | Throughput |
 |----------------|-----------|
 | Simple key (`name`) | ~65M lookups/sec |
-| Nested key (`address/zip`) | ~11M lookups/sec |
-| Deep nested (`address/coords/lat`) | ~9M lookups/sec |
-| Array index (`tags/#0`) | ~9M lookups/sec |
+| Nested key (`address/zip`) | ~24M lookups/sec |
+| Deep nested (`address/coords/lat`) | ~23M lookups/sec |
+| Array index (`tags/#0`) | ~25M lookups/sec |
 | Direct property access (baseline) | ~312M lookups/sec |
 
 ### Sorting
@@ -82,6 +82,10 @@ The line-reading buffer tracks a position offset rather than slicing the buffer 
 ### KeySpec Fast Path
 
 Simple key access (single key, no nesting, no fuzzy matching) bypasses the full KeySpec parsing and resolution machinery. A charcode scan detects simple keys and resolves them with a direct property lookup — within 5x of raw JavaScript property access.
+
+### Compiled KeySpec Accessors
+
+After resolving a key spec path, RecordStream compiles an optimized closure that directly traverses the resolved property chain. Loops are unrolled for depths 1-4 (covering the vast majority of real-world key specs). This narrows the gap between nested KeySpec access and raw JavaScript property access from 28x to ~3x.
 
 ### Record.clone() with structuredClone
 
