@@ -7,8 +7,9 @@
   "scripts": {
     "build": "bun build ./bin/recs.ts --compile --outfile=./bin/recs",
     "test": "bun test",
+    "test:e2e": "RUN_E2E=1 bun test tests/explorer/e2e/",
     "bench": "bun tests/perf/run.ts",
-    "lint": "bunx oxlint src/ tests/ bin/ scripts/",
+    "lint": "bunx oxlint src/ tests/ bin/ scripts/ && bun scripts/check-no-private.ts",
     "typecheck": "tsc --noEmit",
     "prepare": "lefthook install",
     "check-docs": "bun scripts/check-docs.ts",
@@ -28,11 +29,13 @@
     "vitepress": "^1.6.4"
   },
   "dependencies": {
-    "@opentui/core": "^0.1.81",
-    "@opentui/react": "^0.1.81",
     "@types/react": "^19.2.14",
     "better-sqlite3": "^12.6.2",
     "fast-xml-parser": "^5.3.7",
+    "ink": "^6.8.0",
+    "ink-select-input": "^6.2.0",
+    "ink-spinner": "^5.0.0",
+    "ink-text-input": "^6.0.0",
     "mongodb": "^7.1.0",
     "nanoid": "^5.1.6",
     "openai": "^6.22.0",

@@ -38,6 +38,7 @@ export default defineConfig({
     logo: "/logo-small.png",
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
+      { text: "Explorer", link: "/explorer/" },
       { text: "Reference", link: "/reference/" },
     ],
     sidebar: {
@@ -66,6 +67,17 @@ export default defineConfig({
             { text: "Programmatic API", link: "/guide/programmatic-api" },
             { text: "Performance", link: "/guide/performance" },
             { text: "Cookbook", link: "/guide/cookbook" },
+          ],
+        },
+      ],
+      "/explorer/": [
+        {
+          text: "Explorer",
+          items: [
+            { text: "Overview", link: "/explorer/" },
+            { text: "Getting Started", link: "/explorer/getting-started" },
+            { text: "Keyboard Reference", link: "/explorer/keyboard-reference" },
+            { text: "Feature Guide", link: "/explorer/features" },
           ],
         },
       ],
