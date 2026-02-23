@@ -12,6 +12,9 @@
     "resolveJsonModule": true,
     "noEmit": true,
 
+    "jsx": "react-jsx",
+    "jsxImportSource": "@opentui/react",
+
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
@@ -23,5 +26,5 @@
     "exactOptionalPropertyTypes": false,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "bin/**/*.ts", "scripts/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "bin/**/*.ts", "scripts/**/*.ts"]
 }

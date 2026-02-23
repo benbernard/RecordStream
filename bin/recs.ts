@@ -99,6 +99,21 @@ if (command === "story") {
   process.exit(0);
 }
 
+// Handle TUI subcommand
+if (command === "tui") {
+  const tuiArgs = args.slice(1);
+  // Re-exec via recs-tui.ts with remaining args
+  const { join } = await import("node:path");
+  const tuiEntry = join(import.meta.dir, "recs-tui.ts");
+  const proc = Bun.spawn(["bun", "run", tuiEntry, ...tuiArgs], {
+    stdin: "inherit",
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+  const code = await proc.exited;
+  process.exit(code);
+}
+
 // Handle alias management subcommand
 if (command === "alias") {
   const aliasArgs = args.slice(1);
