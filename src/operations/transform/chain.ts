@@ -39,6 +39,21 @@ export function createOperation(
 }
 
 /**
+ * Create a recs operation if the name is registered, otherwise fall back
+ * to a ShellOperation that pipes JSONL through the external command.
+ */
+export function createOperationOrShell(
+  name: string,
+  args: string[],
+  next: RecordReceiver,
+): Operation {
+  if (operationFactories.has(name)) {
+    return createOperation(name, args, next);
+  }
+  return new ShellOperation(next, name, args);
+}
+
+/**
  * A "shell operation" that pipes JSONL through an external command.
  * Records are serialized to JSON, piped through the command's stdin/stdout,
  * and parsed back to records. Used when chain encounters a non-recs command.

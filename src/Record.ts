@@ -78,9 +78,10 @@ export class Record {
 
   /**
    * Return a deep clone of this record.
+   * Uses a fast JSON-specific clone (no circular-ref handling needed).
    */
   clone(): Record {
-    return new Record(structuredClone(this.#data));
+    return new Record(cloneJsonObject(this.#data));
   }
 
   /**
@@ -293,6 +294,49 @@ const COMPARATOR_TYPES: {
   num: cmpNumeric,
   numeric: cmpNumeric,
 };
+
+// --- Fast JSON-specific deep clone ---
+
+/**
+ * Deep-clone a JsonObject. Uses a fast path for flat objects (all primitive
+ * values) which is the common case in RecordStream pipelines.
+ */
+function cloneJsonObject(obj: JsonObject): JsonObject {
+  const keys = Object.keys(obj);
+  const out: JsonObject = {};
+  let needsDeep = false;
+  for (let i = 0; i < keys.length; i++) {
+    const v = obj[keys[i]!]!;
+    if (v !== null && typeof v === "object") {
+      needsDeep = true;
+      break;
+    }
+    out[keys[i]!] = v;
+  }
+  if (!needsDeep) return out;
+
+  // Slow path: some values are objects/arrays, deep-clone everything
+  const result: JsonObject = {};
+  for (let i = 0; i < keys.length; i++) {
+    result[keys[i]!] = cloneJsonValue(obj[keys[i]!]!);
+  }
+  return result;
+}
+
+function cloneJsonValue(val: JsonValue): JsonValue {
+  if (val === null || typeof val !== "object") return val;
+  if (Array.isArray(val)) {
+    const arr: JsonValue[] = Array.from({ length: val.length });
+    for (let i = 0; i < val.length; i++) arr[i] = cloneJsonValue(val[i]!);
+    return arr;
+  }
+  const keys = Object.keys(val);
+  const out: JsonObject = {};
+  for (let i = 0; i < keys.length; i++) {
+    out[keys[i]!] = cloneJsonValue(val[keys[i]!]!);
+  }
+  return out;
+}
 
 /**
  * Nested value access using pre-split key parts.
