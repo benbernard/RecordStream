@@ -1,5 +1,4 @@
-import { readFileSync } from "node:fs";
-import { read, utils } from "xlsx";
+import ExcelJS from "exceljs";
 import { Operation, type OptionDef } from "../../Operation.ts";
 import { Record } from "../../Record.ts";
 import { setKey } from "../../KeySpec.ts";
@@ -72,32 +71,41 @@ export class FromXls extends Operation {
     return false;
   }
 
-  override streamDone(): void {
+  override async finish(): Promise<void> {
     for (const file of this.extraArgs) {
       this.updateCurrentFilename(file);
-      this.parseFile(file);
+      await this.parseFile(file);
     }
+    this.next.finish();
   }
 
-  parseFile(file: string): void {
-    const buffer = readFileSync(file);
-    const workbook = read(buffer, { type: "buffer" });
+  async parseFile(file: string): Promise<void> {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(file);
 
+    const worksheets = workbook.worksheets;
     const sheetNames = this.allSheets
-      ? workbook.SheetNames
-      : [this.sheet ?? workbook.SheetNames[0]!];
+      ? worksheets.map((ws) => ws.name)
+      : [this.sheet ?? worksheets[0]?.name];
 
     for (const sheetName of sheetNames) {
-      const sheet = workbook.Sheets[sheetName];
+      if (!sheetName) continue;
+      const sheet = workbook.getWorksheet(sheetName);
       if (!sheet) {
         throw new Error(`Sheet '${sheetName}' not found in ${file}`);
       }
 
-      const rows = utils.sheet_to_json<unknown[]>(sheet, {
-        header: 1,
-        defval: "",
-        raw: false,
-      }) as string[][];
+      // Collect all rows as arrays of string values
+      const rows: string[][] = [];
+      sheet.eachRow({ includeEmpty: false }, (row) => {
+        const vals: string[] = [];
+        // row.values is 1-indexed (index 0 is empty)
+        const cellValues = row.values as (ExcelJS.CellValue | undefined)[];
+        for (let c = 1; c < cellValues.length; c++) {
+          vals.push(cellToString(cellValues[c]));
+        }
+        rows.push(vals);
+      });
 
       if (rows.length === 0) continue;
 
@@ -119,7 +127,7 @@ export class FromXls extends Operation {
 
         for (let j = 0; j < row.length; j++) {
           const key = fields[j] ?? String(j);
-          const val = String(row[j] ?? "");
+          const val = row[j] ?? "";
           // Try to parse numbers
           const num = Number(val);
           if (val !== "" && !isNaN(num) && isFinite(num)) {
@@ -137,6 +145,32 @@ export class FromXls extends Operation {
       }
     }
   }
+}
+
+function cellToString(value: ExcelJS.CellValue | undefined): string {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (value instanceof Date) return value.toISOString();
+  // Rich text
+  if (typeof value === "object" && "richText" in value) {
+    return (value as ExcelJS.CellRichTextValue).richText
+      .map((rt) => rt.text)
+      .join("");
+  }
+  // Formula result
+  if (typeof value === "object" && "result" in value) {
+    return cellToString((value as ExcelJS.CellFormulaValue).result as ExcelJS.CellValue);
+  }
+  // Hyperlink
+  if (typeof value === "object" && "text" in value) {
+    return String((value as ExcelJS.CellHyperlinkValue).text);
+  }
+  // Error
+  if (typeof value === "object" && "error" in value) {
+    return String((value as ExcelJS.CellErrorValue).error);
+  }
+  return String(value);
 }
 
 import type { CommandDoc } from "../../types/CommandDoc.ts";

@@ -191,7 +191,7 @@ export async function executeToStage(
       }
     }
 
-    op.finish();
+    await op.finish();
     currentRecords = interceptor.records;
 
     // Cache this stage's result
