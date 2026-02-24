@@ -18,6 +18,7 @@ import type {
   SnippetMode,
 } from "./SnippetRunner.ts";
 import { groupResponses } from "./SnippetRunner.ts";
+import { transformCode } from "../Executor.ts";
 
 const SNIPPETS_DIR = dirname(fileURLToPath(import.meta.url));
 const RUNNER_DIR = join(SNIPPETS_DIR, "python");
@@ -29,7 +30,7 @@ export class PythonSnippetRunner implements SnippetRunner {
   #mode: SnippetMode = "eval";
 
   async init(code: string, context: SnippetContext): Promise<void> {
-    this.#code = code;
+    this.#code = transformCode(code, "r");
     this.#mode = context.mode;
   }
 

@@ -65,6 +65,21 @@ unless (grep { $_ eq $mode } qw(eval grep xform generate)) {
 }
 
 # ----------------------------------------------------------------
+# __get / __set helpers for {{}} template expansion
+# ----------------------------------------------------------------
+
+sub __get {
+    my ($r, $keyspec) = @_;
+    return RecsSDK::_resolve($r, $keyspec);
+}
+
+sub __set {
+    my ($r, $keyspec, $value) = @_;
+    RecsSDK::_set_path($r, $keyspec, $value);
+    return $value;
+}
+
+# ----------------------------------------------------------------
 # Compile snippet
 # ----------------------------------------------------------------
 
