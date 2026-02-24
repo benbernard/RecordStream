@@ -75,7 +75,38 @@ const JsonView = memo(function JsonView({ result, scrollOffset }: { result: Cach
   );
 });
 
+const TextView = memo(function TextView({ result, scrollOffset }: { result: CachedResult; scrollOffset: number }) {
+  const pageSize = 50;
+  const start = scrollOffset;
+  const totalLines = result.lines.length;
+  const end = Math.min(start + pageSize, totalLines);
+
+  const visibleLines = useMemo(
+    () => result.lines.slice(start, end),
+    [result.lines, start, end],
+  );
+
+  if (totalLines === 0) {
+    return <Text color={theme.overlay0}>(no output)</Text>;
+  }
+  return (
+    <Box flexDirection="column">
+      {visibleLines.map((line, i) => (
+        <Text key={i} color={theme.text}>{line}</Text>
+      ))}
+      {totalLines > end && (
+        <Text color={theme.overlay0}>... ({totalLines} lines total, showing {start + 1}–{end})</Text>
+      )}
+    </Box>
+  );
+});
+
 export const RecordView = memo(function RecordView({ result, viewMode, scrollOffset, highlightedColumn }: RecordViewProps) {
+  // Auto-detect text output: if the result has lines but no records, show text view
+  if (result.records.length === 0 && result.lines.length > 0) {
+    return <TextView result={result} scrollOffset={scrollOffset} />;
+  }
+
   switch (viewMode) {
     case "table":
       return (

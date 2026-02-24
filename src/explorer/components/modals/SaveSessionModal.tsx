@@ -9,7 +9,7 @@
 
 import { useState, useCallback } from "react";
 import { Box, Text, useInput } from "ink";
-import TextInput from "ink-text-input";
+import { VimTextInput } from "../VimTextInput.tsx";
 import { theme } from "../../theme.ts";
 
 export interface SaveSessionModalProps {
@@ -66,12 +66,8 @@ export function SaveSessionModal({
     }
   }, { isActive: phase === "choose" });
 
-  // Input phase keyboard — only Escape (TextInput handles chars + Enter via onSubmit)
-  useInput((_input, key) => {
-    if (key.escape) {
-      onCancel();
-    }
-  }, { isActive: phase === "input" });
+  // Input phase: VimTextInput handles Escape (via onEscape) and Enter (via onSubmit),
+  // so no separate useInput handler is needed for the input phase.
 
   return (
     <Box
@@ -120,16 +116,17 @@ export function SaveSessionModal({
           </Text>
           <Box marginTop={1}>
             <Text color={theme.text}>Name: </Text>
-            <TextInput
+            <VimTextInput
               value={name}
               onChange={setName}
               onSubmit={handleNameSubmit}
+              onEscape={onCancel}
               placeholder="my pipeline"
               focus={true}
             />
           </Box>
           <Box height={1} marginTop={1}>
-            <Text color={theme.overlay0}>Enter:save  Esc:cancel</Text>
+            <Text color={theme.overlay0}>Enter:save  Esc:vim  Esc(2x):cancel</Text>
           </Box>
         </Box>
       )}

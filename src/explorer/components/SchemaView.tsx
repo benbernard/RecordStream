@@ -84,7 +84,7 @@ export function SchemaView({ result }: SchemaViewProps) {
   const pctWidth = 4;
   const sampleWidth = 40;
 
-  const header =
+  const headerStr =
     "Field".padEnd(nameWidth) +
     "  " +
     "Type".padEnd(typeWidth) +
@@ -93,26 +93,55 @@ export function SchemaView({ result }: SchemaViewProps) {
     "  " +
     "Sample Values";
 
-  const separator = "-".repeat(nameWidth + typeWidth + pctWidth + sampleWidth + 6);
+  const separator = "─".repeat(nameWidth + typeWidth + pctWidth + sampleWidth + 6);
 
-  const rows = fields.map((field) => {
-    const nameCol = field.name.padEnd(nameWidth).slice(0, nameWidth);
-    const typeCol = field.types.join(", ").padEnd(typeWidth).slice(0, typeWidth);
-    const pctCol = `${field.populatedPct}%`.padStart(pctWidth);
-    const sampleCol = field.sampleValues.join(", ").slice(0, sampleWidth);
-    return `${nameCol}  ${typeCol}  ${pctCol}  ${sampleCol}`;
-  });
+  // Color for type labels
+  function typeColor(types: string[]): string {
+    if (types.length > 1) return theme.flamingo;
+    const t = types[0];
+    if (t === "string") return theme.green;
+    if (t === "number") return theme.teal;
+    if (t === "boolean") return theme.yellow;
+    if (t === "null") return theme.overlay0;
+    if (t === "array") return theme.peach;
+    if (t === "object") return theme.mauve;
+    return theme.text;
+  }
+
+  // Color for population percentage
+  function pctColor(pct: number): string {
+    if (pct >= 90) return theme.green;
+    if (pct >= 50) return theme.yellow;
+    return theme.red;
+  }
 
   return (
     <Box flexDirection="column">
-      <Text color={theme.overlay0}>{header}</Text>
+      <Text color={theme.lavender} bold>{headerStr}</Text>
       <Text color={theme.surface1}>{separator}</Text>
-      {rows.map((row, i) => (
-        <Text key={i} color={theme.text}>{row}</Text>
-      ))}
+      {fields.map((field, i) => {
+        const nameCol = field.name.padEnd(nameWidth).slice(0, nameWidth);
+        const typeCol = field.types.join(", ").padEnd(typeWidth).slice(0, typeWidth);
+        const pctCol = `${field.populatedPct}%`.padStart(pctWidth);
+        const sampleCol = field.sampleValues.join(", ").slice(0, sampleWidth);
+        return (
+          <Text key={i}>
+            <Text color={theme.blue}>{nameCol}</Text>
+            <Text color={theme.surface1}>  </Text>
+            <Text color={typeColor(field.types)}>{typeCol}</Text>
+            <Text color={theme.surface1}>  </Text>
+            <Text color={pctColor(field.populatedPct)}>{pctCol}</Text>
+            <Text color={theme.surface1}>  </Text>
+            <Text color={theme.subtext0}>{sampleCol}</Text>
+          </Text>
+        );
+      })}
       <Box marginTop={1}>
-        <Text color={theme.overlay0}>
-          {result.recordCount} records, {fields.length} fields
+        <Text>
+          <Text color={theme.teal}>{result.recordCount}</Text>
+          <Text color={theme.overlay0}> records, </Text>
+          <Text color={theme.teal}>{fields.length}</Text>
+          <Text color={theme.overlay0}> fields</Text>
         </Text>
       </Box>
     </Box>

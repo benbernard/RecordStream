@@ -160,7 +160,7 @@ describe("Explorer wiring audit", () => {
     const components = [
       "components/WelcomeScreen.tsx",
       "components/TitleBar.tsx",
-      "components/StageList.tsx",
+      "components/PipelineBar.tsx",
       "components/ForkTabs.tsx",
       "components/InspectorPanel.tsx",
       "components/StatusBar.tsx",
@@ -168,7 +168,6 @@ describe("Explorer wiring audit", () => {
       "components/RecordView.tsx",
       "components/RecordTable.tsx",
       "components/SchemaView.tsx",
-      "components/StageRow.tsx",
       "components/modals/AddStageModal.tsx",
       "components/modals/EditStageModal.tsx",
       "components/modals/ConfirmDialog.tsx",

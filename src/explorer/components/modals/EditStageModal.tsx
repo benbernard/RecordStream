@@ -1,23 +1,27 @@
 /**
  * EditStageModal — raw args text input for editing stage arguments,
- * plus a stream preview panel showing upstream records.
+ * plus side-by-side input/output preview panels.
  *
  * Layout:
  * - Top: title bar (operation name + hints)
  * - Middle: args text input
- * - Bottom: stream preview showing upstream records (parent stage output)
+ * - Bottom: side-by-side input (upstream) / output (live preview) panels
  *
- * Tab toggles focus between args input and stream preview.
- * In stream preview: ↑↓ navigate records, Enter zooms into a record detail.
+ * Tab cycles focus: args → input → output → args.
+ * In input/output panels: ↑↓ navigate records, Enter zooms into a record detail.
  * Enter (in args) confirms the edit. Esc cancels (or exits zoom).
  */
 
-import { useCallback, useState, useMemo } from "react";
-import { Box, Text, useInput } from "ink";
-import TextInput from "ink-text-input";
+import { useCallback, useState, useMemo, useEffect } from "react";
+import { Box, Text, useInput, useStdout } from "ink";
 import type { Record } from "../../../Record.ts";
 import type { JsonValue } from "../../../types/json.ts";
+import { allDocs } from "../../../cli/operation-registry.ts";
+import type { CommandDoc } from "../../../types/CommandDoc.ts";
+import { VimTextInput } from "../VimTextInput.tsx";
 import { theme } from "../../theme.ts";
+import { createOperationOrShell } from "../../../operations/transform/chain.ts";
+import { InterceptReceiver } from "../../executor/intercept-receiver.ts";
 
 export interface EditStageModalProps {
   /** The operation name being edited */
@@ -28,6 +32,8 @@ export interface EditStageModalProps {
   onConfirm: (args: string[]) => void;
   /** Called when user cancels */
   onCancel: () => void;
+  /** Called when user types | — confirms current args and adds a stage after */
+  onPipe?: (args: string[]) => void;
   /** Upstream records (output of the parent stage) */
   records?: Record[];
   /** Field names from the upstream cached result */
@@ -36,7 +42,6 @@ export interface EditStageModalProps {
 
 // ── Stream Preview helpers ──────────────────────────────────────
 
-const PREVIEW_MAX_RECORDS = 5;
 const COL_MIN = 4;
 const COL_MAX = 20;
 
@@ -128,32 +133,173 @@ function flattenRecord(record: Record, collapsed: Set<string>): TreeRow[] {
   return rows;
 }
 
+// ── Operation doc helpers ────────────────────────────────────────
+
+function formatDocLines(doc: CommandDoc): string[] {
+  const lines: string[] = [];
+  lines.push(doc.description);
+  lines.push("");
+  if (doc.options.length > 0) {
+    lines.push("Options:");
+    for (const opt of doc.options) {
+      const flags = opt.flags.join(", ");
+      const arg = opt.argument ? ` <${opt.argument}>` : "";
+      lines.push(`  ${flags}${arg}`);
+      lines.push(`    ${opt.description}`);
+    }
+    lines.push("");
+  }
+  if (doc.examples.length > 0) {
+    lines.push("Examples:");
+    for (const ex of doc.examples) {
+      lines.push(`  ${ex.command}`);
+      if (ex.description) {
+        lines.push(`  # ${ex.description}`);
+      }
+    }
+  }
+  return lines;
+}
+
+// ── Shell preview safety ─────────────────────────────────────────
+
+/** Shell commands that are safe to auto-preview (read-only / filtering). */
+const SAFE_SHELL_COMMANDS = new Set([
+  "head", "tail", "grep", "egrep", "fgrep",
+  "awk", "gawk", "sed",
+  "cut", "paste", "join", "column",
+  "sort", "uniq", "shuf",
+  "wc", "nl", "cat", "tac",
+  "tr", "rev", "fold", "fmt",
+  "jq", "yq", "gojq",
+]);
+
 // ── Focus areas ─────────────────────────────────────────────────
 
-type FocusArea = "args" | "preview";
+type FocusArea = "args" | "input" | "output";
+
+const FOCUS_CYCLE: FocusArea[] = ["args", "input", "output"];
 
 export function EditStageModal({
   operationName,
   currentArgs,
   onConfirm,
   onCancel,
+  onPipe,
   records,
   fieldNames,
 }: EditStageModalProps) {
   const [value, setValue] = useState(currentArgs);
   const [focusArea, setFocusArea] = useState<FocusArea>("args");
-  const [previewCursor, setPreviewCursor] = useState(0);
+  const [inputCursor, setInputCursor] = useState(0);
+  const [outputCursor, setOutputCursor] = useState(0);
 
   // Zoom state: which record index is zoomed (null = no zoom)
   const [zoomedIndex, setZoomedIndex] = useState<number | null>(null);
+  const [zoomSource, setZoomSource] = useState<"input" | "output">("input");
   const [zoomCursorRow, setZoomCursorRow] = useState(0);
   const [zoomCollapsed, setZoomCollapsed] = useState<Set<string>>(() => new Set());
 
-  const hasRecords = records && records.length > 0;
-  const previewRecords = useMemo(
-    () => (records ?? []).slice(0, PREVIEW_MAX_RECORDS),
-    [records],
+  // Output preview state
+  const [outputRecords, setOutputRecords] = useState<Record[]>([]);
+  const [outputFieldNames, setOutputFieldNames] = useState<string[]>([]);
+  const [outputLines, setOutputLines] = useState<string[]>([]);
+  const [outputError, setOutputError] = useState<string | null>(null);
+
+  // Shell preview gating: recs ops and safe shell commands auto-preview;
+  // unknown shell commands require explicit opt-in via Ctrl+E.
+  const isRecsOp = useMemo(
+    () => allDocs.some((d) => d.name === operationName),
+    [operationName],
   );
+  const [shellPreviewEnabled, setShellPreviewEnabled] = useState(false);
+  const previewEnabled = isRecsOp || SAFE_SHELL_COMMANDS.has(operationName) || shellPreviewEnabled;
+
+  // Doc help state
+  const [docScroll, setDocScroll] = useState(0);
+  const opDoc = useMemo(() => allDocs.find((d) => d.name === operationName), [operationName]);
+  const docLines = useMemo(() => (opDoc ? formatDocLines(opDoc) : []), [opDoc]);
+
+  const hasRecords = records && records.length > 0;
+  const hasDoc = docLines.length > 0;
+
+  // ── Dynamic height computation ────────────────────────────────
+  // Distribute available terminal rows between the doc viewport and
+  // the record preview panels so the modal fills the screen.
+  const { stdout } = useStdout();
+  const termRows = stdout?.rows ?? 40;
+
+  // Fixed overhead lines that are always consumed:
+  //   App chrome (TitleBar + ForkTabs + PipelineBar): 5
+  //   Modal border(2) + padding(2): 4
+  //   Title bar: 1, gap+cmd: 2, gap+args: 2, gap+footer: 2 → 7
+  // Conditional overhead:
+  //   Doc section: marginTop(1) + scroll indicators(2) = 3
+  //   Panel section: marginTop(1) + border(2) + title(1) + header(1) = 5
+  const fixedOverhead = 5 + 4 + 7
+    + (hasDoc ? 3 : 0)
+    + (hasRecords ? 5 : 0);
+  const available = Math.max(0, termRows - fixedOverhead);
+
+  let docViewport: number;
+  let previewMaxRecords: number;
+  if (!hasDoc && !hasRecords) {
+    docViewport = 0;
+    previewMaxRecords = 0;
+  } else if (!hasRecords) {
+    docViewport = Math.max(3, available);
+    previewMaxRecords = 0;
+  } else if (!hasDoc) {
+    docViewport = 0;
+    previewMaxRecords = Math.max(3, available);
+  } else {
+    // Split: 55% to doc, 45% to records
+    docViewport = Math.max(3, Math.floor(available * 0.55));
+    previewMaxRecords = Math.max(3, available - docViewport);
+  }
+
+  const previewRecords = useMemo(
+    () => (records ?? []).slice(0, previewMaxRecords),
+    [records, previewMaxRecords],
+  );
+
+  // Debounced args for output preview
+  const [debouncedArgs, setDebouncedArgs] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedArgs(value), 300);
+    return () => clearTimeout(timer);
+  }, [value]);
+
+  // Execute preview when debounced args change (gated by previewEnabled)
+  useEffect(() => {
+    if (!previewEnabled) {
+      setOutputRecords([]);
+      setOutputFieldNames([]);
+      setOutputLines([]);
+      setOutputError(null);
+      return;
+    }
+    try {
+      const parsed = parseArgs(debouncedArgs);
+      const interceptor = new InterceptReceiver();
+      const op = createOperationOrShell(operationName, parsed, interceptor);
+      for (const record of previewRecords) {
+        op.acceptRecord(record);
+      }
+      op.finish();
+      setOutputRecords(interceptor.records.slice(0, previewMaxRecords));
+      setOutputFieldNames([...interceptor.fieldNames]);
+      setOutputLines(interceptor.lines.slice(0, previewMaxRecords));
+      setOutputError(null);
+    } catch (e: unknown) {
+      setOutputRecords([]);
+      setOutputFieldNames([]);
+      setOutputLines([]);
+      setOutputError(e instanceof Error ? e.message : String(e));
+    }
+  }, [debouncedArgs, operationName, previewRecords, previewEnabled]);
+
+  const outputPreviewRecords = outputRecords;
 
   const handleSubmit = useCallback(
     (val: string) => {
@@ -163,8 +309,24 @@ export function EditStageModal({
     [onConfirm],
   );
 
-  // Zoomed record tree rows
-  const zoomedRecord = zoomedIndex !== null ? previewRecords[zoomedIndex] : undefined;
+  // Intercept | character: confirm current args and pipe to a new stage
+  const handleArgsChange = useCallback(
+    (newValue: string) => {
+      if (newValue.includes("|")) {
+        const clean = newValue.replace(/\|/g, "").trimEnd();
+        if (onPipe) {
+          onPipe(parseArgs(clean));
+        }
+        return;
+      }
+      setValue(newValue);
+    },
+    [onPipe],
+  );
+
+  // Determine which record set to use for zoom
+  const zoomRecordSet = zoomSource === "input" ? previewRecords : outputPreviewRecords;
+  const zoomedRecord = zoomedIndex !== null ? zoomRecordSet[zoomedIndex] : undefined;
   const zoomRows = useMemo(
     () => (zoomedRecord ? flattenRecord(zoomedRecord, zoomCollapsed) : []),
     [zoomedRecord, zoomCollapsed],
@@ -183,36 +345,48 @@ export function EditStageModal({
   );
 
   // ── Keyboard: non-printable keys (always active) ──────────────
-  // This handler ONLY checks key.* flags, never the `input` string,
-  // so it cannot intercept printable characters that TextInput needs.
-  // Enter is handled here (not via TextInput's onSubmit) because
-  // ink-text-input's internal useInput handler is recreated every render
-  // without useCallback, causing brief deregistration windows where
-  // keypress events can be missed.
+  // VimTextInput handles Escape/Enter when args is focused,
+  // so this handler only fires for non-args focus areas.
   useInput((_input, key) => {
     // In zoom mode, let the secondary handler take over entirely
     if (zoomedIndex !== null) return;
 
-    if (key.escape) {
+    if (key.escape && focusArea !== "args") {
       onCancel();
-      return;
-    }
-
-    if (key.return && focusArea === "args") {
-      handleSubmit(value);
       return;
     }
 
     if (key.tab) {
       if (hasRecords) {
-        setFocusArea((f) => (f === "args" ? "preview" : "args"));
+        setFocusArea((f) => {
+          const idx = FOCUS_CYCLE.indexOf(f);
+          return FOCUS_CYCLE[(idx + 1) % FOCUS_CYCLE.length]!;
+        });
       }
+      return;
+    }
+
+    // Ctrl+E toggles live preview for unsafe shell commands
+    if (_input === "e" && key.ctrl && !isRecsOp) {
+      setShellPreviewEnabled((prev) => !prev);
+      return;
+    }
+
+    // Ctrl+D / Ctrl+U scroll the doc help by half a page
+    // Gate Ctrl+U behind focusArea !== "args" to avoid conflict with VimTextInput's Ctrl+U
+    const halfPage = Math.max(1, Math.floor(docViewport / 2));
+    if (_input === "d" && key.ctrl) {
+      setDocScroll((s) => Math.min(Math.max(0, docLines.length - docViewport), s + halfPage));
+      return;
+    }
+    if (_input === "u" && key.ctrl && focusArea !== "args") {
+      setDocScroll((s) => Math.max(0, s - halfPage));
       return;
     }
   });
 
   // ── Keyboard: zoom mode + preview navigation ─────────────────
-  // Active only when TextInput is NOT focused (preview/zoom).
+  // Active only when TextInput is NOT focused (input/output/zoom).
   // This handler may match printable chars (j/k/h/l/space) so it must
   // be disabled while the user is typing in the args box.
   useInput((input, key) => {
@@ -249,7 +423,7 @@ export function EditStageModal({
         return;
       }
       if (key.rightArrow || input === "l") {
-        if (zoomedIndex < previewRecords.length - 1) {
+        if (zoomedIndex < zoomRecordSet.length - 1) {
           setZoomedIndex((i) => i! + 1);
           setZoomCursorRow(0);
           setZoomCollapsed(new Set());
@@ -259,19 +433,41 @@ export function EditStageModal({
       return; // Absorb all other input while zoomed
     }
 
-    // ── Preview navigation ────────────────────────────────────
-    if (focusArea === "preview") {
+    // ── Input panel navigation ────────────────────────────────
+    if (focusArea === "input") {
       if (key.upArrow || input === "k") {
-        setPreviewCursor((i) => Math.max(0, i - 1));
+        setInputCursor((i) => Math.max(0, i - 1));
         return;
       }
       if (key.downArrow || input === "j") {
-        setPreviewCursor((i) => Math.min(previewRecords.length - 1, i + 1));
+        setInputCursor((i) => Math.min(previewRecords.length - 1, i + 1));
         return;
       }
       if (key.return) {
         if (previewRecords.length > 0) {
-          setZoomedIndex(previewCursor);
+          setZoomSource("input");
+          setZoomedIndex(inputCursor);
+          setZoomCursorRow(0);
+          setZoomCollapsed(new Set());
+        }
+        return;
+      }
+    }
+
+    // ── Output panel navigation ───────────────────────────────
+    if (focusArea === "output") {
+      if (key.upArrow || input === "k") {
+        setOutputCursor((i) => Math.max(0, i - 1));
+        return;
+      }
+      if (key.downArrow || input === "j") {
+        setOutputCursor((i) => Math.min(outputPreviewRecords.length - 1, i + 1));
+        return;
+      }
+      if (key.return) {
+        if (outputPreviewRecords.length > 0) {
+          setZoomSource("output");
+          setZoomedIndex(outputCursor);
           setZoomCursorRow(0);
           setZoomCollapsed(new Set());
         }
@@ -282,7 +478,7 @@ export function EditStageModal({
 
   // ── Zoom view (replaces normal content) ────────────────────
   if (zoomedIndex !== null && zoomedRecord) {
-    const viewportHeight = 20;
+    const viewportHeight = 15;
     let scrollTop = Math.max(0, zoomCursorRow - Math.floor(viewportHeight / 2));
     if (scrollTop + viewportHeight > zoomRows.length) {
       scrollTop = Math.max(0, zoomRows.length - viewportHeight);
@@ -292,8 +488,8 @@ export function EditStageModal({
     return (
       <Box
         flexDirection="column"
-        width="80%"
-        height="80%"
+        width="90%"
+        flexGrow={1}
         borderStyle="single"
         borderColor={theme.surface1}
         padding={1}
@@ -302,7 +498,7 @@ export function EditStageModal({
         <Box height={1} flexDirection="row" justifyContent="space-between">
           <Text color={theme.text}>
             <Text bold>Record #{zoomedIndex + 1}</Text>
-            <Text color={theme.subtext0}> of {previewRecords.length}</Text>
+            <Text color={theme.subtext0}> of {zoomRecordSet.length} ({zoomSource})</Text>
           </Text>
           <Text color={theme.overlay0}>[Esc] back  [←/→] prev/next</Text>
         </Box>
@@ -363,93 +559,258 @@ export function EditStageModal({
 
   // ── Normal modal layout ────────────────────────────────────
 
-  // Compute stream preview table data
-  const previewFields = fieldNames ?? [];
-  const previewColWidths = useMemo(
-    () => computeColumnWidths(previewFields, previewRecords),
-    [previewFields, previewRecords],
+  // Compute input panel table data
+  const inputFields = fieldNames ?? [];
+  const inputColWidths = useMemo(
+    () => computeColumnWidths(inputFields, previewRecords),
+    [inputFields, previewRecords],
   );
+
+  // Compute output panel table data
+  const outputFields = outputFieldNames;
+  const outputColWidths = useMemo(
+    () => computeColumnWidths(outputFields, outputPreviewRecords),
+    [outputFields, outputPreviewRecords],
+  );
+
+  // Panel height: border(2) + panel title(1) + column header(1) + data rows
+  const panelHeight = previewMaxRecords + 4;
 
   return (
     <Box
       flexDirection="column"
-      width="70%"
+      width="90%"
+      flexGrow={1}
       borderStyle="single"
       borderColor={theme.surface1}
       padding={1}
     >
       {/* Title bar */}
       <Box height={1} flexDirection="row" justifyContent="space-between">
-        <Text color={theme.text}>
-          Edit: <Text bold>{operationName}</Text>
+        <Text>
+          <Text color={theme.blue}>Edit: </Text>
+          <Text color={theme.peach} bold>{isRecsOp ? `recs ${operationName}` : operationName}</Text>
         </Text>
-        <Text color={theme.overlay0}>[Esc] cancel{hasRecords ? "  [Tab] switch panel" : ""}</Text>
+        <Text>
+          <Text color={theme.lavender}>[Esc(2x)]</Text>
+          <Text color={theme.subtext0}> cancel</Text>
+          {hasRecords && (
+            <>
+              <Text color={theme.subtext0}>  </Text>
+              <Text color={theme.lavender}>[Tab]</Text>
+              <Text color={theme.subtext0}> switch panel</Text>
+            </>
+          )}
+        </Text>
+      </Box>
+
+      {/* Current command preview */}
+      <Box marginTop={1}>
+        <Text>
+          <Text color={theme.green}>$ </Text>
+          <Text color={theme.subtext0}>{isRecsOp ? `recs ${operationName}` : operationName} </Text>
+          {value ? <Text color={theme.text}>{value}</Text> : <Text color={theme.surface1}>(no args)</Text>}
+        </Text>
       </Box>
 
       {/* Args input */}
       <Box marginTop={1}>
-        <Text color={theme.text}>Args: </Text>
-        <TextInput
+        <Text color={theme.blue}>Args: </Text>
+        <VimTextInput
           value={value}
-          onChange={setValue}
+          onChange={handleArgsChange}
+          onSubmit={handleSubmit}
+          onEscape={onCancel}
           placeholder="--key value ..."
           focus={focusArea === "args"}
         />
       </Box>
 
-      {/* Stream preview */}
+      {/* Operation help */}
+      {docLines.length > 0 && (() => {
+        const scrollClamped = Math.min(docScroll, Math.max(0, docLines.length - docViewport));
+        const visibleLines = docLines.slice(scrollClamped, scrollClamped + docViewport);
+        const hasUp = scrollClamped > 0;
+        const hasDown = scrollClamped + docViewport < docLines.length;
+        return (
+          <Box flexDirection="column" marginTop={1} height={docViewport + 2} overflow="hidden">
+            {hasUp && <Text color={theme.overlay0}>↑ ^U</Text>}
+            {!hasUp && <Text>{" "}</Text>}
+            {visibleLines.map((line, i) => (
+              <Text key={i} color={theme.subtext0}>{line}</Text>
+            ))}
+            {hasDown && <Text color={theme.overlay0}>↓ ^D</Text>}
+          </Box>
+        );
+      })()}
+
+      {/* Side-by-side input/output preview */}
       {hasRecords && (
-        <Box
-          flexDirection="column"
-          borderStyle="single"
-          borderColor={focusArea === "preview" ? theme.blue : theme.surface1}
-          paddingX={1}
-          marginTop={1}
-          height={PREVIEW_MAX_RECORDS + 4}
-        >
-          <Box height={1} flexDirection="row" justifyContent="space-between">
-            <Text color={focusArea === "preview" ? theme.blue : theme.subtext0} bold>
-              Upstream Records
-            </Text>
-            <Text color={theme.overlay0}>
-              {records!.length} record{records!.length !== 1 ? "s" : ""}
-              {records!.length > PREVIEW_MAX_RECORDS ? ` (showing ${PREVIEW_MAX_RECORDS})` : ""}
-            </Text>
+        <Box flexDirection="row" marginTop={1} gap={1}>
+          {/* Input panel */}
+          <Box
+            flexDirection="column"
+            borderStyle="single"
+            borderColor={focusArea === "input" ? theme.blue : theme.surface1}
+            paddingX={1}
+            width="50%"
+            height={panelHeight}
+          >
+            <Box height={1} flexDirection="row" justifyContent="space-between">
+              <Text color={focusArea === "input" ? theme.blue : theme.subtext0} bold>
+                Input
+              </Text>
+              <Text color={theme.overlay0}>
+                {records!.length} rec{records!.length !== 1 ? "s" : ""}
+              </Text>
+            </Box>
+
+            {inputFields.length > 0 ? (
+              <Box flexDirection="column" overflow="hidden">
+                {/* Header row */}
+                <Text color={theme.overlay0}>
+                  {"  #   "}
+                  {inputFields.map((f, i) =>
+                    f.padEnd(inputColWidths[i]!).slice(0, inputColWidths[i]!),
+                  ).join("  ")}
+                </Text>
+                {/* Record rows + padding */}
+                {Array.from({ length: previewMaxRecords }, (_, ri) => {
+                  const record = previewRecords[ri];
+                  if (!record) {
+                    return <Text key={ri}>{" "}</Text>;
+                  }
+                  const isSel = ri === inputCursor && focusArea === "input";
+                  const prefix = isSel ? "> " : "  ";
+                  const rowNum = String(ri + 1).padStart(3);
+                  const cells = inputFields.map((field, fi) => {
+                    const val = record.get(field);
+                    const str = val === null || val === undefined ? "" : String(val);
+                    return str.padEnd(inputColWidths[fi]!).slice(0, inputColWidths[fi]!);
+                  });
+                  return (
+                    <Text
+                      key={ri}
+                      backgroundColor={isSel ? theme.surface0 : undefined}
+                      color={isSel ? theme.text : theme.subtext0}
+                    >
+                      {prefix}{rowNum} {cells.join("  ")}
+                    </Text>
+                  );
+                })}
+              </Box>
+            ) : (
+              <Text color={theme.overlay0}>(no fields)</Text>
+            )}
           </Box>
 
-          {previewFields.length > 0 ? (
-            <Box flexDirection="column" overflow="hidden">
-              {/* Header row */}
-              <Text color={theme.overlay0}>
-                {"  #   "}
-                {previewFields.map((f, i) =>
-                  f.padEnd(previewColWidths[i]!).slice(0, previewColWidths[i]!),
-                ).join("  ")}
+          {/* Output panel */}
+          <Box
+            flexDirection="column"
+            borderStyle="single"
+            borderColor={
+              focusArea === "output"
+                ? (outputError ? theme.red : theme.green)
+                : (outputError ? theme.red : theme.surface1)
+            }
+            paddingX={1}
+            width="50%"
+            height={panelHeight}
+          >
+            <Box height={1} flexDirection="row" justifyContent="space-between">
+              <Text color={focusArea === "output" ? theme.green : theme.subtext0} bold>
+                Output
               </Text>
-              {/* Record rows */}
-              {previewRecords.map((record, ri) => {
-                const isSel = ri === previewCursor && focusArea === "preview";
-                const prefix = isSel ? "> " : "  ";
-                const rowNum = String(ri + 1).padStart(3);
-                const cells = previewFields.map((field, fi) => {
-                  const val = record.get(field);
-                  const str = val === null || val === undefined ? "" : String(val);
-                  return str.padEnd(previewColWidths[fi]!).slice(0, previewColWidths[fi]!);
-                });
-                return (
-                  <Text
-                    key={ri}
-                    backgroundColor={isSel ? theme.surface0 : undefined}
-                    color={isSel ? theme.text : theme.subtext0}
-                  >
-                    {prefix}{rowNum} {cells.join("  ")}
-                  </Text>
-                );
-              })}
+              <Text color={theme.overlay0}>
+                {outputError
+                  ? "error"
+                  : outputPreviewRecords.length > 0
+                    ? `${outputPreviewRecords.length} rec${outputPreviewRecords.length !== 1 ? "s" : ""}`
+                    : outputLines.length > 0
+                      ? `${outputLines.length} line${outputLines.length !== 1 ? "s" : ""}`
+                      : "empty"}
+              </Text>
             </Box>
-          ) : (
-            <Text color={theme.overlay0}>(no fields)</Text>
-          )}
+
+            {!previewEnabled ? (
+              <Box flexDirection="column" overflow="hidden">
+                <Text color={theme.yellow}>Shell preview paused</Text>
+                <Text color={theme.overlay0}>^E to enable live preview</Text>
+                {Array.from({ length: Math.max(0, previewMaxRecords - 2) }, (_, i) => (
+                  <Text key={i}>{" "}</Text>
+                ))}
+              </Box>
+            ) : outputError ? (
+              <Box flexDirection="column" overflow="hidden">
+                <Text color={theme.red} wrap="truncate">{outputError}</Text>
+                {Array.from({ length: previewMaxRecords - 1 }, (_, i) => (
+                  <Text key={i}>{" "}</Text>
+                ))}
+              </Box>
+            ) : outputFields.length > 0 ? (
+              <Box flexDirection="column" overflow="hidden">
+                {/* Header row */}
+                <Text color={theme.overlay0}>
+                  {"  #   "}
+                  {outputFields.map((f, i) =>
+                    f.padEnd(outputColWidths[i]!).slice(0, outputColWidths[i]!),
+                  ).join("  ")}
+                </Text>
+                {/* Record rows + padding */}
+                {Array.from({ length: previewMaxRecords }, (_, ri) => {
+                  const record = outputPreviewRecords[ri];
+                  if (!record) {
+                    return <Text key={ri}>{" "}</Text>;
+                  }
+                  const isSel = ri === outputCursor && focusArea === "output";
+                  const prefix = isSel ? "> " : "  ";
+                  const rowNum = String(ri + 1).padStart(3);
+                  const cells = outputFields.map((field, fi) => {
+                    const val = record.get(field);
+                    const str = val === null || val === undefined ? "" : String(val);
+                    return str.padEnd(outputColWidths[fi]!).slice(0, outputColWidths[fi]!);
+                  });
+                  return (
+                    <Text
+                      key={ri}
+                      backgroundColor={isSel ? theme.surface0 : undefined}
+                      color={isSel ? theme.text : theme.subtext0}
+                    >
+                      {prefix}{rowNum} {cells.join("  ")}
+                    </Text>
+                  );
+                })}
+              </Box>
+            ) : outputLines.length > 0 ? (
+              <Box flexDirection="column" overflow="hidden">
+                {/* Text line output (tojson, tocsv, toprettyprint, etc.) */}
+                {Array.from({ length: previewMaxRecords }, (_, li) => {
+                  const line = outputLines[li];
+                  if (line === undefined) {
+                    return <Text key={li}>{" "}</Text>;
+                  }
+                  const isSel = li === outputCursor && focusArea === "output";
+                  return (
+                    <Text
+                      key={li}
+                      backgroundColor={isSel ? theme.surface0 : undefined}
+                      color={isSel ? theme.text : theme.subtext0}
+                      wrap="truncate"
+                    >
+                      {isSel ? "> " : "  "}{line}
+                    </Text>
+                  );
+                })}
+              </Box>
+            ) : (
+              <Box flexDirection="column" overflow="hidden">
+                <Text color={theme.overlay0}>(no output)</Text>
+                {Array.from({ length: previewMaxRecords - 1 }, (_, i) => (
+                  <Text key={i}>{" "}</Text>
+                ))}
+              </Box>
+            )}
+          </Box>
         </Box>
       )}
 
@@ -457,8 +818,10 @@ export function EditStageModal({
       <Box height={1} marginTop={1}>
         <Text color={theme.overlay0}>
           {focusArea === "args"
-            ? `Enter:confirm  Esc:cancel${hasRecords ? "  Tab:preview records" : ""}`
-            : "↑↓:navigate  Enter:zoom record  Tab:edit args  Esc:cancel"}
+            ? `Enter:confirm  Esc:vim  Esc(2x):cancel${hasRecords ? "  Tab:input" : ""}${!isRecsOp ? `  ^E:${previewEnabled ? "pause" : "run"} preview` : ""}`
+            : focusArea === "input"
+              ? `↑↓:navigate  Enter:zoom  Tab:output  Esc:cancel${!isRecsOp ? `  ^E:${previewEnabled ? "pause" : "run"} preview` : ""}`
+              : `↑↓:navigate  Enter:zoom  Tab:args  Esc:cancel${!isRecsOp ? `  ^E:${previewEnabled ? "pause" : "run"} preview` : ""}`}
         </Text>
       </Box>
     </Box>

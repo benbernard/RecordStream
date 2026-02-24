@@ -3,13 +3,14 @@
  *
  * executeToStage() walks the stage path from the input to the target stage,
  * finds the nearest cached result, and executes forward from there. Uses
- * createOperation() from chain.ts to instantiate operations programmatically.
+ * createOperationOrShell() from chain.ts to instantiate operations — known
+ * recs operations are created directly, unknown names are run as shell commands.
  */
 
 // Side-effect import: registers all operation factories so createOperation() works.
 import "../../cli/dispatcher.ts";
 
-import { createOperation } from "../../operations/transform/chain.ts";
+import { createOperationOrShell } from "../../operations/transform/chain.ts";
 import { Operation } from "../../Operation.ts";
 import type { Record } from "../../Record.ts";
 import { InterceptReceiver } from "./intercept-receiver.ts";
@@ -172,7 +173,7 @@ export async function executeToStage(
     const opName = stage.config.operationName;
     const interceptor = new InterceptReceiver();
 
-    const op = createOperation(opName, [...stage.config.args], interceptor);
+    const op = createOperationOrShell(opName, [...stage.config.args], interceptor);
 
     if (isInputOperation(opName)) {
       // Input operations: handle the 3 patterns
@@ -200,11 +201,12 @@ export async function executeToStage(
       stageId: stage.id,
       inputId: state.activeInputId,
       records: interceptor.records,
+      lines: interceptor.lines,
       spillFile: null,
       recordCount: interceptor.recordCount,
       fieldNames: [...interceptor.fieldNames],
       computedAt: Date.now(),
-      sizeBytes: estimateSize(interceptor.records),
+      sizeBytes: estimateSize(interceptor.records) + estimateLineSize(interceptor.lines),
       computeTimeMs: elapsed,
     };
 
@@ -222,6 +224,7 @@ export async function executeToStage(
       stageId: targetStageId,
       inputId: state.activeInputId,
       records: currentRecords,
+      lines: [],
       spillFile: null,
       recordCount: currentRecords.length,
       fieldNames: [...new Set(currentRecords.flatMap((r) => r.keys()))],
@@ -308,4 +311,15 @@ function estimateSize(records: Record[]): number {
     sampleTotal += records[i]!.toString().length * 2; // rough: 2 bytes per char
   }
   return Math.round((sampleTotal / sampleSize) * len);
+}
+
+/**
+ * Rough estimate of memory size for an array of text lines.
+ */
+function estimateLineSize(lines: string[]): number {
+  let total = 0;
+  for (const line of lines) {
+    total += line.length * 2;
+  }
+  return total;
 }

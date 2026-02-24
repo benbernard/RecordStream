@@ -284,6 +284,7 @@ describe("executeToStage", () => {
       stageId: "s1",
       inputId: "in1",
       records: [new Record({ x: 5 }), new Record({ x: 3 })],
+      lines: [],
       spillFile: null,
       recordCount: 2,
       fieldNames: ["x"],
@@ -617,5 +618,114 @@ describe("createOperation + InterceptReceiver", () => {
     // collate produces one record per group
     const groups = receiver.records.map((r) => r.get("group")).sort();
     expect(groups).toEqual(["a", "b"]);
+  });
+
+  test("totable produces lines (not records) through InterceptReceiver", () => {
+    const receiver = new InterceptReceiver();
+    const op = createOperation("totable", [], receiver);
+
+    op.acceptRecord(new Record({ name: "alice", age: 30 }));
+    op.acceptRecord(new Record({ name: "bob", age: 25 }));
+    op.finish();
+
+    // totable outputs text lines, not records
+    expect(receiver.recordCount).toBe(0);
+    expect(receiver.records.length).toBe(0);
+    expect(receiver.lines.length).toBeGreaterThan(0);
+    // Should contain a header and data rows
+    const allText = receiver.lines.join("\n");
+    expect(allText).toContain("alice");
+    expect(allText).toContain("bob");
+  });
+
+  test("toprettyprint produces lines through InterceptReceiver", () => {
+    const receiver = new InterceptReceiver();
+    const op = createOperation("toprettyprint", [], receiver);
+
+    op.acceptRecord(new Record({ x: 1, y: "hello" }));
+    op.finish();
+
+    expect(receiver.recordCount).toBe(0);
+    expect(receiver.records.length).toBe(0);
+    expect(receiver.lines.length).toBeGreaterThan(0);
+    const allText = receiver.lines.join("\n");
+    expect(allText).toContain("hello");
+  });
+
+  test("tocsv produces lines through InterceptReceiver", () => {
+    const receiver = new InterceptReceiver();
+    const op = createOperation("tocsv", [], receiver);
+
+    op.acceptRecord(new Record({ name: "alice", age: 30 }));
+    op.acceptRecord(new Record({ name: "bob", age: 25 }));
+    op.finish();
+
+    expect(receiver.recordCount).toBe(0);
+    expect(receiver.records.length).toBe(0);
+    expect(receiver.lines.length).toBeGreaterThan(0);
+    const allText = receiver.lines.join("\n");
+    expect(allText).toContain("alice");
+    expect(allText).toContain("bob");
+  });
+});
+
+// ── Text output through executor pipeline ─────────────────────────────────
+
+describe("Text output operations in executor pipeline", () => {
+  const inputRecords = [
+    new Record({ name: "alice", age: 30 }),
+    new Record({ name: "bob", age: 25 }),
+  ];
+  const input: InputSource = {
+    id: "in1",
+    source: { kind: "stdin-capture", records: inputRecords },
+    label: "test input",
+  };
+
+  test("totable stage captures lines in CachedResult", async () => {
+    const stages = [
+      makeStage("s1", "grep", ["true"], null, 0),
+      makeStage("s2", "totable", [], "s1", 1),
+    ];
+    const state = makePipelineState(stages, input);
+
+    const result = await executeToStage(state, "s2");
+
+    // totable produces lines, not records
+    expect(result.records.length).toBe(0);
+    expect(result.lines.length).toBeGreaterThan(0);
+    const allText = result.lines.join("\n");
+    expect(allText).toContain("alice");
+    expect(allText).toContain("bob");
+  });
+
+  test("toprettyprint stage captures lines in CachedResult", async () => {
+    const stages = [
+      makeStage("s1", "grep", ["true"], null, 0),
+      makeStage("s2", "toprettyprint", [], "s1", 1),
+    ];
+    const state = makePipelineState(stages, input);
+
+    const result = await executeToStage(state, "s2");
+
+    expect(result.records.length).toBe(0);
+    expect(result.lines.length).toBeGreaterThan(0);
+    const allText = result.lines.join("\n");
+    expect(allText).toContain("alice");
+  });
+
+  test("tocsv stage captures lines in CachedResult", async () => {
+    const stages = [
+      makeStage("s1", "grep", ["true"], null, 0),
+      makeStage("s2", "tocsv", [], "s1", 1),
+    ];
+    const state = makePipelineState(stages, input);
+
+    const result = await executeToStage(state, "s2");
+
+    expect(result.records.length).toBe(0);
+    expect(result.lines.length).toBeGreaterThan(0);
+    const allText = result.lines.join("\n");
+    expect(allText).toContain("alice");
   });
 });

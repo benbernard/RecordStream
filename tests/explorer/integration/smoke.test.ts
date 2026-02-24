@@ -724,17 +724,17 @@ describe("Keyboard binding coverage", () => {
       ),
     ).text();
 
-    // Extract the HELP_TEXT content between backticks
-    const helpTextMatch = helpSource.match(
-      /const HELP_TEXT = `([\s\S]*?)`;/,
-    );
-    expect(helpTextMatch).toBeTruthy();
-    const helpText = helpTextMatch![1]!;
-
-    // Parse key bindings from help text
-    // Lines look like: "  ↑/k, ↓/j    Move cursor between stages"
-    // or "  a            Add stage after cursor"
-    const keyBindings = parseKeyBindings(helpText);
+    // Extract key bindings from HELP_SECTIONS structured data
+    // Entries look like: { key: "↑/k ↓/j", desc: "Move cursor between stages" }
+    const entryPattern = /\{\s*key:\s*"([^"]+)"\s*,\s*desc:\s*"([^"]+)"\s*\}/g;
+    const keyBindings: KeyBinding[] = [];
+    let entryMatch: RegExpExecArray | null;
+    while ((entryMatch = entryPattern.exec(helpSource)) !== null) {
+      const keyPart = entryMatch[1]!;
+      const description = entryMatch[2]!;
+      const keys = keyPart.split(/[\s/,]+/).filter(Boolean);
+      keyBindings.push({ keys, description });
+    }
     expect(keyBindings.length).toBeGreaterThan(0);
 
     // Read App.tsx to extract keyboard handlers
@@ -789,43 +789,6 @@ describe("Keyboard binding coverage", () => {
 interface KeyBinding {
   keys: string[];
   description: string;
-}
-
-/**
- * Parse key bindings from the HelpPanel HELP_TEXT.
- * Handles formats like:
- *   "↑/k, ↓/j    Move cursor"
- *   "a            Add stage"
- *   "Ctrl+R       Redo"
- *   "q / Ctrl+C   Quit"
- */
-function parseKeyBindings(helpText: string): KeyBinding[] {
-  const bindings: KeyBinding[] = [];
-  const lines = helpText.split("\n");
-
-  for (const line of lines) {
-    // Skip headers (all caps, no leading spaces with key patterns)
-    if (/^[A-Z]+/.test(line.trim()) && !line.trim().includes("  ")) continue;
-    if (line.trim() === "") continue;
-
-    // Match lines with "  key(s)   description" pattern
-    const match = line.match(/^\s{2,}(\S+(?:\s*[/,]\s*\S+)*)\s{2,}(.+)$/);
-    if (!match) continue;
-
-    const keyPart = match[1]!;
-    const description = match[2]!.trim();
-
-    // Split composite key entries like "↑/k, ↓/j" or "Enter/Tab"
-    const keys: string[] = [];
-    const parts = keyPart.split(/[/,]\s*/);
-    for (const part of parts) {
-      keys.push(part.trim());
-    }
-
-    bindings.push({ keys, description });
-  }
-
-  return bindings;
 }
 
 /**

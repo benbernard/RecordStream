@@ -20,7 +20,7 @@ export const InspectorPanel = memo(function InspectorPanel({ state }: InspectorP
       flexGrow={1}
       flexDirection="column"
       borderStyle="single"
-      borderColor={isFocused ? theme.text : theme.surface1}
+      borderColor={isFocused ? theme.blue : theme.surface1}
     >
       <InspectorHeader state={state} />
 
@@ -28,13 +28,17 @@ export const InspectorPanel = memo(function InspectorPanel({ state }: InspectorP
         {!stage ? (
           <Text color={theme.overlay0}>Select a stage to inspect its output</Text>
         ) : state.executing ? (
-          <Text color={theme.blue}>Computing...</Text>
+          <Text color={theme.yellow}>Computing...</Text>
         ) : state.lastError?.stageId === stage.id ? (
           <Box flexDirection="column">
             <Text color={theme.red}>Error: {state.lastError.message}</Text>
           </Box>
         ) : !output ? (
-          <Text color={theme.overlay0}>No cached output. Press r to execute.</Text>
+          <Text>
+            <Text color={theme.overlay0}>No cached output. Press </Text>
+            <Text color={theme.lavender}>r</Text>
+            <Text color={theme.overlay0}> to execute.</Text>
+          </Text>
         ) : (
           <RecordView
             result={output}

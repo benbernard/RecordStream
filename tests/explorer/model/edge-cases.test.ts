@@ -45,6 +45,7 @@ function makeCacheResult(
     stageId,
     inputId: state.activeInputId,
     records: [],
+    lines: [],
     spillFile: null,
     recordCount: 10,
     fieldNames: ["a"],

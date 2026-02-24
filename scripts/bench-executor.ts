@@ -102,7 +102,7 @@ function makePipelineState(
 function makeCachedResult(inputId: string, stageId: string, sizeBytes: number): CachedResult {
   return {
     key: `${inputId}:${stageId}`,
-    stageId, inputId, records: [], spillFile: null,
+    stageId, inputId, records: [], lines: [], spillFile: null,
     recordCount: 10, fieldNames: ["a", "b"],
     computedAt: Date.now(), sizeBytes, computeTimeMs: 1,
   };

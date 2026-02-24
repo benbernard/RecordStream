@@ -81,11 +81,11 @@ export function RecordTable({
     );
     return (
       <Box flexDirection="column">
-        <Text color={theme.overlay0}>{header}</Text>
+        <Text color={theme.lavender} bold>{header}</Text>
         {rows.map((row, i) => (
-          <Text key={i} color={theme.text}>{row}</Text>
+          <Text key={i} color={i === 0 ? theme.text : theme.subtext0}>{row}</Text>
         ))}
-        {footer ? <Text color={theme.surface1}>{footer}</Text> : null}
+        {footer ? <Text color={theme.overlay0}>{footer}</Text> : null}
       </Box>
     );
   }
@@ -119,8 +119,14 @@ export function RecordTable({
       )}
       {footer ? <Text color={theme.surface1}>{footer}</Text> : null}
       <Box marginTop={1}>
-        <Text color={theme.subtext0}>
-          Column: {fields[hi]} | g:grep s:sort c:collate F:spotlight Esc:clear
+        <Text>
+          <Text color={theme.peach}>Column: {fields[hi]}</Text>
+          <Text color={theme.overlay0}> | </Text>
+          <Text color={theme.lavender}>g</Text><Text color={theme.subtext0}>:grep </Text>
+          <Text color={theme.lavender}>s</Text><Text color={theme.subtext0}>:sort </Text>
+          <Text color={theme.lavender}>c</Text><Text color={theme.subtext0}>:collate </Text>
+          <Text color={theme.lavender}>F</Text><Text color={theme.subtext0}>:spotlight </Text>
+          <Text color={theme.lavender}>Esc</Text><Text color={theme.subtext0}>:clear</Text>
         </Text>
       </Box>
     </Box>

@@ -33,13 +33,18 @@ export function ConfirmDialog({
     <Box
       flexDirection="column"
       borderStyle="single"
-      borderColor={theme.surface1}
+      borderColor={theme.yellow}
       padding={1}
       width={50}
     >
-      <Text color={theme.text}>{message}</Text>
+      <Text color={theme.yellow}>{message}</Text>
       <Box height={1} marginTop={1}>
-        <Text color={theme.overlay0}>[y/Enter] confirm  [n/Esc] cancel</Text>
+        <Text>
+          <Text color={theme.green}>[y/Enter]</Text>
+          <Text color={theme.subtext0}> confirm  </Text>
+          <Text color={theme.red}>[n/Esc]</Text>
+          <Text color={theme.subtext0}> cancel</Text>
+        </Text>
       </Box>
     </Box>
   );

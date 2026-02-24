@@ -38,7 +38,7 @@ import type { ExplorerOptions } from "../index.tsx";
 import type { PipelineAction, StageConfig, FileSizeWarning } from "../model/types.ts";
 import { pipelineReducer, createInitialState } from "../model/reducer.ts";
 import { getCursorStage, getCursorOutput, getStageOutput, getDownstreamStages } from "../model/selectors.ts";
-import { exportAsPipeScript, exportAsChainCommand, copyToClipboard } from "../model/serialization.ts";
+import { exportAsPipeScript, exportAsChainCommand, exportAsOneLiner, copyToClipboard, shellEscape } from "../model/serialization.ts";
 import { detectInputOperation } from "../utils/file-detect.ts";
 import { useExecution } from "../hooks/useExecution.ts";
 import { useUndoRedo } from "../hooks/useUndoRedo.ts";
@@ -47,7 +47,7 @@ import { useVimIntegration } from "../hooks/useVimIntegration.ts";
 import { ExportPicker, type ExportFormat } from "./modals/ExportPicker.tsx";
 import { WelcomeScreen, type SessionSummary } from "./WelcomeScreen.tsx";
 import { TitleBar } from "./TitleBar.tsx";
-import { StageList } from "./StageList.tsx";
+import { PipelineBar } from "./PipelineBar.tsx";
 import { ForkTabs } from "./ForkTabs.tsx";
 import { InspectorPanel } from "./InspectorPanel.tsx";
 import { StatusBar } from "./StatusBar.tsx";
@@ -160,6 +160,18 @@ export function App({ options, sessions = [], sessionMatches = [] }: AppProps) {
 
   // Global keyboard handler (Ink useInput)
   useInput((input, key) => {
+    // Ctrl+C: always active — close modal if open, otherwise exit
+    if (input === "c" && key.ctrl) {
+      if (modal.kind !== "none") {
+        setModal({ kind: "none" });
+      } else {
+        void autoSave.saveNow(state).finally(() => {
+          exit();
+        });
+      }
+      return;
+    }
+
     // Skip when a modal is open — modals handle their own input
     if (modal.kind !== "none") return;
 
@@ -190,12 +202,6 @@ export function App({ options, sessions = [], sessionMatches = [] }: AppProps) {
       wrappedDispatch({ type: "TOGGLE_FOCUS" });
       return;
     }
-    if (input === "c" && key.ctrl) {
-      void autoSave.saveNow(state).finally(() => {
-        exit();
-      });
-      return;
-    }
     if (input.includes("x") && !key.shift) {
       const script = exportAsPipeScript(state);
       void copyToClipboard(script).then((ok) => {
@@ -206,6 +212,16 @@ export function App({ options, sessions = [], sessionMatches = [] }: AppProps) {
     if (input.includes("X")) {
       setModal({ kind: "exportPicker" });
       return;
+    }
+    if (input.includes("c") && !key.ctrl) {
+      // Yield to inspector's collate when a column is highlighted
+      if (!(state.focusedPanel === "inspector" && state.inspector.highlightedColumn !== null)) {
+        const oneLiner = exportAsOneLiner(state);
+        void copyToClipboard(oneLiner).then((ok) => {
+          showStatus(ok ? "Copied pipeline!" : "Clipboard failed");
+        });
+        return;
+      }
     }
     if (input.includes("v")) {
       const output = getCursorOutput(state);
@@ -254,11 +270,11 @@ export function App({ options, sessions = [], sessionMatches = [] }: AppProps) {
 
     // Pipeline panel keys
     if (state.focusedPanel === "pipeline") {
-      if (key.upArrow || input.includes("k")) {
+      if (key.leftArrow || key.upArrow || input.includes("h") || input.includes("k")) {
         wrappedDispatch({ type: "MOVE_CURSOR", direction: "up" });
         return;
       }
-      if (key.downArrow || input.includes("j")) {
+      if (key.rightArrow || key.downArrow || input.includes("l") || input.includes("j")) {
         wrappedDispatch({ type: "MOVE_CURSOR", direction: "down" });
         return;
       }
@@ -432,10 +448,10 @@ export function App({ options, sessions = [], sessionMatches = [] }: AppProps) {
   });
 
   const handleAddStageSelect = useCallback(
-    (operationName: string) => {
+    (operationName: string, initialArgs?: string[]) => {
       const config: StageConfig = {
         operationName,
-        args: [],
+        args: initialArgs ?? [],
         enabled: true,
       };
       if (modal.kind === "addStage" && modal.position === "before" && state.cursorStageId) {
@@ -468,6 +484,20 @@ export function App({ options, sessions = [], sessionMatches = [] }: AppProps) {
         });
       }
       setModal({ kind: "none" });
+    },
+    [state.cursorStageId, wrappedDispatch],
+  );
+
+  const handleEditStagePipe = useCallback(
+    (args: string[]) => {
+      if (state.cursorStageId) {
+        wrappedDispatch({
+          type: "UPDATE_STAGE_ARGS",
+          stageId: state.cursorStageId,
+          args,
+        });
+      }
+      setModal({ kind: "addStage", position: "after" });
     },
     [state.cursorStageId, wrappedDispatch],
   );
@@ -599,23 +629,22 @@ export function App({ options, sessions = [], sessionMatches = [] }: AppProps) {
   const cursorStage = getCursorStage(state);
   const cursorLabel = cursorStage?.config.operationName;
 
+  const isFullModal = modal.kind === "addStage" || modal.kind === "editStage" || modal.kind === "help";
+
   return (
     <Box flexDirection="column" width="100%" height="100%">
       {/* Title bar */}
       <TitleBar state={state} />
 
-      {/* Main content: pipeline list + inspector */}
-      <Box flexDirection="row" flexGrow={1}>
-        <Box width={30} flexDirection="column">
-          {/* Fork tabs — hidden when only one fork */}
-          <ForkTabs state={state} />
-          <StageList state={state} dispatch={wrappedDispatch} />
-        </Box>
-        <InspectorPanel state={state} />
-      </Box>
+      {/* Pipeline bar — compact shell-style pipeline display */}
+      <ForkTabs state={state} />
+      <PipelineBar state={state} />
+
+      {/* Inspector panel — hidden when a full-screen modal is open */}
+      {!isFullModal && <InspectorPanel state={state} />}
 
       {/* Status bar */}
-      <StatusBar state={state} statusMessage={statusMessage} undoRedo={undoRedo} />
+      {!isFullModal && <StatusBar state={state} statusMessage={statusMessage} undoRedo={undoRedo} />}
 
       {/* Modals */}
       {modal.kind === "addStage" && (() => {
@@ -637,9 +666,10 @@ export function App({ options, sessions = [], sessionMatches = [] }: AppProps) {
         return (
           <EditStageModal
             operationName={cursorStage.config.operationName}
-            currentArgs={cursorStage.config.args.join(" ")}
+            currentArgs={cursorStage.config.args.map(shellEscape).join(" ")}
             onConfirm={handleEditStageSubmit}
             onCancel={() => setModal({ kind: "none" })}
+            onPipe={handleEditStagePipe}
             records={parentOutput?.records}
             fieldNames={parentOutput?.fieldNames}
           />

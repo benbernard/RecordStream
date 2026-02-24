@@ -14,7 +14,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { Box, Text, useInput } from "ink";
-import TextInput from "ink-text-input";
+import { VimTextInput } from "../VimTextInput.tsx";
 import type {
   PipelineState,
   PipelineAction,
@@ -109,13 +109,13 @@ export function InputSwitcher({
     [state, dispatch, onShowStatus, onClose, onLargeFile],
   );
 
-  // Keyboard when adding a file — only Escape (TextInput handles chars + Enter via onSubmit)
-  useInput((_input, key) => {
-    if (key.escape) {
-      setIsAdding(false);
-      setNewPath("");
-    }
-  }, { isActive: isAdding });
+  // Adding phase: VimTextInput handles Escape (via onEscape) and Enter (via onSubmit),
+  // so no separate useInput handler is needed for the adding phase.
+
+  const handleAddingEscape = useCallback(() => {
+    setIsAdding(false);
+    setNewPath("");
+  }, []);
 
   // Keyboard for normal list navigation
   useInput((input, key) => {
@@ -164,16 +164,17 @@ export function InputSwitcher({
         <Box flexDirection="column" marginTop={1}>
           <Text color={theme.text}>File path:</Text>
           <Box marginTop={1}>
-            <TextInput
+            <VimTextInput
               value={newPath}
               onChange={setNewPath}
               onSubmit={handlePathSubmit}
+              onEscape={handleAddingEscape}
               placeholder="/path/to/file.jsonl"
               focus={true}
             />
           </Box>
           <Box height={1} marginTop={1}>
-            <Text color={theme.overlay0}>Enter:add  Esc:cancel</Text>
+            <Text color={theme.overlay0}>Enter:add  Esc:vim  Esc(2x):cancel</Text>
           </Box>
         </Box>
       ) : (

@@ -42,6 +42,7 @@ export interface CachedResult {
   stageId: StageId;
   inputId: InputId;
   records: Record[];
+  lines: string[];
   spillFile: string | null;
   recordCount: number;
   fieldNames: string[];
@@ -108,6 +109,7 @@ export interface StageDelta {
   outputCount: number;
   fieldsAdded: number;
   fieldsRemoved: number;
+  isTextOutput?: boolean;
 }
 
 // ── Actions ───────────────────────────────────────────────────────

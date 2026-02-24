@@ -163,11 +163,16 @@ export function getStageDelta(
     }
   }
 
+  // For text-output stages (lines but no records), report line count instead
+  const isTextOutput = cached.records.length === 0 && cached.lines.length > 0;
+  const outputCount = isTextOutput ? cached.lines.length : cached.recordCount;
+
   return {
     kind,
     parentCount: parentCached ? parentCached.recordCount : null,
-    outputCount: cached.recordCount,
+    outputCount,
     fieldsAdded,
     fieldsRemoved,
+    isTextOutput,
   };
 }

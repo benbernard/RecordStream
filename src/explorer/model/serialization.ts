@@ -5,6 +5,15 @@
 
 import type { PipelineState, InputSource, Stage } from "./types.ts";
 import { getEnabledStages } from "./selectors.ts";
+import { allDocs } from "../../cli/operation-registry.ts";
+
+/**
+ * Check whether an operation name is a known recs operation
+ * (as opposed to an arbitrary shell command like head, jq, etc.).
+ */
+function isKnownRecsOp(name: string): boolean {
+  return allDocs.some((d) => d.name === name);
+}
 
 /**
  * Characters that need shell escaping (in addition to single quotes).
@@ -76,10 +85,13 @@ export function exportAsChainCommand(
 }
 
 /**
- * Format a stage as a `recs <op> <args...>` shell command fragment.
+ * Format a stage as a shell command fragment.
+ * Known recs operations get the `recs` prefix; shell commands do not.
  */
 function formatStageCommand(stage: Stage): string {
-  const parts = ["recs", stage.config.operationName];
+  const parts = isKnownRecsOp(stage.config.operationName)
+    ? ["recs", stage.config.operationName]
+    : [stage.config.operationName];
   for (const arg of stage.config.args) {
     parts.push(shellEscape(arg));
   }
@@ -95,6 +107,31 @@ function formatChainPart(stage: Stage): string {
     parts.push(shellEscape(arg));
   }
   return parts.join(" ");
+}
+
+/**
+ * Export the pipeline as a single-line shell pipe command.
+ *
+ * Example output:
+ * ```
+ * recs fromcsv data.csv | recs grep 'r.age > 25' | head -5 | recs totable
+ * ```
+ */
+export function exportAsOneLiner(
+  state: PipelineState,
+  inputSource?: InputSource,
+): string {
+  const stages = getEnabledStages(state);
+  if (stages.length === 0) return "";
+
+  const input = inputSource ?? state.inputs.get(state.activeInputId);
+  const parts = stages.map((stage) => formatStageCommand(stage));
+
+  if (input?.source.kind === "file") {
+    parts[0] = `${parts[0]} ${shellEscape(input.source.path)}`;
+  }
+
+  return parts.join(" | ");
 }
 
 /**

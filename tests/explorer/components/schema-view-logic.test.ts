@@ -20,6 +20,7 @@ function makeCachedResult(
     stageId: "s1",
     inputId: "in1",
     records,
+    lines: [],
     spillFile: null,
     recordCount: records.length,
     fieldNames: names,

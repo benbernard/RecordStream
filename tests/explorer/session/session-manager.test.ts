@@ -482,6 +482,7 @@ describe("SessionCacheStore", () => {
         new Record({ name: "alice", age: 30 }),
         new Record({ name: "bob", age: 25 }),
       ],
+      lines: [],
       spillFile: null,
       recordCount: 2,
       fieldNames: ["name", "age"],

@@ -21,13 +21,20 @@ export const TitleBar = memo(function TitleBar({ state }: TitleBarProps) {
   const countStr =
     recordCount !== undefined ? ` (${recordCount} rec)` : "";
 
-  const titleLabel = state.sessionName ? `recs explorer — ${state.sessionName}` : "recs explorer";
-
   return (
     <Box height={1} flexDirection="row" justifyContent="space-between" width="100%">
-      <Text color={theme.text}>{titleLabel}</Text>
-      <Text color={theme.subtext0}>
-        input: {inputLabel}{countStr}   fork: {forkLabel}   [?]
+      <Text>
+        <Text color={theme.mauve} bold>recs explorer</Text>
+        {state.sessionName ? <Text color={theme.peach}> — {state.sessionName}</Text> : ""}
+      </Text>
+      <Text>
+        <Text color={theme.overlay0}>input:</Text>
+        <Text color={theme.blue}>{inputLabel}</Text>
+        {countStr ? <Text color={theme.teal}>{countStr}</Text> : ""}
+        <Text color={theme.overlay0}>   fork:</Text>
+        <Text color={theme.green}>{forkLabel}</Text>
+        <Text color={theme.overlay0}>   </Text>
+        <Text color={theme.lavender}>[?]</Text>
       </Text>
     </Box>
   );

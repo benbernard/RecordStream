@@ -126,17 +126,17 @@ export function WelcomeScreen({
   return (
     <Box flexDirection="column" width="100%" height="100%" justifyContent="center" alignItems="center">
       <Box flexDirection="column" width={60}>
-        <Text bold color={theme.text}>
+        <Text bold color={theme.mauve}>
           Welcome to recs explorer
         </Text>
         <Text> </Text>
-        <Text color={theme.text}>Open a file to start building a pipeline:</Text>
+        <Text color={theme.subtext0}>Open a file to start building a pipeline:</Text>
         <Text> </Text>
 
         {/* Recent sessions */}
         {sessions.length > 0 ? (
           <Box flexDirection="column">
-            <Text color={theme.overlay0}>Recent sessions:</Text>
+            <Text color={theme.peach} bold>Recent sessions:</Text>
             {sessions.map((session, idx) => {
               const isSelected = idx === selectedIndex && mode === "list";
               const stageLabel = session.stageCount === 1 ? "1 stage" : `${session.stageCount} stages`;
@@ -144,13 +144,24 @@ export function WelcomeScreen({
               const primaryLabel = session.name ?? session.inputLabel;
               const secondaryLabel = session.name ? ` (${session.inputLabel})` : "";
               return (
-                <Text
-                  key={session.sessionId}
-                  backgroundColor={isSelected ? theme.surface0 : undefined}
-                  color={isSelected ? theme.text : theme.subtext0}
-                >
-                  {isSelected ? "> " : "  "}
-                  {primaryLabel}{secondaryLabel} — {stageLabel}, last used {timeLabel}
+                <Text key={session.sessionId}>
+                  <Text color={isSelected ? theme.lavender : theme.overlay0}>
+                    {isSelected ? "> " : "  "}
+                  </Text>
+                  <Text
+                    backgroundColor={isSelected ? theme.surface0 : undefined}
+                    color={isSelected ? theme.lavender : theme.subtext0}
+                    bold={isSelected}
+                  >
+                    {primaryLabel}
+                  </Text>
+                  <Text color={isSelected ? theme.flamingo : theme.overlay0}>
+                    {secondaryLabel}
+                  </Text>
+                  <Text color={theme.overlay0}> — </Text>
+                  <Text color={theme.teal}>{stageLabel}</Text>
+                  <Text color={theme.overlay0}>, last used </Text>
+                  <Text color={theme.overlay0}>{timeLabel}</Text>
                 </Text>
               );
             })}
@@ -165,16 +176,22 @@ export function WelcomeScreen({
         {mode === "fileInput" ? (
           <Box flexDirection="column">
             <Box>
-              <Text color={theme.text}>File path: </Text>
-              <Text color={theme.lavender}>{filePath}<Text color={theme.overlay0}>|</Text></Text>
+              <Text color={theme.blue}>File path: </Text>
+              <Text color={theme.lavender}>{filePath}<Text color={theme.peach}>|</Text></Text>
             </Box>
             <Box height={1} marginTop={1}>
-              <Text color={theme.overlay0}>Enter:open  Esc:back</Text>
+              <Text>
+                <Text color={theme.lavender}>Enter</Text><Text color={theme.subtext0}>:open  </Text>
+                <Text color={theme.lavender}>Esc</Text><Text color={theme.subtext0}>:back</Text>
+              </Text>
             </Box>
           </Box>
         ) : (
-          <Text color={theme.subtext0}>
-            [o] Open file    [Enter] Resume session    [n] New empty pipeline    [q] Quit
+          <Text>
+            <Text color={theme.lavender}>[o]</Text><Text color={theme.subtext0}> Open file    </Text>
+            <Text color={theme.lavender}>[Enter]</Text><Text color={theme.subtext0}> Resume session    </Text>
+            <Text color={theme.lavender}>[n]</Text><Text color={theme.subtext0}> New empty pipeline    </Text>
+            <Text color={theme.lavender}>[q]</Text><Text color={theme.subtext0}> Quit</Text>
           </Text>
         )}
       </Box>

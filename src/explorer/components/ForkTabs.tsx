@@ -27,14 +27,20 @@ export const ForkTabs = memo(function ForkTabs({ state }: ForkTabsProps) {
       {forks.map((fork) => {
         const isActive = fork.id === state.activeForkId;
         return (
-          <Text
-            key={fork.id}
-            backgroundColor={isActive ? theme.surface0 : undefined}
-            color={isActive ? theme.text : theme.overlay0}
-          >
-            {isActive ? "[" : " "}
-            {fork.name}
-            {isActive ? "]" : " "}
+          <Text key={fork.id}>
+            <Text color={isActive ? theme.green : theme.overlay0}>
+              {isActive ? "[" : " "}
+            </Text>
+            <Text
+              backgroundColor={isActive ? theme.surface0 : undefined}
+              color={isActive ? theme.green : theme.subtext0}
+              bold={isActive}
+            >
+              {fork.name}
+            </Text>
+            <Text color={isActive ? theme.green : theme.overlay0}>
+              {isActive ? "]" : " "}
+            </Text>
           </Text>
         );
       })}

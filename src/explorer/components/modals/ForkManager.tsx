@@ -11,7 +11,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { Box, Text, useInput } from "ink";
-import TextInput from "ink-text-input";
+import { VimTextInput } from "../VimTextInput.tsx";
 import type { PipelineState, PipelineAction } from "../../model/types.ts";
 import { theme } from "../../theme.ts";
 
@@ -77,13 +77,13 @@ export function ForkManager({
     }
   }, { isActive: confirmingDelete });
 
-  // Keyboard when naming a new fork — only Escape (TextInput handles chars + Enter via onSubmit)
-  useInput((_input, key) => {
-    if (key.escape) {
-      setIsNaming(false);
-      setNewName("");
-    }
-  }, { isActive: isNaming });
+  // Naming phase: VimTextInput handles Escape (via onEscape) and Enter (via onSubmit),
+  // so no separate useInput handler is needed for the naming phase.
+
+  const handleNamingEscape = useCallback(() => {
+    setIsNaming(false);
+    setNewName("");
+  }, []);
 
   // Keyboard for normal list navigation
   useInput((input, key) => {
@@ -137,16 +137,17 @@ export function ForkManager({
         <Box flexDirection="column" marginTop={1}>
           <Text color={theme.text}>New fork name:</Text>
           <Box marginTop={1}>
-            <TextInput
+            <VimTextInput
               value={newName}
               onChange={setNewName}
               onSubmit={handleNameSubmit}
+              onEscape={handleNamingEscape}
               placeholder="fork name..."
               focus={true}
             />
           </Box>
           <Box height={1} marginTop={1}>
-            <Text color={theme.overlay0}>Enter:create  Esc:cancel</Text>
+            <Text color={theme.overlay0}>Enter:create  Esc:vim  Esc(2x):cancel</Text>
           </Box>
         </Box>
       ) : (

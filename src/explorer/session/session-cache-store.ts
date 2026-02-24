@@ -80,6 +80,7 @@ export class SessionCacheStore {
       stageId,
       inputId,
       records,
+      lines: [],
       spillFile: null,
       recordCount: manifest.recordCount,
       fieldNames: [...manifest.fieldNames],

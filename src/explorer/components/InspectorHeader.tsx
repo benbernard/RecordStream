@@ -23,7 +23,8 @@ export const InspectorHeader = memo(function InspectorHeader({ state }: Inspecto
   if (!stage) {
     return (
       <Box height={1}>
-        <Text color={theme.overlay0}>Inspector: (select a stage)</Text>
+        <Text color={theme.blue}>Inspector: </Text>
+        <Text color={theme.overlay0}>(select a stage)</Text>
       </Box>
     );
   }
@@ -31,7 +32,9 @@ export const InspectorHeader = memo(function InspectorHeader({ state }: Inspecto
   if (state.executing) {
     return (
       <Box height={1}>
-        <Text color={theme.yellow}>Inspector: {stage.config.operationName} (computing...)</Text>
+        <Text color={theme.blue}>Inspector: </Text>
+        <Text color={theme.peach} bold>{stage.config.operationName}</Text>
+        <Text color={theme.yellow}> (computing...)</Text>
       </Box>
     );
   }
@@ -39,7 +42,9 @@ export const InspectorHeader = memo(function InspectorHeader({ state }: Inspecto
   if (state.lastError?.stageId === stage.id) {
     return (
       <Box height={1}>
-        <Text color={theme.red}>Inspector: {stage.config.operationName} — ERROR</Text>
+        <Text color={theme.blue}>Inspector: </Text>
+        <Text color={theme.peach} bold>{stage.config.operationName}</Text>
+        <Text color={theme.red}> — ERROR</Text>
       </Box>
     );
   }
@@ -53,6 +58,8 @@ export const InspectorHeader = memo(function InspectorHeader({ state }: Inspecto
   let countStr: string;
   if (!output) {
     countStr = "not cached";
+  } else if (output.records.length === 0 && output.lines.length > 0) {
+    countStr = `${output.lines.length} lines (text output)`;
   } else if (totalRecords && totalRecords > 0 && output.recordCount !== totalRecords) {
     const pct = Math.round((output.recordCount / totalRecords) * 100);
     countStr = `${output.recordCount} of ${totalRecords} records (${pct}%)`;
@@ -63,8 +70,12 @@ export const InspectorHeader = memo(function InspectorHeader({ state }: Inspecto
 
   return (
     <Box height={1}>
-      <Text color={theme.text}>
-        Inspector: {stage.config.operationName} ({countStr}{cacheAge})
+      <Text>
+        <Text color={theme.blue}>Inspector: </Text>
+        <Text color={theme.peach} bold>{stage.config.operationName}</Text>
+        <Text color={theme.teal}> ({countStr}</Text>
+        <Text color={theme.overlay0}>{cacheAge}</Text>
+        <Text color={theme.teal}>)</Text>
       </Text>
     </Box>
   );
