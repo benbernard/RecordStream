@@ -277,17 +277,17 @@ async function feedOperation(command: string, op: Operation): Promise<void> {
         }
       });
     }
-    op.finish();
+    await op.finish();
   } else if (BULK_STDIN_OPS.has(command) && needsStdinContent(op)) {
     // Input op that needs bulk stdin content (no file args given)
     const content = await readAllStdin();
     if (content.trim()) {
       callParseContent(command, op, content);
     }
-    op.finish();
+    await op.finish();
   } else {
     // Self-contained operation (fromps, fromdb, etc.) or has file args
-    op.finish();
+    await op.finish();
   }
 }
 
