@@ -14,11 +14,12 @@ use strict;
 use warnings;
 
 use JSON::PP;
+use Scalar::Util qw(blessed reftype);
 use FindBin;
 use lib $FindBin::Bin;
 use RecsSDK;
 
-my $json = JSON::PP->new->utf8->canonical;
+my $json = JSON::PP->new->utf8->canonical->allow_blessed->convert_blessed;
 
 # ----------------------------------------------------------------
 # I/O helpers
@@ -45,6 +46,9 @@ sub send_filter   { write_message({ type => "filter",      passed => $_[0] ? JSO
 sub send_emit     { write_message({ type => "emit",        data   => $_[0] }) }
 sub send_done     { write_message({ type => "record_done" }) }
 sub send_error    { write_message({ type => "error",       message => $_[0] }) }
+
+# Check if a value is a hashref (blessed or plain)
+sub _is_hash { return ref($_[0]) && (reftype($_[0]) // '') eq 'HASH' }
 
 # ----------------------------------------------------------------
 # Read init message
@@ -90,10 +94,8 @@ my @_emitted;
 # Users call push_record($hashref) to emit a record.
 sub push_record {
     for my $rec (@_) {
-        if (ref($rec) eq 'HASH') {
+        if (_is_hash($rec)) {
             push @_emitted, $rec;
-        } elsif (ref($rec) && $rec->isa('RecsSDK')) {
-            push @_emitted, $rec->to_hash();
         }
     }
 }
@@ -150,15 +152,14 @@ while (my $msg = read_message()) {
     next unless $msg->{type} eq 'record';
 
     $line_num++;
-    my $r = $msg->{data};    # plain hashref, just like original recs
+    my $r = RecsSDK->new($msg->{data});
 
     eval {
         if ($mode eq 'eval') {
             my $result = $compiled->($r, $line_num, $msg->{filename} // 'NONE');
             # $result should be the (possibly modified) $r
             $result = $r unless defined $result;
-            $result = $result if ref($result) eq 'HASH';
-            send_result(ref($result) eq 'HASH' ? $result : $r);
+            send_result(_is_hash($result) ? $result : $r);
 
         } elsif ($mode eq 'grep') {
             my $passed = $compiled->($r, $line_num, $msg->{filename} // 'NONE');
@@ -177,9 +178,9 @@ while (my $msg = read_message()) {
                 # Use return value: could be arrayref of hashrefs, or a single hashref
                 if (ref($result) eq 'ARRAY') {
                     for my $item (@$result) {
-                        send_emit(ref($item) eq 'HASH' ? $item : $r);
+                        send_emit(_is_hash($item) ? $item : $r);
                     }
-                } elsif (ref($result) eq 'HASH') {
+                } elsif (_is_hash($result)) {
                     send_emit($result);
                 } elsif (defined $result) {
                     send_emit($r);
@@ -198,9 +199,9 @@ while (my $msg = read_message()) {
             } else {
                 if (ref($result) eq 'ARRAY') {
                     for my $item (@$result) {
-                        send_emit($item) if ref($item) eq 'HASH';
+                        send_emit($item) if _is_hash($item);
                     }
-                } elsif (ref($result) eq 'HASH' && $result != $r) {
+                } elsif (_is_hash($result) && $result != $r) {
                     # Only emit if it's a different hashref than $r
                     send_emit($result);
                 }
