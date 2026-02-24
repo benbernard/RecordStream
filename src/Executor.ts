@@ -93,22 +93,36 @@ interface CompiledSnippet {
  *
  * {{foo/bar}} becomes calls to the __get helper function.
  * {{foo/bar}} = value becomes calls to the __set helper function.
+ * {{foo/bar}} += value becomes __set(R, "foo/bar", __get(R, "foo/bar") + value)
+ *
+ * The recordVar parameter controls the variable name used in generated code
+ * (e.g. "r" for JS/Python, "$r" for Perl).
  */
-export function transformCode(code: string): string {
-  // Replace {{keyspec}} = value with __set(r, "keyspec", value)
-  // Negative lookahead (?!=) ensures == and === are not matched as assignment
+export function transformCode(code: string, recordVar = "r"): string {
+  // Step 1: Replace compound assignments like {{ks}} += val
+  // Operators listed longest-first for correct matching
   let transformed = code.replace(
-    /\{\{(.*?)\}\}\s*=(?!=)\s*([^;,\n]+)/g,
-    (_match, keyspec: string, value: string) => {
-      return `__set(r, ${JSON.stringify(keyspec)}, ${value.trim()})`;
+    /\{\{(.*?)\}\}\s*(\*\*|>>>|>>|<<|\?\?|\/\/|\|\||&&|\+|-|\*|\/|%|&|\||\^)=\s*([^;,\n]+)/g,
+    (_match, keyspec: string, op: string, value: string) => {
+      const ks = JSON.stringify(keyspec);
+      return `__set(${recordVar}, ${ks}, __get(${recordVar}, ${ks}) ${op} ${value.trim()})`;
     }
   );
 
-  // Replace remaining {{keyspec}} with __get(r, "keyspec")
+  // Step 2: Replace simple assignments like {{ks}} = val
+  // Negative lookahead (?!=) ensures == and === are not matched
+  transformed = transformed.replace(
+    /\{\{(.*?)\}\}\s*=(?!=)\s*([^;,\n]+)/g,
+    (_match, keyspec: string, value: string) => {
+      return `__set(${recordVar}, ${JSON.stringify(keyspec)}, ${value.trim()})`;
+    }
+  );
+
+  // Step 3: Replace remaining {{keyspec}} reads
   transformed = transformed.replace(
     /\{\{(.*?)\}\}/g,
     (_match, keyspec: string) => {
-      return `__get(r, ${JSON.stringify(keyspec)})`;
+      return `__get(${recordVar}, ${JSON.stringify(keyspec)})`;
     }
   );
 

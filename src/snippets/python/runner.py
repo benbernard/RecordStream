@@ -116,6 +116,13 @@ def main() -> None:  # noqa: C901 – intentional monolith for a small runner
                     f"emit() expects a Record or dict, got {type(rec_or_dict).__name__}"
                 )
 
+        def __get(rec: Record, ks: str) -> Any:
+            return rec.get("@" + ks)
+
+        def __set(rec: Record, ks: str, value: Any) -> Any:
+            rec.set("@" + ks, value)
+            return value
+
         # Build the snippet namespace
         namespace: dict[str, Any] = {
             "r": r,
@@ -124,6 +131,8 @@ def main() -> None:  # noqa: C901 – intentional monolith for a small runner
             "filename": "NONE",
             "emit": emit,
             "Record": Record,
+            "__get": __get,
+            "__set": __set,
             # Expose builtins for convenience
             "json": __import__("json"),
             "re": __import__("re"),
