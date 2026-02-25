@@ -122,10 +122,11 @@ for (const [name, Ctor] of operationRegistry) {
 }
 
 /**
- * Input operations that can consume bulk stdin content via parseContent().
- * When they have no file args, we read all of stdin and call parseContent().
+ * Input operations that consume bulk content via parseContent()/parseXml().
+ * For these ops, when no file args are given we read all of stdin as one string.
+ * When file args are given, the dispatcher reads each file and calls parseContent().
  */
-const BULK_STDIN_OPS = new Set(["fromcsv", "fromjsonarray", "fromkv", "fromxml"]);
+const BULK_CONTENT_OPS = new Set(["fromcsv", "fromjsonarray", "fromxml"]);
 
 /**
  * Read all of stdin as a string.
@@ -172,6 +173,26 @@ async function readStdinLines(callback: (line: string) => boolean): Promise<void
   const remaining = buffer.trim();
   if (remaining !== "") {
     callback(remaining);
+  }
+}
+
+/**
+ * Read a file synchronously and return its content.
+ */
+function readFileSync(path: string): string {
+  const fs = require("node:fs") as typeof import("node:fs");
+  return fs.readFileSync(path, "utf-8");
+}
+
+/**
+ * Read a file line by line, calling callback for each non-empty line.
+ * Returns false if the callback signalled stop.
+ */
+function feedFileLines(path: string, callback: (line: string) => boolean): void {
+  const content = readFileSync(path);
+  for (const line of content.split("\n")) {
+    if (line === "") continue;
+    if (!callback(line)) return;
   }
 }
 
@@ -240,55 +261,91 @@ export async function runOperation(command: string, args: string[]): Promise<num
 /**
  * Feed input to the operation and finish it.
  *
- * The feeding strategy depends on the operation type:
- * - Operations that wantsInput() and have acceptLine: feed raw lines
- *   (used by input ops like fromre, fromapache that parse raw text)
- * - Operations that wantsInput() and are transforms: feed JSON records
- * - Input operations that don't want input but accept bulk content:
- *   read all stdin and call parseContent()
- * - Operations that don't want input at all (fromps, fromdb): just finish
+ * The dispatcher transparently handles both stdin and file arguments so that
+ * individual operations don't need to implement their own file-reading logic.
+ *
+ * Strategy:
+ * 1. If the op has file args (extraArgs) AND is a type the dispatcher feeds:
+ *    - Bulk content ops: read each file, call parseContent()/parseXml()
+ *    - Line-oriented ops (custom acceptLine): read each file line by line
+ *    - Record-oriented ops (transforms): read files as JSON lines
+ * 2. If no file args, fall back to stdin:
+ *    - Line-oriented: feed stdin lines via acceptLine()
+ *    - Record-oriented: feed stdin lines as JSON records
+ *    - Bulk content: read all stdin, call parseContent()/parseXml()
+ * 3. Self-contained ops (fromps, fromdb, fromtcpdump, etc.): just finish
  */
 async function feedOperation(command: string, op: Operation): Promise<void> {
-  if (op.wantsInput()) {
-    // Determine if this is a line-oriented input op (has custom acceptLine)
-    // or a record-oriented transform op
-    const isLineOriented = hasCustomAcceptLine(op);
+  const fileArgs = getFileArgs(op);
+  const isBulk = BULK_CONTENT_OPS.has(command);
+  const isLineOriented = !isBulk && hasCustomAcceptLine(op);
 
-    if (isLineOriented) {
-      // Feed raw lines from stdin — used by fromre, fromsplit, fromapache, etc.
-      await readStdinLines((line) => {
-        if (op.acceptLine) {
-          return op.acceptLine(line);
-        }
-        return true;
-      });
+  if (fileArgs.length > 0 && (op.wantsInput() || isBulk)) {
+    // --- Feed from files ---
+    if (isBulk) {
+      for (const file of fileArgs) {
+        op.updateCurrentFilename(file);
+        const content = readFileSync(file);
+        callParseContent(command, op, content);
+      }
+    } else if (isLineOriented) {
+      for (const file of fileArgs) {
+        op.updateCurrentFilename(file);
+        feedFileLines(file, (line) => op.acceptLine(line));
+      }
     } else {
-      // Feed JSON records from stdin or file args
-      // Parse remaining args (after options) to find file paths
-      // Since init() already consumed options, we check if the operation
-      // has stashed extra args that look like file paths.
+      // Record-oriented (transform ops)
+      for (const file of fileArgs) {
+        op.updateCurrentFilename(file);
+        feedFileLines(file, (line) => {
+          try {
+            const record = Record.fromJSON(line);
+            return op.acceptRecord(record);
+          } catch {
+            return true;
+          }
+        });
+      }
+    }
+    await op.finish();
+  } else if (op.wantsInput()) {
+    // --- Feed from stdin (line or record oriented) ---
+    if (isLineOriented) {
+      await readStdinLines((line) => op.acceptLine(line));
+    } else {
       await readStdinLines((line) => {
         try {
           const record = Record.fromJSON(line);
           return op.acceptRecord(record);
         } catch {
-          // If it's not JSON, skip it
           return true;
         }
       });
     }
     await op.finish();
-  } else if (BULK_STDIN_OPS.has(command) && needsStdinContent(op)) {
-    // Input op that needs bulk stdin content (no file args given)
+  } else if (isBulk && needsStdinContent(op)) {
+    // --- Bulk stdin (fromcsv, fromjsonarray, fromxml with no args) ---
     const content = await readAllStdin();
     if (content.trim()) {
       callParseContent(command, op, content);
     }
     await op.finish();
   } else {
-    // Self-contained operation (fromps, fromdb, etc.) or has file args
+    // --- Self-contained (fromps, fromdb, fromtcpdump, fromxls, etc.) ---
     await op.finish();
   }
+}
+
+/**
+ * Get file args from an operation's extraArgs property.
+ */
+function getFileArgs(op: Operation): string[] {
+  const opRecord = op as unknown as { [key: string]: unknown };
+  const extraArgs = opRecord["extraArgs"];
+  if (Array.isArray(extraArgs)) {
+    return extraArgs as string[];
+  }
+  return [];
 }
 
 /**
@@ -296,23 +353,21 @@ async function feedOperation(command: string, op: Operation): Promise<void> {
  * (indicating it processes raw text lines, not JSON records).
  */
 function hasCustomAcceptLine(op: Operation): boolean {
-  // Check if the prototype overrides acceptLine
   const proto = Object.getPrototypeOf(op) as { [key: string]: unknown };
   return typeof proto["acceptLine"] === "function" &&
     proto["acceptLine"] !== Operation.prototype.acceptLine;
 }
 
 /**
- * Check if an input operation needs stdin content (has no file args to process).
- * We detect this by checking the extraArgs property which input ops use for files.
+ * Check if an input operation needs stdin content (has no file args or URL args).
  */
 function needsStdinContent(op: Operation): boolean {
-  // Input ops store file args in extraArgs; if empty, they need stdin
   const opRecord = op as unknown as { [key: string]: unknown };
   const extraArgs = opRecord["extraArgs"];
-  if (Array.isArray(extraArgs)) {
-    return extraArgs.length === 0;
-  }
+  if (Array.isArray(extraArgs) && extraArgs.length > 0) return false;
+  // fromxml stores URL args separately; if it has URLs it doesn't need stdin
+  const urlArgs = opRecord["urlArgs"];
+  if (Array.isArray(urlArgs) && urlArgs.length > 0) return false;
   return true;
 }
 

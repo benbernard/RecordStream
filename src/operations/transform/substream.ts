@@ -11,6 +11,7 @@ import { Record } from "../../Record.ts";
  * Analogous to App::RecordStream::Operation::substream in Perl.
  */
 export class SubstreamOperation extends Operation {
+  extraArgs: string[] = [];
   beginExecutor: Executor | null = null;
   endExecutor: Executor | null = null;
   inSubstream = false;
@@ -37,7 +38,7 @@ export class SubstreamOperation extends Operation {
       },
     ];
 
-    this.parseOptions(args, defs);
+    this.extraArgs = this.parseOptions(args, defs);
 
     if (beginExpr) {
       this.beginExecutor = new Executor(autoReturn(beginExpr));

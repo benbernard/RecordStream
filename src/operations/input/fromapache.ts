@@ -31,6 +31,7 @@ type ParseMode = "fast" | "strict";
 export class FromApache extends Operation {
   mode: ParseMode = "fast";
   strictFormats: string[] | null = null;
+  extraArgs: string[] = [];
 
   acceptRecord(_record: Record): boolean {
     return true;
@@ -121,6 +122,8 @@ export class FromApache extends Operation {
         }
       }
     }
+
+    this.extraArgs = remaining;
   }
 
   processLine(line: string): void {

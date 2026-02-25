@@ -12,6 +12,7 @@ export class SortOperation extends Operation {
   accumulator = new Accumulator();
   keys: string[] = [];
   reverse = false;
+  extraArgs: string[] = [];
 
   init(args: string[]): void {
     const defs: OptionDef[] = [
@@ -33,7 +34,7 @@ export class SortOperation extends Operation {
       },
     ];
 
-    this.parseOptions(args, defs);
+    this.extraArgs = this.parseOptions(args, defs);
   }
 
   acceptRecord(record: Record): boolean {

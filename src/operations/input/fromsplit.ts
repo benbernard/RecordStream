@@ -68,23 +68,6 @@ export class FromSplit extends Operation {
     return true;
   }
 
-  override wantsInput(): boolean {
-    return this.extraArgs.length === 0;
-  }
-
-  override streamDone(): void {
-    if (this.extraArgs.length > 0) {
-      for (const file of this.extraArgs) {
-        this.updateCurrentFilename(file);
-        const content = readFileSync(file);
-        for (const line of content.split("\n")) {
-          if (line === "") continue;
-          this.processLine(line);
-        }
-      }
-    }
-  }
-
   processLine(line: string): void {
     if (this.header) {
       const values = this.splitLine(line);
@@ -120,11 +103,6 @@ export class FromSplit extends Operation {
       return line.split(regex);
     }
   }
-}
-
-function readFileSync(path: string): string {
-  const fs = require("node:fs") as typeof import("node:fs");
-  return fs.readFileSync(path, "utf-8");
 }
 
 import type { CommandDoc } from "../../types/CommandDoc.ts";

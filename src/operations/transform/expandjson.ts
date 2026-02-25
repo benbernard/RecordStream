@@ -11,6 +11,7 @@ import type { CommandDoc } from "../../types/CommandDoc.ts";
  * Analogous to App::RecordStream::Operation::expandjson (new operation).
  */
 export class ExpandJsonOperation extends Operation {
+  extraArgs: string[] = [];
   keys: string[] = [];
   recursive = false;
 
@@ -36,7 +37,7 @@ export class ExpandJsonOperation extends Operation {
       },
     ];
 
-    this.parseOptions(args, defs);
+    this.extraArgs = this.parseOptions(args, defs);
   }
 
   acceptRecord(record: Record): boolean {

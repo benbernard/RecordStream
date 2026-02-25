@@ -12,6 +12,7 @@ import type { JsonValue } from "../../types/json.ts";
  * Analogous to App::RecordStream::Operation::decollate in Perl.
  */
 export class DecollateOperation extends Operation {
+  extraArgs: string[] = [];
   deaggregators: Deaggregator[] = [];
   onlyDeaggregated = false;
 
@@ -46,7 +47,7 @@ export class DecollateOperation extends Operation {
       },
     ];
 
-    this.parseOptions(args, defs);
+    this.extraArgs = this.parseOptions(args, defs);
 
     for (const spec of deaggSpecs) {
       this.deaggregators.push(deaggregatorRegistry.parse(spec));

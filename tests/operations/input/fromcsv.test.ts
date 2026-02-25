@@ -70,6 +70,7 @@ describe("FromCsv", () => {
   });
 
   test("reads from file with header and static key", () => {
+    const fs = require("node:fs") as typeof import("node:fs");
     const collector = new CollectorReceiver();
     const op = new FromCsv(collector);
     op.init([
@@ -79,6 +80,12 @@ describe("FromCsv", () => {
       "tests/fixtures/data3.csv",
       "tests/fixtures/data4.csv",
     ]);
+    // Simulate dispatcher file reading: read each file and call parseContent
+    for (const file of op.extraArgs) {
+      op.updateCurrentFilename(file);
+      const content = fs.readFileSync(file, "utf-8");
+      op.parseContent(content);
+    }
     op.finish();
     const result = collector.records.map((r) => r.toJSON());
     expect(result).toEqual([

@@ -16,6 +16,7 @@ interface FlattenField {
  * Analogous to App::RecordStream::Operation::flatten in Perl.
  */
 export class FlattenOperation extends Operation {
+  extraArgs: string[] = [];
   fields: FlattenField[] = [];
   separator = "-";
   defaultDepth = 1;
@@ -76,7 +77,7 @@ export class FlattenOperation extends Operation {
       i++;
     }
 
-    this.parseOptions(filteredArgs, defs);
+    this.extraArgs = this.parseOptions(filteredArgs, defs);
   }
 
   acceptRecord(record: Record): boolean {

@@ -12,15 +12,9 @@ export class FromXml extends Operation {
   elements: string[] = [];
   nested = false;
   extraArgs: string[] = [];
-  stdinLines: string[] = [];
+  urlArgs: string[] = [];
 
   acceptRecord(_record: Record): boolean {
-    return true;
-  }
-
-  override acceptLine(line: string): boolean {
-    // When reading from stdin, accumulate raw XML lines
-    this.stdinLines.push(line);
     return true;
   }
 
@@ -44,29 +38,33 @@ export class FromXml extends Operation {
       },
     ];
 
-    this.extraArgs = this.parseOptions(args, defs);
+    const allArgs = this.parseOptions(args, defs);
+
+    // Separate file paths (handled by dispatcher) from URIs (handled here)
+    for (const arg of allArgs) {
+      if (arg.startsWith("http://") || arg.startsWith("https://") || arg.startsWith("file:")) {
+        this.urlArgs.push(arg);
+      } else {
+        this.extraArgs.push(arg);
+      }
+    }
 
     // Deduplicate elements
     this.elements = [...new Set(this.elements)];
   }
 
   override wantsInput(): boolean {
-    return this.extraArgs.length === 0;
+    return false;
   }
 
   override streamDone(): void {
-    if (this.extraArgs.length > 0) {
-      for (const uri of this.extraArgs) {
-        this.updateCurrentFilename(uri);
-        const xml = this.getXmlString(uri);
-        if (xml) {
-          this.parseXml(xml);
-        }
+    // Only handle URI args here — file paths are handled by the dispatcher
+    for (const uri of this.urlArgs) {
+      this.updateCurrentFilename(uri);
+      const xml = this.getXmlString(uri);
+      if (xml) {
+        this.parseXml(xml);
       }
-    } else if (this.stdinLines.length > 0) {
-      this.updateCurrentFilename("STDIN");
-      const xml = this.stdinLines.join("\n");
-      this.parseXml(xml);
     }
   }
 
