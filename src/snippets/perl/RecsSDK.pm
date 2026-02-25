@@ -1,41 +1,81 @@
 package RecsSDK;
 
-# RecordStream Perl SDK — optional utility module for snippet authors.
+# RecordStream Perl SDK for snippet execution.
 #
-# In the standard snippet environment $r is a plain hashref, exactly
-# like the original App::RecordStream.  This module is available for
-# users who want KeySpec-style access (nested paths, array indices,
-# fuzzy matching) from Perl code.
+# The object IS the data hashref (blessed directly), so $r->{field}
+# works for direct access and $r->get("a/b") works for KeySpec access.
+# This matches the original App::RecordStream::Record design.
 
 use strict;
 use warnings;
+use Scalar::Util qw(reftype);
 
 sub new {
     my ($class, $data) = @_;
     $data = {} unless defined $data;
-    return bless { data => $data }, $class;
+    return bless $data, $class;
 }
 
 # get($keyspec) — resolve a /-separated key path.
-#   foo/bar      => $data->{foo}{bar}
-#   foo/#0       => $data->{foo}[0]
-#   foo/#0/bar   => $data->{foo}[0]{bar}
+#   foo/bar      => $self->{foo}{bar}
+#   foo/#0       => $self->{foo}[0]
+#   foo/#0/bar   => $self->{foo}[0]{bar}
 sub get {
     my ($self, $keyspec) = @_;
-    return _resolve($self->{data}, $keyspec);
+    return _resolve($self, $keyspec);
 }
 
 # set($keyspec, $value) — set a value at a /-separated key path,
 # auto-vivifying intermediate hashes or arrays as needed.
 sub set {
     my ($self, $keyspec, $value) = @_;
-    _set_path($self->{data}, $keyspec, $value);
+    _set_path($self, $keyspec, $value);
     return $value;
+}
+
+# has($keyspec) — check whether a key path exists.
+sub has {
+    my ($self, $keyspec) = @_;
+    return defined _resolve($self, $keyspec);
+}
+
+sub keys {
+    my ($self) = @_;
+    return CORE::keys(%$self);
+}
+
+sub remove {
+    my ($self, @fields) = @_;
+    my @old;
+    for my $field (@fields) {
+        push @old, delete $self->{$field};
+    }
+    return @old;
+}
+
+sub rename {
+    my ($self, $old_key, $new_key) = @_;
+    $self->{$new_key} = $self->{$old_key};
+    delete $self->{$old_key};
+}
+
+sub prune_to {
+    my ($self, @ok) = @_;
+    my %ok = map { ($_ => 1) } @ok;
+    for my $field (CORE::keys(%$self)) {
+        delete $self->{$field} unless exists $ok{$field};
+    }
 }
 
 sub to_hash {
     my ($self) = @_;
-    return $self->{data};
+    return { %$self };
+}
+
+# TO_JSON — called by JSON::PP with convert_blessed to serialize.
+sub TO_JSON {
+    my ($self) = @_;
+    return { %$self };
 }
 
 # --- internal helpers ---
@@ -47,12 +87,13 @@ sub _resolve {
     my @parts = _split_keyspec($keyspec);
     for my $part (@parts) {
         return undef unless defined $node;
+        my $rt = reftype($node) // '';
         if ($part =~ /^#(\d+)$/) {
             my $idx = $1;
-            return undef unless ref($node) eq 'ARRAY';
+            return undef unless $rt eq 'ARRAY';
             $node = $node->[$idx];
         } else {
-            return undef unless ref($node) eq 'HASH';
+            return undef unless $rt eq 'HASH';
             $node = $node->{$part};
         }
     }
@@ -68,15 +109,16 @@ sub _set_path {
         my $part = $parts[$i];
         my $next_part = $parts[$i + 1];
         my $next_is_array = ($next_part =~ /^#\d+$/);
+        my $rt = reftype($node) // '';
 
         if ($part =~ /^#(\d+)$/) {
             my $idx = $1;
-            if (!defined $node->[$idx] || ref($node->[$idx]) eq '') {
+            if (!defined $node->[$idx] || !ref($node->[$idx])) {
                 $node->[$idx] = $next_is_array ? [] : {};
             }
             $node = $node->[$idx];
         } else {
-            if (!defined $node->{$part} || ref($node->{$part}) eq '') {
+            if (!defined $node->{$part} || !ref($node->{$part})) {
                 $node->{$part} = $next_is_array ? [] : {};
             }
             $node = $node->{$part};

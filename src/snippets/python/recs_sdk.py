@@ -71,6 +71,26 @@ class Record:
         except NoSuchKeyError:
             return False
 
+    def remove(self, *keys: str) -> list[Any]:
+        """Remove one or more fields. Returns list of old values."""
+        old = []
+        for key in keys:
+            old.append(self._data.pop(key, None))
+        return old
+
+    def rename(self, old_key: str, new_key: str) -> None:
+        """Rename a field. If old field doesn't exist, creates new field with None."""
+        value = self._data.get(old_key)
+        self._data[new_key] = value
+        self._data.pop(old_key, None)
+
+    def prune_to(self, *keys: str) -> None:
+        """Remove all fields except those specified."""
+        keep = set(keys)
+        for key in list(self._data.keys()):
+            if key not in keep:
+                del self._data[key]
+
     # --- dict-like interface ---
 
     def __getitem__(self, key: str) -> Any:

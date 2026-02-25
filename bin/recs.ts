@@ -63,6 +63,23 @@ if (command === "--version" || command === "-V") {
   process.exit(0);
 }
 
+if (command === "install-manpages") {
+  const { generateManPages } = await import("../scripts/generate-manpages.ts");
+  const { join } = await import("node:path");
+  const { homedir } = await import("node:os");
+  const manDir = join(homedir(), ".local", "share", "man", "man1");
+  const count = await generateManPages(manDir);
+  console.log(`Installed ${count} man pages to ${manDir}`);
+
+  const manpath = process.env["MANPATH"] ?? "";
+  const manParent = join(homedir(), ".local", "share", "man");
+  if (!manpath.includes(manParent)) {
+    console.log(`\nHint: add ${manParent} to your MANPATH:`);
+    console.log(`  export MANPATH="${manParent}:${"$"}MANPATH"`);
+  }
+  process.exit(0);
+}
+
 if (command === "--list" || command === "-l" || command === "list") {
   const docs = loadAllDocs();
   for (const doc of docs.sort((a, b) => a.name.localeCompare(b.name))) {

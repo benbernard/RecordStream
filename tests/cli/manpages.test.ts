@@ -1,20 +1,21 @@
-import { describe, test, expect, beforeAll } from "bun:test";
-import { existsSync, readFileSync, rmSync, mkdirSync } from "node:fs";
+import { describe, test, expect, beforeAll, afterAll } from "bun:test";
+import { existsSync, readFileSync, rmSync, mkdtempSync } from "node:fs";
 import { join } from "node:path";
-import { $ } from "bun";
+import { tmpdir } from "node:os";
+import { generateManPages } from "../../scripts/generate-manpages.ts";
 
-const MAN_DIR = join(import.meta.dir, "..", "..", "man", "man1");
+let MAN_DIR: string;
 
 describe("man page generation", () => {
   beforeAll(async () => {
-    // Clean and regenerate
-    if (existsSync(MAN_DIR)) {
+    MAN_DIR = mkdtempSync(join(tmpdir(), "recs-manpages-"));
+    await generateManPages(MAN_DIR);
+  });
+
+  afterAll(() => {
+    if (MAN_DIR && existsSync(MAN_DIR)) {
       rmSync(MAN_DIR, { recursive: true });
     }
-    mkdirSync(MAN_DIR, { recursive: true });
-    await $`bun scripts/generate-manpages.ts`.cwd(
-      join(import.meta.dir, "..", "..")
-    );
   });
 
   test("generates recs.1 main man page", () => {
