@@ -635,6 +635,54 @@ describe("record method access [python]", () => {
     expect(results).toHaveLength(1);
     expect(results[0]!.record!["val"]).toBe(1);
   });
+
+  test("r.remove() deletes a field and returns old value", () => {
+    const runner = new PythonSnippetRunner();
+    void runner.init('r.remove("y")', { mode: "eval" });
+
+    const results = runner.executeBatch([new Record({ x: 1, y: 2 })]);
+    expect(results).toHaveLength(1);
+    expect(results[0]!.record!["x"]).toBe(1);
+    expect(results[0]!.record!["y"]).toBeUndefined();
+  });
+
+  test("r.remove() multi-key removal", () => {
+    const runner = new PythonSnippetRunner();
+    void runner.init('r.remove("a", "b")', { mode: "eval" });
+
+    const results = runner.executeBatch([
+      new Record({ a: 1, b: 2, c: 3 }),
+    ]);
+    expect(results).toHaveLength(1);
+    expect(results[0]!.record!["a"]).toBeUndefined();
+    expect(results[0]!.record!["b"]).toBeUndefined();
+    expect(results[0]!.record!["c"]).toBe(3);
+  });
+
+  test("r.rename() renames a field", () => {
+    const runner = new PythonSnippetRunner();
+    void runner.init('r.rename("x", "newX")', { mode: "eval" });
+
+    const results = runner.executeBatch([new Record({ x: 42, y: 1 })]);
+    expect(results).toHaveLength(1);
+    expect(results[0]!.record!["newX"]).toBe(42);
+    expect(results[0]!.record!["x"]).toBeUndefined();
+    expect(results[0]!.record!["y"]).toBe(1);
+  });
+
+  test("r.prune_to() keeps only specified fields", () => {
+    const runner = new PythonSnippetRunner();
+    void runner.init('r.prune_to("a", "c")', { mode: "eval" });
+
+    const results = runner.executeBatch([
+      new Record({ a: 1, b: 2, c: 3, d: 4 }),
+    ]);
+    expect(results).toHaveLength(1);
+    expect(results[0]!.record!["a"]).toBe(1);
+    expect(results[0]!.record!["c"]).toBe(3);
+    expect(results[0]!.record!["b"]).toBeUndefined();
+    expect(results[0]!.record!["d"]).toBeUndefined();
+  });
 });
 
 describe("record method access [perl]", () => {
@@ -788,5 +836,50 @@ describe("record method access [perl]", () => {
     expect(results).toHaveLength(2);
     expect(results[0]!.passed).toBe(true);
     expect(results[1]!.passed).toBe(false);
+  });
+
+  test("$r->keys() returns field names", () => {
+    const runner = new PerlSnippetRunner();
+    void runner.init('{{count}} = scalar($r->keys())', { mode: "eval" });
+
+    const results = runner.executeBatch([new Record({ a: 1, b: 2, c: 3 })]);
+    expect(results).toHaveLength(1);
+    // count field is set via __set which modifies the hash before keys() runs
+    expect(results[0]!.record!["count"]).toBeGreaterThanOrEqual(3);
+  });
+
+  test("$r->remove() deletes a field and returns old value", () => {
+    const runner = new PerlSnippetRunner();
+    void runner.init('$r->remove("y")', { mode: "eval" });
+
+    const results = runner.executeBatch([new Record({ x: 1, y: 2 })]);
+    expect(results).toHaveLength(1);
+    expect(results[0]!.record!["x"]).toBe(1);
+    expect(results[0]!.record!["y"]).toBeUndefined();
+  });
+
+  test("$r->rename() renames a field", () => {
+    const runner = new PerlSnippetRunner();
+    void runner.init('$r->rename("x", "newX")', { mode: "eval" });
+
+    const results = runner.executeBatch([new Record({ x: 42, y: 1 })]);
+    expect(results).toHaveLength(1);
+    expect(results[0]!.record!["newX"]).toBe(42);
+    expect(results[0]!.record!["x"]).toBeUndefined();
+    expect(results[0]!.record!["y"]).toBe(1);
+  });
+
+  test("$r->prune_to() keeps only specified fields", () => {
+    const runner = new PerlSnippetRunner();
+    void runner.init('$r->prune_to("a", "c")', { mode: "eval" });
+
+    const results = runner.executeBatch([
+      new Record({ a: 1, b: 2, c: 3, d: 4 }),
+    ]);
+    expect(results).toHaveLength(1);
+    expect(results[0]!.record!["a"]).toBe(1);
+    expect(results[0]!.record!["c"]).toBe(3);
+    expect(results[0]!.record!["b"]).toBeUndefined();
+    expect(results[0]!.record!["d"]).toBeUndefined();
   });
 });

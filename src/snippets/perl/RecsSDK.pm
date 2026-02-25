@@ -39,6 +39,34 @@ sub has {
     return defined _resolve($self, $keyspec);
 }
 
+sub keys {
+    my ($self) = @_;
+    return CORE::keys(%$self);
+}
+
+sub remove {
+    my ($self, @fields) = @_;
+    my @old;
+    for my $field (@fields) {
+        push @old, delete $self->{$field};
+    }
+    return @old;
+}
+
+sub rename {
+    my ($self, $old_key, $new_key) = @_;
+    $self->{$new_key} = $self->{$old_key};
+    delete $self->{$old_key};
+}
+
+sub prune_to {
+    my ($self, @ok) = @_;
+    my %ok = map { ($_ => 1) } @ok;
+    for my $field (CORE::keys(%$self)) {
+        delete $self->{$field} unless exists $ok{$field};
+    }
+}
+
 sub to_hash {
     my ($self) = @_;
     return { %$self };
