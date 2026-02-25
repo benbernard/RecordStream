@@ -232,7 +232,7 @@ export class ChainOperation extends Operation {
   /**
    * Whether the first operation overrides acceptLine (line-oriented input op).
    */
-  private firstOpHasCustomAcceptLine(): boolean {
+  firstOpHasCustomAcceptLine(): boolean {
     const first = this.operations[0];
     if (!first) return false;
     const proto = Object.getPrototypeOf(first) as { [key: string]: unknown };
@@ -244,7 +244,7 @@ export class ChainOperation extends Operation {
    * Whether the first operation has a parseContent method and no file args
    * (bulk-content input ops like fromcsv, fromjsonarray that need stdin).
    */
-  private firstOpNeedsBulkStdin(): boolean {
+  firstOpNeedsBulkStdin(): boolean {
     const first = this.operations[0];
     if (!first) return false;
     const opAny = first as unknown as { [key: string]: unknown };
@@ -255,7 +255,7 @@ export class ChainOperation extends Operation {
   }
 
   /** Buffer for bulk stdin content when first op needs parseContent */
-  private bulkStdinLines: string[] = [];
+  bulkStdinLines: string[] = [];
 
   acceptRecord(record: Record): boolean {
     if (this.operations.length > 0) {

@@ -7,21 +7,21 @@ import type { Record } from "./Record.ts";
  * Analogous to App::RecordStream::Accumulator in Perl.
  */
 export class Accumulator {
-  #records: Record[] = [];
+  records: Record[] = [];
 
   acceptRecord(record: Record): void {
     this.accumulateRecord(record);
   }
 
   accumulateRecord(record: Record): void {
-    this.#records.push(record);
+    this.records.push(record);
   }
 
   getRecords(): Record[] {
-    return this.#records;
+    return this.records;
   }
 
   clear(): void {
-    this.#records = [];
+    this.records = [];
   }
 }

@@ -18,12 +18,14 @@ const XFERLOG_RE =
  * Analogous to App::RecordStream::Operation::fromxferlog in Perl.
  */
 export class FromXferlog extends Operation {
+  extraArgs: string[] = [];
+
   acceptRecord(_record: Record): boolean {
     return true;
   }
 
-  init(_args: string[]): void {
-    // No options
+  init(args: string[]): void {
+    this.extraArgs = this.parseOptions(args, []);
   }
 
   processLine(line: string): void {

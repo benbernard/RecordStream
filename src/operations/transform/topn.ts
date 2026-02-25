@@ -11,6 +11,7 @@ import type { JsonObject } from "../../types/json.ts";
  * Analogous to App::RecordStream::Operation::topn in Perl.
  */
 export class TopnOperation extends Operation {
+  extraArgs: string[] = [];
   keyGroups = new KeyGroups();
   num = 10;
   delimiter = "9t%7Oz%]";
@@ -41,7 +42,7 @@ export class TopnOperation extends Operation {
       },
     ];
 
-    this.parseOptions(args, defs);
+    this.extraArgs = this.parseOptions(args, defs);
 
     if (!this.num) {
       throw new Error("Must specify --topn <value>");

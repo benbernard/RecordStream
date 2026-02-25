@@ -11,6 +11,7 @@ import type { JsonObject } from "../../types/json.ts";
  * Analogous to App::RecordStream::Operation::normalizetime in Perl.
  */
 export class NormalizeTimeOperation extends Operation {
+  extraArgs: string[] = [];
   key = "";
   sanitizedKey = "";
   threshold = 0;
@@ -58,7 +59,7 @@ export class NormalizeTimeOperation extends Operation {
       },
     ];
 
-    this.parseOptions(args, defs);
+    this.extraArgs = this.parseOptions(args, defs);
 
     if (!this.key) {
       throw new Error("Must specify --key");

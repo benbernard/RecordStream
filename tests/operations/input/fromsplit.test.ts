@@ -19,9 +19,18 @@ function runFromSplit(
 
 describe("FromSplit", () => {
   test("split file with custom delimiter and field name", () => {
+    const fs = require("node:fs") as typeof import("node:fs");
     const collector = new CollectorReceiver();
     const op = new FromSplit(collector);
     op.init(["-f", "f1", "-d", " ", "tests/fixtures/splitfile"]);
+    // Simulate dispatcher: read file lines and call acceptLine
+    for (const file of op.extraArgs) {
+      const content = fs.readFileSync(file, "utf-8");
+      for (const line of content.split("\n")) {
+        if (line === "") continue;
+        op.acceptLine(line);
+      }
+    }
     op.finish();
     const result = collector.records.map((r) => r.toJSON());
     expect(result).toEqual([
@@ -31,9 +40,17 @@ describe("FromSplit", () => {
   });
 
   test("split file with default delimiter (comma regex)", () => {
+    const fs = require("node:fs") as typeof import("node:fs");
     const collector = new CollectorReceiver();
     const op = new FromSplit(collector);
     op.init(["tests/fixtures/splitfile"]);
+    for (const file of op.extraArgs) {
+      const content = fs.readFileSync(file, "utf-8");
+      for (const line of content.split("\n")) {
+        if (line === "") continue;
+        op.acceptLine(line);
+      }
+    }
     op.finish();
     const result = collector.records.map((r) => r.toJSON());
     expect(result).toEqual([
@@ -43,9 +60,17 @@ describe("FromSplit", () => {
   });
 
   test("split file with header", () => {
+    const fs = require("node:fs") as typeof import("node:fs");
     const collector = new CollectorReceiver();
     const op = new FromSplit(collector);
     op.init(["--header", "tests/fixtures/splitfile"]);
+    for (const file of op.extraArgs) {
+      const content = fs.readFileSync(file, "utf-8");
+      for (const line of content.split("\n")) {
+        if (line === "") continue;
+        op.acceptLine(line);
+      }
+    }
     op.finish();
     const result = collector.records.map((r) => r.toJSON());
     expect(result).toEqual([

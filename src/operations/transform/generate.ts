@@ -18,12 +18,13 @@ import { createSnippetRunner, isJsLang, langOptionDef } from "../../snippets/ind
  * Analogous to App::RecordStream::Operation::generate in Perl.
  */
 export class GenerateOperation extends Operation {
+  extraArgs: string[] = [];
   executor!: Executor;
   keychain = "_chain";
   passthrough = false;
   lang: string | null = null;
   runner: SnippetRunner | null = null;
-  #bufferedRecords: Record[] = [];
+  bufferedRecords: Record[] = [];
 
   override addHelpTypes(): void {
     this.useHelpType("snippet");
@@ -59,9 +60,17 @@ export class GenerateOperation extends Operation {
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = fileSnippet ?? exprSnippet ?? remaining.join(" ");
-    if (!expression) {
-      throw new Error("generate requires an expression argument");
+
+    let expression: string;
+    if (fileSnippet ?? exprSnippet) {
+      expression = (fileSnippet ?? exprSnippet)!;
+      this.extraArgs = remaining;
+    } else {
+      if (remaining.length === 0) {
+        throw new Error("generate requires an expression argument");
+      }
+      expression = remaining[0]!;
+      this.extraArgs = remaining.slice(1);
     }
 
     if (this.lang && !isJsLang(this.lang)) {
@@ -74,7 +83,7 @@ export class GenerateOperation extends Operation {
 
   acceptRecord(record: Record): boolean {
     if (this.runner) {
-      this.#bufferedRecords.push(record);
+      this.bufferedRecords.push(record);
       return true;
     }
 
@@ -110,11 +119,11 @@ export class GenerateOperation extends Operation {
   }
 
   override streamDone(): void {
-    if (this.runner && this.#bufferedRecords.length > 0) {
-      const results = this.runner.executeBatch(this.#bufferedRecords);
+    if (this.runner && this.bufferedRecords.length > 0) {
+      const results = this.runner.executeBatch(this.bufferedRecords);
       for (let i = 0; i < results.length; i++) {
         const result = results[i]!;
-        const inputRecord = this.#bufferedRecords[i]!;
+        const inputRecord = this.bufferedRecords[i]!;
 
         if (result.error) {
           process.stderr.write(`generate: ${result.error}\n`);

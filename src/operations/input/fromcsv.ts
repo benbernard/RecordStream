@@ -96,19 +96,6 @@ export class FromCsv extends Operation {
     return false;
   }
 
-  override streamDone(): void {
-    if (this.extraArgs.length > 0) {
-      for (const file of this.extraArgs) {
-        this.updateCurrentFilename(file);
-        const content = readFileSync(file);
-        this.parseContent(content);
-      }
-    } else {
-      // For programmatic use, stdin should be passed as content
-      // In CLI mode, stdin will be handled by the dispatcher
-    }
-  }
-
   /**
    * Parse CSV content and push records.
    * This is the main entry point for both file and stdin processing.
@@ -151,11 +138,6 @@ export class FromCsv extends Operation {
       this.pushRecord(record);
     }
   }
-}
-
-function readFileSync(path: string): string {
-  const fs = require("node:fs") as typeof import("node:fs");
-  return fs.readFileSync(path, "utf-8");
 }
 
 import type { CommandDoc } from "../../types/CommandDoc.ts";

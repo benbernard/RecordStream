@@ -11,6 +11,7 @@ import type { JsonObject } from "../../types/json.ts";
  * Analogous to App::RecordStream::Operation::delta in Perl.
  */
 export class DeltaOperation extends Operation {
+  extraArgs: string[] = [];
   keyGroups = new KeyGroups();
   lastRecord: Record | null = null;
 
@@ -25,7 +26,7 @@ export class DeltaOperation extends Operation {
       },
     ];
 
-    this.parseOptions(args, defs);
+    this.extraArgs = this.parseOptions(args, defs);
 
     if (!this.keyGroups.hasAnyGroup()) {
       throw new Error("Must specify --key");

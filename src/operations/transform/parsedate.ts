@@ -12,6 +12,7 @@ import type { JsonObject } from "../../types/json.ts";
  * Inspired by the Perl PR #74 parsedate operation.
  */
 export class ParseDateOperation extends Operation {
+  extraArgs: string[] = [];
   inputKey = "";
   outputKey = "";
   inputFormat: string | null = null;
@@ -73,7 +74,7 @@ export class ParseDateOperation extends Operation {
       },
     ];
 
-    this.parseOptions(args, defs);
+    this.extraArgs = this.parseOptions(args, defs);
 
     if (!this.inputKey) {
       throw new Error("Must specify --key");

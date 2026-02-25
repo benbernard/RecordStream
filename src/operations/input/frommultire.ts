@@ -20,6 +20,7 @@ export class FromMultiRe extends Operation {
   keepAll = false;
   keepFields: Set<string> = new Set();
   currentRecord: Record = new Record();
+  extraArgs: string[] = [];
 
   acceptRecord(_record: Record): boolean {
     return true;
@@ -127,7 +128,7 @@ export class FromMultiRe extends Operation {
       },
     ];
 
-    this.parseOptions(args, defs);
+    this.extraArgs = this.parseOptions(args, defs);
   }
 
   addRegex(

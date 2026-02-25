@@ -11,6 +11,7 @@ import type { JsonObject, JsonValue } from "../../types/json.ts";
  * Analogous to App::RecordStream::Operation::stream2table in Perl.
  */
 export class Stream2TableOperation extends Operation {
+  extraArgs: string[] = [];
   field = "";
   removeField = false;
   groups = new Map<string, Record[]>();
@@ -26,7 +27,7 @@ export class Stream2TableOperation extends Operation {
       },
     ];
 
-    this.parseOptions(args, defs);
+    this.extraArgs = this.parseOptions(args, defs);
 
     if (!this.field) {
       throw new Error("You must specify a --field option");

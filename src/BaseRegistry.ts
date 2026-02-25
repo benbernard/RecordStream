@@ -20,7 +20,7 @@ export interface RegistryEntry<T> {
 }
 
 export class BaseRegistry<T> {
-  #implementations = new Map<string, RegistryEntry<T>>();
+  implementations = new Map<string, RegistryEntry<T>>();
   readonly typeName: string;
 
   constructor(typeName: string) {
@@ -31,10 +31,10 @@ export class BaseRegistry<T> {
    * Register an implementation under a name.
    */
   register(name: string, entry: RegistryEntry<T>): void {
-    this.#implementations.set(name, entry);
+    this.implementations.set(name, entry);
     if (entry.aliases) {
       for (const alias of entry.aliases) {
-        this.#implementations.set(alias, entry);
+        this.implementations.set(alias, entry);
       }
     }
   }
@@ -51,7 +51,7 @@ export class BaseRegistry<T> {
     const name = parts[0]!;
     const args = parts.slice(1);
 
-    const entry = this.#implementations.get(name);
+    const entry = this.implementations.get(name);
     if (!entry) {
       throw new Error(`Bad ${this.typeName}: ${name}`);
     }
@@ -71,14 +71,14 @@ export class BaseRegistry<T> {
    * Check if a name is registered.
    */
   has(name: string): boolean {
-    return this.#implementations.has(name);
+    return this.implementations.has(name);
   }
 
   /**
    * Get an entry by name.
    */
   get(name: string): RegistryEntry<T> | undefined {
-    return this.#implementations.get(name);
+    return this.implementations.get(name);
   }
 
   /**
@@ -89,9 +89,9 @@ export class BaseRegistry<T> {
     const entryToNames = new Map<RegistryEntry<T>, string[]>();
     const entries: RegistryEntry<T>[] = [];
 
-    const sortedNames = [...this.#implementations.keys()].sort();
+    const sortedNames = [...this.implementations.keys()].sort();
     for (const name of sortedNames) {
-      const entry = this.#implementations.get(name)!;
+      const entry = this.implementations.get(name)!;
       let names = entryToNames.get(entry);
       if (!names) {
         names = [];
@@ -113,7 +113,7 @@ export class BaseRegistry<T> {
    * Get the detailed usage for a specific implementation.
    */
   showImplementation(name: string): string {
-    const entry = this.#implementations.get(name);
+    const entry = this.implementations.get(name);
     if (!entry) {
       return `Bad ${this.typeName}: ${name}\n`;
     }
@@ -124,6 +124,6 @@ export class BaseRegistry<T> {
    * Get all registered names.
    */
   names(): string[] {
-    return [...this.#implementations.keys()];
+    return [...this.implementations.keys()];
   }
 }

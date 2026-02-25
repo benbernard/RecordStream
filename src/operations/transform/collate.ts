@@ -116,6 +116,7 @@ interface CollateCookie {
  * Analogous to App::RecordStream::Operation::collate in Perl.
  */
 export class CollateOperation extends Operation {
+  extraArgs: string[] = [];
   clumperOptions!: ClumperOptions;
   incremental = false;
 
@@ -302,7 +303,7 @@ export class CollateOperation extends Operation {
       },
     ];
 
-    this.parseOptions(args, defs);
+    this.extraArgs = this.parseOptions(args, defs);
 
     // Build the aggregators map: start with -a specs, then merge DL aggregators
     const aggregators = makeAggregators(...aggregatorSpecs);

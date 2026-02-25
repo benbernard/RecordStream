@@ -7,23 +7,23 @@ import { Record } from "./Record.ts";
  * Analogous to App::RecordStream::InputStream in Perl.
  */
 export class InputStream {
-  #lines: string[] | null = null;
-  #lineIndex = 0;
+  lines: string[] | null = null;
+  lineIndex = 0;
   // Using inline type to avoid Bun-specific ReadableStreamDefaultReader incompatibility
-  #byteReader: { read(): Promise<{ done: boolean; value?: Uint8Array }> } | null = null;
-  #decoder = new TextDecoder();
-  #buffer = "";
-  #bufferOffset = 0;
-  #done = false;
-  #next: InputStream | null;
-  #filename: string;
+  byteReader: { read(): Promise<{ done: boolean; value?: Uint8Array }> } | null = null;
+  decoder = new TextDecoder();
+  buffer = "";
+  bufferOffset = 0;
+  done = false;
+  next: InputStream | null;
+  filename: string;
 
   constructor(options: {
     next?: InputStream | null;
     filename?: string;
   }) {
-    this.#next = options.next ?? null;
-    this.#filename = options.filename ?? "UNKNOWN";
+    this.next = options.next ?? null;
+    this.filename = options.filename ?? "UNKNOWN";
   }
 
   /**
@@ -31,7 +31,7 @@ export class InputStream {
    */
   static fromString(str: string, next?: InputStream): InputStream {
     const stream = new InputStream({ next, filename: "STRING_INPUT" });
-    stream.#lines = str.split("\n").filter((l) => l.trim() !== "");
+    stream.lines = str.split("\n").filter((l) => l.trim() !== "");
     return stream;
   }
 
@@ -40,7 +40,7 @@ export class InputStream {
    */
   static fromFile(filePath: string, next?: InputStream): InputStream {
     const stream = new InputStream({ next, filename: filePath });
-    stream.#initFile(filePath);
+    stream.initFile(filePath);
     return stream;
   }
 
@@ -52,7 +52,7 @@ export class InputStream {
     next?: InputStream
   ): InputStream {
     const stream = new InputStream({ next, filename: "STREAM_INPUT" });
-    stream.#byteReader = readable.getReader();
+    stream.byteReader = readable.getReader();
     return stream;
   }
 
@@ -84,9 +84,9 @@ export class InputStream {
     return lastStream!;
   }
 
-  #initFile(filePath: string): void {
+  initFile(filePath: string): void {
     const file = Bun.file(filePath);
-    this.#byteReader = file.stream().getReader();
+    this.byteReader = file.stream().getReader();
   }
 
   /**
@@ -94,29 +94,29 @@ export class InputStream {
    * Returns null when all streams are exhausted.
    */
   async getRecord(): Promise<Record | null> {
-    if (this.#done) {
-      return this.#callNextRecord();
+    if (this.done) {
+      return this.callNextRecord();
     }
 
     // String-based input
-    if (this.#lines !== null) {
-      if (this.#lineIndex < this.#lines.length) {
-        const line = this.#lines[this.#lineIndex]!;
-        this.#lineIndex++;
+    if (this.lines !== null) {
+      if (this.lineIndex < this.lines.length) {
+        const line = this.lines[this.lineIndex]!;
+        this.lineIndex++;
         return Record.fromJSON(line);
       }
-      this.#done = true;
-      return this.#callNextRecord();
+      this.done = true;
+      return this.callNextRecord();
     }
 
     // Stream-based input
-    if (this.#byteReader) {
-      const line = await this.#readLine();
+    if (this.byteReader) {
+      const line = await this.readLine();
       if (line !== null) {
         return Record.fromJSON(line);
       }
-      this.#done = true;
-      return this.#callNextRecord();
+      this.done = true;
+      return this.callNextRecord();
     }
 
     return null;
@@ -128,44 +128,44 @@ export class InputStream {
   // is 2x slower due to per-segment TextDecoder overhead; Bun native stdin
   // adds subprocess cost. Line reading is ~10% of getRecord() time; JSON
   // parsing dominates.
-  async #readLine(): Promise<string | null> {
+  async readLine(): Promise<string | null> {
     while (true) {
-      const newlineIndex = this.#buffer.indexOf("\n", this.#bufferOffset);
+      const newlineIndex = this.buffer.indexOf("\n", this.bufferOffset);
       if (newlineIndex >= 0) {
-        const line = this.#buffer.slice(this.#bufferOffset, newlineIndex).trim();
-        this.#bufferOffset = newlineIndex + 1;
+        const line = this.buffer.slice(this.bufferOffset, newlineIndex).trim();
+        this.bufferOffset = newlineIndex + 1;
         if (line !== "") return line;
         continue;
       }
 
-      if (!this.#byteReader) return null;
-      const { value, done } = await this.#byteReader.read();
+      if (!this.byteReader) return null;
+      const { value, done } = await this.byteReader.read();
       if (done) {
         // Return any remaining content
-        const remaining = this.#buffer.slice(this.#bufferOffset).trim();
-        this.#buffer = "";
-        this.#bufferOffset = 0;
+        const remaining = this.buffer.slice(this.bufferOffset).trim();
+        this.buffer = "";
+        this.bufferOffset = 0;
         return remaining !== "" ? remaining : null;
       }
       // Compact consumed portion before appending new data
-      if (this.#bufferOffset > 0) {
-        this.#buffer = this.#buffer.slice(this.#bufferOffset);
-        this.#bufferOffset = 0;
+      if (this.bufferOffset > 0) {
+        this.buffer = this.buffer.slice(this.bufferOffset);
+        this.bufferOffset = 0;
       }
-      this.#buffer += this.#decoder.decode(value, { stream: true });
+      this.buffer += this.decoder.decode(value, { stream: true });
     }
   }
 
-  async #callNextRecord(): Promise<Record | null> {
-    if (!this.#next) return null;
+  async callNextRecord(): Promise<Record | null> {
+    if (!this.next) return null;
 
     // Flatten chain to prevent deep recursion
-    if (this.#next.#done) {
-      this.#next = this.#next.#next;
+    if (this.next.done) {
+      this.next = this.next.next;
     }
-    if (!this.#next) return null;
+    if (!this.next) return null;
 
-    return this.#next.getRecord();
+    return this.next.getRecord();
   }
 
   /**
@@ -191,8 +191,8 @@ export class InputStream {
   }
 
   getFilename(): string {
-    if (!this.#done) return this.#filename;
-    if (this.#next) return this.#next.getFilename();
-    return this.#filename;
+    if (!this.done) return this.filename;
+    if (this.next) return this.next.getFilename();
+    return this.filename;
   }
 }

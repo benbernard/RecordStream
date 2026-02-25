@@ -20,7 +20,8 @@ export class GrepOperation extends Operation {
   seenRecord = false;
   lang: string | null = null;
   runner: SnippetRunner | null = null;
-  #bufferedRecords: Record[] = [];
+  bufferedRecords: Record[] = [];
+  extraArgs: string[] = [];
 
   override addHelpTypes(): void {
     this.useHelpType("snippet");
@@ -79,9 +80,18 @@ export class GrepOperation extends Operation {
       this.beforeCount = context;
     }
 
-    const expression = fileSnippet ?? exprSnippet ?? remaining.join(" ");
-    if (!expression) {
-      throw new Error("grep requires an expression argument");
+    let expression: string;
+    if (fileSnippet ?? exprSnippet) {
+      // Expression provided via -e or -E; remaining args are file paths
+      expression = (fileSnippet ?? exprSnippet)!;
+      this.extraArgs = remaining;
+    } else {
+      // First positional arg is expression, rest are file paths
+      if (remaining.length === 0) {
+        throw new Error("grep requires an expression argument");
+      }
+      expression = remaining[0]!;
+      this.extraArgs = remaining.slice(1);
     }
 
     if (this.lang && !isJsLang(this.lang)) {
@@ -92,13 +102,13 @@ export class GrepOperation extends Operation {
     }
   }
 
-  #hasContext(): boolean {
+  hasContext(): boolean {
     return this.afterCount > 0 || this.beforeCount > 0;
   }
 
   acceptRecord(record: Record): boolean {
-    if (this.runner && !this.#hasContext()) {
-      this.#bufferedRecords.push(record);
+    if (this.runner && !this.hasContext()) {
+      this.bufferedRecords.push(record);
       return true;
     }
 
@@ -113,7 +123,7 @@ export class GrepOperation extends Operation {
         return true;
       }
       if (this.antiMatch) passed = !passed;
-      return this.#applyContext(record, passed);
+      return this.applyContext(record, passed);
     }
 
     let matched = this.executor.executeCode(record);
@@ -121,10 +131,10 @@ export class GrepOperation extends Operation {
       matched = !matched;
     }
 
-    return this.#applyContext(record, !!matched);
+    return this.applyContext(record, !!matched);
   }
 
-  #applyContext(record: Record, matched: boolean): boolean {
+  applyContext(record: Record, matched: boolean): boolean {
     let pushedRecord = false;
 
     if (matched) {
@@ -158,8 +168,8 @@ export class GrepOperation extends Operation {
   }
 
   override streamDone(): void {
-    if (this.runner && this.#bufferedRecords.length > 0) {
-      const results = this.runner.executeBatch(this.#bufferedRecords);
+    if (this.runner && this.bufferedRecords.length > 0) {
+      const results = this.runner.executeBatch(this.bufferedRecords);
       for (let i = 0; i < results.length; i++) {
         const result = results[i]!;
         if (result.error) {
@@ -169,7 +179,7 @@ export class GrepOperation extends Operation {
         let passed = result.passed ?? false;
         if (this.antiMatch) passed = !passed;
         if (passed) {
-          this.pushRecord(this.#bufferedRecords[i]!);
+          this.pushRecord(this.bufferedRecords[i]!);
           this.seenRecord = true;
         }
       }

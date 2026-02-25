@@ -25,12 +25,12 @@ const RUNNER_PATH = join(RUNNER_DIR, "runner.pl");
 
 export class PerlSnippetRunner implements SnippetRunner {
   name = "perl";
-  #code = "";
-  #mode: SnippetMode = "eval";
+  code = "";
+  mode: SnippetMode = "eval";
 
   async init(code: string, context: SnippetContext): Promise<void> {
-    this.#code = transformCode(code, "lvalue");
-    this.#mode = context.mode;
+    this.code = transformCode(code, "lvalue");
+    this.mode = context.mode;
   }
 
   async executeRecord(record: Record): Promise<SnippetResult> {
@@ -40,7 +40,7 @@ export class PerlSnippetRunner implements SnippetRunner {
 
   executeBatch(records: Record[]): SnippetResult[] {
     const lines: string[] = [
-      JSON.stringify({ type: "init", code: this.#code, mode: this.#mode }),
+      JSON.stringify({ type: "init", code: this.code, mode: this.mode }),
       ...records.map((r) =>
         JSON.stringify({ type: "record", data: r.toJSON() })
       ),

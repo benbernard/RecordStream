@@ -12,6 +12,7 @@ export class FromKv extends Operation {
   entryDelim = "\n";
   recordDelim = "END\n";
   acc: string | null = null;
+  extraArgs: string[] = [];
 
   acceptRecord(_record: Record): boolean {
     return true;
@@ -48,7 +49,7 @@ export class FromKv extends Operation {
       },
     ];
 
-    this.parseOptions(args, defs);
+    this.extraArgs = this.parseOptions(args, defs);
   }
 
   override acceptLine(line: string): boolean {
