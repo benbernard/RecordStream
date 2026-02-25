@@ -8,25 +8,25 @@ import type { JsonValue, JsonObject } from "./types/json.ts";
  * Analogous to App::RecordStream::Record in Perl.
  */
 export class Record {
-  #data: JsonObject;
+  data: JsonObject;
 
   constructor(data?: JsonObject) {
-    this.#data = data ?? {};
+    this.data = data ?? {};
   }
 
   /**
    * Get a top-level field value. For nested access, use getKeySpec().
    */
   get(key: string): JsonValue | undefined {
-    return this.#data[key];
+    return this.data[key];
   }
 
   /**
    * Set a top-level field value. Returns the old value.
    */
   set(key: string, value: JsonValue): JsonValue | undefined {
-    const old = this.#data[key];
-    this.#data[key] = value;
+    const old = this.data[key];
+    this.data[key] = value;
     return old;
   }
 
@@ -35,8 +35,8 @@ export class Record {
    */
   remove(...keys: string[]): (JsonValue | undefined)[] {
     return keys.map((key) => {
-      const old = this.#data[key];
-      delete this.#data[key]; // eslint-disable-line @typescript-eslint/no-dynamic-delete
+      const old = this.data[key];
+      delete this.data[key]; // eslint-disable-line @typescript-eslint/no-dynamic-delete
       return old;
     });
   }
@@ -45,14 +45,14 @@ export class Record {
    * Check if a top-level field exists.
    */
   has(key: string): boolean {
-    return key in this.#data;
+    return key in this.data;
   }
 
   /**
    * Rename a field. If the old field did not exist, creates the new field with null.
    */
   rename(oldKey: string, newKey: string): void {
-    const value = this.has(oldKey) ? this.#data[oldKey] : null;
+    const value = this.has(oldKey) ? this.data[oldKey] : null;
     this.set(newKey, value!);
     this.remove(oldKey);
   }
@@ -64,7 +64,7 @@ export class Record {
     const keep = new Set(keys);
     for (const key of this.keys()) {
       if (!keep.has(key)) {
-        delete this.#data[key]; // eslint-disable-line @typescript-eslint/no-dynamic-delete
+        delete this.data[key]; // eslint-disable-line @typescript-eslint/no-dynamic-delete
       }
     }
   }
@@ -73,7 +73,7 @@ export class Record {
    * Return all top-level field names.
    */
   keys(): string[] {
-    return Object.keys(this.#data);
+    return Object.keys(this.data);
   }
 
   /**
@@ -81,14 +81,14 @@ export class Record {
    * Uses a fast JSON-specific clone (no circular-ref handling needed).
    */
   clone(): Record {
-    return new Record(cloneJsonObject(this.#data));
+    return new Record(cloneJsonObject(this.data));
   }
 
   /**
    * Return the underlying data as a plain JSON object (shallow copy).
    */
   toJSON(): JsonObject {
-    return { ...this.#data };
+    return { ...this.data };
   }
 
   /**
@@ -96,14 +96,14 @@ export class Record {
    * Mutations to the returned object will affect the record.
    */
   dataRef(): JsonObject {
-    return this.#data;
+    return this.data;
   }
 
   /**
    * Serialize to a JSON line (no trailing newline).
    */
   toString(): string {
-    return JSON.stringify(this.#data);
+    return JSON.stringify(this.data);
   }
 
   /**
@@ -211,18 +211,18 @@ export class Record {
     if (isSimple && !allHack && !reverse) {
       // Fast path: simple field, ascending, no ALL hack
       comparator = (a: Record, b: Record): number => {
-        return cmpFn(a.#data[simpleKey], b.#data[simpleKey]);
+        return cmpFn(a.data[simpleKey], b.data[simpleKey]);
       };
     } else if (isSimple && !allHack && reverse) {
       // Fast path: simple field, descending, no ALL hack
       comparator = (a: Record, b: Record): number => {
-        return -cmpFn(a.#data[simpleKey], b.#data[simpleKey]);
+        return -cmpFn(a.data[simpleKey], b.data[simpleKey]);
       };
     } else {
       // General path: nested keys or ALL hack
       comparator = (a: Record, b: Record): number => {
-        const aVal = isSimple ? a.#data[simpleKey] : getNestedValueFromParts(a.#data, parts);
-        const bVal = isSimple ? b.#data[simpleKey] : getNestedValueFromParts(b.#data, parts);
+        const aVal = isSimple ? a.data[simpleKey] : getNestedValueFromParts(a.data, parts);
+        const bVal = isSimple ? b.data[simpleKey] : getNestedValueFromParts(b.data, parts);
 
         let val: number | undefined;
 

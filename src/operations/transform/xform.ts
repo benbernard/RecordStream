@@ -24,7 +24,8 @@ export class XformOperation extends Operation {
   suppressR = false;
   lang: string | null = null;
   runner: SnippetRunner | null = null;
-  #bufferedRecords: Record[] = [];
+  bufferedRecords: Record[] = [];
+  extraArgs: string[] = [];
 
   override addHelpTypes(): void {
     this.useHelpType("snippet");
@@ -83,9 +84,17 @@ export class XformOperation extends Operation {
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = fileSnippet ?? exprSnippet ?? remaining.join(" ");
-    if (!expression) {
-      throw new Error("xform requires an expression argument");
+
+    let expression: string;
+    if (fileSnippet ?? exprSnippet) {
+      expression = (fileSnippet ?? exprSnippet)!;
+      this.extraArgs = remaining;
+    } else {
+      if (remaining.length === 0) {
+        throw new Error("xform requires an expression argument");
+      }
+      expression = remaining[0]!;
+      this.extraArgs = remaining.slice(1);
     }
 
     if (this.lang && !isJsLang(this.lang)) {
@@ -126,20 +135,20 @@ export class XformOperation extends Operation {
     return executor;
   }
 
-  #hasContext(): boolean {
+  hasContext(): boolean {
     return this.beforeCount > 0 || this.afterCount > 0;
   }
 
   acceptRecord(record: Record): boolean {
-    if (this.runner && !this.#hasContext()) {
-      this.#bufferedRecords.push(record);
+    if (this.runner && !this.hasContext()) {
+      this.bufferedRecords.push(record);
       return true;
     }
 
     if (this.runner) {
       // Context mode with non-JS lang: process one record at a time
       // so the context sliding window logic below can work
-      this.#runSingleWithRunner(record);
+      this.runSingleWithRunner(record);
       return true;
     }
 
@@ -179,7 +188,7 @@ export class XformOperation extends Operation {
     return this.runRecordWithContext(this.currentRecord, this.beforeArray, this.afterArray);
   }
 
-  #runSingleWithRunner(record: Record): void {
+  runSingleWithRunner(record: Record): void {
     if (!this.runner) return;
     const results = this.runner.executeBatch([record]);
     const result = results[0];
@@ -195,8 +204,8 @@ export class XformOperation extends Operation {
   }
 
   override streamDone(): void {
-    if (this.runner && this.#bufferedRecords.length > 0) {
-      const results = this.runner.executeBatch(this.#bufferedRecords);
+    if (this.runner && this.bufferedRecords.length > 0) {
+      const results = this.runner.executeBatch(this.bufferedRecords);
       for (const result of results) {
         if (result.error) {
           process.stderr.write(`xform: ${result.error}\n`);

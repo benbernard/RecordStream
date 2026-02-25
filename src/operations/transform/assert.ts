@@ -11,13 +11,14 @@ import { createSnippetRunner, isJsLang, langOptionDef } from "../../snippets/ind
  * Analogous to App::RecordStream::Operation::assert in Perl.
  */
 export class AssertOperation extends Operation {
+  extraArgs: string[] = [];
   executor!: Executor;
   assertion = "";
   diagnostic = "";
   verbose = false;
   lang: string | null = null;
   runner: SnippetRunner | null = null;
-  #bufferedRecords: Record[] = [];
+  bufferedRecords: Record[] = [];
 
   override addHelpTypes(): void {
     this.useHelpType("snippet");
@@ -55,9 +56,17 @@ export class AssertOperation extends Operation {
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = exprSnippet ?? fileSnippet ?? remaining.join(" ");
-    if (!expression) {
-      throw new Error("assert requires an expression argument");
+
+    let expression: string;
+    if (fileSnippet ?? exprSnippet) {
+      expression = (fileSnippet ?? exprSnippet)!;
+      this.extraArgs = remaining;
+    } else {
+      if (remaining.length === 0) {
+        throw new Error("assert requires an expression argument");
+      }
+      expression = remaining[0]!;
+      this.extraArgs = remaining.slice(1);
     }
 
     this.assertion = expression;
@@ -72,7 +81,7 @@ export class AssertOperation extends Operation {
 
   acceptRecord(record: Record): boolean {
     if (this.runner) {
-      this.#bufferedRecords.push(record);
+      this.bufferedRecords.push(record);
       return true;
     }
 
@@ -94,11 +103,11 @@ export class AssertOperation extends Operation {
   }
 
   override streamDone(): void {
-    if (this.runner && this.#bufferedRecords.length > 0) {
-      const results = this.runner.executeBatch(this.#bufferedRecords);
+    if (this.runner && this.bufferedRecords.length > 0) {
+      const results = this.runner.executeBatch(this.bufferedRecords);
       for (let i = 0; i < results.length; i++) {
         const result = results[i]!;
-        const record = this.#bufferedRecords[i]!;
+        const record = this.bufferedRecords[i]!;
 
         if (result.error) {
           throw new Error(`Assertion failed! ${this.diagnostic}\n` +

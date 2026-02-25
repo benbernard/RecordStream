@@ -159,8 +159,8 @@ export class KeySpec {
   readonly spec: string;
   readonly parsedKeys: string[];
   readonly fuzzy: boolean;
-  private _compiledGetter: CompiledGetter | null = null;
-  private _compiledSetter: CompiledSetter | null = null;
+  compiledGetter: CompiledGetter | null = null;
+  compiledSetter: CompiledSetter | null = null;
 
   constructor(spec: string) {
     // Check cache first
@@ -169,8 +169,8 @@ export class KeySpec {
       this.spec = cached.spec;
       this.parsedKeys = cached.parsedKeys;
       this.fuzzy = cached.fuzzy;
-      this._compiledGetter = cached._compiledGetter;
-      this._compiledSetter = cached._compiledSetter;
+      this.compiledGetter = cached.compiledGetter;
+      this.compiledSetter = cached.compiledSetter;
       return;
     }
 
@@ -186,8 +186,8 @@ export class KeySpec {
 
     // Eagerly compile for non-fuzzy multi-key specs
     if (!this.fuzzy && this.parsedKeys.length > 1) {
-      this._compiledGetter = compileGetter(this.parsedKeys);
-      this._compiledSetter = compileSetter(this.parsedKeys);
+      this.compiledGetter = compileGetter(this.parsedKeys);
+      this.compiledSetter = compileSetter(this.parsedKeys);
     }
 
     specRegistry.set(spec, this);
@@ -216,8 +216,8 @@ export class KeySpec {
 
     // Compiled getter fast path (read-only traversal, no throwError
     // to preserve original error types for scalar-in-path cases)
-    if (this._compiledGetter && noVivify && !throwError) {
-      const value = this._compiledGetter(data);
+    if (this.compiledGetter && noVivify && !throwError) {
+      const value = this.compiledGetter(data);
       if (value !== undefined) return { value, found: true };
       return { value: undefined, found: false };
     }
@@ -234,11 +234,11 @@ export class KeySpec {
     ) as { value: JsonValue | undefined; found: boolean };
 
     // Lazy compile for fuzzy specs after first successful resolution
-    if (this.fuzzy && !this._compiledGetter && result.found) {
+    if (this.fuzzy && !this.compiledGetter && result.found) {
       const resolvedKeys = this.getKeyListForSpec(data);
       if (resolvedKeys.length > 0) {
-        this._compiledGetter = compileGetter(resolvedKeys);
-        this._compiledSetter = compileSetter(resolvedKeys);
+        this.compiledGetter = compileGetter(resolvedKeys);
+        this.compiledSetter = compileSetter(resolvedKeys);
       }
     }
 
@@ -256,8 +256,8 @@ export class KeySpec {
       return data[key];
     }
     // Compiled getter
-    if (this._compiledGetter) {
-      const value = this._compiledGetter(data);
+    if (this.compiledGetter) {
+      const value = this.compiledGetter(data);
       if (value !== undefined) return value;
       if (throwError) throw new NoSuchKeyError();
       return undefined;
@@ -276,19 +276,19 @@ export class KeySpec {
     }
 
     // Compiled setter fast path
-    if (this._compiledSetter) {
-      this._compiledSetter(data, value);
+    if (this.compiledSetter) {
+      this.compiledSetter(data, value);
       return;
     }
 
     setNestedValue(data, this.parsedKeys, value, this.fuzzy);
 
     // Lazy compile for fuzzy specs after first set
-    if (this.fuzzy && !this._compiledSetter) {
+    if (this.fuzzy && !this.compiledSetter) {
       const resolvedKeys = this.getKeyListForSpec(data);
       if (resolvedKeys.length > 0) {
-        this._compiledGetter = compileGetter(resolvedKeys);
-        this._compiledSetter = compileSetter(resolvedKeys);
+        this.compiledGetter = compileGetter(resolvedKeys);
+        this.compiledSetter = compileSetter(resolvedKeys);
       }
     }
   }

@@ -17,57 +17,57 @@ import type {
 
 export class JsSnippetRunner implements SnippetRunner {
   name = "javascript";
-  #executor: Executor | null = null;
-  #mode: SnippetMode = "eval";
+  executor: Executor | null = null;
+  mode: SnippetMode = "eval";
 
   async init(code: string, context: SnippetContext): Promise<void> {
-    this.#mode = context.mode;
+    this.mode = context.mode;
 
     switch (context.mode) {
       case "eval":
         // Eval mode: run code, return modified record
-        this.#executor = new Executor(`${code}\n; return r;`);
+        this.executor = new Executor(`${code}\n; return r;`);
         break;
       case "grep":
         // Grep mode: evaluate as expression, return boolean
-        this.#executor = new Executor(autoReturn(code));
+        this.executor = new Executor(autoReturn(code));
         break;
       case "xform":
         // Xform mode: run code, return modified record (or array)
-        this.#executor = new Executor(`${code}\n; return r;`);
+        this.executor = new Executor(`${code}\n; return r;`);
         break;
       case "generate":
         // Generate mode: evaluate expression, return array of records
-        this.#executor = new Executor(autoReturn(code));
+        this.executor = new Executor(autoReturn(code));
         break;
     }
   }
 
   async executeRecord(record: Record): Promise<SnippetResult> {
-    return this.#executeRecordSync(record);
+    return this.executeRecordSync(record);
   }
 
   executeBatch(records: Record[]): SnippetResult[] {
-    return records.map((r) => this.#executeRecordSync(r));
+    return records.map((r) => this.executeRecordSync(r));
   }
 
-  #executeRecordSync(record: Record): SnippetResult {
-    if (!this.#executor) {
+  executeRecordSync(record: Record): SnippetResult {
+    if (!this.executor) {
       return { error: "Runner not initialized" };
     }
 
     try {
-      switch (this.#mode) {
+      switch (this.mode) {
         case "eval": {
-          this.#executor.executeCode(record);
+          this.executor.executeCode(record);
           return { record: record.toJSON() };
         }
         case "grep": {
-          const result = this.#executor.executeCode(record);
+          const result = this.executor.executeCode(record);
           return { passed: !!result };
         }
         case "xform": {
-          const result = this.#executor.executeCode(record);
+          const result = this.executor.executeCode(record);
           if (Array.isArray(result)) {
             const records = result
               .filter((item): item is JsonObject | Record =>
@@ -87,7 +87,7 @@ export class JsSnippetRunner implements SnippetRunner {
           return { records: [record.toJSON()] };
         }
         case "generate": {
-          const result = this.#executor.executeCode(record);
+          const result = this.executor.executeCode(record);
           const items = Array.isArray(result) ? result : result ? [result] : [];
           const records = items
             .filter((item): item is JsonObject | Record =>
@@ -109,6 +109,6 @@ export class JsSnippetRunner implements SnippetRunner {
   }
 
   async shutdown(): Promise<void> {
-    this.#executor = null;
+    this.executor = null;
   }
 }

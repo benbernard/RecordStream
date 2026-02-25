@@ -1,7 +1,7 @@
 /**
  * CI/lint script that ensures no TypeScript visibility modifiers (private,
  * protected, public) or JavaScript private class fields (#) appear in the
- * Explorer codebase.
+ * codebase.
  *
  * Usage: bun scripts/check-no-private.ts
  * Exit code 0 = all good, non-zero = violations found.
@@ -12,8 +12,8 @@ import { join, relative } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
 const SCAN_DIRS = [
-  join(ROOT, "src", "explorer"),
-  join(ROOT, "tests", "explorer"),
+  join(ROOT, "src"),
+  join(ROOT, "tests"),
 ];
 
 const EXTENSIONS = new Set([".ts", ".tsx"]);

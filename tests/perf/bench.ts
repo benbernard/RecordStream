@@ -166,13 +166,13 @@ function fmtDeltaMarkdown(pct: number, threshold: number = 10): string {
 
 export class BenchmarkSuite {
   name: string;
-  #entries: BenchEntry[] = [];
-  #results: BenchmarkResult[] = [];
-  #suiteOptions: SuiteOptions;
+  entries: BenchEntry[] = [];
+  results: BenchmarkResult[] = [];
+  suiteOptions: SuiteOptions;
 
   constructor(name: string, options?: SuiteOptions) {
     this.name = name;
-    this.#suiteOptions = options ?? {};
+    this.suiteOptions = options ?? {};
   }
 
   /**
@@ -183,17 +183,17 @@ export class BenchmarkSuite {
     fn: () => void | Promise<void>,
     options?: BenchmarkOptions,
   ): void {
-    this.#entries.push({ name, fn, options: options ?? {} });
+    this.entries.push({ name, fn, options: options ?? {} });
   }
 
   /**
    * Run all registered benchmarks and print results.
    */
   async run(): Promise<BenchmarkResult[]> {
-    const filter = this.#suiteOptions.filter;
+    const filter = this.suiteOptions.filter;
     const entries = filter
-      ? this.#entries.filter((e) => e.name.includes(filter))
-      : this.#entries;
+      ? this.entries.filter((e) => e.name.includes(filter))
+      : this.entries;
 
     if (entries.length === 0) {
       console.log(`\nSuite: ${this.name} — no benchmarks matched filter\n`);
@@ -207,15 +207,15 @@ export class BenchmarkSuite {
     const baseline = loadBaseline();
 
     for (const entry of entries) {
-      const result = await this.#runOne(entry);
-      this.#results.push(result);
-      this.#printResult(result, baseline);
+      const result = await this.runOne(entry);
+      this.results.push(result);
+      this.printResult(result, baseline);
     }
 
-    return this.#results;
+    return this.results;
   }
 
-  async #runOne(entry: BenchEntry): Promise<BenchmarkResult> {
+  async runOne(entry: BenchEntry): Promise<BenchmarkResult> {
     const warmup = entry.options.warmup ?? 3;
     const iterations = entry.options.iterations ?? 10;
 
@@ -261,7 +261,7 @@ export class BenchmarkSuite {
     return result;
   }
 
-  #printResult(result: BenchmarkResult, baseline: BaselineData | null): void {
+  printResult(result: BenchmarkResult, baseline: BaselineData | null): void {
     const parts: string[] = [
       `  ${result.name}`,
       `    min=${fmtMs(result.min)}  median=${fmtMs(result.median)}  p95=${fmtMs(result.p95)}  max=${fmtMs(result.max)}`,
@@ -290,12 +290,12 @@ export class BenchmarkSuite {
    * Save current results as the new baseline.
    */
   saveBaseline(): void {
-    saveBaseline(this.#results);
+    saveBaseline(this.results);
     console.log(`\nBaseline saved to ${BASELINE_FILE}`);
   }
 
   getResults(): BenchmarkResult[] {
-    return [...this.#results];
+    return [...this.results];
   }
 }
 

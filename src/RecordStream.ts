@@ -21,10 +21,10 @@ export interface SnippetOptions {
  * Internally uses async iterables for lazy evaluation.
  */
 export class RecordStream {
-  #source: AsyncIterable<Record>;
+  source: AsyncIterable<Record>;
 
   constructor(source: AsyncIterable<Record>) {
-    this.#source = source;
+    this.source = source;
   }
 
   // ─── Static Constructors ───────────────────────────────────────
@@ -87,13 +87,13 @@ export class RecordStream {
   grep(predicate: string | ((r: Record) => boolean), options?: SnippetOptions): RecordStream {
     if (typeof predicate === "string" && options?.lang && !isJsLang(options.lang)) {
       const runner = createSnippetRunner(options.lang);
-      return new RecordStream(runnerGrepAsync(this.#source, predicate, runner));
+      return new RecordStream(runnerGrepAsync(this.source, predicate, runner));
     }
     const fn =
       typeof predicate === "string"
         ? makeRecordPredicate(predicate)
         : predicate;
-    const src = this.#source;
+    const src = this.source;
     return new RecordStream(filterAsync(src, fn));
   }
 
@@ -104,10 +104,10 @@ export class RecordStream {
   eval(snippet: string, options?: SnippetOptions): RecordStream {
     if (options?.lang && !isJsLang(options.lang)) {
       const runner = createSnippetRunner(options.lang);
-      return new RecordStream(runnerEvalAsync(this.#source, snippet, runner));
+      return new RecordStream(runnerEvalAsync(this.source, snippet, runner));
     }
     const executor = new Executor(`${snippet}; return r;`);
-    const src = this.#source;
+    const src = this.source;
     return new RecordStream(
       mapAsync(src, (r) => {
         executor.executeCode(r);
@@ -126,13 +126,13 @@ export class RecordStream {
   ): RecordStream {
     if (typeof snippetOrFn === "string" && options?.lang && !isJsLang(options.lang)) {
       const runner = createSnippetRunner(options.lang);
-      return new RecordStream(runnerXformAsync(this.#source, snippetOrFn, runner));
+      return new RecordStream(runnerXformAsync(this.source, snippetOrFn, runner));
     }
     const fn =
       typeof snippetOrFn === "string"
         ? makeRecordXform(snippetOrFn)
         : snippetOrFn;
-    const src = this.#source;
+    const src = this.source;
     return new RecordStream(flatMapAsync(src, fn));
   }
 
@@ -141,7 +141,7 @@ export class RecordStream {
    * This is a buffering operation (must consume all input).
    */
   sort(...keys: string[]): RecordStream {
-    const src = this.#source;
+    const src = this.source;
     return new RecordStream(sortAsync(src, keys));
   }
 
@@ -150,7 +150,7 @@ export class RecordStream {
    * Records must be sorted by the given keys for correct results.
    */
   uniq(...keys: string[]): RecordStream {
-    const src = this.#source;
+    const src = this.source;
     return new RecordStream(uniqAsync(src, keys));
   }
 
@@ -158,7 +158,7 @@ export class RecordStream {
    * Take the first N records.
    */
   head(n: number): RecordStream {
-    const src = this.#source;
+    const src = this.source;
     return new RecordStream(takeAsync(src, n));
   }
 
@@ -166,7 +166,7 @@ export class RecordStream {
    * Skip the first N records and emit the rest.
    */
   tail(n: number): RecordStream {
-    const src = this.#source;
+    const src = this.source;
     return new RecordStream(skipAsync(src, n));
   }
 
@@ -174,7 +174,7 @@ export class RecordStream {
    * Apply aggregators grouped by keys.
    */
   collate(options: CollateOptions): RecordStream {
-    const src = this.#source;
+    const src = this.source;
     return new RecordStream(collateAsync(src, options));
   }
 
@@ -182,7 +182,7 @@ export class RecordStream {
    * Map each record to a new record using a function.
    */
   map(fn: (r: Record) => Record): RecordStream {
-    const src = this.#source;
+    const src = this.source;
     return new RecordStream(mapAsync(src, fn));
   }
 
@@ -190,7 +190,7 @@ export class RecordStream {
    * Reverse the order of records (buffering operation).
    */
   reverse(): RecordStream {
-    const src = this.#source;
+    const src = this.source;
     return new RecordStream(reverseAsync(src));
   }
 
@@ -198,7 +198,7 @@ export class RecordStream {
    * Flatten array fields into separate records.
    */
   decollate(field: string): RecordStream {
-    const src = this.#source;
+    const src = this.source;
     return new RecordStream(
       flatMapAsync(src, (r) => {
         const val = findKey(r.dataRef(), field);
@@ -216,8 +216,8 @@ export class RecordStream {
    * Chain another RecordStream after this one.
    */
   concat(other: RecordStream): RecordStream {
-    const src1 = this.#source;
-    const src2 = other.#source;
+    const src1 = this.source;
+    const src2 = other.source;
     return new RecordStream(concatAsync(src1, src2));
   }
 
@@ -228,7 +228,7 @@ export class RecordStream {
    */
   async toArray(): Promise<Record[]> {
     const result: Record[] = [];
-    for await (const record of this.#source) {
+    for await (const record of this.source) {
       result.push(record);
     }
     return result;
@@ -247,7 +247,7 @@ export class RecordStream {
    */
   async toJsonLines(): Promise<string> {
     const lines: string[] = [];
-    for await (const record of this.#source) {
+    for await (const record of this.source) {
       lines.push(record.toString());
     }
     return lines.join("\n") + "\n";
@@ -274,7 +274,7 @@ export class RecordStream {
   async pipe(writable: WritableStream<string>): Promise<void> {
     const writer = writable.getWriter();
     try {
-      for await (const record of this.#source) {
+      for await (const record of this.source) {
         await writer.write(record.toString() + "\n");
       }
     } finally {
@@ -286,7 +286,7 @@ export class RecordStream {
    * Get the async iterable source for manual iteration.
    */
   [Symbol.asyncIterator](): AsyncIterator<Record> {
-    return this.#source[Symbol.asyncIterator]();
+    return this.source[Symbol.asyncIterator]();
   }
 }
 

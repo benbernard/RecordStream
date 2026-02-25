@@ -89,19 +89,19 @@ interface HelpType {
 
 export abstract class Operation implements RecordReceiver {
   next: RecordReceiver;
-  #filenameKey: string | null = null;
-  #currentFilename = "NONE";
-  #wantsHelp = false;
-  #exitValue = 0;
-  #helpTypes: Map<string, HelpType>;
+  filenameKey: string | null = null;
+  currentFilename = "NONE";
+  wantsHelp = false;
+  exitValue = 0;
+  helpTypes: Map<string, HelpType>;
 
   constructor(next?: RecordReceiver) {
     this.next = next ?? new PrinterReceiver();
-    this.#helpTypes = new Map([
+    this.helpTypes = new Map([
       ["all", {
         use: false,
         skipInAll: true,
-        code: () => this.#allHelp(),
+        code: () => this.allHelp(),
         description: "Output all help for this script",
       }],
       ["snippet", {
@@ -191,8 +191,8 @@ export abstract class Operation implements RecordReceiver {
    * Emit a record downstream.
    */
   pushRecord(record: Record): boolean {
-    if (this.#filenameKey) {
-      record.set(this.#filenameKey, this.#currentFilename);
+    if (this.filenameKey) {
+      record.set(this.filenameKey, this.currentFilename);
     }
     return this.next.acceptRecord(record);
   }
@@ -224,18 +224,18 @@ export abstract class Operation implements RecordReceiver {
    * Set the filename key for annotating records with source filename.
    */
   setFilenameKey(key: string): void {
-    this.#filenameKey = key;
+    this.filenameKey = key;
   }
 
   /**
    * Update the current input filename.
    */
   updateCurrentFilename(filename: string): void {
-    this.#currentFilename = filename;
+    this.currentFilename = filename;
   }
 
   getCurrentFilename(): string {
-    return this.#currentFilename;
+    return this.currentFilename;
   }
 
   /**
@@ -247,19 +247,19 @@ export abstract class Operation implements RecordReceiver {
   }
 
   setWantsHelp(val: boolean): void {
-    this.#wantsHelp = val;
+    this.wantsHelp = val;
   }
 
   getWantsHelp(): boolean {
-    return this.#wantsHelp;
+    return this.wantsHelp;
   }
 
   setExitValue(val: number): void {
-    this.#exitValue = val;
+    this.exitValue = val;
   }
 
   getExitValue(): number {
-    return this.#exitValue;
+    return this.exitValue;
   }
 
   /**
@@ -274,12 +274,12 @@ export abstract class Operation implements RecordReceiver {
    * Enable a built-in help type (e.g. "snippet", "keyspecs").
    */
   useHelpType(type: string): void {
-    const entry = this.#helpTypes.get(type);
+    const entry = this.helpTypes.get(type);
     if (entry) {
       entry.use = true;
     }
     // Enabling any help type also enables --help-all
-    const allEntry = this.#helpTypes.get("all");
+    const allEntry = this.helpTypes.get("all");
     if (allEntry) {
       allEntry.use = true;
     }
@@ -295,7 +295,7 @@ export abstract class Operation implements RecordReceiver {
     skipInAll = false,
     optionName?: string,
   ): void {
-    this.#helpTypes.set(type, {
+    this.helpTypes.set(type, {
       use: true,
       skipInAll,
       code,
@@ -303,7 +303,7 @@ export abstract class Operation implements RecordReceiver {
       optionName,
     });
     // Also ensure --help-all is available
-    const allEntry = this.#helpTypes.get("all");
+    const allEntry = this.helpTypes.get("all");
     if (allEntry) {
       allEntry.use = true;
     }
@@ -312,9 +312,9 @@ export abstract class Operation implements RecordReceiver {
   /**
    * Generate --help-all output: all enabled help types combined.
    */
-  #allHelp(): string {
+  allHelp(): string {
     const parts: string[] = [];
-    for (const [type, info] of this.#helpTypes) {
+    for (const [type, info] of this.helpTypes) {
       if (!info.use || info.skipInAll) continue;
       parts.push(`Help from: --help-${type}:\n`);
       parts.push(info.code());
@@ -354,7 +354,7 @@ export abstract class Operation implements RecordReceiver {
 
     // Build help option handlers
     const helpHandlers = new Map<string, () => void>();
-    for (const [type, info] of this.#helpTypes) {
+    for (const [type, info] of this.helpTypes) {
       if (!info.use) continue;
       const optName = info.optionName ?? `help-${type}`;
       helpHandlers.set(`--${optName}`, () => {
@@ -371,7 +371,7 @@ export abstract class Operation implements RecordReceiver {
 
       // Check help flags first
       if (arg === "--help" || arg === "-h") {
-        this.#wantsHelp = true;
+        this.wantsHelp = true;
         i++;
         continue;
       }

@@ -19,7 +19,8 @@ export class EvalOperation extends Operation {
   chomp = false;
   lang: string | null = null;
   runner: SnippetRunner | null = null;
-  #bufferedRecords: Record[] = [];
+  bufferedRecords: Record[] = [];
+  extraArgs: string[] = [];
 
   override addHelpTypes(): void {
     this.useHelpType("snippet");
@@ -49,9 +50,17 @@ export class EvalOperation extends Operation {
     ];
 
     const remaining = this.parseOptions(args, defs);
-    const expression = fileSnippet ?? exprSnippet ?? remaining.join(" ");
-    if (!expression) {
-      throw new Error("eval requires an expression argument");
+
+    let expression: string;
+    if (fileSnippet ?? exprSnippet) {
+      expression = (fileSnippet ?? exprSnippet)!;
+      this.extraArgs = remaining;
+    } else {
+      if (remaining.length === 0) {
+        throw new Error("eval requires an expression argument");
+      }
+      expression = remaining[0]!;
+      this.extraArgs = remaining.slice(1);
     }
 
     if (this.lang && !isJsLang(this.lang)) {
@@ -64,7 +73,7 @@ export class EvalOperation extends Operation {
 
   acceptRecord(record: Record): boolean {
     if (this.runner) {
-      this.#bufferedRecords.push(record);
+      this.bufferedRecords.push(record);
       return true;
     }
 
@@ -80,8 +89,8 @@ export class EvalOperation extends Operation {
   }
 
   override streamDone(): void {
-    if (this.runner && this.#bufferedRecords.length > 0) {
-      const results = this.runner.executeBatch(this.#bufferedRecords);
+    if (this.runner && this.bufferedRecords.length > 0) {
+      const results = this.runner.executeBatch(this.bufferedRecords);
       for (const result of results) {
         if (result.error) {
           process.stderr.write(`eval: ${result.error}\n`);

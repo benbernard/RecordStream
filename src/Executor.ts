@@ -18,31 +18,31 @@ export interface SnippetDef {
 }
 
 export class Executor {
-  #snippets: Map<string, CompiledSnippet>;
-  #lineCounter = 0;
-  #currentFilename = "NONE";
-  #state: Record<string, unknown> = {};
+  snippets: Map<string, CompiledSnippet>;
+  lineCounter = 0;
+  currentFilename = "NONE";
+  state: Record<string, unknown> = {};
 
   constructor(codeOrSnippets: string | { [name: string]: SnippetDef }) {
-    this.#snippets = new Map();
+    this.snippets = new Map();
 
     if (typeof codeOrSnippets === "string") {
-      this.#addSnippet("__DEFAULT", {
+      this.addSnippet("__DEFAULT", {
         code: codeOrSnippets,
         argNames: ["r"],
       });
     } else {
       for (const [name, def] of Object.entries(codeOrSnippets)) {
-        this.#addSnippet(name, def);
+        this.addSnippet(name, def);
       }
     }
   }
 
-  #addSnippet(name: string, def: SnippetDef): void {
+  addSnippet(name: string, def: SnippetDef): void {
     const transformedCode = transformCode(def.code);
     const argNames = def.argNames ?? ["r"];
-    const fn = compileSnippet(transformedCode, argNames, this.#state);
-    this.#snippets.set(name, { fn, argNames });
+    const fn = compileSnippet(transformedCode, argNames, this.state);
+    this.snippets.set(name, { fn, argNames });
   }
 
   /**
@@ -57,29 +57,29 @@ export class Executor {
    * Execute a named snippet with the given arguments.
    */
   executeMethod(name: string, ...args: unknown[]): unknown {
-    const snippet = this.#snippets.get(name);
+    const snippet = this.snippets.get(name);
     if (!snippet) {
       throw new Error(`No such snippet: ${name}`);
     }
 
-    this.#lineCounter++;
-    return snippet.fn(...args, this.#lineCounter, this.#currentFilename);
+    this.lineCounter++;
+    return snippet.fn(...args, this.lineCounter, this.currentFilename);
   }
 
   setCurrentFilename(filename: string): void {
-    this.#currentFilename = filename;
+    this.currentFilename = filename;
   }
 
   getCurrentFilename(): string {
-    return this.#currentFilename;
+    return this.currentFilename;
   }
 
   getLine(): number {
-    return this.#lineCounter;
+    return this.lineCounter;
   }
 
   resetLine(): void {
-    this.#lineCounter = 0;
+    this.lineCounter = 0;
   }
 }
 

@@ -22,12 +22,12 @@ export interface Valuation {
 
 /** A valuation that extracts a field value via KeySpec */
 export class KeySpecValuation implements Valuation {
-  #field: string;
+  field: string;
   constructor(field: string) {
-    this.#field = field;
+    this.field = field;
   }
   evaluateRecord(record: Record): JsonValue {
-    const v = findKey(record.dataRef(), this.#field, true);
+    const v = findKey(record.dataRef(), this.field, true);
     return v === undefined ? null : v;
   }
 }
@@ -41,12 +41,12 @@ export class RecordValuation implements Valuation {
 
 /** A valuation from a JS function */
 export class FunctionValuation implements Valuation {
-  #fn: (r: Record) => JsonValue;
+  fn: (r: Record) => JsonValue;
   constructor(fn: (r: Record) => JsonValue) {
-    this.#fn = fn;
+    this.fn = fn;
   }
   evaluateRecord(record: Record): JsonValue {
-    return this.#fn(record);
+    return this.fn(record);
   }
 }
 
