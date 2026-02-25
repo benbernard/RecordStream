@@ -35,6 +35,26 @@ from protocol import (
 )
 
 
+class _FieldAccessor:
+    """Proxy-like accessor for {{keyspec}} template expansion.
+
+    ``__F["x"]`` reads via KeySpec, ``__F["x"] = v`` writes via KeySpec,
+    and ``__F["x"] += v`` triggers ``__getitem__`` then ``__setitem__`` —
+    no assignment-detection regex needed.
+    """
+
+    __slots__ = ("_rec",)
+
+    def __init__(self, rec: Record) -> None:
+        self._rec = rec
+
+    def __getitem__(self, key: str) -> Any:
+        return self._rec.get("@" + key)
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self._rec.set("@" + key, value)
+
+
 def _compile_snippet(code: str, mode: str) -> Any:
     """Compile user code into a code object.
 
@@ -116,12 +136,10 @@ def main() -> None:  # noqa: C901 – intentional monolith for a small runner
                     f"emit() expects a Record or dict, got {type(rec_or_dict).__name__}"
                 )
 
-        def __get(rec: Record, ks: str) -> Any:
-            return rec.get("@" + ks)
-
-        def __set(rec: Record, ks: str, value: Any) -> Any:
-            rec.set("@" + ks, value)
-            return value
+        # __F is a field accessor that makes {{keyspec}} expansions work as
+        # native lvalues. {{x}} expands to __F["x"], and Python's
+        # __getitem__/__setitem__ handle reads, writes, and compound assignments.
+        __f = _FieldAccessor(r)
 
         # Build the snippet namespace
         namespace: dict[str, Any] = {
@@ -131,8 +149,7 @@ def main() -> None:  # noqa: C901 – intentional monolith for a small runner
             "filename": "NONE",
             "emit": emit,
             "Record": Record,
-            "__get": __get,
-            "__set": __set,
+            "__F": __f,
             # Expose builtins for convenience
             "json": __import__("json"),
             "re": __import__("re"),

@@ -4,141 +4,163 @@ import { Executor, transformCode } from "../src/Executor.ts";
 
 describe("Executor", () => {
   describe("transformCode", () => {
-    test("transforms {{key}} to __get call", () => {
+    test("transforms {{key}} to accessor", () => {
       const result = transformCode("{{foo}}");
-      expect(result).toContain("__get(r,");
-      expect(result).toContain('"foo"');
+      expect(result).toBe('__F["foo"]');
     });
 
-    test("transforms {{key/nested}} to __get call", () => {
+    test("transforms {{key/nested}} to accessor", () => {
       const result = transformCode("{{foo/bar}}");
-      expect(result).toContain("__get(r,");
-      expect(result).toContain('"foo/bar"');
+      expect(result).toBe('__F["foo/bar"]');
     });
 
-    test("transforms {{key}} = value to __set call", () => {
+    test("preserves assignment — language handles it natively", () => {
       const result = transformCode("{{foo}} = 42");
-      expect(result).toContain("__set(r,");
-      expect(result).toContain('"foo"');
-      expect(result).toContain("42");
+      expect(result).toBe('__F["foo"] = 42');
     });
 
     test("handles multiple transforms", () => {
       const result = transformCode("{{a}} + {{b}}");
-      expect(result).toContain('"a"');
-      expect(result).toContain('"b"');
+      expect(result).toBe('__F["a"] + __F["b"]');
     });
 
-    test("transforms {{key}} += value to compound assignment", () => {
+    test("preserves compound += — language handles it natively", () => {
       const result = transformCode("{{x}} += 2");
-      expect(result).toBe('__set(r, "x", __get(r, "x") + 2)');
+      expect(result).toBe('__F["x"] += 2');
     });
 
-    test("transforms {{key}} -= value to compound assignment", () => {
+    test("preserves compound -= — language handles it natively", () => {
       const result = transformCode("{{x}} -= 1");
-      expect(result).toBe('__set(r, "x", __get(r, "x") - 1)');
+      expect(result).toBe('__F["x"] -= 1');
     });
 
-    test("transforms {{key}} *= value to compound assignment", () => {
+    test("preserves compound *= — language handles it natively", () => {
       const result = transformCode("{{x}} *= 3");
-      expect(result).toBe('__set(r, "x", __get(r, "x") * 3)');
+      expect(result).toBe('__F["x"] *= 3');
     });
 
-    test("transforms {{key}} /= value to compound assignment", () => {
+    test("preserves compound /= — language handles it natively", () => {
       const result = transformCode("{{x}} /= 2");
-      expect(result).toBe('__set(r, "x", __get(r, "x") / 2)');
+      expect(result).toBe('__F["x"] /= 2');
     });
 
-    test("transforms {{key}} **= value to compound assignment", () => {
+    test("preserves compound **= — language handles it natively", () => {
       const result = transformCode("{{x}} **= 2");
-      expect(result).toBe('__set(r, "x", __get(r, "x") ** 2)');
+      expect(result).toBe('__F["x"] **= 2');
     });
 
-    test("transforms {{key}} ||= value to compound assignment", () => {
+    test("preserves compound ||= — language handles it natively", () => {
       const result = transformCode("{{x}} ||= 5");
-      expect(result).toBe('__set(r, "x", __get(r, "x") || 5)');
+      expect(result).toBe('__F["x"] ||= 5');
     });
 
-    test("transforms {{key}} &&= value to compound assignment", () => {
+    test("preserves compound &&= — language handles it natively", () => {
       const result = transformCode("{{x}} &&= 5");
-      expect(result).toBe('__set(r, "x", __get(r, "x") && 5)');
+      expect(result).toBe('__F["x"] &&= 5');
     });
 
-    test("transforms {{key}} ??= value to compound assignment", () => {
+    test("preserves compound ??= — language handles it natively", () => {
       const result = transformCode("{{x}} ??= 5");
-      expect(result).toBe('__set(r, "x", __get(r, "x") ?? 5)');
+      expect(result).toBe('__F["x"] ??= 5');
     });
 
-    test("transforms {{key}} >>= value to compound assignment", () => {
+    test("preserves compound >>= — language handles it natively", () => {
       const result = transformCode("{{x}} >>= 1");
-      expect(result).toBe('__set(r, "x", __get(r, "x") >> 1)');
+      expect(result).toBe('__F["x"] >>= 1');
     });
 
-    test("transforms {{key}} >>>= value to compound assignment", () => {
+    test("preserves compound >>>= — language handles it natively", () => {
       const result = transformCode("{{x}} >>>= 1");
-      expect(result).toBe('__set(r, "x", __get(r, "x") >>> 1)');
+      expect(result).toBe('__F["x"] >>>= 1');
     });
 
-    test("transforms {{key}} <<= value to compound assignment", () => {
+    test("preserves compound <<= — language handles it natively", () => {
       const result = transformCode("{{x}} <<= 1");
-      expect(result).toBe('__set(r, "x", __get(r, "x") << 1)');
+      expect(result).toBe('__F["x"] <<= 1');
     });
 
-    test("transforms {{key}} |= value to compound assignment", () => {
+    test("preserves compound |= — language handles it natively", () => {
       const result = transformCode("{{x}} |= 3");
-      expect(result).toBe('__set(r, "x", __get(r, "x") | 3)');
+      expect(result).toBe('__F["x"] |= 3');
     });
 
-    test("transforms {{key}} &= value to compound assignment", () => {
+    test("preserves compound &= — language handles it natively", () => {
       const result = transformCode("{{x}} &= 3");
-      expect(result).toBe('__set(r, "x", __get(r, "x") & 3)');
+      expect(result).toBe('__F["x"] &= 3');
     });
 
-    test("transforms {{key}} ^= value to compound assignment", () => {
+    test("preserves compound ^= — language handles it natively", () => {
       const result = transformCode("{{x}} ^= 3");
-      expect(result).toBe('__set(r, "x", __get(r, "x") ^ 3)');
+      expect(result).toBe('__F["x"] ^= 3');
     });
 
-    test("transforms {{key}} //= value to compound assignment", () => {
+    test("preserves compound //= — language handles it natively", () => {
       const result = transformCode("{{x}} //= 10");
-      expect(result).toBe('__set(r, "x", __get(r, "x") // 10)');
+      expect(result).toBe('__F["x"] //= 10');
     });
 
-    test("transforms {{key}} %= value to compound assignment", () => {
+    test("preserves compound %= — language handles it natively", () => {
       const result = transformCode("{{x}} %= 3");
-      expect(result).toBe('__set(r, "x", __get(r, "x") % 3)');
+      expect(result).toBe('__F["x"] %= 3');
     });
 
-    test("compound assignment with nested keyspec", () => {
+    test("nested keyspec in compound assignment", () => {
       const result = transformCode("{{a/b}} += 1");
-      expect(result).toBe('__set(r, "a/b", __get(r, "a/b") + 1)');
+      expect(result).toBe('__F["a/b"] += 1');
     });
 
-    test("uses custom recordVar", () => {
-      const result = transformCode("{{x}} += 1", "$r");
-      expect(result).toBe('__set($r, "x", __get($r, "x") + 1)');
+    test("lvalue style for Perl", () => {
+      const result = transformCode("{{x}} += 1", "lvalue");
+      expect(result).toBe('_f("x") += 1');
     });
 
-    test("uses custom recordVar for simple assign", () => {
-      const result = transformCode("{{x}} = 5", "$r");
-      expect(result).toBe('__set($r, "x", 5)');
+    test("lvalue style for Perl simple assign", () => {
+      const result = transformCode("{{x}} = 5", "lvalue");
+      expect(result).toBe('_f("x") = 5');
     });
 
-    test("uses custom recordVar for read", () => {
-      const result = transformCode("{{x}}", "$r");
-      expect(result).toBe('__get($r, "x")');
+    test("lvalue style for Perl read", () => {
+      const result = transformCode("{{x}}", "lvalue");
+      expect(result).toBe('_f("x")');
     });
 
-    test("does not match == as assignment", () => {
+    test("== is preserved correctly (no special handling needed)", () => {
       const result = transformCode("{{x}} == 5");
+      expect(result).toBe('__F["x"] == 5');
       expect(result).not.toContain("__set");
-      expect(result).toContain("__get");
     });
 
-    test("does not match === as assignment", () => {
+    test("=== is preserved correctly (no special handling needed)", () => {
       const result = transformCode("{{x}} === 5");
-      expect(result).not.toContain("__set");
-      expect(result).toContain("__get");
+      expect(result).toBe('__F["x"] === 5');
+    });
+
+    // --- Regression tests for bugs fixed by lvalue approach ---
+
+    test("assignment with function call containing commas in RHS", () => {
+      // Old regex approach broke on commas: [^;,\\n]+ stopped at the comma
+      const result = transformCode("{{x}} = foo(a, b)");
+      expect(result).toBe('__F["x"] = foo(a, b)');
+    });
+
+    test("assignment with array literal in RHS", () => {
+      const result = transformCode("{{x}} = [1, 2, 3]");
+      expect(result).toBe('__F["x"] = [1, 2, 3]');
+    });
+
+    test("assignment with object literal in RHS", () => {
+      const result = transformCode("{{x}} = {a: 1, b: 2}");
+      expect(result).toBe('__F["x"] = {a: 1, b: 2}');
+    });
+
+    test("assignment with ternary in RHS", () => {
+      const result = transformCode("{{x}} = a > b ? c : d");
+      expect(result).toBe('__F["x"] = a > b ? c : d');
+    });
+
+    test("compound assignment with function call in RHS", () => {
+      const result = transformCode("{{x}} += Math.max(a, b)");
+      expect(result).toBe('__F["x"] += Math.max(a, b)');
     });
   });
 
@@ -168,8 +190,6 @@ describe("Executor", () => {
       const executor = new Executor("{{new_field}} = 'created'");
       const record = new Record({ x: 1 });
       executor.executeCode(record);
-      // The fuzzy matching with @ prefix on "new_field" won't match any existing key,
-      // so it'll create a new one
       const data = record.dataRef();
       expect(data["new_field"]).toBe("created");
     });
@@ -200,6 +220,61 @@ describe("Executor", () => {
       const record = new Record({ x: 2 });
       executor.executeCode(record);
       expect(record.dataRef()["x"]).toBe(8);
+    });
+
+    // --- Regression tests: bugs that existed with the old regex approach ---
+
+    test("assignment with function call containing commas", () => {
+      const executor = new Executor("{{x}} = Math.max(3, 7)");
+      const record = new Record({ x: 0 });
+      executor.executeCode(record);
+      expect(record.dataRef()["x"]).toBe(7);
+    });
+
+    test("compound assignment with function call containing commas", () => {
+      const executor = new Executor("{{x}} += Math.min(10, 20)");
+      const record = new Record({ x: 5 });
+      executor.executeCode(record);
+      expect(record.dataRef()["x"]).toBe(15);
+    });
+
+    test("assignment with array literal", () => {
+      const executor = new Executor("{{x}} = [1, 2, 3]");
+      const record = new Record({});
+      executor.executeCode(record);
+      expect(record.dataRef()["x"]).toEqual([1, 2, 3]);
+    });
+
+    test("assignment with object literal", () => {
+      const executor = new Executor("{{x}} = {a: 1, b: 2}");
+      const record = new Record({});
+      executor.executeCode(record);
+      expect(record.dataRef()["x"]).toEqual({ a: 1, b: 2 });
+    });
+
+    test("assignment with ternary operator", () => {
+      const executor = new Executor("{{x}} = {{y}} > 5 ? 'big' : 'small'");
+      const r1 = new Record({ y: 10 });
+      executor.executeCode(r1);
+      expect(r1.dataRef()["x"]).toBe("big");
+
+      const r2 = new Record({ y: 2 });
+      executor.executeCode(r2);
+      expect(r2.dataRef()["x"]).toBe("small");
+    });
+
+    test("increment operator ++", () => {
+      const executor = new Executor("{{x}}++");
+      const record = new Record({ x: 5 });
+      executor.executeCode(record);
+      expect(record.dataRef()["x"]).toBe(6);
+    });
+
+    test("decrement operator --", () => {
+      const executor = new Executor("{{x}}--");
+      const record = new Record({ x: 5 });
+      executor.executeCode(record);
+      expect(record.dataRef()["x"]).toBe(4);
     });
 
     test("provides $line counter", () => {
