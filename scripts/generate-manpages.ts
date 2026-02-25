@@ -175,24 +175,34 @@ function generateMainManPage(allDocs: CommandDoc[]): string {
   return lines.join("\n") + "\n";
 }
 
-async function main(): Promise<void> {
-  mkdirSync(MAN_DIR, { recursive: true });
+/**
+ * Generate all man pages into the given directory.
+ * Creates the directory if it doesn't exist.
+ * Returns the total number of man pages written.
+ */
+export async function generateManPages(outDir: string): Promise<number> {
+  mkdirSync(outDir, { recursive: true });
 
   const allDocs = await loadAllDocs();
 
   for (const doc of allDocs) {
     const manContent = docToManPage(doc);
-    const manFile = join(MAN_DIR, `recs-${doc.name}.1`);
+    const manFile = join(outDir, `recs-${doc.name}.1`);
     writeFileSync(manFile, manContent);
   }
 
   // Generate main recs.1 page
   const mainPage = generateMainManPage(allDocs);
-  writeFileSync(join(MAN_DIR, "recs.1"), mainPage);
+  writeFileSync(join(outDir, "recs.1"), mainPage);
 
-  console.log(
-    `Generated ${allDocs.length + 1} man pages in ${MAN_DIR}`
-  );
+  return allDocs.length + 1;
 }
 
-main();
+async function main(): Promise<void> {
+  const count = await generateManPages(MAN_DIR);
+  console.log(`Generated ${count} man pages in ${MAN_DIR}`);
+}
+
+if (import.meta.main) {
+  main();
+}

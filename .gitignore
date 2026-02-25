@@ -4,6 +4,9 @@ node_modules
 # compiled binary
 bin/recs
 
+# generated man pages (use `recs install-manpages` to install)
+man/
+
 # output
 out
 dist
