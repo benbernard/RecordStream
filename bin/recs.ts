@@ -75,7 +75,7 @@ if (command === "install-manpages") {
   const manParent = join(homedir(), ".local", "share", "man");
   if (!manpath.includes(manParent)) {
     console.log(`\nHint: add ${manParent} to your MANPATH:`);
-    console.log(`  export MANPATH="${manParent}:\$MANPATH"`);
+    console.log(`  export MANPATH="${manParent}:${"$"}MANPATH"`);
   }
   process.exit(0);
 }
