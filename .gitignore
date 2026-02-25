@@ -49,3 +49,6 @@ perl/MYMETA.*
 perl/MANIFEST.bak
 perl/.build
 docs/.vitepress/cache/
+
+# test-generated xlsx fixtures
+tests/fixtures/*.xlsx
