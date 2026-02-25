@@ -234,8 +234,8 @@ describe("{{}} method calls on expanded values [python]", () => {
 
   test("round({{field}}, N) rounds number", () => {
     const runner = new PythonSnippetRunner();
-    // Use r["key"] = ... to avoid comma in {{}} = value (regex stops at commas)
-    void runner.init('r["rounded"] = round({{price}}, 2)', { mode: "eval" });
+    // With lvalue approach, commas in RHS work correctly
+    void runner.init("{{rounded}} = round({{price}}, 2)", { mode: "eval" });
 
     const results = runner.executeBatch([new Record({ price: 3.14159 })]);
     expect(results).toHaveLength(1);
@@ -290,8 +290,8 @@ describe("{{}} method calls on expanded values [python]", () => {
 describe("{{}} method calls on expanded values [perl]", () => {
   test("sprintf formats {{field}}", () => {
     const runner = new PerlSnippetRunner();
-    // Use $r->{key} = ... to avoid comma in {{}} = value (regex stops at commas)
-    void runner.init('$r->{formatted} = sprintf("%.2f", {{price}})', {
+    // With lvalue approach, commas in RHS work correctly
+    void runner.init('{{formatted}} = sprintf("%.2f", {{price}})', {
       mode: "eval",
     });
 
@@ -727,10 +727,8 @@ describe("record method access [perl]", () => {
 
     const results = runner.executeBatch([new Record({ a: 1, b: 2, c: 3 })]);
     expect(results).toHaveLength(1);
-    // count itself is added via __set before keys is evaluated, so 3 original + 1 = 4
-    // Actually: transformCode expands to __set($r, "count", scalar(keys %$r))
-    // __set modifies the hash first (sets "count" to undef), then keys runs
-    // Let's just check it's a number >= 3
+    // _f("count") = scalar(keys %$r) — the lvalue sub creates the "count" key
+    // before keys() runs, so we may get 3 or 4 depending on evaluation order
     expect(results[0]!.record!["count"]).toBeGreaterThanOrEqual(3);
   });
 
@@ -844,7 +842,7 @@ describe("record method access [perl]", () => {
 
     const results = runner.executeBatch([new Record({ a: 1, b: 2, c: 3 })]);
     expect(results).toHaveLength(1);
-    // count field is set via __set which modifies the hash before keys() runs
+    // _f("count") = scalar($r->keys()) — lvalue may create key before keys() runs
     expect(results[0]!.record!["count"]).toBeGreaterThanOrEqual(3);
   });
 

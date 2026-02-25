@@ -89,44 +89,30 @@ interface CompiledSnippet {
 }
 
 /**
- * Transform {{keyspec}} syntax into key lookups.
+ * Transform {{keyspec}} syntax into accessor expressions.
  *
- * {{foo/bar}} becomes calls to the __get helper function.
- * {{foo/bar}} = value becomes calls to the __set helper function.
- * {{foo/bar}} += value becomes __set(R, "foo/bar", __get(R, "foo/bar") + value)
+ * Uses a language-native lvalue approach: the expansion produces an expression
+ * that can appear on both the left and right side of assignments. This means
+ * the language itself handles reads, writes, compound assignments (+=, *=, etc.),
+ * and even increment/decrement — no regex-based assignment detection needed.
  *
- * The recordVar parameter controls the variable name used in generated code
- * (e.g. "r" for JS/Python, "$r" for Perl).
+ * For JS/Python ("accessor" style): {{foo/bar}} becomes __F["foo/bar"]
+ *   where __F is a Proxy (JS) or __getitem__/__setitem__ object (Python).
+ *
+ * For Perl ("lvalue" style): {{foo/bar}} becomes _f("foo/bar")
+ *   where _f is a Perl lvalue sub that returns a modifiable hash element.
  */
-export function transformCode(code: string, recordVar = "r"): string {
-  // Step 1: Replace compound assignments like {{ks}} += val
-  // Operators listed longest-first for correct matching
-  let transformed = code.replace(
-    /\{\{(.*?)\}\}\s*(\*\*|>>>|>>|<<|\?\?|\/\/|\|\||&&|\+|-|\*|\/|%|&|\||\^)=\s*([^;,\n]+)/g,
-    (_match, keyspec: string, op: string, value: string) => {
-      const ks = JSON.stringify(keyspec);
-      return `__set(${recordVar}, ${ks}, __get(${recordVar}, ${ks}) ${op} ${value.trim()})`;
-    }
-  );
-
-  // Step 2: Replace simple assignments like {{ks}} = val
-  // Negative lookahead (?!=) ensures == and === are not matched
-  transformed = transformed.replace(
-    /\{\{(.*?)\}\}\s*=(?!=)\s*([^;,\n]+)/g,
-    (_match, keyspec: string, value: string) => {
-      return `__set(${recordVar}, ${JSON.stringify(keyspec)}, ${value.trim()})`;
-    }
-  );
-
-  // Step 3: Replace remaining {{keyspec}} reads
-  transformed = transformed.replace(
+export function transformCode(code: string, style: "accessor" | "lvalue" = "accessor"): string {
+  return code.replace(
     /\{\{(.*?)\}\}/g,
     (_match, keyspec: string) => {
-      return `__get(${recordVar}, ${JSON.stringify(keyspec)})`;
+      const ks = JSON.stringify(keyspec);
+      if (style === "lvalue") {
+        return `_f(${ks})`;
+      }
+      return `__F[${ks}]`;
     }
   );
-
-  return transformed;
 }
 
 /**
@@ -169,18 +155,30 @@ function compileSnippet(
   // Build argument list: user args + line + filename
   const allArgNames = [...argNames, "$line", "$filename"];
 
-  // Helper functions available to snippets
-  const helperCode = `
-    const __get = (r, keyspec) => {
-      const data = typeof r === 'object' && r !== null && 'dataRef' in r ? r.dataRef() : r;
-      return __findKey(data, '@' + keyspec);
-    };
-    const __set = (r, keyspec, value) => {
-      const data = typeof r === 'object' && r !== null && 'dataRef' in r ? r.dataRef() : r;
-      __setKey(data, '@' + keyspec, value);
-      return value;
-    };
-  `;
+  // __F is a Proxy that makes {{keyspec}} expansions work as native lvalues.
+  // {{x}} expands to __F["x"], and the Proxy's get/set traps handle
+  // KeySpec resolution. This means reads, writes, compound assignments (+=),
+  // increment (++), etc. all work without any assignment-detection regex.
+  //
+  // Only created when the transformed code actually uses __F (i.e. the
+  // original code contained {{}} templates). Snippets without templates
+  // (e.g. named snippets with custom args) skip this entirely.
+  const needsProxy = code.includes("__F[");
+  const helperCode = needsProxy
+    ? `
+    const __data = typeof r === 'object' && r !== null && 'dataRef' in r ? r.dataRef() : r;
+    const __F = new Proxy(Object.create(null), {
+      get(_, prop) {
+        if (typeof prop === 'string') return __findKey(__data, '@' + prop);
+        return undefined;
+      },
+      set(_, prop, value) {
+        if (typeof prop === 'string') __setKey(__data, '@' + prop, value);
+        return true;
+      },
+    });
+  `
+    : "";
 
   const fnBody = `
     ${helperCode}
@@ -192,6 +190,7 @@ function compileSnippet(
     const factory = new Function(
       "__findKey",
       "__setKey",
+      "Proxy",
       "state",
       `return function(${allArgNames.join(", ")}) { ${fnBody} }`
     );
@@ -199,6 +198,7 @@ function compileSnippet(
       (data: JsonObject, spec: string) => findKey(data, spec),
       (data: JsonObject, spec: string, value: JsonValue) =>
         setKey(data, spec, value),
+      Proxy,
       state,
     );
   } catch (e) {

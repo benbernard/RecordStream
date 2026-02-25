@@ -30,7 +30,7 @@ export class PythonSnippetRunner implements SnippetRunner {
   #mode: SnippetMode = "eval";
 
   async init(code: string, context: SnippetContext): Promise<void> {
-    this.#code = transformCode(code, "r");
+    this.#code = transformCode(code, "accessor");
     this.#mode = context.mode;
   }
 

@@ -69,18 +69,41 @@ unless (grep { $_ eq $mode } qw(eval grep xform generate)) {
 }
 
 # ----------------------------------------------------------------
-# __get / __set helpers for {{}} template expansion
+# Lvalue sub for {{}} template expansion
 # ----------------------------------------------------------------
+#
+# {{x}} expands to _f("x") — an lvalue sub that returns the hash
+# element directly. This means reads, writes, compound assignments
+# (+=, *=, etc.), and even ++ all work natively without any
+# assignment-detection regex. $r is set per-record in the main loop.
 
-sub __get {
-    my ($r, $keyspec) = @_;
-    return RecsSDK::_resolve($r, $keyspec);
-}
+my $_current_r;
 
-sub __set {
-    my ($r, $keyspec, $value) = @_;
-    RecsSDK::_set_path($r, $keyspec, $value);
-    return $value;
+sub _f : lvalue {
+    my ($keyspec) = @_;
+    my @parts = RecsSDK::_split_keyspec($keyspec);
+
+    my $node = $_current_r;
+    for my $i (0 .. $#parts - 1) {
+        my $part = $parts[$i];
+        my $next_part = $parts[$i + 1];
+        my $next_is_array = ($next_part =~ /^#\d+$/);
+
+        if ($part =~ /^#(\d+)$/) {
+            $node->[$1] //= ($next_is_array ? [] : {});
+            $node = $node->[$1];
+        } else {
+            $node->{$part} //= ($next_is_array ? [] : {});
+            $node = $node->{$part};
+        }
+    }
+
+    my $last = $parts[-1];
+    if ($last =~ /^#(\d+)$/) {
+        $node->[$1];
+    } else {
+        $node->{$last};
+    }
 }
 
 # ----------------------------------------------------------------
@@ -153,6 +176,7 @@ while (my $msg = read_message()) {
 
     $line_num++;
     my $r = RecsSDK->new($msg->{data});
+    $_current_r = $r;
 
     eval {
         if ($mode eq 'eval') {
