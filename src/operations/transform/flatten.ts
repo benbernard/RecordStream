@@ -21,6 +21,12 @@ export class FlattenOperation extends Operation {
   separator = "-";
   defaultDepth = 1;
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+    this.useHelpType("keygroups");
+    this.useHelpType("keys");
+  }
+
   init(args: string[]): void {
     const defs: OptionDef[] = [
       {

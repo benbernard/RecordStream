@@ -1,6 +1,6 @@
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
-import { Executor, snippetFromFileOption } from "../../Executor.ts";
+import { Executor, snippetFromFileOption, executorCommandDocOptions } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
 import type { JsonObject } from "../../types/json.ts";
 import type { SnippetRunner } from "../../snippets/SnippetRunner.ts";
@@ -117,6 +117,18 @@ export class XformOperation extends Operation {
     // mutated) record is output.
     const xformCode = `${snippet}\n; return r;`;
 
+    const push_input = (record: Record | JsonObject) => {
+      const rec = record instanceof Record ? record : new Record(record as JsonObject);
+      this.spooledInput.push(rec);
+      this.suppressR = true;
+    };
+
+    const push_output = (record: Record | JsonObject) => {
+      const rec = record instanceof Record ? record : new Record(record as JsonObject);
+      this.spooledOutput.push(rec);
+      this.suppressR = true;
+    };
+
     const executor = new Executor({
       xform: {
         code: xformCode,
@@ -130,7 +142,7 @@ export class XformOperation extends Operation {
         code: preSnippet || "return undefined;",
         argNames: ["r"],
       },
-    });
+    }, { push_input, push_output });
 
     return executor;
   }
@@ -345,6 +357,7 @@ export const documentation: CommandDoc = {
       description: "A snippet to run before the stream starts.",
       argument: "<snippet>",
     },
+    ...executorCommandDocOptions(),
   ],
   examples: [
     {

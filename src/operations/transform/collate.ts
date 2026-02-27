@@ -131,6 +131,11 @@ export class CollateOperation extends Operation {
       () => aggregatorRegistry.listImplementations(),
       "List the aggregators",
     );
+    this.addCustomHelpType(
+      "more",
+      collateMoreHelp,
+      "Larger help documentation for collate",
+    );
   }
 
   init(args: string[]): void {
@@ -358,6 +363,86 @@ export class CollateOperation extends Operation {
     // in the callback prevents duplicate emissions for already-flushed state.
     this.clumperOptions.streamDone();
   }
+}
+
+function collateMoreHelp(): string {
+  return `COLLATE EXTENDED HELP:
+
+Collate is the primary aggregation operation in RecordStream. It groups
+records together by key fields and computes aggregate statistics within
+those groups.
+
+GROUPING (CLUMPING):
+  By default, collate groups records using "perfect" clumping: all records
+  with the same key values end up in the same group, regardless of order.
+  This requires holding all groups in memory.
+
+  For large or streaming data, use --adjacent (-1) to only group consecutive
+  records with the same key. This uses O(1) memory but requires the input
+  to be sorted by the grouping key.
+
+  The --size (-n) flag limits the number of active groups (LRU eviction).
+  --adjacent is equivalent to --size 1.
+
+  The --cube flag generates all 2^N key combinations, replacing each subset
+  of keys with "ALL". This is useful for generating rollup summaries.
+
+AGGREGATORS:
+  Specify aggregators with -a in the form: [name=]aggregator[,args...]
+  Multiple -a flags or colon-separated specs are supported.
+
+  If no name is given, one is auto-generated from the aggregator and field
+  names (e.g. "count" becomes "count", "sum,price" becomes "sum_price").
+
+  Examples:
+    -a count                    Count records in each group
+    -a total=sum,price          Sum of "price", stored as "total"
+    -a avg,latency              Average of "latency"
+    -a worst=max,latency        Maximum latency
+    -a perc,95,response_time    95th percentile of response_time
+
+DOMAIN LANGUAGE AGGREGATORS:
+  Use -A (--dlaggregator) for inline JavaScript aggregator expressions:
+    -A 'weighted_avg=xform(recs(), "{{total}} / {{count}}")'
+
+  Use --ii-agg for inject-into aggregators (4 args: name, initial, combine, squish):
+    --ii-agg running_avg "[0,0]" "[$a[0]+{{val}},$a[1]+1]" "$a[0]/$a[1]"
+
+  Use --mr-agg for map-reduce aggregators (4 args: name, map, reduce, squish):
+    --mr-agg total_and_count "[{{val}},1]" "[$a[0]+$b[0],$a[1]+$b[1]]" "$a[0]/$a[1]"
+
+  See --help-domainlanguage for the full domain language reference.
+
+BUCKET VS NON-BUCKET MODE:
+  By default (--bucket), collate outputs one record per group containing
+  only the key fields and aggregated values.
+
+  With --no-bucket, collate outputs one record per INPUT record, with each
+  record augmented by the aggregated values from its group. This is useful
+  for annotating records with group-level statistics.
+
+INCREMENTAL MODE:
+  With --incremental (-i), collate outputs a record every time a new input
+  record is added to a group (rather than waiting until the group is flushed).
+  The aggregated values reflect the running totals up to that point. This is
+  useful for computing running aggregates.
+
+COMMON PATTERNS:
+  Count by group:
+    recs collate -k host -a count
+
+  Multiple aggregations:
+    recs collate -k date -a count -a total=sum,revenue -a avg,latency
+
+  Running sum (cumulative):
+    recs collate -k date --adjacent --incremental -a running=sum,value
+
+  Cube rollup:
+    recs collate -k region,product --cube -a sum,sales
+
+  Adjacent grouping (streaming):
+    sort -k1 data.json | recs collate -k category --adjacent -a count
+`;
 }
 
 import type { CommandDoc } from "../../types/CommandDoc.ts";

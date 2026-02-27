@@ -14,6 +14,10 @@ export class FromSplit extends Operation {
   strict = false;
   extraArgs: string[] = [];
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+  }
+
   init(args: string[]): void {
     const defs: OptionDef[] = [
       {

@@ -110,6 +110,17 @@ export class ToPtable extends Operation {
     super(next);
   }
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+    this.useHelpType("keygroups");
+    this.useHelpType("keys");
+    this.addCustomHelpType(
+      "full",
+      toptableFullHelp,
+      "Tutorial on toptable with many examples",
+    );
+  }
+
   init(args: string[]): void {
     const addXSpecs = (v: string) => {
       this.rawXSpecs.push(...v.split(","));
@@ -624,6 +635,114 @@ function formatTableRow(
     s += cell + delim;
   }
   return s;
+}
+
+function toptableFullHelp(): string {
+  return `TOPTABLE FULL HELP:
+
+OVERVIEW:
+  Toptable (also known as "pivot table") creates a cross-tabulation of your
+  data. It takes records with categorical fields and displays them as a
+  2D grid where X fields form columns and Y fields form rows.
+
+  Toptable is typically used after recs collate to visualize aggregated data.
+
+BASIC USAGE:
+  The simplest usage requires --x (column) and --y (row) fields:
+
+    recs collate -k state,priority -a count \\
+      | recs toptable --x state --y priority
+
+  This produces a table like:
+    +--------+-----+----+------+-----+
+    |        |state|CA  |NY    |TX   |
+    +--------+-----+----+------+-----+
+    |priority|     |    |      |     |
+    +--------+-----+----+------+-----+
+    |high    |     |10  |15    |8    |
+    +--------+-----+----+------+-----+
+    |low     |     |25  |30    |20   |
+    +--------+-----+----+------+-----+
+
+THE FIELD PSEUDO-VALUE:
+  The special value "FIELD" is powerful: it uses unused field names
+  themselves as values in the table. This is useful when you have multiple
+  value fields and want each to appear as a separate column or row.
+
+  Example: You have records with count and sum_rss fields:
+    recs collate -k priority -a count -a sum,rss \\
+      | recs toptable --x FIELD --y priority
+
+  This creates columns for "count" and "sum_rss" automatically:
+    +--------+-----+-----+-------+
+    |        |FIELD|count|sum_rss|
+    +--------+-----+-----+-------+
+    |priority|     |     |       |
+    +--------+-----+-----+-------+
+    |high    |     |33   |45000  |
+    +--------+-----+-----+-------+
+    |low     |     |75   |98000  |
+    +--------+-----+-----+-------+
+
+MULTI-DIMENSIONAL TABLES:
+  You can specify multiple --x and --y fields to create higher-dimensional
+  tables. Headers are deduplicated when adjacent values repeat.
+
+    recs toptable --x state --x FIELD --y priority
+
+VALUE FIELDS:
+  By default, toptable auto-detects value fields as any field not used as
+  an x, y, or pin field. You can explicitly specify value fields with -v:
+
+    recs toptable --x state --y priority --v count
+
+  This is useful when you have many aggregated fields but only want to
+  display one.
+
+PINNING:
+  Use --pin to filter records to a specific value before building the table:
+
+    recs toptable --x state --y priority --pin region=west
+
+  You can also pin on FIELD to show only specific value fields:
+
+    recs toptable --x state --y priority --pin FIELD=count
+
+SORTING:
+  By default, x and y values appear in insertion order (the order they
+  are first seen in the input). Use --sort to control the order:
+
+    recs toptable --x state --y priority --sort state
+
+  Use --sort-all-to-end (--sa) to sort "ALL" values to the end in cube
+  output.
+
+RECORD OUTPUT:
+  Use --records (--recs) to output records instead of a formatted table.
+  Each row of the table becomes a record, with x-field values as nested
+  keys:
+
+    recs toptable --x state --y priority --records
+
+  Output records look like:
+    {"priority":"high","state":{"CA":"10","NY":"15","TX":"8"}}
+
+COMMON PATTERNS:
+  Quick summary table:
+    recs collate -k x_field -a count | recs toptable --x x_field --y FIELD
+
+  Two-axis pivot:
+    recs collate -k dept,quarter -a sum,revenue \\
+      | recs toptable --x quarter --y dept
+
+  Multiple metrics side by side:
+    recs collate -k host -a count -a avg,latency -a max,latency \\
+      | recs toptable --x FIELD --y host
+
+  Cube rollup with sorted ALL:
+    recs collate --cube -k region,product -a sum,sales \\
+      | recs toptable --x region --y product --sa
+`;
 }
 
 import type { CommandDoc } from "../../types/CommandDoc.ts";

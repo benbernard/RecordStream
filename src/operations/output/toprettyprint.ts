@@ -21,6 +21,12 @@ export class ToPrettyPrint extends Operation {
     super(next);
   }
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+    this.useHelpType("keygroups");
+    this.useHelpType("keys");
+  }
+
   init(args: string[]): void {
     const defs: OptionDef[] = [
       {

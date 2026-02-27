@@ -17,6 +17,10 @@ export class FromCsv extends Operation {
   quote: string | false = '"';
   extraArgs: string[] = [];
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+  }
+
   init(args: string[]): void {
     const defs: OptionDef[] = [
       {

@@ -12,6 +12,10 @@ export class FromRe extends Operation {
   pattern: RegExp | null = null;
   extraArgs: string[] = [];
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+  }
+
   init(args: string[]): void {
     const defs: OptionDef[] = [
       {

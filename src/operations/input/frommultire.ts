@@ -22,6 +22,10 @@ export class FromMultiRe extends Operation {
   currentRecord: Record = new Record();
   extraArgs: string[] = [];
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+  }
+
   acceptRecord(_record: Record): boolean {
     return true;
   }

@@ -14,6 +14,10 @@ export class SortOperation extends Operation {
   reverse = false;
   extraArgs: string[] = [];
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+  }
+
   init(args: string[]): void {
     const defs: OptionDef[] = [
       {

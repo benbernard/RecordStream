@@ -132,6 +132,10 @@ export class ChainOperation extends Operation {
   showChain = false;
   dryRun = false;
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+  }
+
   init(args: string[]): void {
     // Parse only chain-specific flags (--show-chain, --dry-run / -n) from the
     // leading args. Stop as soon as we hit the first positional arg (the first

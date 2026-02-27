@@ -139,6 +139,11 @@ export class MultiplexOperation extends Operation {
     this.useHelpType("keys");
     this.useHelpType("domainlanguage");
     this.useHelpType("clumping");
+    this.addCustomHelpType(
+      "more",
+      multiplexMoreHelp,
+      "Larger help documentation for multiplex",
+    );
   }
 
   init(args: string[]): void {
@@ -279,6 +284,70 @@ export class MultiplexOperation extends Operation {
   override streamDone(): void {
     this.clumperOptions.streamDone();
   }
+}
+
+function multiplexMoreHelp(): string {
+  return `MULTIPLEX EXTENDED HELP:
+
+Multiplex runs a separate instance of a recs operation for each group of
+records defined by --key. Think of it as "collate but for arbitrary
+operations" -- where collate aggregates, multiplex delegates.
+
+HOW IT WORKS:
+  1. Records arrive and are grouped by --key (using clumper options).
+  2. For each group, a fresh instance of the specified operation is created.
+  3. Records are fed to the operation instance for their group.
+  4. When the group is flushed (stream end or LRU eviction), the operation
+     instance is finished and its output is collected.
+
+SPECIFYING THE OPERATION:
+  The operation and its arguments come after "--" on the command line:
+
+    recs multiplex -k host -- recs collate -a count
+
+  Everything after "--" is passed as the operation specification. The first
+  word is the operation name (e.g. "collate", "sort", "xform"), and the
+  rest are its arguments.
+
+LINE KEY MODE:
+  With --line-key (-L), instead of feeding whole records to the nested
+  operation, the value of the specified key is fed as a raw line. This is
+  useful when your records contain text that should be parsed by a recs
+  from* operation:
+
+    recs multiplex -k pid -L line -- recs fromre '(\d+) (\w+)'
+
+OUTPUT TO FILES:
+  Use --output-file-key (-o) to write each group's output to a separate
+  file named by the value of a key field:
+
+    recs multiplex -k department -o department -- recs tocsv
+
+  Use --output-file-eval (-O) for templated filenames with {{key}}
+  interpolation:
+
+    recs multiplex -k host,date -O 'logs/{{host}}/{{date}}.json' -- recs sort -k timestamp
+
+CLUMPING OPTIONS:
+  Multiplex supports the same clumping options as collate:
+    --adjacent (-1)   Only group adjacent records (memory-efficient)
+    --size (-n)       Limit number of active groups (LRU eviction)
+    --cube            Generate all key combinations
+    --clumper (-c)    Custom clumper specification
+
+COMMON PATTERNS:
+  Per-group sorting:
+    recs multiplex -k category -- recs sort -k timestamp
+
+  Per-group numbering:
+    recs multiplex -k thread -- recs eval 'r.nbr = ++nbr'
+
+  Split text streams by key:
+    recs multiplex -L line -k pid -- recs frommultire ...
+
+  Write per-group CSV files:
+    recs multiplex -k dept -O 'output-{{dept}}.csv' -- recs tocsv
+`;
 }
 
 import type { CommandDoc } from "../../types/CommandDoc.ts";

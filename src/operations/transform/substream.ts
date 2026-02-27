@@ -17,6 +17,10 @@ export class SubstreamOperation extends Operation {
   inSubstream = false;
   seenRecord = false;
 
+  override addHelpTypes(): void {
+    this.useHelpType("snippet");
+  }
+
   init(args: string[]): void {
     let beginExpr: string | null = null;
     let endExpr: string | null = null;

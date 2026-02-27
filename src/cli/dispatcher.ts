@@ -5,6 +5,7 @@
 import { Operation, HelpExit, PrinterReceiver } from "../Operation.ts";
 import type { RecordReceiver } from "../Operation.ts";
 import { Record } from "../Record.ts";
+import { loadDocForCommand, docToHelpText } from "./help.ts";
 
 // -- Input operations --
 import { FromApache } from "../operations/input/fromapache.ts";
@@ -235,12 +236,18 @@ export async function runOperation(command: string, args: string[]): Promise<num
       console.log(e.message);
       return 0;
     }
+    // If --help was parsed before init() threw (e.g. missing required args),
+    // still show help instead of the error.
+    if (op.getWantsHelp()) {
+      console.log(buildHelpOutput(command, op));
+      return 0;
+    }
     process.stderr.write(`${e instanceof Error ? e.message : String(e)}\n`);
     return 1;
   }
 
   if (op.getWantsHelp()) {
-    console.log(op.usage());
+    console.log(buildHelpOutput(command, op));
     return 0;
   }
 
@@ -256,6 +263,46 @@ export async function runOperation(command: string, args: string[]): Promise<num
   }
 
   return op.getExitValue();
+}
+
+/**
+ * Build the help output for a command.
+ * Uses the CommandDoc system if available, falling back to op.usage().
+ * Appends a "Help Options:" section listing available --help-* flags.
+ */
+function buildHelpOutput(command: string, op: Operation): string {
+  const doc = loadDocForCommand(command);
+  const baseHelp = doc ? docToHelpText(doc) : op.usage();
+
+  const helpOptions = getHelpOptionsSection(op);
+  if (helpOptions) {
+    return baseHelp + "\n" + helpOptions;
+  }
+  return baseHelp;
+}
+
+/**
+ * Build a "Help Options:" section from the operation's registered help types.
+ * Only includes help types that are enabled (use: true) and not the basic --help.
+ */
+function getHelpOptionsSection(op: Operation): string | null {
+  const entries: Array<{ flag: string; description: string }> = [];
+
+  for (const [type, info] of op.helpTypes) {
+    if (!info.use) continue;
+    const optName = info.optionName ?? `help-${type}`;
+    entries.push({ flag: `--${optName}`, description: info.description });
+  }
+
+  if (entries.length === 0) return null;
+
+  const maxFlag = Math.max(...entries.map((e) => e.flag.length));
+  const lines: string[] = ["Help Options:"];
+  for (const { flag, description } of entries) {
+    lines.push(`  ${flag.padEnd(maxFlag + 2)}${description}`);
+  }
+
+  return lines.join("\n") + "\n";
 }
 
 /**

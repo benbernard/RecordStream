@@ -1,6 +1,6 @@
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
-import { Executor, autoReturn, snippetFromFileOption } from "../../Executor.ts";
+import { Executor, autoReturn, snippetFromFileOption, executorCommandDocOptions } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
 import type { SnippetRunner } from "../../snippets/SnippetRunner.ts";
 import { createSnippetRunner, isJsLang, langOptionDef } from "../../snippets/index.ts";
@@ -128,12 +128,7 @@ export const documentation: CommandDoc = {
         "Chomp eval results (remove trailing newlines to avoid duplicate " +
         "newlines when already newline-terminated).",
     },
-    {
-      flags: ["--lang", "-l"],
-      description:
-        "Snippet language: js (default), python/py, perl/pl.",
-      argument: "<lang>",
-    },
+    ...executorCommandDocOptions(),
   ],
   examples: [
     {

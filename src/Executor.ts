@@ -3,6 +3,7 @@ import type { Record as RsRecord } from "./Record.ts";
 import { findKey, setKey } from "./KeySpec.ts";
 import type { JsonValue, JsonObject } from "./types/json.ts";
 import type { OptionDef } from "./Operation.ts";
+import type { OptionDoc } from "./types/CommandDoc.ts";
 
 /**
  * Executor handles compilation and execution of user code snippets.
@@ -22,9 +23,14 @@ export class Executor {
   lineCounter = 0;
   currentFilename = "NONE";
   state: Record<string, unknown> = {};
+  closureVars: Record<string, unknown>;
 
-  constructor(codeOrSnippets: string | { [name: string]: SnippetDef }) {
+  constructor(
+    codeOrSnippets: string | { [name: string]: SnippetDef },
+    closureVars?: Record<string, unknown>,
+  ) {
     this.snippets = new Map();
+    this.closureVars = closureVars ?? {};
 
     if (typeof codeOrSnippets === "string") {
       this.addSnippet("__DEFAULT", {
@@ -41,7 +47,7 @@ export class Executor {
   addSnippet(name: string, def: SnippetDef): void {
     const transformedCode = transformCode(def.code);
     const argNames = def.argNames ?? ["r"];
-    const fn = compileSnippet(transformedCode, argNames, this.state);
+    const fn = compileSnippet(transformedCode, argNames, this.state, this.closureVars);
     this.snippets.set(name, { fn, argNames });
   }
 
@@ -151,6 +157,7 @@ function compileSnippet(
   code: string,
   argNames: string[],
   state: Record<string, unknown>,
+  closureVars?: Record<string, unknown>,
 ): (...args: unknown[]) => unknown {
   // Build argument list: user args + line + filename
   const allArgNames = [...argNames, "$line", "$filename"];
@@ -185,6 +192,9 @@ function compileSnippet(
     ${code}
   `;
 
+  const closureNames = Object.keys(closureVars ?? {});
+  const closureValues = Object.values(closureVars ?? {});
+
   try {
     // Create a function with the helper functions and shared state in closure
     const factory = new Function(
@@ -192,6 +202,7 @@ function compileSnippet(
       "__setKey",
       "Proxy",
       "state",
+      ...closureNames,
       `return function(${allArgNames.join(", ")}) { ${fnBody} }`
     );
     return factory(
@@ -200,12 +211,41 @@ function compileSnippet(
         setKey(data, spec, value),
       Proxy,
       state,
+      ...closureValues,
     );
   } catch (e) {
     throw new Error(
       `Failed to compile code snippet: ${e instanceof Error ? e.message : String(e)}\nCode: ${code}`
     );
   }
+}
+
+/**
+ * Return the standard CommandDoc option entries for executor options
+ * (--expr/-e, --snippet-file/-E, --lang/-l). Centralizes the documentation
+ * so every snippet command stays consistent.
+ */
+export function executorCommandDocOptions(): OptionDoc[] {
+  return [
+    {
+      flags: ["--expr", "-e"],
+      description:
+        "Inline code snippet (alternative to positional argument).",
+      argument: "<code>",
+    },
+    {
+      flags: ["--snippet-file", "-E"],
+      description:
+        "Read snippet code from a file instead of the command line.",
+      argument: "<path>",
+    },
+    {
+      flags: ["--lang", "-l"],
+      description:
+        "Snippet language: js (default), python/py, perl/pl.",
+      argument: "<lang>",
+    },
+  ];
 }
 
 /**

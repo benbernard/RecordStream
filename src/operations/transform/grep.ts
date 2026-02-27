@@ -1,6 +1,6 @@
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
-import { Executor, autoReturn, snippetFromFileOption } from "../../Executor.ts";
+import { Executor, autoReturn, snippetFromFileOption, executorCommandDocOptions } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
 import type { SnippetRunner } from "../../snippets/SnippetRunner.ts";
 import { createSnippetRunner, isJsLang, langOptionDef } from "../../snippets/index.ts";
@@ -224,12 +224,7 @@ export const documentation: CommandDoc = {
       description: "Print out the previous NUM records on a match.",
       argument: "<NUM>",
     },
-    {
-      flags: ["--lang", "-l"],
-      description:
-        "Snippet language: js (default), python/py, perl/pl.",
-      argument: "<lang>",
-    },
+    ...executorCommandDocOptions(),
   ],
   examples: [
     {

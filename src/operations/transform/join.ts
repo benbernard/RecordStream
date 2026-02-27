@@ -25,6 +25,11 @@ export class JoinOperation extends Operation {
   override addHelpTypes(): void {
     this.useHelpType("snippet");
     this.useHelpType("keyspecs");
+    this.addCustomHelpType(
+      "full",
+      joinFullHelp,
+      "Help on join types and accumulate-right",
+    );
   }
 
   init(args: string[]): void {
@@ -215,6 +220,117 @@ export class JoinOperation extends Operation {
       }
     }
   }
+}
+
+function joinFullHelp(): string {
+  return `JOIN FULL HELP:
+
+OVERVIEW:
+  Join combines two record streams based on matching key values. One stream
+  (the "db" file) is loaded entirely into memory, and then input records
+  are matched against it.
+
+  Usage: recs join [options] <inputkey> <dbkey> <dbfile> [files...]
+
+  - inputkey: The field to match on in the input stream
+  - dbkey: The field to match on in the db file
+  - dbfile: Path to the file containing db records (one JSON per line)
+
+JOIN TYPES:
+  By default, join performs an INNER join: only records where both input
+  and db have matching keys are output.
+
+  --inner (default)
+    Output only matched pairs. If a db record has key "foo" and an input
+    record also has key "foo", they are merged and output. Unmatched
+    records from either side are dropped.
+
+  --left
+    Include all db records, even if no input record matches. After
+    processing all input, any db records that were never matched are
+    output as-is. This ensures every db record appears in the output.
+
+  --right
+    Include all input records, even if no db record matches. Input
+    records with no matching db record are passed through unchanged.
+
+  --outer
+    Include all records from both sides. Equivalent to --left --right.
+    Both unmatched db records and unmatched input records appear in output.
+
+FIELD MERGING:
+  When a match is found, the two records are merged. By default, fields
+  from the db record OVERWRITE fields from the input record. The merged
+  record contains all fields from both records.
+
+  Example:
+    Input: {"id": 1, "name": "Alice", "score": 90}
+    DB:    {"id": 1, "department": "Engineering", "name": "A. Smith"}
+    Output: {"id": 1, "name": "A. Smith", "score": 90, "department": "Engineering"}
+
+  Note: "name" from db overwrites "name" from input.
+
+CUSTOM MERGE WITH --operation:
+  Use --operation to specify a JavaScript expression that controls how
+  records are merged. The variables 'd' (db record data) and 'i' (input
+  record data) are available:
+
+    recs join --operation 'd.total = (d.total || 0) + i.amount' \\
+      id id db.json
+
+  The expression modifies 'd' (the output record) in place.
+
+ACCUMULATE-RIGHT MODE:
+  With --accumulate-right, instead of outputting a merged record for each
+  match, input record fields are accumulated ONTO the db records. Output
+  happens only at stream end, when the accumulated db records are emitted.
+
+  This is useful when you want to enrich db records with data from multiple
+  input records. For each matching input record, new fields (fields not
+  already present in the db record) are added to the db record.
+
+  Example:
+    DB file (users.json):
+      {"id": 1, "name": "Alice"}
+      {"id": 2, "name": "Bob"}
+
+    Input stream:
+      {"id": 1, "score": 90}
+      {"id": 1, "rank": 3}
+      {"id": 2, "score": 85}
+
+    recs join --accumulate-right id id users.json
+
+    Output:
+      {"id": 1, "name": "Alice", "score": 90, "rank": 3}
+      {"id": 2, "name": "Bob", "score": 85}
+
+  Note: With accumulate-right, only the first new value for each field is
+  kept (subsequent matches don't overwrite). Combined with --left, unmatched
+  db records are also output.
+
+MULTI-KEY JOINS:
+  Both inputkey and dbkey can be comma-separated lists for multi-field
+  matching:
+
+    recs join host,port host,port services.json
+
+  Records match only when ALL specified key fields agree.
+
+COMMON PATTERNS:
+  Enrich records with a lookup table:
+    recs join type typeName typeMapping.json < data.json
+
+  Left join to keep all db records:
+    recs join --left userId id users.json < events.json
+
+  Outer join for full picture:
+    recs join --outer hostId hostId inventory.json < metrics.json
+
+  Custom merge with operation:
+    recs join --operation 'd.count = (d.count||0) + 1' \\
+      key key db.json < input.json
+`;
 }
 
 import type { CommandDoc } from "../../types/CommandDoc.ts";

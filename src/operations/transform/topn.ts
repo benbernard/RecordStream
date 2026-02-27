@@ -18,6 +18,12 @@ export class TopnOperation extends Operation {
   keySpecs: string[] | null = null;
   numSeen = new Map<string, number>();
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+    this.useHelpType("keygroups");
+    this.useHelpType("keys");
+  }
+
   init(args: string[]): void {
     const defs: OptionDef[] = [
       {

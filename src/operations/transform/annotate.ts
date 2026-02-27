@@ -1,6 +1,6 @@
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
-import { Executor, snippetFromFileOption } from "../../Executor.ts";
+import { Executor, snippetFromFileOption, executorCommandDocOptions } from "../../Executor.ts";
 import { KeyGroups } from "../../KeyGroups.ts";
 import { findKey, setKey } from "../../KeySpec.ts";
 import { Record } from "../../Record.ts";
@@ -211,11 +211,7 @@ export const documentation: CommandDoc = {
       argument: "<keys>",
       required: true,
     },
-    {
-      flags: ["--expr", "-e"],
-      description: "Inline expression to evaluate (alternative to positional argument).",
-      argument: "<code>",
-    },
+    ...executorCommandDocOptions(),
   ],
   examples: [
     {

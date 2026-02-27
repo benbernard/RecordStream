@@ -15,6 +15,12 @@ export class DeltaOperation extends Operation {
   keyGroups = new KeyGroups();
   lastRecord: Record | null = null;
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+    this.useHelpType("keygroups");
+    this.useHelpType("keys");
+  }
+
   init(args: string[]): void {
     const defs: OptionDef[] = [
       {

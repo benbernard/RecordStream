@@ -16,6 +16,10 @@ export class Stream2TableOperation extends Operation {
   removeField = false;
   groups = new Map<string, Record[]>();
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+  }
+
   init(args: string[]): void {
     const defs: OptionDef[] = [
       {

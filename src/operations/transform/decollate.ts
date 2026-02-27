@@ -16,6 +16,14 @@ export class DecollateOperation extends Operation {
   deaggregators: Deaggregator[] = [];
   onlyDeaggregated = false;
 
+  override addHelpTypes(): void {
+    this.addCustomHelpType(
+      "deaggregators",
+      () => deaggregatorRegistry.listImplementations(),
+      "List the deaggregators",
+    );
+  }
+
   init(args: string[]): void {
     const deaggSpecs: string[] = [];
 

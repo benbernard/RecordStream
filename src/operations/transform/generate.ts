@@ -1,6 +1,6 @@
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
-import { Executor, autoReturn, snippetFromFileOption } from "../../Executor.ts";
+import { Executor, autoReturn, snippetFromFileOption, executorCommandDocOptions } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
 import type { JsonObject, JsonValue } from "../../types/json.ts";
 import { setKey } from "../../KeySpec.ts";
@@ -174,6 +174,7 @@ export const documentation: CommandDoc = {
       flags: ["--passthrough"],
       description: "Emit the input record in addition to the generated records.",
     },
+    ...executorCommandDocOptions(),
   ],
   examples: [
     {

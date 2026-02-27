@@ -19,6 +19,15 @@ export class NormalizeTimeOperation extends Operation {
   epoch = false;
   priorNormalizedValue: number | null = null;
 
+  override addHelpTypes(): void {
+    this.useHelpType("keyspecs");
+    this.addCustomHelpType(
+      "full",
+      normalizeTimeFullHelp,
+      "In-depth description of the normalization algorithm",
+    );
+  }
+
   init(args: string[]): void {
     const defs: OptionDef[] = [
       {
@@ -135,6 +144,83 @@ function parseDuration(str: string): number {
   }
 
   return num * mult;
+}
+
+function normalizeTimeFullHelp(): string {
+  return `NORMALIZETIME FULL HELP:
+
+OVERVIEW:
+  Normalizetime takes a time field (either epoch seconds or a parseable date
+  string) and rounds it down to a time bucket boundary. The result is stored
+  in a new field named "n_<key>" (with "/" replaced by "_" in nested keys).
+
+  This is typically used as a preprocessing step before recs collate, to
+  aggregate data into time-based buckets (e.g. per-minute, per-hour counts).
+
+THE NORMALIZATION ALGORITHM:
+  The algorithm has two modes: strict and non-strict (fuzzy).
+
+  Strict mode (--strict):
+    Each time value is independently rounded down to the nearest threshold
+    boundary:
+      normalized = floor(time / threshold) * threshold
+
+    Example with threshold=300 (5 minutes):
+      time=1000 -> normalized=900   (bucket [900, 1200))
+      time=1100 -> normalized=900   (bucket [900, 1200))
+      time=1200 -> normalized=1200  (bucket [1200, 1500))
+
+  Non-strict mode (default):
+    Non-strict mode extends the previous bucket to absorb values that fall
+    in the immediately following bucket. This "fuzzy" behavior helps when
+    events are slightly outside a boundary but logically belong to the
+    prior group.
+
+    The algorithm works as follows for each time value:
+      1. Compute normalizedCurPeriod = floor(time / threshold) * threshold
+      2. Compute normalizedPriorPeriod = normalizedCurPeriod - threshold
+      3. If the PRIOR record's normalized value equals normalizedPriorPeriod,
+         reuse the prior normalized value instead of normalizedCurPeriod.
+      4. Otherwise, use normalizedCurPeriod.
+
+    In other words, if a value falls in the next bucket but the previous
+    record was in the immediately preceding bucket, the current value is
+    pulled back into the previous bucket.
+
+    Example with threshold=300 (5 minutes):
+      time=1000 -> normalized=900   (first record, starts bucket 900)
+      time=1100 -> normalized=900   (same bucket)
+      time=1200 -> normalized=900   (would be 1200, but prior was 900 = 1200-300, so stays 900)
+      time=1500 -> normalized=1500  (1500-300=1200 != prior 900, so new bucket)
+
+    This is useful when timestamps drift slightly across bucket boundaries
+    but represent the same logical event group.
+
+TIME INPUT:
+  --epoch (-e): The key field contains epoch seconds (numeric).
+  Without --epoch: The key field is parsed as a date string using
+  JavaScript's Date constructor (supports ISO 8601, RFC 2822, etc.).
+
+THRESHOLD:
+  The threshold can be a plain number (seconds) or a duration string:
+    300, "5 minutes", "1 hour", "1 day", "1 week"
+
+  Supported units: s/sec/second/seconds, m/min/minute/minutes,
+  h/hr/hour/hours, d/day/days, w/week/weeks
+
+COMMON PATTERNS:
+  Aggregate by 5-minute windows:
+    recs normalizetime -k timestamp -n 300 --strict \\
+      | recs collate -k n_timestamp -a count
+
+  Hourly summaries with fuzzy bucketing:
+    recs normalizetime -k time -e -n 3600 \\
+      | recs collate -k n_time -a avg,latency
+
+  Daily rollups:
+    recs normalizetime -k date -n '1 day' --strict \\
+      | recs collate -k n_date -a sum,revenue
+`;
 }
 
 import type { CommandDoc } from "../../types/CommandDoc.ts";
