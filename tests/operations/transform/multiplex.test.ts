@@ -234,4 +234,71 @@ describe("MultiplexOperation", () => {
     expect(contentB.length).toBe(1);
     expect(JSON.parse(contentB[0]!)).toMatchObject({ group: "b", val: 3 });
   });
+
+  test("bucket keys are merged into output records (Perl parity)", () => {
+    const { op, collector } = makeOp([
+      "-k", "t", "--",
+      "xform", "{{c}} = ({{c}} || 0) + 1",
+    ]);
+    feedRecords(op, [
+      new Record({ l: "line1", t: "1" }),
+      new Record({ l: "line2", t: "1" }),
+      new Record({ l: "line3", t: "2" }),
+    ]);
+
+    expect(collector.records.length).toBe(3);
+
+    // Every output record should have the grouping key "t" merged in
+    for (const rec of collector.records) {
+      expect(rec.get("t")).toBeDefined();
+    }
+
+    // Group "1" records should have t="1"
+    const group1 = collector.records.filter(r => r.get("t") === "1");
+    expect(group1.length).toBe(2);
+    for (const rec of group1) {
+      expect(rec.get("c")).toBeDefined();
+    }
+
+    // Group "2" records should have t="2"
+    const group2 = collector.records.filter(r => r.get("t") === "2");
+    expect(group2.length).toBe(1);
+    expect(group2[0]!.get("t")).toBe("2");
+  });
+
+  test("bucket keys merged into passthrough records", () => {
+    const { op, collector } = makeOp(["-k", "group", "passthrough"]);
+    feedRecords(op, [
+      new Record({ group: "a", val: 1 }),
+      new Record({ group: "b", val: 2 }),
+    ]);
+
+    expect(collector.records.length).toBe(2);
+    // Passthrough preserves the original record fields, and bucket keys are merged
+    expect(collector.records[0]!.get("group")).toBe("a");
+    expect(collector.records[0]!.get("val")).toBe(1);
+    expect(collector.records[1]!.get("group")).toBe("b");
+    expect(collector.records[1]!.get("val")).toBe(2);
+  });
+
+  test("bucket keys merged even when record does not have key field", () => {
+    // xform that creates new records without the grouping key
+    const { op, collector } = makeOp([
+      "-k", "t", "--",
+      "xform", "{{out}} = 'processed'",
+    ]);
+    feedRecords(op, [
+      new Record({ t: "x", data: "hello" }),
+      new Record({ t: "y", data: "world" }),
+    ]);
+
+    expect(collector.records.length).toBe(2);
+    // Even though xform doesn't explicitly set "t", bucket key merging adds it
+    const recX = collector.records.find(r => r.get("t") === "x");
+    const recY = collector.records.find(r => r.get("t") === "y");
+    expect(recX).toBeDefined();
+    expect(recY).toBeDefined();
+    expect(recX!.get("out")).toBe("processed");
+    expect(recY!.get("out")).toBe("processed");
+  });
 });

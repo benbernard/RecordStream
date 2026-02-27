@@ -33,5 +33,7 @@ import "./FirstRecord.ts";
 import "./LastRecord.ts";
 import "./RecordForMaximum.ts";
 import "./RecordForMinimum.ts";
+import "./Ord2Univariate.ts";
+import "./Ord2Bivariate.ts";
 
 export { aggregatorRegistry, makeAggregators } from "../Aggregator.ts";

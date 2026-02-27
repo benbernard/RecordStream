@@ -1,9 +1,10 @@
+import { spawnSync } from "node:child_process";
 import { Operation } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
 import { Executor, autoReturn, snippetFromFileOption, executorCommandDocOptions } from "../../Executor.ts";
 import { Record } from "../../Record.ts";
 import type { JsonObject, JsonValue } from "../../types/json.ts";
-import { setKey } from "../../KeySpec.ts";
+import { findKey, setKey } from "../../KeySpec.ts";
 import type { SnippetRunner } from "../../snippets/SnippetRunner.ts";
 import { createSnippetRunner, isJsLang, langOptionDef } from "../../snippets/index.ts";
 
@@ -22,6 +23,8 @@ export class GenerateOperation extends Operation {
   executor!: Executor;
   keychain = "_chain";
   passthrough = false;
+  shellMode = false;
+  shellCommand = "";
   lang: string | null = null;
   runner: SnippetRunner | null = null;
   bufferedRecords: Record[] = [];
@@ -49,6 +52,14 @@ export class GenerateOperation extends Operation {
         description: "Emit input record in addition to generated records",
       },
       {
+        long: "shell",
+        type: "boolean",
+        handler: () => { this.shellMode = true; },
+        description: "Execute the expression as a shell command instead of a code snippet. " +
+          "Each line of stdout is parsed as a JSON record. " +
+          "Use {{keyspec}} for template interpolation from the input record.",
+      },
+      {
         long: "expr",
         short: "e",
         type: "string",
@@ -73,7 +84,9 @@ export class GenerateOperation extends Operation {
       this.extraArgs = remaining.slice(1);
     }
 
-    if (this.lang && !isJsLang(this.lang)) {
+    if (this.shellMode) {
+      this.shellCommand = expression;
+    } else if (this.lang && !isJsLang(this.lang)) {
       this.runner = createSnippetRunner(this.lang);
       void this.runner.init(expression, { mode: "generate" });
     } else {
@@ -89,6 +102,11 @@ export class GenerateOperation extends Operation {
 
     if (this.passthrough) {
       this.pushRecord(record);
+    }
+
+    if (this.shellMode) {
+      this.executeShellCommand(record);
+      return true;
     }
 
     const result = this.executor.executeCode(record);
@@ -116,6 +134,62 @@ export class GenerateOperation extends Operation {
     }
 
     return true;
+  }
+
+  /**
+   * Interpolate {{keyspec}} placeholders in a shell command using values
+   * from the given record, then execute the command and parse each line
+   * of stdout as a JSON record.
+   */
+  executeShellCommand(record: Record): void {
+    // Interpolate {{keyspec}} with record values
+    const command = this.shellCommand.replace(
+      /\{\{(.*?)\}\}/g,
+      (_match, keyspec: string) => {
+        const value = findKey(record.dataRef() as JsonObject, "@" + keyspec);
+        if (value === undefined || value === null) return "";
+        return String(value);
+      }
+    );
+
+    const result = spawnSync(command, {
+      shell: true,
+      encoding: "utf-8",
+      maxBuffer: 100 * 1024 * 1024, // 100MB
+    });
+
+    if (result.error) {
+      process.stderr.write(`generate: shell command failed: ${result.error.message}\n`);
+      return;
+    }
+
+    if (result.status !== 0) {
+      const stderr = result.stderr ? result.stderr.trim() : "";
+      process.stderr.write(
+        `generate: shell command exited with status ${result.status}${stderr ? ": " + stderr : ""}\n`
+      );
+      return;
+    }
+
+    if (result.stderr && result.stderr.trim()) {
+      process.stderr.write(result.stderr);
+    }
+
+    const output = result.stdout ?? "";
+    const lines = output.split("\n").filter((line: string) => line.trim() !== "");
+    for (const line of lines) {
+      try {
+        const genRecord = Record.fromJSON(line);
+        setKey(
+          genRecord.dataRef() as JsonObject,
+          this.keychain,
+          record.toJSON() as JsonValue
+        );
+        this.pushRecord(genRecord);
+      } catch {
+        process.stderr.write(`generate: failed to parse JSON from shell output: ${line}\n`);
+      }
+    }
   }
 
   override streamDone(): void {
@@ -161,7 +235,10 @@ export const documentation: CommandDoc = {
     "Execute an expression for each record to generate new records. " +
     "The expression should return an array of new record objects (or a single " +
     "record). Each generated record gets a chain link back to the original " +
-    "input record under the '_chain' key (configurable via --keychain).",
+    "input record under the '_chain' key (configurable via --keychain). " +
+    "With --shell, the expression is executed as a shell command and each line " +
+    "of stdout is parsed as a JSON record. Use {{keyspec}} for template " +
+    "interpolation from the input record in shell commands.",
   options: [
     {
       flags: ["--keychain"],
@@ -174,6 +251,13 @@ export const documentation: CommandDoc = {
       flags: ["--passthrough"],
       description: "Emit the input record in addition to the generated records.",
     },
+    {
+      flags: ["--shell"],
+      description:
+        "Execute the expression as a shell command instead of a code snippet. " +
+        "Each line of stdout is parsed as a JSON record. " +
+        "Use {{keyspec}} for template interpolation from the input record.",
+    },
     ...executorCommandDocOptions(),
   ],
   examples: [
@@ -182,6 +266,14 @@ export const documentation: CommandDoc = {
         "Generate sub-records from a feed and chain back to the original",
       command:
         "recs generate 'fetchFeed(r.url).map(item => ({ title: item.title }))'",
+    },
+    {
+      description: "Execute a shell command to generate JSON records",
+      command: "recs generate --shell 'echo {\"x\": 1}'",
+    },
+    {
+      description: "Shell command with template interpolation from input record",
+      command: "recs generate --shell 'echo {\"name\": \"{{name}}\"}'",
     },
   ],
   seeAlso: ["xform", "chain"],

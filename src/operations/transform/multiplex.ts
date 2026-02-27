@@ -8,7 +8,7 @@ import { Record } from "../../Record.ts";
 import { createOperation } from "./chain.ts";
 import { findKey } from "../../KeySpec.ts";
 import { snippetValuation } from "../../DomainLanguage.ts";
-import type { JsonObject } from "../../types/json.ts";
+import type { JsonObject, JsonValue } from "../../types/json.ts";
 
 /**
  * ClumperCallback for multiplex: creates a separate operation instance
@@ -68,11 +68,11 @@ class MultiplexClumperCallback implements ClumperCallback {
     const collector = new CollectorReceiver();
     const op = createOperation(this.operationName, [...this.operationArgs], collector);
     const outputFile = this.resolveOutputFile(options);
-    return { operation: op, collector, outputFile };
+    return { operation: op, collector, outputFile, options };
   }
 
   clumperCallbackPushRecord(cookie: unknown, record: Record): void {
-    const state = cookie as { operation: Operation; collector: CollectorReceiver; outputFile: string | null };
+    const state = cookie as { operation: Operation; collector: CollectorReceiver; outputFile: string | null; options: { [key: string]: unknown } };
 
     if (this.lineKey) {
       const data = record.dataRef() as JsonObject;
@@ -86,8 +86,15 @@ class MultiplexClumperCallback implements ClumperCallback {
   }
 
   clumperCallbackEnd(cookie: unknown): void {
-    const state = cookie as { operation: Operation; collector: CollectorReceiver; outputFile: string | null };
+    const state = cookie as { operation: Operation; collector: CollectorReceiver; outputFile: string | null; options: { [key: string]: unknown } };
     state.operation.finish();
+
+    // Merge bucket keys into output records (matching Perl behavior)
+    for (const record of state.collector.records) {
+      for (const [key, val] of Object.entries(state.options)) {
+        record.set(key, val as JsonValue);
+      }
+    }
 
     if (state.outputFile) {
       // Write output to file

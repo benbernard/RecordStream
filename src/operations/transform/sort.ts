@@ -68,7 +68,9 @@ export const documentation: CommandDoc = {
   description:
     "Sort records from input or from files. You may sort on a list of keys, " +
     "each key sorted lexically (alpha order) or numerically. The sort type " +
-    "may be prefixed with '-' to indicate decreasing order.",
+    "may be prefixed with '-' to indicate decreasing order. The sort type " +
+    "may be postfixed with '*' to sort the special value 'ALL' to the end " +
+    "(useful with collate --cube).",
   options: [
     {
       flags: ["--key", "-k"],
@@ -76,7 +78,8 @@ export const documentation: CommandDoc = {
         "Sort key specification. May be comma-separated, may be specified " +
         "multiple times. Each keyspec is a name or name=sortType. Sort type " +
         "may be lexical, numeric, nat, lex, n, or l. May be prefixed with " +
-        "'-' for decreasing order.",
+        "'-' for decreasing order. May be postfixed with '*' to sort the " +
+        "special value 'ALL' to the end.",
       argument: "<keyspec>",
     },
     {
@@ -96,6 +99,10 @@ export const documentation: CommandDoc = {
     {
       description: "Sort on decreasing size, then name",
       command: "recs sort --key size=-numeric --key name",
+    },
+    {
+      description: "Sort numerically, with 'ALL' values last",
+      command: "recs sort --key count=numeric*",
     },
   ],
   seeAlso: ["collate", "topn"],

@@ -85,4 +85,42 @@ describe("FromApache", () => {
     );
     expect(result.length).toBe(0);
   });
+
+  test("--woothee parses user agent into ua_* fields", () => {
+    const result = runFromApache(["--woothee"], [combinedLine]);
+    expect(result.length).toBe(1);
+    const r = result[0]!;
+    // Basic fields still present
+    expect(r["rhost"]).toBe("192.168.0.1");
+    expect(r["agent"]).toBe("DoCoMo/2.0 P03B(c500;TB;W24H16)");
+    // Woothee-parsed fields
+    expect(r["ua_name"]).toBe("docomo");
+    expect(r["ua_category"]).toBe("mobilephone");
+    expect(r["ua_os"]).toBe("docomo");
+    expect(r["ua_version"]).toBe("P03B");
+    expect(r["ua_vendor"]).toBe("docomo");
+    expect(r["ua_os_version"]).toBe("UNKNOWN");
+  });
+
+  test("--woothee with desktop browser user agent", () => {
+    const line =
+      '10.0.0.1 - user [15/Mar/2024:12:00:00 +0000] "GET /index.html HTTP/1.1" 200 1234 "http://example.com" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36"';
+    const result = runFromApache(["--woothee"], [line]);
+    expect(result.length).toBe(1);
+    const r = result[0]!;
+    expect(r["ua_name"]).toBe("Chrome");
+    expect(r["ua_category"]).toBe("pc");
+    expect(r["ua_os"]).toBe("Windows 7");
+    expect(r["ua_vendor"]).toBe("Google");
+    expect(r["ua_version"]).toBe("47.0.2526.111");
+    expect(r["ua_os_version"]).toBe("NT 6.1");
+  });
+
+  test("without --woothee, no ua_* fields are added", () => {
+    const result = runFromApache([], [combinedLine]);
+    expect(result.length).toBe(1);
+    const r = result[0]!;
+    expect(r["ua_name"]).toBeUndefined();
+    expect(r["ua_category"]).toBeUndefined();
+  });
 });

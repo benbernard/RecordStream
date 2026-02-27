@@ -108,4 +108,29 @@ describe("FromCsv", () => {
     );
     expect(result).toEqual([{ "0": 'foo "bar" bat' }]);
   });
+
+  test("parse error in strict mode (middle of file)", () => {
+    const collector = new CollectorReceiver();
+    const op = new FromCsv(collector);
+    op.init(["--strict"]);
+    op.updateCurrentFilename("test.csv");
+    expect(() => {
+      op.parseContent('a,b\n"unclosed\nc,d\n');
+    }).toThrow(/fromcsv: parse error:.*position 5.*line 2.*file test\.csv/);
+  });
+
+  test("parse error in strict mode (last line)", () => {
+    const collector = new CollectorReceiver();
+    const op = new FromCsv(collector);
+    op.init(["--strict"]);
+    op.updateCurrentFilename("test.csv");
+    expect(() => {
+      op.parseContent('a,b\nc,d\n"unclosed\n');
+    }).toThrow(/fromcsv: parse error:.*position 9.*line 3.*file test\.csv/);
+  });
+
+  test("embedded newlines in quoted fields", () => {
+    const result = runFromCsv([], '"hello\nworld",bar\n');
+    expect(result).toEqual([{ "0": "hello\nworld", "1": "bar" }]);
+  });
 });

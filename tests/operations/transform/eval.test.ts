@@ -60,6 +60,18 @@ describe("EvalOperation", () => {
     expect(op.doesRecordOutput()).toBe(false);
   });
 
+  test("chomp removes trailing newline", () => {
+    const { op, collector } = makeOp(["--chomp", "return {{boo}}"]);
+    op.acceptRecord(new Record({ boo: "hello\n" }));
+    op.acceptRecord(new Record({ boo: "multi\n\n" }));
+    op.finish();
+
+    expect(collector.lines.length).toBe(2);
+    expect(collector.lines[0]).toBe("hello");
+    // chomp only removes the last newline, not all trailing newlines
+    expect(collector.lines[1]).toBe("multi\n");
+  });
+
   test("requires expression", () => {
     expect(() => {
       const collector = new LineCollector();

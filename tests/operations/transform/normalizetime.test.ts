@@ -84,4 +84,83 @@ describe("NormalizeTimeOperation", () => {
 
     expect(collector.records[0]!.get("n_a_b")).toBe(3600);
   });
+
+  test("multi-unit duration parsing", () => {
+    // "1 hour 30 minutes" = 5400 seconds
+    const { op, collector } = makeOp(["--key", "time", "--epoch", "--strict", "--threshold", "1 hour 30 minutes"]);
+    feedRecords(op, [
+      new Record({ time: 0 }),
+      new Record({ time: 5399 }),
+      new Record({ time: 5400 }),
+      new Record({ time: 10799 }),
+      new Record({ time: 10800 }),
+    ]);
+
+    expect(collector.records[0]!.get("n_time")).toBe(0);
+    expect(collector.records[1]!.get("n_time")).toBe(0);
+    expect(collector.records[2]!.get("n_time")).toBe(5400);
+    expect(collector.records[3]!.get("n_time")).toBe(5400);
+    expect(collector.records[4]!.get("n_time")).toBe(10800);
+  });
+
+  test("multi-unit duration with abbreviated units", () => {
+    // "3d 2h" = 3*86400 + 2*3600 = 266400 seconds
+    const { op } = makeOp(["--key", "time", "--epoch", "--strict", "--threshold", "3d 2h"]);
+    expect(op.threshold).toBe(266400);
+  });
+
+  test("multi-unit duration with days and hours and minutes", () => {
+    // "1 day 2 hours 30 minutes" = 86400 + 7200 + 1800 = 95400
+    const { op } = makeOp(["--key", "time", "--epoch", "--strict", "--threshold", "1 day 2 hours 30 minutes"]);
+    expect(op.threshold).toBe(95400);
+  });
+
+  test("parses date strings with chrono-node", () => {
+    // Use a clearly parseable date string format
+    const { op, collector } = makeOp(["--key", "date", "--threshold", "3600", "--strict"]);
+    feedRecords(op, [
+      new Record({ date: "June 12, 2009 1:00:00 UTC" }),
+      new Record({ date: "June 12, 2009 1:30:00 UTC" }),
+      new Record({ date: "June 12, 2009 2:00:00 UTC" }),
+    ]);
+
+    expect(collector.records.length).toBe(3);
+    // All should be normalized to hour boundaries
+    const t0 = collector.records[0]!.get("n_date") as number;
+    const t1 = collector.records[1]!.get("n_date") as number;
+    const t2 = collector.records[2]!.get("n_date") as number;
+    expect(t0).toBe(t1); // same hour
+    expect(t2).toBe(t0 + 3600); // next hour
+  });
+
+  test("parses non-standard date formats via chrono-node", () => {
+    // "December 25th 2020" is not reliably parsed by native Date() but chrono-node handles it
+    const { op, collector } = makeOp(["--key", "date", "--threshold", "86400", "--strict"]);
+    feedRecords(op, [
+      new Record({ date: "December 25th 2020 12:00:00" }),
+    ]);
+
+    expect(collector.records.length).toBe(1);
+    const normalized = collector.records[0]!.get("n_date") as number;
+    expect(normalized).toBeGreaterThan(0);
+  });
+
+  test("throws on unparseable date", () => {
+    const { op } = makeOp(["--key", "date", "--threshold", "60"]);
+    expect(() => {
+      op.acceptRecord(new Record({ date: "not-a-date-at-all-xyz" }));
+    }).toThrow("Cannot parse date from key: date");
+  });
+
+  test("throws on invalid duration string", () => {
+    expect(() => {
+      makeOp(["--key", "time", "--epoch", "--threshold", "foobar"]);
+    }).toThrow("Cannot parse duration");
+  });
+
+  test("throws on unknown duration unit", () => {
+    expect(() => {
+      makeOp(["--key", "time", "--epoch", "--threshold", "5 fortnights"]);
+    }).toThrow("Unknown duration unit");
+  });
 });

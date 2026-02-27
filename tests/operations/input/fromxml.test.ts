@@ -83,4 +83,53 @@ describe("FromXml", () => {
     expect(result[0]!["name"]).toBe("a");
     expect(result[1]!["name"]).toBe("b");
   });
+
+  test("element deduplication", () => {
+    // Specifying the same element twice should deduplicate and produce
+    // the same results as specifying it once
+    const resultDuplicated = runFromXml([
+      "--element",
+      "server",
+      "--element",
+      "server",
+      "file:tests/fixtures/xml1",
+    ]);
+
+    const resultSingle = runFromXml([
+      "--element",
+      "server",
+      "file:tests/fixtures/xml1",
+    ]);
+
+    expect(resultDuplicated.length).toBe(3);
+    expect(resultDuplicated).toEqual(resultSingle);
+  });
+
+  test("comma-separated element syntax", () => {
+    // --element "server,inner" should match both <server> and <inner> elements,
+    // equivalent to --element server --element inner
+    const resultComma = runFromXml([
+      "--element",
+      "server,inner",
+      "--nested",
+      "file:tests/fixtures/xml1",
+    ]);
+
+    const resultSeparate = runFromXml([
+      "--element",
+      "server",
+      "--element",
+      "inner",
+      "--nested",
+      "file:tests/fixtures/xml1",
+    ]);
+
+    expect(resultComma).toEqual(resultSeparate);
+
+    // Both should have an "element" field since multiple elements are specified
+    for (const record of resultComma) {
+      expect(record["element"]).toBeDefined();
+      expect(["server", "inner"]).toContain(record["element"] as string);
+    }
+  });
 });

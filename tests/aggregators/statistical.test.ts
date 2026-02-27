@@ -152,3 +152,131 @@ describe("Mode aggregator", () => {
     expect(result).toBe("a");
   });
 });
+
+describe("Ord2Univariate aggregator", () => {
+  test("computes all univariate statistics", () => {
+    const records = [2, 4, 4, 4, 5, 5, 7, 9].map((x) => new Record({ x }));
+    const result = runAggregator("ord2uni,x", records) as {
+      count: number; mean: number; variance: number; stddev: number;
+      skewness: number; kurtosis: number;
+    };
+
+    expect(result.count).toBe(8);
+    expect(result.mean).toBe(5);
+    expect(result.variance).toBeCloseTo(4);
+    expect(result.stddev).toBeCloseTo(2);
+    expect(typeof result.skewness).toBe("number");
+    expect(typeof result.kurtosis).toBe("number");
+  });
+
+  test("returns null for empty input", () => {
+    const result = runAggregator("ord2uni,x", []);
+    expect(result).toBeNull();
+  });
+
+  test("single record has zero variance", () => {
+    const result = runAggregator("ord2uni,x", [new Record({ x: 42 })]) as {
+      count: number; mean: number; variance: number; stddev: number;
+    };
+
+    expect(result.count).toBe(1);
+    expect(result.mean).toBe(42);
+    expect(result.variance).toBe(0);
+    expect(result.stddev).toBe(0);
+    // Skewness and kurtosis undefined when variance is 0
+    expect(result).not.toHaveProperty("skewness");
+  });
+
+  test("skips null values", () => {
+    const records = [
+      new Record({ x: 10 }),
+      new Record({ x: null }),
+      new Record({ x: 20 }),
+      new Record({}), // x is undefined
+    ];
+    const result = runAggregator("ord2uni,x", records) as {
+      count: number; mean: number;
+    };
+
+    expect(result.count).toBe(2);
+    expect(result.mean).toBe(15);
+  });
+
+  test("ord2univariate alias works", () => {
+    expect(aggregatorRegistry.has("ord2univariate")).toBe(true);
+  });
+
+  test("skewness is positive for right-skewed data", () => {
+    // 1,1,1,1,1,1,1,10 - heavily right-skewed
+    const records = [1, 1, 1, 1, 1, 1, 1, 10].map((x) => new Record({ x }));
+    const result = runAggregator("ord2uni,x", records) as { skewness: number };
+    expect(result.skewness).toBeGreaterThan(0);
+  });
+
+  test("skewness is negative for left-skewed data", () => {
+    // 1,10,10,10,10,10,10,10 - heavily left-skewed
+    const records = [1, 10, 10, 10, 10, 10, 10, 10].map((x) => new Record({ x }));
+    const result = runAggregator("ord2uni,x", records) as { skewness: number };
+    expect(result.skewness).toBeLessThan(0);
+  });
+});
+
+describe("Ord2Bivariate aggregator", () => {
+  test("computes all bivariate statistics for perfectly correlated data", () => {
+    const records = [
+      new Record({ x: 1, y: 3 }),
+      new Record({ x: 2, y: 5 }),
+      new Record({ x: 3, y: 7 }),
+      new Record({ x: 4, y: 9 }),
+      new Record({ x: 5, y: 11 }),
+    ];
+    const result = runAggregator("ord2biv,x,y", records) as {
+      count: number; covariance: number; correlation: number;
+      alpha: number; beta: number;
+    };
+
+    expect(result.count).toBe(5);
+    expect(result.correlation).toBeCloseTo(1.0);
+    expect(result.covariance).toBeCloseTo(4); // Cov(X,Y) for y=1+2x
+    expect(result.alpha).toBeCloseTo(1);
+    expect(result.beta).toBeCloseTo(2);
+  });
+
+  test("returns null for empty input", () => {
+    const result = runAggregator("ord2biv,x,y", []);
+    expect(result).toBeNull();
+  });
+
+  test("negative correlation", () => {
+    const records = [
+      new Record({ x: 1, y: 6 }),
+      new Record({ x: 2, y: 4 }),
+      new Record({ x: 3, y: 2 }),
+    ];
+    const result = runAggregator("ord2biv,x,y", records) as {
+      correlation: number; covariance: number;
+    };
+
+    expect(result.correlation).toBeCloseTo(-1.0);
+    expect(result.covariance).toBeLessThan(0);
+  });
+
+  test("skips records with null values in either field", () => {
+    const records = [
+      new Record({ x: 1, y: 2 }),
+      new Record({ x: 2, y: null }),
+      new Record({ x: null, y: 6 }),
+      new Record({ x: 3, y: 6 }),
+    ];
+    const result = runAggregator("ord2biv,x,y", records) as {
+      count: number; covariance: number;
+    };
+
+    // Only records with both fields present are counted
+    expect(result.count).toBe(2);
+  });
+
+  test("ord2bivariate alias works", () => {
+    expect(aggregatorRegistry.has("ord2bivariate")).toBe(true);
+  });
+});

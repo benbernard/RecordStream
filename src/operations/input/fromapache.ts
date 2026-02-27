@@ -1,6 +1,7 @@
 import { Operation } from "../../Operation.ts";
 import { Record } from "../../Record.ts";
 import type { JsonObject } from "../../types/json.ts";
+import woothee from "woothee";
 
 /**
  * Apache combined/common log format regex patterns.
@@ -30,6 +31,7 @@ type ParseMode = "fast" | "strict";
  */
 export class FromApache extends Operation {
   mode: ParseMode = "fast";
+  useWoothee = false;
   strictFormats: string[] | null = null;
   extraArgs: string[] = [];
 
@@ -73,6 +75,9 @@ export class FromApache extends Operation {
       } else if (arg.startsWith("--strict=")) {
         strictSet = true;
         strictArg = arg.slice(9);
+        i++;
+      } else if (arg === "--woothee") {
+        this.useWoothee = true;
         i++;
       } else if (arg === "--verbose") {
         i++;
@@ -176,6 +181,20 @@ export class FromApache extends Operation {
     return this.parseCombined(line) ?? this.parseCommon(line) ?? this.parseVhostCommon(line);
   }
 
+  applyWoothee(data: JsonObject): void {
+    if (!this.useWoothee) return;
+    const agent = data["agent"];
+    if (typeof agent !== "string") return;
+
+    const parsed = woothee.parse(agent);
+    data["ua_name"] = parsed.name;
+    data["ua_category"] = parsed.category;
+    data["ua_os"] = parsed.os;
+    data["ua_version"] = parsed.version;
+    data["ua_vendor"] = parsed.vendor;
+    data["ua_os_version"] = parsed.os_version;
+  }
+
   parseCombined(line: string): Record | null {
     const m = COMBINED_RE.exec(line);
     if (!m) return null;
@@ -203,6 +222,8 @@ export class FromApache extends Operation {
     if (proto) {
       data["proto"] = proto;
     }
+
+    this.applyWoothee(data);
 
     return new Record(data);
   }
@@ -304,6 +325,11 @@ export const documentation: CommandDoc = {
       flags: ["--strict"],
       description:
         "Use the strict parser which works relatively slow. It can process any style format logs, with specification about separator, and checker for perfection. It can also process backslash-quoted double-quotes properly.",
+    },
+    {
+      flags: ["--woothee"],
+      description:
+        "Parse the user agent field with the Woothee library and add ua_name, ua_category, ua_os, ua_version, ua_vendor, and ua_os_version fields to each record.",
     },
     {
       flags: ["--verbose"],
