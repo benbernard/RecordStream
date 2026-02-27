@@ -132,30 +132,38 @@ export class ClumperOptions {
       keyParts.push(String(val ?? ""));
     }
 
-    const groupKey = keyParts.join("\x1E");
-
     if (!this.groups) {
       this.groups = new Map();
     }
 
-    let cookie = this.groups.get(groupKey);
-    if (cookie === undefined) {
-      // Handle LRU eviction if keySize is set and NOT in perfect mode
-      if (!this.keyPerfect && this.keySize !== null && this.groups.size >= this.keySize) {
-        const oldestKey = this.groupOrder.shift()!;
-        const oldCookie = this.groups.get(oldestKey);
-        if (oldCookie !== undefined) {
-          this.callback.clumperCallbackEnd(oldCookie);
-          this.groups.delete(oldestKey);
+    // In cube mode, generate all 2^N combinations of actual values and "ALL"
+    const combos = this.keyCube
+      ? this.cubeKeyValues(keySpecs, keyValues)
+      : [{ keyValues, keyParts }];
+
+    for (const combo of combos) {
+      const groupKey = combo.keyParts.join("\x1E");
+
+      let cookie = this.groups.get(groupKey);
+      if (cookie === undefined) {
+        // Handle LRU eviction if keySize is set and NOT in perfect mode
+        if (!this.keyPerfect && this.keySize !== null && this.groups.size >= this.keySize) {
+          const oldestKey = this.groupOrder.shift()!;
+          const oldCookie = this.groups.get(oldestKey);
+          if (oldCookie !== undefined) {
+            this.callback.clumperCallbackEnd(oldCookie);
+            this.groups.delete(oldestKey);
+          }
         }
+
+        cookie = this.callback.clumperCallbackBegin(combo.keyValues);
+        this.groups.set(groupKey, cookie);
+        this.groupOrder.push(groupKey);
       }
 
-      cookie = this.callback.clumperCallbackBegin(keyValues);
-      this.groups.set(groupKey, cookie);
-      this.groupOrder.push(groupKey);
+      this.callback.clumperCallbackPushRecord(cookie, record);
     }
 
-    this.callback.clumperCallbackPushRecord(cookie, record);
     return true;
   }
 
@@ -181,6 +189,40 @@ export class ClumperOptions {
       this.groups.clear();
       this.groupOrder = [];
     }
+  }
+
+  /**
+   * Generate all 2^N combinations of actual key values and "ALL" for cube mode.
+   */
+  cubeKeyValues(
+    keySpecs: string[],
+    keyValues: { [key: string]: JsonValue }
+  ): Array<{ keyValues: { [key: string]: JsonValue }; keyParts: string[] }> {
+    const n = keySpecs.length;
+    const combos: Array<{ keyValues: { [key: string]: JsonValue }; keyParts: string[] }> = [];
+
+    // Iterate all 2^N bitmasks
+    for (let mask = 0; mask < (1 << n); mask++) {
+      const comboValues: { [key: string]: JsonValue } = {};
+      const comboParts: string[] = [];
+
+      for (let i = 0; i < n; i++) {
+        const spec = keySpecs[i]!;
+        if (mask & (1 << i)) {
+          // Replace this key with "ALL"
+          comboValues[spec] = "ALL";
+          comboParts.push("ALL");
+        } else {
+          // Use actual value
+          comboValues[spec] = keyValues[spec] ?? null;
+          comboParts.push(String(keyValues[spec] ?? ""));
+        }
+      }
+
+      combos.push({ keyValues: comboValues, keyParts: comboParts });
+    }
+
+    return combos;
   }
 
   getKeySize(): number | null {

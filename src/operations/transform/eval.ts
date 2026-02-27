@@ -9,9 +9,6 @@ import { createSnippetRunner, isJsLang, langOptionDef } from "../../snippets/ind
  * Evaluate a JS snippet on each record and output the result as a line.
  * This is NOT a record stream output—it prints raw text lines.
  *
- * When --lang is set to a non-JS language, the external runner modifies the
- * record and the modified record is output as a JSON line.
- *
  * Analogous to App::RecordStream::Operation::eval in Perl.
  */
 export class EvalOperation extends Operation {
@@ -81,7 +78,7 @@ export class EvalOperation extends Operation {
     let result = String(value ?? "");
 
     if (this.chomp) {
-      result = result.replace(/\n+$/, "");
+      result = result.replace(/\n$/, "");
     }
 
     this.pushLine(result);
@@ -97,7 +94,11 @@ export class EvalOperation extends Operation {
           continue;
         }
         if (result.record) {
-          this.pushLine(JSON.stringify(result.record));
+          let text = JSON.stringify(result.record);
+          if (this.chomp) {
+            text = text.replace(/\n$/, "");
+          }
+          this.pushLine(text);
         }
       }
     }
@@ -118,9 +119,7 @@ export const documentation: CommandDoc = {
     "Evaluate an expression on each record and print the result as a line " +
     "of text. This is NOT a record stream output -- it prints raw text lines. " +
     "The expression is evaluated with r set to the current Record object and " +
-    "line set to the current line number (starting at 1). " +
-    "When --lang is used with a non-JS language, the record is modified by " +
-    "the snippet and output as a JSON line.",
+    "line set to the current line number (starting at 1).",
   options: [
     {
       flags: ["--chomp"],

@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import { Operation, type OptionDef } from "../../Operation.ts";
 import { Record } from "../../Record.ts";
 import type { JsonObject, JsonValue } from "../../types/json.ts";
@@ -9,6 +10,39 @@ import type { JsonObject, JsonValue } from "../../types/json.ts";
 export interface ProcessTableSource {
   getProcesses(): JsonObject[];
   getFields(): string[];
+}
+
+/**
+ * Build a UID-to-username map by parsing /etc/passwd.
+ */
+function buildUidMap(): Map<string, string> {
+  const map = new Map<string, string>();
+  try {
+    const contents = readFileSync("/etc/passwd", "utf-8");
+    for (const line of contents.split("\n")) {
+      if (line.startsWith("#") || line.trim() === "") continue;
+      const parts = line.split(":");
+      if (parts.length >= 3) {
+        const username = parts[0]!;
+        const uid = parts[2]!;
+        map.set(uid, username);
+      }
+    }
+  } catch {
+    // If /etc/passwd is not readable, return empty map
+  }
+  return map;
+}
+
+/**
+ * Default UID converter using /etc/passwd lookup.
+ * Returns the username if found, otherwise the original UID value as a string.
+ */
+function defaultUidConverter(uidMap: Map<string, string>): (uid: JsonValue) => string {
+  return (uid: JsonValue) => {
+    const uidStr = String(uid);
+    return uidMap.get(uidStr) ?? uidStr;
+  };
 }
 
 /**
@@ -74,6 +108,8 @@ export class FromPs extends Operation {
   fields: string[] = [];
   processTable: ProcessTableSource = new PsProcessTable();
   uidConverter: ((uid: JsonValue) => string) | null = null;
+  noUidConvert = false;
+  uidConverterExplicitlySet = false;
 
   acceptRecord(_record: Record): boolean {
     return true;
@@ -99,9 +135,23 @@ export class FromPs extends Operation {
         },
         description: "Fields to output",
       },
+      {
+        long: "no-uid-convert",
+        type: "boolean",
+        handler: () => {
+          this.noUidConvert = true;
+        },
+        description: "Do not convert UIDs to usernames",
+      },
     ];
 
     this.parseOptions(args, defs);
+
+    // Set up default UID converter if not explicitly set and not disabled
+    if (!this.uidConverterExplicitlySet && !this.noUidConvert) {
+      const uidMap = buildUidMap();
+      this.uidConverter = defaultUidConverter(uidMap);
+    }
 
     if (this.fields.length === 0) {
       this.fields = this.processTable.getFields();
@@ -112,8 +162,9 @@ export class FromPs extends Operation {
     this.processTable = table;
   }
 
-  setUidConverter(converter: (uid: JsonValue) => string): void {
+  setUidConverter(converter: ((uid: JsonValue) => string) | null): void {
     this.uidConverter = converter;
+    this.uidConverterExplicitlySet = true;
   }
 
   override wantsInput(): boolean {
@@ -129,7 +180,7 @@ export class FromPs extends Operation {
         let value = proc[field];
         if (value === undefined) continue;
 
-        if (field === "uid" && this.uidConverter) {
+        if ((field === "uid" || field === "euid") && this.uidConverter) {
           value = this.uidConverter(value);
         }
 
@@ -160,6 +211,11 @@ export const documentation: CommandDoc = {
       argument: "<fields>",
       description:
         "Fields to output. May be specified multiple times, may be comma separated. Defaults to all fields.",
+    },
+    {
+      flags: ["--no-uid-convert"],
+      description:
+        "Do not convert UIDs to usernames. By default, uid and euid fields are converted to usernames via /etc/passwd.",
     },
   ],
   examples: [

@@ -1,9 +1,12 @@
-import { Operation } from "../../Operation.ts";
+import { Operation, HelpExit } from "../../Operation.ts";
 import type { OptionDef } from "../../Operation.ts";
 import { deaggregatorRegistry } from "../../Deaggregator.ts";
 import type { Deaggregator } from "../../Deaggregator.ts";
 import { Record } from "../../Record.ts";
 import type { JsonValue } from "../../types/json.ts";
+
+// Ensure all deaggregators are registered
+import "../../deaggregators/registry.ts";
 
 /**
  * Reverse of collate: takes a single record and produces multiple records
@@ -39,6 +42,16 @@ export class DecollateOperation extends Operation {
         description: "Deaggregator specification (colon-separated)",
       },
       {
+        long: "dldeaggregator",
+        short: "D",
+        type: "string",
+        handler: (v) => {
+          const spec = v as string;
+          deaggSpecs.push(spec);
+        },
+        description: "Domain language deaggregator specification",
+      },
+      {
         long: "only",
         short: "o",
         type: "boolean",
@@ -49,9 +62,17 @@ export class DecollateOperation extends Operation {
         long: "list-deaggregators",
         type: "boolean",
         handler: () => {
-          throw new Error(deaggregatorRegistry.listImplementations());
+          throw new HelpExit(deaggregatorRegistry.listImplementations());
         },
         description: "List available deaggregators",
+      },
+      {
+        long: "show-deaggregator",
+        type: "string",
+        handler: (v) => {
+          throw new HelpExit(deaggregatorRegistry.showImplementation(v as string));
+        },
+        description: "Show details of a specific deaggregator and exit",
       },
     ];
 
@@ -115,6 +136,13 @@ export const documentation: CommandDoc = {
       argument: "<deaggregators>",
     },
     {
+      flags: ["--dldeaggregator", "-D"],
+      description:
+        "Domain language deaggregator specification. " +
+        "Shorthand for specifying deaggregators using the same comma-separated syntax as -d.",
+      argument: "<spec>",
+    },
+    {
       flags: ["--only", "-o"],
       description:
         "Only output deaggregated fields, excluding original record fields. " +
@@ -123,6 +151,11 @@ export const documentation: CommandDoc = {
     {
       flags: ["--list-deaggregators"],
       description: "List available deaggregators and exit.",
+    },
+    {
+      flags: ["--show-deaggregator"],
+      description: "Show details of a specific deaggregator and exit.",
+      argument: "<name>",
     },
   ],
   examples: [
@@ -133,6 +166,10 @@ export const documentation: CommandDoc = {
     {
       description: "Decollate and only keep deaggregated fields",
       command: "recs decollate --only -d 'unarray,items,,item'",
+    },
+    {
+      description: "Expand a hash field into key-value records",
+      command: "recs decollate -d 'unhash,data,key,value'",
     },
   ],
   seeAlso: ["collate"],

@@ -102,4 +102,56 @@ describe("SortOperation", () => {
 
     expect(collector.records.map((r) => r.get("order"))).toEqual([1, 2, 3]);
   });
+
+  test("* postfix sorts ALL to end with numeric sort", () => {
+    const { op, collector } = makeOp(["--key", "count=numeric*"]);
+    feedRecords(op, [
+      new Record({ count: "ALL" }),
+      new Record({ count: 10 }),
+      new Record({ count: 2 }),
+      new Record({ count: 100 }),
+    ]);
+
+    expect(collector.records.map((r) => r.get("count"))).toEqual([2, 10, 100, "ALL"]);
+  });
+
+  test("* postfix sorts ALL to end with lexical sort", () => {
+    const { op, collector } = makeOp(["--key", "name=lexical*"]);
+    feedRecords(op, [
+      new Record({ name: "ALL" }),
+      new Record({ name: "charlie" }),
+      new Record({ name: "alpha" }),
+      new Record({ name: "bravo" }),
+    ]);
+
+    expect(collector.records.map((r) => r.get("name"))).toEqual([
+      "alpha", "bravo", "charlie", "ALL",
+    ]);
+  });
+
+  test("* postfix with ALL values among regular values", () => {
+    const { op, collector } = makeOp(["--key", "group=lexical*"]);
+    feedRecords(op, [
+      new Record({ group: "B" }),
+      new Record({ group: "ALL" }),
+      new Record({ group: "A" }),
+      new Record({ group: "ALL" }),
+      new Record({ group: "C" }),
+    ]);
+
+    expect(collector.records.map((r) => r.get("group"))).toEqual([
+      "A", "B", "C", "ALL", "ALL",
+    ]);
+  });
+
+  test("* postfix still sorts regular values correctly", () => {
+    const { op, collector } = makeOp(["--key", "val=numeric*"]);
+    feedRecords(op, [
+      new Record({ val: 50 }),
+      new Record({ val: 10 }),
+      new Record({ val: 30 }),
+    ]);
+
+    expect(collector.records.map((r) => r.get("val"))).toEqual([10, 30, 50]);
+  });
 });

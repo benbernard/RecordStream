@@ -3,6 +3,7 @@ import type { OptionDef } from "../../Operation.ts";
 import { findKey } from "../../KeySpec.ts";
 import { Record } from "../../Record.ts";
 import type { JsonObject } from "../../types/json.ts";
+import * as chrono from "chrono-node";
 
 /**
  * Normalize time fields to specified time bucket thresholds.
@@ -88,10 +89,16 @@ export class NormalizeTimeOperation extends Operation {
     if (this.epoch) {
       time = Number(value);
     } else {
-      // Try to parse the date value as a Date object
-      const parsed = new Date(String(value));
+      const dateStr = String(value);
+      // Try native Date first (handles ISO 8601, RFC 2822, etc.)
+      let parsed = new Date(dateStr);
       if (isNaN(parsed.getTime())) {
-        throw new Error(`Cannot parse date from key: ${this.key}, value: ${String(value)}`);
+        // Fall back to chrono-node for natural language and non-standard formats
+        const chronoParsed = chrono.parseDate(dateStr);
+        if (!chronoParsed) {
+          throw new Error(`Cannot parse date from key: ${this.key}, value: ${dateStr}`);
+        }
+        parsed = chronoParsed;
       }
       time = parsed.getTime() / 1000; // Convert to epoch seconds
     }
@@ -117,33 +124,45 @@ export class NormalizeTimeOperation extends Operation {
   }
 }
 
+const DURATION_MULTIPLIERS: { [unit: string]: number } = {
+  s: 1, sec: 1, second: 1, seconds: 1,
+  m: 60, min: 60, minute: 60, minutes: 60,
+  h: 3600, hr: 3600, hour: 3600, hours: 3600,
+  d: 86400, day: 86400, days: 86400,
+  w: 604800, week: 604800, weeks: 604800,
+};
+
 /**
- * Parse a simple duration string into seconds.
- * Supports: "N seconds", "N minutes", "N hours", "N days", "N weeks"
+ * Parse a duration string into seconds.
+ * Supports single-unit ("5 minutes") and multi-unit ("3 days 2 hours 30 minutes").
  */
 function parseDuration(str: string): number {
-  const match = str.trim().match(/^(\d+(?:\.\d+)?)\s*(\w+)$/);
-  if (!match) {
+  const trimmed = str.trim();
+
+  // Match all "number unit" pairs in the string
+  const pattern = /(\d+(?:\.\d+)?)\s*([a-zA-Z]+)/g;
+  let match: RegExpExecArray | null;
+  let totalSeconds = 0;
+  let matchCount = 0;
+
+  while ((match = pattern.exec(trimmed)) !== null) {
+    matchCount++;
+    const num = parseFloat(match[1]!);
+    const unit = match[2]!.toLowerCase();
+
+    const mult = DURATION_MULTIPLIERS[unit];
+    if (mult === undefined) {
+      throw new Error(`Unknown duration unit: '${unit}'`);
+    }
+
+    totalSeconds += num * mult;
+  }
+
+  if (matchCount === 0) {
     throw new Error(`Cannot parse duration: '${str}'`);
   }
 
-  const num = parseFloat(match[1]!);
-  const unit = match[2]!.toLowerCase();
-
-  const multipliers: { [unit: string]: number } = {
-    s: 1, sec: 1, second: 1, seconds: 1,
-    m: 60, min: 60, minute: 60, minutes: 60,
-    h: 3600, hr: 3600, hour: 3600, hours: 3600,
-    d: 86400, day: 86400, days: 86400,
-    w: 604800, week: 604800, weeks: 604800,
-  };
-
-  const mult = multipliers[unit];
-  if (mult === undefined) {
-    throw new Error(`Unknown duration unit: '${unit}'`);
-  }
-
-  return num * mult;
+  return totalSeconds;
 }
 
 function normalizeTimeFullHelp(): string {
@@ -205,6 +224,9 @@ THRESHOLD:
   The threshold can be a plain number (seconds) or a duration string:
     300, "5 minutes", "1 hour", "1 day", "1 week"
 
+  Multi-unit durations are also supported:
+    "3 days 2 hours", "1 hour 30 minutes", "2d 12h"
+
   Supported units: s/sec/second/seconds, m/min/minute/minutes,
   h/hr/hour/hours, d/day/days, w/week/weeks
 
@@ -245,7 +267,7 @@ export const documentation: CommandDoc = {
       flags: ["--threshold", "-n"],
       description:
         "Number of seconds in each bucket. May also be a duration string " +
-        "like '1 week' or '5 minutes'.",
+        "like '1 week', '5 minutes', or '3 days 2 hours'.",
       argument: "<time range>",
       required: true,
     },

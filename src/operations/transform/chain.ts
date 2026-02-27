@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import { Operation } from "../../Operation.ts";
 import type { RecordReceiver } from "../../Operation.ts";
 import { Record } from "../../Record.ts";
@@ -54,14 +53,51 @@ export function createOperationOrShell(
 }
 
 /**
- * A "shell operation" that pipes JSONL through an external command.
- * Records are serialized to JSON, piped through the command's stdin/stdout,
- * and parsed back to records. Used when chain encounters a non-recs command.
+ * Receiver wrapper that forwards records/lines but blocks finish propagation.
+ * ChainOperation uses this between operations so it can manage the finish
+ * sequence explicitly (required for async shell operations).
+ */
+class ChainFinishBarrier implements RecordReceiver {
+  constructor(private target: RecordReceiver) {}
+
+  acceptRecord(record: Record): boolean {
+    return this.target.acceptRecord(record);
+  }
+
+  acceptLine(line: string): boolean {
+    if (this.target.acceptLine) {
+      return this.target.acceptLine(line);
+    }
+    return true;
+  }
+
+  finish(): void {
+    // Intentionally does NOT propagate.
+    // ChainOperation manages the finish sequence.
+  }
+}
+
+/**
+ * A "shell operation" that pipes JSONL through an external command using
+ * streaming I/O. Records are written to the command's stdin as they arrive,
+ * and stdout is read asynchronously and parsed back to records.
+ *
+ * This replaces the previous spawnSync-based approach which buffered the
+ * entire dataset in memory (with a 100MB limit). The streaming approach
+ * can handle arbitrarily large datasets.
  */
 class ShellOperation extends Operation {
   command: string;
   commandArgs: string[];
-  bufferedRecords: Record[] = [];
+  spawnedProc: {
+    readonly stdin: { write(data: string): number | Promise<number>; end(): number | Promise<number> };
+    readonly stdout: ReadableStream<Uint8Array>;
+    readonly stderr: ReadableStream<Uint8Array>;
+    readonly exited: Promise<number>;
+  } | null = null;
+  outputDone: Promise<void> | null = null;
+  stderrDone: Promise<void> | null = null;
+  stdinClosed = false;
 
   constructor(next: RecordReceiver, command: string, commandArgs: string[]) {
     super(next);
@@ -73,43 +109,118 @@ class ShellOperation extends Operation {
     // No-op: initialized via constructor
   }
 
+  ensureProcess(): void {
+    if (this.spawnedProc) return;
+    try {
+      this.spawnedProc = Bun.spawn([this.command, ...this.commandArgs], {
+        stdin: "pipe",
+        stdout: "pipe",
+        stderr: "pipe",
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      throw new Error(`Shell command '${this.command}' failed: ${msg}`);
+    }
+    // Start reading stdout/stderr immediately to avoid pipe buffer deadlocks
+    this.outputDone = this.readStdout();
+    this.stderrDone = this.readStderr();
+  }
+
+  async readStdout(): Promise<void> {
+    const reader = this.spawnedProc!.stdout.getReader();
+    const decoder = new TextDecoder();
+    let partial = "";
+
+    try {
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        partial += decoder.decode(value, { stream: true });
+
+        const lines = partial.split("\n");
+        partial = lines.pop()!;
+
+        for (const line of lines) {
+          if (line.trim() === "") continue;
+          try {
+            this.pushRecord(Record.fromJSON(line));
+          } catch {
+            this.pushLine(line);
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    // Flush remaining decoder state
+    partial += decoder.decode();
+    if (partial.trim()) {
+      try {
+        this.pushRecord(Record.fromJSON(partial));
+      } catch {
+        this.pushLine(partial);
+      }
+    }
+  }
+
+  async readStderr(): Promise<void> {
+    const reader = this.spawnedProc!.stderr.getReader();
+    try {
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        process.stderr.write(Buffer.from(value));
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  }
+
   acceptRecord(record: Record): boolean {
-    this.bufferedRecords.push(record);
+    if (this.stdinClosed) return false;
+    this.ensureProcess();
+    try {
+      this.spawnedProc!.stdin.write(record.toString() + "\n");
+    } catch {
+      // Process may have exited early (e.g. head -1), stop writing
+      this.stdinClosed = true;
+      return false;
+    }
     return true;
   }
 
   override streamDone(): void {
-    // Serialize all buffered records to JSONL
-    const input = this.bufferedRecords.map((r) => r.toString()).join("\n") + "\n";
+    // No-op: finish() handles cleanup
+  }
 
-    // Spawn the shell command
-    const result = spawnSync(this.command, this.commandArgs, {
-      input,
-      encoding: "utf-8",
-      shell: false,
-      maxBuffer: 100 * 1024 * 1024, // 100MB
-    });
-
-    if (result.error) {
-      throw new Error(`Shell command '${this.command}' failed: ${result.error.message}`);
+  override finish(): void {
+    if (!this.spawnedProc) {
+      // No records were sent; no process to wait on
+      this.next.finish();
+      return;
     }
 
-    if (result.stderr && result.stderr.trim()) {
-      process.stderr.write(result.stderr);
-    }
-
-    // Parse output lines back as records
-    const output = result.stdout ?? "";
-    const lines = output.split("\n").filter((line: string) => line.trim() !== "");
-    for (const line of lines) {
-      try {
-        const record = Record.fromJSON(line);
-        this.pushRecord(record);
-      } catch {
-        // If the line isn't valid JSON, pass it through as a raw line
-        this.pushLine(line);
+    const doFinish = async (): Promise<void> => {
+      // Close stdin to signal end of input
+      if (!this.stdinClosed) {
+        try {
+          await this.spawnedProc!.stdin.end();
+        } catch {
+          // stdin may already be closed if the process exited early
+        }
       }
-    }
+
+      // Wait for stdout and stderr readers to complete
+      await Promise.all([this.outputDone, this.stderrDone]);
+
+      // Wait for process to exit
+      await this.spawnedProc!.exited;
+
+      this.next.finish();
+    };
+
+    return doFinish() as unknown as void;
   }
 }
 
@@ -198,7 +309,10 @@ export class ChainOperation extends Operation {
 
     if (this.dryRun) return;
 
-    // Build the operation chain from right to left
+    // Build the operation chain from right to left.
+    // Each operation's receiver is wrapped in a ChainFinishBarrier so that
+    // finish() calls don't cascade automatically. ChainOperation manages the
+    // finish sequence explicitly (required for async shell operations).
     let receiver: RecordReceiver = this.next;
     const ops: Operation[] = [];
 
@@ -207,12 +321,14 @@ export class ChainOperation extends Operation {
       const name = cmd[0]!;
       const cmdArgs = cmd.slice(1);
 
+      const barrier = new ChainFinishBarrier(receiver);
+
       let op: Operation;
       if (isKnownRecsOp(name)) {
-        op = createOperation(name, cmdArgs, receiver);
+        op = createOperation(name, cmdArgs, barrier);
       } else {
         // Shell command: pipe JSONL through it
-        op = new ShellOperation(receiver, name, cmdArgs);
+        op = new ShellOperation(barrier, name, cmdArgs);
       }
       ops.unshift(op);
       receiver = op;
@@ -303,28 +419,47 @@ export class ChainOperation extends Operation {
   }
 
   override streamDone(): void {
-    if (this.dryRun) return;
-
-    if (this.operations.length > 0) {
-      // If we buffered bulk stdin content, feed it to the first op now
-      if (this.bulkStdinLines.length > 0) {
-        const content = this.bulkStdinLines.join("\n") + "\n";
-        const first = this.operations[0]!;
-        const opAny = first as unknown as { [key: string]: unknown };
-        if (typeof opAny["parseXml"] === "function") {
-          (opAny["parseXml"] as (xml: string) => void)(content);
-        } else if (typeof opAny["parseContent"] === "function") {
-          (opAny["parseContent"] as (content: string) => void)(content);
-        }
-      }
-      this.operations[0]!.finish();
-    }
+    // No-op: finish() handles the complete sequence
   }
 
   override finish(): void {
-    this.streamDone();
-    // The chain's last operation already connects to this.next,
-    // so finishing the first operation propagates through the chain.
+    if (this.dryRun) return;
+    if (this.operations.length === 0) return;
+
+    // If we buffered bulk stdin content, feed it to the first op now
+    if (this.bulkStdinLines.length > 0) {
+      const content = this.bulkStdinLines.join("\n") + "\n";
+      const first = this.operations[0]!;
+      const opAny = first as unknown as { [key: string]: unknown };
+      if (typeof opAny["parseXml"] === "function") {
+        (opAny["parseXml"] as (xml: string) => void)(content);
+      } else if (typeof opAny["parseContent"] === "function") {
+        (opAny["parseContent"] as (content: string) => void)(content);
+      }
+    }
+
+    // Check if any shell ops need async finish
+    const hasAsyncOps = this.operations.some(op => op instanceof ShellOperation);
+
+    if (!hasAsyncOps) {
+      // Pure recs chain: finish each op synchronously.
+      // FinishBarriers prevent the cascade from propagating automatically.
+      for (const op of this.operations) {
+        op.finish();
+      }
+      this.next.finish();
+      return;
+    }
+
+    // Chain with shell ops: finish each op with await for async support.
+    const doFinish = async (): Promise<void> => {
+      for (const op of this.operations) {
+        await op.finish();
+      }
+      this.next.finish();
+    };
+
+    return doFinish() as unknown as void;
   }
 }
 
